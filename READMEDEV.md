@@ -22,6 +22,16 @@
 - Stores: contains files to manage local storage
 - Utils: contains utilities, helpers, constants files
 
+#### Colors
+
+- Primary: ![#f03c15](https://placehold.co/15x15/0db284/0db284.png)
+- Accent: ![#f03c15](https://placehold.co/15x15/2C4C32/2C4C32.png)
+- Neutral: ![#f03c15](https://placehold.co/15x15/D0D2CC/D0D2CC.png)
+- Base: ![#f03c15](https://placehold.co/15x15/DFEAEF/DFEAEF.png)
+- Success: ![#f03c15](https://placehold.co/15x15/0db284/0db284.png)
+- Warning: ![#f03c15](https://placehold.co/15x15/ffce0a/ffce0a.png)
+- Error: ![#f03c15](https://placehold.co/15x15/FD4A4A/FD4A4A.png)
+
 ### Back-end
 
 ---
