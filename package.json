@@ -1,0 +1,37 @@
+{
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build"
+    },
+    "devDependencies": {
+        "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+        "@tailwindcss/aspect-ratio": "^0.4.2",
+        "@tailwindcss/forms": "^0.5.5",
+        "@tailwindcss/typography": "^0.5.9",
+        "@vitejs/plugin-react": "^4.0.4",
+        "autoprefixer": "^10.4.15",
+        "axios": "^1.1.2",
+        "daisyui": "^3.6.3",
+        "laravel-vite-plugin": "^0.8.0",
+        "postcss": "^8.4.29",
+        "sass": "^1.66.1",
+        "tailwind": "^4.0.0",
+        "tailwind-children": "^0.5.0",
+        "vite": "^4.0.0"
+    },
+    "dependencies": {
+        "@testing-library/jest-dom": "^5.14.1",
+        "@testing-library/react": "^13.0.0",
+        "@testing-library/user-event": "^13.2.1",
+        "@types/jest": "^27.0.1",
+        "@types/node": "^16.7.13",
+        "@types/react": "^18.0.0",
+        "@types/react-dom": "^18.0.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-scripts": "5.0.1",
+        "typescript": "^4.4.2"
+    }
+}
