@@ -2,33 +2,14 @@
 
 ## Guide for Developers
 
-### Global
+### Front-end
 
 ---
 
 #### Initialization
 
 1. Pull the latest from master branch
-2. Create a .env based on .env.example
-
-### Front-end
-
----
-
-#### Foundational Libraries/Frameworks
-
-1. Yarn
-2. Typescript
-3. Vite
-4. React
-5. SASS
-6. SCSS
-7. Tailwind
-8. DaisyUI
-
-#### Initialization
-
-1. Run `yarn install`
+2. Run `yarn install`
 
 #### Folder Structure
 
@@ -54,23 +35,3 @@
 ### Back-end
 
 ---
-
-#### Foundational Libraries/Frameworks
-
-1. Composer
-2. PHP
-3. Laravel
-4. PostCSS
-5. Vite
-
-#### Initialization
-
-1. Run `composer install`
-
-### Running the application
-
-1. Run `yarn vite build`
-2. Run `yarn vite`
-3. Run `php artisan serve`
-   For those running the application for the first time (It's important to have a .env)
-4. Click on generate APP_KEY
