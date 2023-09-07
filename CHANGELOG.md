@@ -1,3 +1,17 @@
+#### 1.1.0 (2023-09-06)
+
+##### New
+
+- Set-up basic front-end components
+
+##### Removed
+
+- Removed Laravel and PHP because of poor support of MongoDB and Windows
+
+##### Others
+
+- Created basic Log in button as sample
+
 #### 1.0.0 (2023-08-26)
 
 ##### New
