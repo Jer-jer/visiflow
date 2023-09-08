@@ -3,6 +3,9 @@
 ##### New
 
 - Set-up basic front-end components
+- Added more Tailwind-based libraries
+- Added .prettierignore and .prettier.cjs in front-end
+- Added heroicons library for icons
 
 ##### Removed
 
