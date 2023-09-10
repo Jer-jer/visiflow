@@ -3,9 +3,16 @@
 ##### New
 
 - Set-up basic front-end components
-- Added more Tailwind-based libraries
+- Added and utilized the following Tailwind-based component libraries
+  - DaisyUI
+  - Material UI
+  - Preline
+  - Headless UI
+  - Hyper UI
+  - Meraki UI
 - Added .prettierignore and .prettier.cjs in front-end
 - Added heroicons library for icons
+- Added react-top-loading-bar
 
 ##### Removed
 
@@ -13,7 +20,7 @@
 
 ##### Others
 
-- Created basic Log in button as sample
+- Created a list of made components in App.tsx (will be removed on the next update)
 
 #### 1.0.0 (2023-08-26)
 

@@ -12,7 +12,18 @@
 - ReactJS
 - SCSS
 - Tailwind
+- Ant Design
 - Storybook (to be added yet)
+
+#### Tailwind Component Libraries and Templates Used
+
+- DaisyUI
+- Preline
+- HeadlessUI
+- SailboatUI
+- HyperUI
+- MerakiUI
+- Material Tailwind
 
 #### Initialization
 
@@ -47,6 +58,7 @@
 - Console Ninja: console.log output and runtime errors right next to the code
 - ES7 + React/Redux/React-Native Snippets
 - Typescript React Code Snippets
+- Color Highlight
 
 ### Back-end
 
