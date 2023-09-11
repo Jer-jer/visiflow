@@ -1,13 +1,40 @@
-import React from 'react';
-import './App.scss';
+import React, { useEffect, useState } from 'react';
 
-//Components
-import Button from './components/button'
+// Define an interface for the user data
+interface UserData {
+  _id: string;
+  username: string;
+  email: string;
+  createdAt: string;
+}
 
 function App() {
+  const [userData, setUserData] = useState<UserData[]>([]);
+
+  useEffect(() => {
+    fetch("/user")
+      .then(response => response.json())
+      .then(data => {
+        setUserData(data.users);
+      })
+      .catch(error => {
+        console.error("Error fetching data:", error);
+      });
+  }, []);
+
   return (
     <div>
-      <Button color='btn-primary' customStylings='rounded-3xl m-8 w-36 text-base normal-case font-medium' label='Log in' />
+      <h1>Users:</h1>
+      <ul>
+        {userData.map((user, index) => (
+          <li key={index}>
+            <p>id: {user._id}</p>
+            <p>Username: {user.username}</p>
+            <p>Email: {user.email}</p>
+            <p>Date: {user.createdAt} </p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
