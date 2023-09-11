@@ -6,6 +6,25 @@
 
 ---
 
+#### Knowledge Pre-requisites
+
+- Typescript
+- ReactJS
+- SCSS
+- Tailwind
+- Ant Design
+- Storybook (to be added yet)
+
+#### Tailwind Component Libraries and Templates Used
+
+- DaisyUI
+- Preline
+- HeadlessUI
+- SailboatUI
+- HyperUI
+- MerakiUI
+- Material Tailwind
+
 #### Initialization
 
 1. Pull the latest from master branch
@@ -13,13 +32,12 @@
 
 #### Folder Structure
 
-- Public: contains static assets that do not require processing, such as HTML files
 - Assets: contains static assets like images, icons, fonts, etc.
 - Components: contains reusable components like navigation bar, buttons, forms, etc.
 - Layouts: contains the page base useede in each page
 - Pages: contains the larger components that represent the various pages of the application
 - Services: holds any services or API-related files
-- Stores: contains files to manage local storage
+- Data: contains files to manage local storage, stores, JSONs, etc.
 - Utils: contains utilities, helpers, constants files
 
 #### Colors
@@ -31,6 +49,16 @@
 - Success: ![#f03c15](https://placehold.co/15x15/0db284/0db284.png)
 - Warning: ![#f03c15](https://placehold.co/15x15/ffce0a/ffce0a.png)
 - Error: ![#f03c15](https://placehold.co/15x15/FD4A4A/FD4A4A.png)
+
+#### Recommended VSCode Extensions
+
+- Prettier: For automatic formatting
+- Instant Docs: Access documents of different frameworks and languages on VSCode directly
+- Better Comments: For better comments and distinguish different kinds of comments
+- Console Ninja: console.log output and runtime errors right next to the code
+- ES7 + React/Redux/React-Native Snippets
+- Typescript React Code Snippets
+- Color Highlight
 
 ### Back-end
 

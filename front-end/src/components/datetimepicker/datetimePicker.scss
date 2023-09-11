@@ -1,0 +1,43 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+.ant-picker-range {
+    .ant-picker-active-bar {
+        background: var(--theme-primary) !important;
+    }
+}
+
+.ant-picker-panel-layout {
+    .ant-picker-cell-selected {
+        .ant-picker-cell-inner {
+            background: var(--theme-primary) !important;
+        }
+    }
+
+    .ant-picker-cell-today {
+        .ant-picker-cell-inner::before {
+            border: 1px solid var(--theme-primary) !important;
+        }
+    }
+
+    .ant-picker-time-panel-cell-selected {
+        .ant-picker-time-panel-cell-inner {
+            background: #e6fff2 !important;
+        }
+    }
+
+
+    .ant-picker-ok {
+
+        button,
+        button:hover {
+            background-color: var(--theme-primary) !important;
+        }
+
+        button:disabled {
+            background-color: var(--theme-neutral) !important;
+        }
+    }
+
+}
