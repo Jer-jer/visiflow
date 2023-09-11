@@ -14,6 +14,11 @@
   --theme-orange: #E88B23;
 }
 
+html,
+body {
+  height: 100%;
+}
+
 body {
   margin: 0;
   -webkit-font-smoothing: antialiased;

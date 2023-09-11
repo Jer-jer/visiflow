@@ -1,3 +1,16 @@
+#### 1.1.1 (2023-09-11)
+
+##### New
+
+- Created login page
+- Improved atomization of button component
+
+##### Removed
+
+- Removed Laravel and PHP because of poor support of MongoDB and Windows
+
+##### Others
+
 #### 1.1.0 (2023-09-06)
 
 ##### New
