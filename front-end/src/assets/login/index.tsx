@@ -8,7 +8,6 @@ export const LoginPhoto = () => {
 			width="850"
 			height="508"
 			viewBox="0 0 869.99994 520.13854"
-			className="loginSvg"
 			xmlnsXlink="http://www.w3.org/1999/xlink"
 		>
 			<path

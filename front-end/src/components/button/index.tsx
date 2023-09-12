@@ -9,7 +9,7 @@ interface ButtonProps {
 Button.defaultProps = {
 	color: "btn-primary",
 	buttonStyling: "btn rounded-3xl w-28 text-base normal-case font-medium",
-	children: "Log in",
+	children: "Button",
 };
 
 function Button({ buttonStyling, color, children }: ButtonProps) {
