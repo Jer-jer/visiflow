@@ -29,7 +29,7 @@ router.get('', async (req, res) => {
 
 //POST
 //Route to fetch a single user
-router.post('', async (req, res) => {
+router.post('/search', async (req, res) => {
     try {
         const {_id} = req.body;
         const searchedUser = await User.findById(_id);
