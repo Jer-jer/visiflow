@@ -1,3 +1,21 @@
+#### 1.1.1 (2023-09-11)
+
+##### New
+
+- Created login page
+- Improved atomization of button component
+- Improved atomization of standard input
+- Added atomic label component
+- Added basic responsiveness to the login page
+
+##### Removed
+
+- Removed list of made components in App.tsx
+
+##### Others
+
+- If you want to access of the made components designs go [here](https://github.com/Jer-jer/visiflow/commit b840334c43e30de503451e63b0c0bde2a7e87751) to access them
+
 #### 1.1.0 (2023-09-06)
 
 ##### New
@@ -13,10 +31,6 @@
 - Added .prettierignore and .prettier.cjs in front-end
 - Added heroicons library for icons
 - Added react-top-loading-bar
-
-##### Removed
-
-- Removed Laravel and PHP because of poor support of MongoDB and Windows
 
 ##### Others
 
