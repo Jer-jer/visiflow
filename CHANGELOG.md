@@ -4,6 +4,9 @@
 
 - Added Header
 - Added responsiveness to Header
+- Added Sidebar
+- Added responsiveness to Sidebar
+- Updated Primary color in tailwind.config.js
 
 ##### Removed
 
