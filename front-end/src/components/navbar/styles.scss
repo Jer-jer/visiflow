@@ -1,0 +1,40 @@
+.header-name {
+    color: #1B3B22;
+}
+
+.menu {
+    border-radius: 10px;
+
+    .notif {
+        .header {
+            font-size: 13px;
+        }
+
+        .desc {
+            font-size: 11px;
+        }
+
+        .time {
+            font-size: 10px;
+        }
+    }
+
+    .notif:hover {
+        .notice {
+            color: red;
+        }
+
+        .time {
+            color: white;
+        }
+    }
+}
+
+@media (max-width: 640px) {
+    .header-name {
+        font-size: 0.875rem;
+        /* 14px */
+        line-height: 1.25rem;
+        /* 20px */
+    }
+}

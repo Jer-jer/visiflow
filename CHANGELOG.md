@@ -1,3 +1,14 @@
+#### 1.1.2 (2023-09-15)
+
+##### New
+
+- Added Header
+- Added responsiveness to Header
+
+##### Removed
+
+##### Others
+
 #### 1.1.1 (2023-09-11)
 
 ##### New
