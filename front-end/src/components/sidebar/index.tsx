@@ -3,6 +3,9 @@ import React, { useState, createContext, useContext } from "react";
 //Assets
 import { Hamburger, ArrowLeft } from "../../assets/svg";
 
+//Styles
+import "./styles.scss";
+
 interface SidebarProps {
 	children?: React.ReactNode;
 }
@@ -20,21 +23,32 @@ export default function Sidebar({ children }: SidebarProps) {
 
 	return (
 		<div
-			className={`h-screen  ${expanded ? "w-1/5" : "w-fit overflow-hidden"}`}
+			className={`h-screen  ${
+				expanded ? "sm:w-screen md:w-screen lg:w-1/5" : "w-fit overflow-hidden"
+			}`}
 		>
 			<nav className="flex h-full flex-col">
-				<div className="flex items-center justify-between p-4 pb-2">
-					&nbsp;
+				<div
+					className={`flex items-center p-4 pb-2 ${
+						expanded ? "justify-end transition-all" : "justify-center"
+					}`}
+				>
 					<button
 						onClick={() => setExpanded((curr) => !curr)}
-						className="hover:text-primary-500 rounded-lg p-1.5"
+						className="py-1.5 hover:text-primary-500"
 					>
 						{expanded ? <ArrowLeft /> : <Hamburger />}
 					</button>
 				</div>
 
 				<SideBarContext.Provider value={{ expanded }}>
-					<ul className="flex-1 px-3">{children}</ul>
+					<ul
+						className={`sb-children flex-1 px-3 ${
+							expanded ? "sb-children-expanded transition-all" : null
+						}`}
+					>
+						{children}
+					</ul>
 				</SideBarContext.Provider>
 			</nav>
 		</div>
@@ -46,14 +60,16 @@ export function SidebarItem({ icon, text, active }: SidebarItemProps) {
 	return (
 		<li
 			className={`items center group relative my-5 flex cursor-pointer rounded-md px-3 py-2 font-medium transition-colors ${
-				active
-					? "from-primary-200  to-primary-100 text-primary-800 bg-gradient-to-tr"
-					: "hover:bg-primary-50 text-gray-600"
+				expanded
+					? active
+						? "bg-gradient-to-tr from-primary-200 to-primary-100 text-primary-800"
+						: "text-gray-60 hover:bg-primary-100"
+					: "sb-item-active"
 			}`}
 		>
 			{icon}
 			<span
-				className={`overflow-hidden transition-all ${
+				className={`sb-item overflow-hidden text-base transition-all ${
 					expanded ? "ml-3 w-52" : "w-0"
 				}`}
 			>

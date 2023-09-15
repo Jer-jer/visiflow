@@ -50,7 +50,7 @@ router.post('', async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-    
+
     try {
         const { username, email } = req.body;
         const newUser = new User({ username, email });
