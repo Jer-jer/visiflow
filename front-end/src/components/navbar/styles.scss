@@ -30,11 +30,31 @@
     }
 }
 
-@media (max-width: 640px) {
+@media (min-width: 200px) {
     .header-name {
-        font-size: 0.875rem;
-        /* 14px */
-        line-height: 1.25rem;
-        /* 20px */
+        display: none;
+    }
+}
+
+@media (min-width: 768px) {
+    .h-inherit {
+        height: inherit;
+    }
+
+    .header-name {
+        display: contents;
+    }
+}
+
+@media (max-width: 769px) {
+    .mobile-dropdown {
+        position: static;
+    }
+}
+
+@media (min-width: 1024px) {
+    .header-name {
+        font-size: 1.125rem;
+        line-height: 1.75rem;
     }
 }

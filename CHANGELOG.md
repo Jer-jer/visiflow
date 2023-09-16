@@ -7,6 +7,7 @@
 - Added Sidebar
 - Added responsiveness to Sidebar
 - Updated Primary color in tailwind.config.js
+- Set-up layout for Admin
 
 ##### Removed
 
