@@ -1,7 +1,7 @@
 import React from "react";
 
 //Pages
-import LoggedIn from "./layouts/loggedin";
+import LoggedIn from "./layouts/logged-in";
 import Login from "./pages/login";
 
 //Styles

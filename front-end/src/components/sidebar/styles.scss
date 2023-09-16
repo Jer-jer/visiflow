@@ -2,16 +2,17 @@
     width: inherit !important;
 }
 
+.sb-item-active {
+    background: transparent;
+    width: 0px;
+}
+
 @media screen and (max-width: 999px) {
     .sb {
         width: 100%;
 
         .sb-item {
             font-size: 14px;
-        }
-
-        .sb-item-active {
-            background: transparent;
         }
     }
 

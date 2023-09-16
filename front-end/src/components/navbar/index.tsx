@@ -12,14 +12,14 @@ export default function Navbar() {
 		<div className="navbar bg-base-100">
 			<div className="flex-1">
 				<a
-					href="#"
+					href="/"
 					className="header-name btn btn-ghost text-xl normal-case hover:bg-transparent"
 				>
 					Gullas Visitor Management System
 				</a>
 			</div>
 			<div className="flex-none">
-				<div className="mobile-dropdown dropdown-end dropdown">
+				<div className="mobile-dropdown dropdown dropdown-end">
 					<label
 						tabIndex={0}
 						className="btn btn-circle btn-ghost hover:bg-transparent hover:text-primary-500"
@@ -50,7 +50,7 @@ export default function Navbar() {
 							<div className="notif flex flex-row hover:bg-primary-500">
 								<div className="avatar">
 									<div className="w-14 rounded-full">
-										<img src={TheRock} />
+										<img src={TheRock} alt="" />
 									</div>
 								</div>
 								<div className="flex flex-col justify-center">
@@ -69,7 +69,7 @@ export default function Navbar() {
 							<div className="notif flex flex-row hover:bg-primary-500">
 								<div className="avatar">
 									<div className="w-14 rounded-full">
-										<img src={TheRock} />
+										<img src={TheRock} alt="" />
 									</div>
 								</div>
 								<div className="flex flex-col justify-center">
@@ -96,7 +96,9 @@ export default function Navbar() {
 						className="menu dropdown-content rounded-box menu-sm z-[1] mt-3 w-52 bg-white p-2 shadow"
 					>
 						<li>
-							<a className="hover:bg-primary-500 hover:text-white">Logout</a>
+							<a href="/" className="hover:bg-primary-500 hover:text-white">
+								Logout
+							</a>
 						</li>
 					</ul>
 				</div>

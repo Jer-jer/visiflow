@@ -13,7 +13,7 @@ interface SidebarProps {
 interface SidebarItemProps {
 	icon?: React.ReactNode;
 	text?: React.ReactNode;
-	active?: React.ReactNode;
+	active?: boolean;
 }
 
 const SideBarContext = createContext<any>(undefined);
@@ -53,15 +53,34 @@ export default function Sidebar({ children }: SidebarProps) {
 
 export function SidebarItem({ icon, text, active }: SidebarItemProps) {
 	const { expanded } = useContext(SideBarContext);
+	const isSmallScreen = window.innerWidth <= 999;
+
+	const isActive = (
+		smallScreen: boolean,
+		expanded: boolean,
+		activeItem?: boolean,
+	) => {
+		if (activeItem) {
+			if (smallScreen) {
+				if (expanded) {
+					return "bg-gradient-to-tr from-primary-200 to-primary-100 text-primary-800";
+				} else {
+					return "sb-item-active";
+				}
+			}
+			return "bg-gradient-to-tr from-primary-200 to-primary-100 text-primary-800";
+		}
+
+		return "text-gray-60 hover:bg-primary-100";
+	};
+
 	return (
 		<li
-			className={`items center group relative my-5 flex cursor-pointer rounded-md px-3 py-2 font-medium transition-colors ${
-				expanded
-					? active
-						? "bg-gradient-to-tr from-primary-200 to-primary-100 text-primary-800"
-						: "text-gray-60 hover:bg-primary-100"
-					: "sb-item-active"
-			}`}
+			className={`items center group relative my-5 flex cursor-pointer rounded-md px-3 py-2 font-medium transition-colors ${isActive(
+				isSmallScreen,
+				expanded,
+				active,
+			)}`}
 		>
 			{icon}
 			<span
