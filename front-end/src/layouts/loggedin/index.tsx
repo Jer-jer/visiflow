@@ -19,8 +19,7 @@ import "./styles.scss";
 
 function LoggedIn() {
 	return (
-		<div>
-			{/* <Navbar /> */}
+		<div className="flex h-60">
 			<Sidebar>
 				<SidebarItem icon={<Home />} text="Dashboard" />
 				<SidebarItem icon={<PieChart />} text="Statistics" active />
@@ -29,6 +28,9 @@ function LoggedIn() {
 				<SidebarItem icon={<Users />} text="Manage Users" />
 				<SidebarItem icon={<Edit />} text="Visitor Home Editor" />
 			</Sidebar>
+			<div className="h-fit min-w-0 flex-1">
+				<Navbar />
+			</div>
 		</div>
 	);
 }

@@ -1,27 +1,29 @@
-import React from "react";
+import React, { useState, createContext, useContext } from "react";
 
 //Assets
+import RyanReynolds from "../../assets/ryan_reynolds.jpg";
+import TheRock from "../../assets/the_rock.jpg";
 
 //Styles
 import "./styles.scss";
 
-function Navbar() {
-	const LoginImage = require("../../assets/ryan_reynolds.jpg");
-	const UserImage = require("../../assets/the_rock.jpg");
-
+export default function Navbar() {
 	return (
 		<div className="navbar bg-base-100">
 			<div className="flex-1">
 				<a
 					href="#"
-					className="header-name btn btn-ghost text-xl normal-case sm:text-sm md:text-xl"
+					className="header-name btn btn-ghost text-xl normal-case hover:bg-transparent"
 				>
 					Gullas Visitor Management System
 				</a>
 			</div>
 			<div className="flex-none">
-				<div className="dropdown dropdown-end">
-					<label tabIndex={0} className="btn btn-circle btn-ghost">
+				<div className="mobile-dropdown dropdown-end dropdown">
+					<label
+						tabIndex={0}
+						className="btn btn-circle btn-ghost hover:bg-transparent hover:text-primary-500"
+					>
 						<div className="indicator">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -42,13 +44,13 @@ function Navbar() {
 					</label>
 					<ul
 						tabIndex={0}
-						className="menu dropdown-content menu-sm z-[1] mt-3 w-96 bg-white p-2 shadow"
+						className="h-inherit menu dropdown-content menu-sm z-[1] mt-3 h-screen w-screen bg-white p-2 shadow md:w-96"
 					>
 						<li>
-							<div className="notif flex flex-row hover:bg-primary ">
+							<div className="notif flex flex-row hover:bg-primary-500">
 								<div className="avatar">
 									<div className="w-14 rounded-full">
-										<img src={UserImage} />
+										<img src={TheRock} />
 									</div>
 								</div>
 								<div className="flex flex-col justify-center">
@@ -59,30 +61,34 @@ function Navbar() {
 											9:20 AM @ HR Office in Medicine Building
 										</span>
 									</span>
-									<span className="time mt-3 text-primary">10 mins ago</span>
+									<span className="time text-primary mt-3">10 mins ago</span>
 								</div>
 							</div>
 						</li>
 						<li>
-							<div className="notif flex flex-row hover:bg-primary">
+							<div className="notif flex flex-row hover:bg-primary-500">
 								<div className="avatar">
 									<div className="w-14 rounded-full">
-										<img src={UserImage} />
+										<img src={TheRock} />
 									</div>
 								</div>
 								<div className="flex flex-col justify-center">
 									<span className="header font-medium">Dwayne Johnson</span>
 									<span className="desc">Meeting with HR @ 9:00 AM</span>
-									<span className="time mt-3 text-primary">10 mins ago</span>
+									<span className="time text-primary mt-3">10 mins ago</span>
 								</div>
 							</div>
 						</li>
 					</ul>
 				</div>
+
 				<div className="dropdown-end dropdown">
-					<label tabIndex={0} className="avatar btn btn-circle btn-ghost">
+					<label
+						tabIndex={0}
+						className="avatar btn btn-circle btn-ghost hover:bg-transparent"
+					>
 						<div className="w-10 rounded-full">
-							<img src={LoginImage} alt="Profile Picture" />
+							<img src={RyanReynolds} alt="Profile Picture" />
 						</div>
 					</label>
 					<ul
@@ -90,7 +96,7 @@ function Navbar() {
 						className="menu dropdown-content rounded-box menu-sm z-[1] mt-3 w-52 bg-white p-2 shadow"
 					>
 						<li>
-							<a className="hover:bg-primary hover:text-white">Logout</a>
+							<a className="hover:bg-primary-500 hover:text-white">Logout</a>
 						</li>
 					</ul>
 				</div>
@@ -98,5 +104,3 @@ function Navbar() {
 		</div>
 	);
 }
-
-export default Navbar;

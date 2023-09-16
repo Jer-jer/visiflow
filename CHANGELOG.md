@@ -7,10 +7,13 @@
 - Added Sidebar
 - Added responsiveness to Sidebar
 - Updated Primary color in tailwind.config.js
+- Set-up layout for Admin
 
 ##### Removed
 
 ##### Others
+
+- Image import needs improvements
 
 #### 1.1.1 (2023-09-11)
 

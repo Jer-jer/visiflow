@@ -19,14 +19,10 @@ interface SidebarItemProps {
 const SideBarContext = createContext<any>(undefined);
 
 export default function Sidebar({ children }: SidebarProps) {
-	const [expanded, setExpanded] = useState(true);
+	const [expanded, setExpanded] = useState(false);
 
 	return (
-		<div
-			className={`h-screen  ${
-				expanded ? "sm:w-screen md:w-screen lg:w-1/5" : "w-fit overflow-hidden"
-			}`}
-		>
+		<div className={`h-screen  ${expanded ? "sb" : "w-fit overflow-hidden"}`}>
 			<nav className="flex h-full flex-col">
 				<div
 					className={`flex items-center p-4 pb-2 ${
