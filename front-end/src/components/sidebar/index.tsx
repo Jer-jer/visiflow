@@ -19,7 +19,7 @@ interface SidebarItemProps {
 const SideBarContext = createContext<any>(undefined);
 
 export default function Sidebar({ children }: SidebarProps) {
-	const [expanded, setExpanded] = useState(true);
+	const [expanded, setExpanded] = useState(false);
 
 	return (
 		<div className={`h-screen  ${expanded ? "sb" : "w-fit overflow-hidden"}`}>

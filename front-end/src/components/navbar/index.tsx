@@ -1,16 +1,13 @@
 import React, { useState, createContext, useContext } from "react";
 
 //Assets
+import RyanReynolds from "../../assets/ryan_reynolds.jpg";
+import TheRock from "../../assets/the_rock.jpg";
 
 //Styles
 import "./styles.scss";
 
 export default function Navbar() {
-	const [expanded, setExpanded] = useState(true);
-
-	const LoginImage = require("../../assets/ryan_reynolds.jpg");
-	const UserImage = require("../../assets/the_rock.jpg");
-
 	return (
 		<div className="navbar bg-base-100">
 			<div className="flex-1">
@@ -22,7 +19,7 @@ export default function Navbar() {
 				</a>
 			</div>
 			<div className="flex-none">
-				<div className="mobile-dropdown dropdown dropdown-end">
+				<div className="mobile-dropdown dropdown-end dropdown">
 					<label
 						tabIndex={0}
 						className="btn btn-circle btn-ghost hover:bg-transparent hover:text-primary-500"
@@ -53,7 +50,7 @@ export default function Navbar() {
 							<div className="notif flex flex-row hover:bg-primary-500">
 								<div className="avatar">
 									<div className="w-14 rounded-full">
-										<img src={UserImage} />
+										<img src={TheRock} />
 									</div>
 								</div>
 								<div className="flex flex-col justify-center">
@@ -72,7 +69,7 @@ export default function Navbar() {
 							<div className="notif flex flex-row hover:bg-primary-500">
 								<div className="avatar">
 									<div className="w-14 rounded-full">
-										<img src={UserImage} />
+										<img src={TheRock} />
 									</div>
 								</div>
 								<div className="flex flex-col justify-center">
@@ -91,7 +88,7 @@ export default function Navbar() {
 						className="avatar btn btn-circle btn-ghost hover:bg-transparent"
 					>
 						<div className="w-10 rounded-full">
-							<img src={LoginImage} alt="Profile Picture" />
+							<img src={RyanReynolds} alt="Profile Picture" />
 						</div>
 					</label>
 					<ul

@@ -17,5 +17,6 @@
 		"jsx": "react-jsx"
 	},
 	"include": ["src/**/*.ts", "src/**/*.tsx"], // Adjust to match your project structure
-	"exclude": ["node_modules"]
+	"exclude": ["node_modules"],
+	"files": ["images.d.ts"]
 }

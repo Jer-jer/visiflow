@@ -13,6 +13,8 @@
 
 ##### Others
 
+- Image import needs improvements
+
 #### 1.1.1 (2023-09-11)
 
 ##### New
