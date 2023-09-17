@@ -1,8 +1,5 @@
 import React from "react";
 
-//Layouts
-import Dashboard from "../dashboard";
-
 //Components
 import Navbar from "../../components/navbar";
 import Sidebar, { SidebarItem } from "../../components/sidebar";
@@ -21,7 +18,11 @@ import {
 import "../../utils/variables.scss";
 import "./styles.scss";
 
-function LoggedIn() {
+interface LoggedInProps {
+	children: React.ReactNode;
+}
+
+function LoggedIn({ children }: LoggedInProps) {
 	return (
 		<div className="flex h-60">
 			<Sidebar>
@@ -37,7 +38,7 @@ function LoggedIn() {
 					<Navbar />
 				</div>
 				{/* Main content Here */}
-				<Dashboard />
+				{children}
 			</div>
 		</div>
 	);

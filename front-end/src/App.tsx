@@ -1,8 +1,12 @@
 import React from "react";
 
-//Pages
+//Layouts
 import LoggedIn from "./layouts/logged-in";
+
+//Pages
 import Login from "./pages/login";
+import Dashboard from "./pages/dashboard";
+import Statistics from "./pages/statistics";
 
 //Styles
 import "./App.scss";
@@ -10,7 +14,10 @@ import "./App.scss";
 function App() {
 	return (
 		<div className="min-h-screen">
-			<LoggedIn />
+			<LoggedIn>
+				{/* <Dashboard /> */}
+				<Statistics />
+			</LoggedIn>
 		</div>
 	);
 }

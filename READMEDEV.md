@@ -13,6 +13,7 @@
 - SCSS
 - Tailwind
 - Ant Design
+- Recharts _Optional_
 
 #### Tailwind Component Libraries and Templates Used
 
