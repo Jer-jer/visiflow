@@ -1,3 +1,13 @@
+#### 1.1.4 (2023-09-17)
+
+##### New
+
+- Created routing for Admin
+
+##### Removed
+
+##### Others
+
 #### 1.1.3 (2023-09-16)
 
 ##### New

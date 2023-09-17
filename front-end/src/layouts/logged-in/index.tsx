@@ -1,7 +1,8 @@
 import React from "react";
+import { NavLink } from "react-router-dom";
 
 //Components
-import Navbar from "../../components/navbar";
+import Header from "../../components/header";
 import Sidebar, { SidebarItem } from "../../components/sidebar";
 
 //Assets
@@ -26,16 +27,60 @@ function LoggedIn({ children }: LoggedInProps) {
 	return (
 		<div className="flex h-60">
 			<Sidebar>
-				<SidebarItem icon={<Home />} text="Dashboard" />
-				<SidebarItem icon={<PieChart />} text="Statistics" active />
-				<SidebarItem icon={<Calendar />} text="Schedules" />
-				<SidebarItem icon={<UserGroup />} text="Visitor Management" />
-				<SidebarItem icon={<Users />} text="Manage Users" />
-				<SidebarItem icon={<Edit />} text="Visitor Home Editor" />
+				<NavLink to="/">
+					{({ isActive }) => (
+						<SidebarItem icon={<Home />} text="Dashboard" active={isActive} />
+					)}
+				</NavLink>
+				<NavLink to="/statistics">
+					{({ isActive }) => (
+						<SidebarItem
+							icon={<PieChart />}
+							text="Statistics"
+							active={isActive}
+						/>
+					)}
+				</NavLink>
+				<NavLink to="/schedules">
+					{({ isActive }) => (
+						<SidebarItem
+							icon={<Calendar />}
+							text="Schedules"
+							active={isActive}
+						/>
+					)}
+				</NavLink>
+				<NavLink to="/visitor-management">
+					{({ isActive }) => (
+						<SidebarItem
+							icon={<UserGroup />}
+							text="Visitor Management"
+							active={isActive}
+						/>
+					)}
+				</NavLink>
+				<NavLink to="/manage-users">
+					{({ isActive }) => (
+						<SidebarItem
+							icon={<Users />}
+							text="Manage Users"
+							active={isActive}
+						/>
+					)}
+				</NavLink>
+				<NavLink to="/home-editor">
+					{({ isActive }) => (
+						<SidebarItem
+							icon={<Edit />}
+							text="Visitor Home Editor"
+							active={isActive}
+						/>
+					)}
+				</NavLink>
 			</Sidebar>
 			<div className="h-fit min-w-0 flex-1">
 				<div>
-					<Navbar />
+					<Header />
 				</div>
 				{/* Main content Here */}
 				{children}

@@ -14,6 +14,7 @@
 - Tailwind
 - Ant Design
 - Recharts _Optional_
+- React Router
 
 #### Tailwind Component Libraries and Templates Used
 
