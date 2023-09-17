@@ -1,7 +1,7 @@
 import React from "react";
 
 //Layout
-import LoggedIn from "../../layouts/loggedin";
+import LoggedIn from "../../layouts/logged-in";
 
 //Styles
 import "./styles.scss";

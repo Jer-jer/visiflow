@@ -1,5 +1,8 @@
 import React from "react";
 
+//Layouts
+import Dashboard from "../dashboard";
+
 //Components
 import Navbar from "../../components/navbar";
 import Sidebar, { SidebarItem } from "../../components/sidebar";
@@ -15,6 +18,7 @@ import {
 } from "../../assets/svg";
 
 //Styles
+import "../../utils/variables.scss";
 import "./styles.scss";
 
 function LoggedIn() {
@@ -29,7 +33,11 @@ function LoggedIn() {
 				<SidebarItem icon={<Edit />} text="Visitor Home Editor" />
 			</Sidebar>
 			<div className="h-fit min-w-0 flex-1">
-				<Navbar />
+				<div>
+					<Navbar />
+				</div>
+				{/* Main content Here */}
+				<Dashboard />
 			</div>
 		</div>
 	);

@@ -59,6 +59,10 @@
 - Typescript React Code Snippets
 - Color Highlight
 
+#### Notes
+
+- When creating either a component, layout or page, always import `utils/variables.scss`
+
 ### Back-end
 
 ---
