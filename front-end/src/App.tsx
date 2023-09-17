@@ -10,13 +10,16 @@ import Statistics from "./pages/statistics";
 
 //Styles
 import "./App.scss";
+import { Routes, Route } from "react-router-dom";
 
 function App() {
 	return (
 		<div className="min-h-screen">
 			<LoggedIn>
-				{/* <Dashboard /> */}
-				<Statistics />
+				<Routes>
+					<Route path="/" element={<Dashboard />} />
+					<Route path="/statistics" element={<Statistics />} />
+				</Routes>
 			</LoggedIn>
 		</div>
 	);

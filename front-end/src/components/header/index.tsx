@@ -7,7 +7,7 @@ import TheRock from "../../assets/the_rock.jpg";
 //Styles
 import "./styles.scss";
 
-export default function Navbar() {
+export default function Header() {
 	return (
 		<div className="navbar bg-base-100">
 			<div className="flex-1">
