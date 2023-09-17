@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import "./index.scss";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import { ThemeProvider } from "@material-tailwind/react";
+import { ConfigProvider } from "antd";
 
 const root = ReactDOM.createRoot(
 	document.getElementById("root") as HTMLElement,
@@ -11,9 +11,15 @@ const root = ReactDOM.createRoot(
 
 root.render(
 	<React.StrictMode>
-		<ThemeProvider>
+		<ConfigProvider
+			theme={{
+				token: {
+					colorPrimary: "#0db284",
+				},
+			}}
+		>
 			<App />
-		</ThemeProvider>
+		</ConfigProvider>
 	</React.StrictMode>,
 );
 

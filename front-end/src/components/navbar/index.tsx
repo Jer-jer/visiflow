@@ -44,7 +44,7 @@ export default function Navbar() {
 					</label>
 					<ul
 						tabIndex={0}
-						className="h-inherit menu dropdown-content menu-sm z-[1] mt-3 h-screen w-screen bg-white p-2 shadow md:w-96"
+						className="h-inherit menu dropdown-content menu-sm z-[1] mt-3 bg-white p-2 shadow md:w-96"
 					>
 						<li>
 							<div className="notif flex flex-row hover:bg-primary-500">

@@ -3,6 +3,9 @@
 ##### New
 
 - Created Dashboard
+- Created Admin Statistics
+- Installed ReCharts
+- Created Select(atomized) component
 
 ##### Removed
 

@@ -1,17 +1,13 @@
 import React from "react";
 
 //Layout
-import LoggedIn from "../../layouts/logged-in";
+import MainDashboard from "../../layouts/dashboard";
 
 //Styles
 import "./styles.scss";
 
 function Dashboard() {
-	return (
-		<div>
-			<LoggedIn />
-		</div>
-	);
+	return <MainDashboard />;
 }
 
 export default Dashboard;

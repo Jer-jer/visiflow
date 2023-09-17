@@ -16,13 +16,14 @@ import "./styles.scss";
 
 export default function Dashboard() {
 	return (
-		<div className="ml-2 mt-3 flex">
+		<div className="mb-[35px] ml-2 mt-3 flex">
 			<div className="w-[761px] flex-auto">
 				<OuterContainer header="Summary">
 					<InnerContainer additionalStyles="rounded-[10px] border border-[#D0D2CC]">
 						<StatisticsSummaryContent
 							title="total visitors for today"
 							bigNumber="50"
+							bigNumberStatus="text-primary-500"
 							secondaryStatsProps={[
 								{
 									label: "Percentage",
@@ -35,11 +36,12 @@ export default function Dashboard() {
 							]}
 						/>
 					</InnerContainer>
-					<InnerContainer additionalStyles="mb-[76px] mt-[30px] flex w-[95%] items-center justify-center gap-10">
+					<InnerContainer additionalStyles="mb-[50px] mt-[30px] flex items-center justify-center gap-10">
 						<div className="w-[47.5%] rounded-[10px] border border-[#D0D2CC]">
 							<StatisticsSummaryContent
 								title="total walk-in visitors"
 								bigNumber="50"
+								bigNumberStatus="text-primary-500"
 								secondaryStatsProps={[
 									{
 										label: "Percentage",
@@ -56,6 +58,7 @@ export default function Dashboard() {
 							<StatisticsSummaryContent
 								title="total pre-registered visitorss"
 								bigNumber="25"
+								bigNumberStatus="text-primary-500"
 								secondaryStatsProps={[
 									{
 										label: "Percentage",
