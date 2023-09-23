@@ -1,5 +1,8 @@
 import React from "react";
 
+//Interfaces
+import { VisitorFullNameProps } from "../../../utils";
+
 //Components
 import type { MenuProps } from "antd";
 import { Button, Avatar, Dropdown } from "antd";
@@ -13,19 +16,17 @@ import { ExcelDownload } from "../../../assets/svg";
 import RyanReynolds from "../../../assets/ryan_reynolds.jpg";
 
 interface VisitorDetailsProps {
-	firstName: string;
-	middleName: string;
-	lastName: string;
-	mobile: string;
-	email: string;
+	fullName?: VisitorFullNameProps;
+	mobile?: string;
+	email?: string;
 	houseNo?: string;
-	city: string;
+	city?: string;
 	street?: string;
-	province: string;
-	brgy: string;
+	province?: string;
+	brgy?: string;
 	country?: string;
-	timeIn: string;
-	timeOut: string;
+	timeIn?: string;
+	timeOut?: string;
 }
 
 const items: MenuProps["items"] = [
@@ -54,9 +55,7 @@ const items: MenuProps["items"] = [
 ];
 
 export default function VisitorDetails({
-	firstName,
-	middleName,
-	lastName,
+	fullName,
 	mobile,
 	email,
 	houseNo,
@@ -88,7 +87,7 @@ export default function VisitorDetails({
 								<Input
 									inputType="text"
 									inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-									placeHolder={firstName}
+									placeHolder={fullName?.firstName}
 									visitorMngmnt
 								/>
 							</div>
@@ -99,7 +98,7 @@ export default function VisitorDetails({
 								<Input
 									inputType="text"
 									inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-									placeHolder={middleName}
+									placeHolder={fullName?.middleName}
 									visitorMngmnt
 								/>
 							</div>
@@ -112,7 +111,7 @@ export default function VisitorDetails({
 								<Input
 									inputType="text"
 									inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-									placeHolder={lastName}
+									placeHolder={fullName?.lastName}
 									visitorMngmnt
 								/>
 							</div>
@@ -226,8 +225,8 @@ export default function VisitorDetails({
 									rangePickerStyling="bg-[#e0ebf0] border-none w-[inherit]"
 									size="large"
 									defaultVal={{
-										from: timeIn,
-										to: timeOut,
+										from: timeIn || "9999-99-99 99:90 PM",
+										to: timeOut || "9999-99-99 99:99 PM",
 									}}
 									visitorMngmnt
 								/>

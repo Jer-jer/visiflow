@@ -5,6 +5,7 @@
 - Created routing for Admin
 - Created Visitor Management Screen
 - Removed atomized Button component
+- Added DayJS for date time objectification
 
 ##### Removed
 

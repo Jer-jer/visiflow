@@ -1,11 +1,10 @@
-import React, { useRef, useState, Dispatch } from "react";
+import React, { useRef, useState } from "react";
 
 //Interfaces
-import { DataType } from "../../../utils";
+import { VisitorDetailsProps } from "../../../utils";
 
 //Components
 import { Tabs, Button } from "antd";
-import TabPane from "rc-tabs";
 import SearchInput from "../../../components/fields/input/searchInput";
 import DateTimePicker from "../../../components/datetime-picker";
 import AdminTable from "../../../components/table";
@@ -18,10 +17,15 @@ import "./styles.scss";
 //Assets
 import { ExcelDownload, TabClose } from "../../../assets/svg";
 
-type TargetKey = React.MouseEvent | React.KeyboardEvent | string;
+type TargetKey = React.MouseEvent | React.KeyboardEvent | string | number;
 
 interface VisitorProps {
-	addTab?: () => void;
+	addTab: () => void;
+}
+
+interface TabItems {
+	key: TargetKey;
+	visitorData?: VisitorDetailsProps;
 }
 
 const VisitorList = ({ addTab }: VisitorProps) => {
@@ -42,74 +46,54 @@ const VisitorList = ({ addTab }: VisitorProps) => {
 	);
 };
 
-const initialItems = [
-	{
-		label: "Visitor List",
-		children: <VisitorList />,
-		key: "1",
-		closable: false,
-		closeIcon: <TabClose />,
-	},
-];
-
 export default function VisitorManagementLayout() {
-	const [items, setItems] = useState(initialItems);
-	const [activeKey, setActiveKey]: any = useState(initialItems[0].key);
-	const newTabIndex = useRef(0);
+	const [items, setItems] = useState<TabItems[]>([]);
+	const [activeKey, setActiveKey]: any = useState(1);
+	const newTabIndex = useRef(1);
 
 	const onChange = (newActiveKey: string) => {
 		setActiveKey(newActiveKey);
 	};
 
-	const add = () => {
-		const newActiveKey = `newTab${newTabIndex.current++}`;
+	const add = (record?: VisitorDetailsProps) => {
+		const newActiveKey = ++newTabIndex.current;
+
+		console.log(record);
+
 		setItems([
 			...items,
 			{
-				label: "Visitor Details",
-				children: <span>Children</span>,
 				key: newActiveKey,
-				closable: true,
-				closeIcon: <TabClose />,
+				visitorData: record,
 			},
 		]);
 
 		setActiveKey(newActiveKey);
 	};
 
-	// let updatedItems = [...items];
-	// // Find the index of the item you want to update (e.g., based on key)
-	// const itemIndexToUpdate = updatedItems.findIndex((item) => item.key === "1");
-
-	// // Check if the item was found
-	// if (itemIndexToUpdate !== -1) {
-	// 	// Update the 'children' property of the found item
-	// 	updatedItems[itemIndexToUpdate].children = <span>Updated</span>;
-
-	// 	// Set the updated array as the new state
-	// 	setItems(updatedItems);
-	// }
-
 	const remove = (targetKey: TargetKey) => {
-		const targetIndex = items.findIndex((pane) => pane.key === targetKey);
-		const newPanes = items.filter((pane) => pane.key !== targetKey);
-		if (newPanes.length && targetKey === activeKey) {
-			const { key } =
+		const targetIndex = items.findIndex(
+			(pane) => pane.key.toString() === targetKey,
+		);
+		const newPanes = items.filter((pane) => pane.key.toString() !== targetKey);
+
+		if (newPanes.length && targetKey === activeKey.toString()) {
+			const newActiveKey =
 				newPanes[
 					targetIndex === newPanes.length ? targetIndex - 1 : targetIndex
 				];
-			setActiveKey(key);
-		}
+
+			setActiveKey(newActiveKey.key);
+		} else setActiveKey(1);
+
 		setItems(newPanes);
 	};
 
 	const onEdit = (
-		targetKey: React.MouseEvent | React.KeyboardEvent | string,
+		targetKey: React.MouseEvent | React.KeyboardEvent | string | number,
 		action: "add" | "remove",
 	) => {
-		if (action === "remove") {
-			remove(targetKey);
-		}
+		if (action === "remove") remove(targetKey);
 	};
 
 	return (
@@ -119,18 +103,34 @@ export default function VisitorManagementLayout() {
 				className="h-full"
 				type="editable-card"
 				size="middle"
-				defaultActiveKey="1"
-				// onChange={onChange}
-				// activeKey={activeKey}
-				// onEdit={onEdit}
-				// items={items}
+				onChange={onChange}
+				activeKey={activeKey.toString()}
+				onEdit={onEdit}
 			>
 				<Tabs.TabPane closable={false} tab="Visitor List" key="1">
-					<VisitorList />
+					<VisitorList addTab={add} />
 				</Tabs.TabPane>
-				<Tabs.TabPane closable={false} tab="Visitor Details" key="2">
-					<VisitorList />
-				</Tabs.TabPane>
+				{items.map((items, key) => (
+					<Tabs.TabPane
+						tab="Visitor Details"
+						key={items.key.toString()}
+						closeIcon={<TabClose />}
+					>
+						<VisitorDetails
+							fullName={items.visitorData?.fullName}
+							mobile={items.visitorData?.mobile}
+							email={items.visitorData?.email}
+							houseNo={items.visitorData?.houseNo}
+							city={items.visitorData?.city}
+							street={items.visitorData?.street}
+							province={items.visitorData?.province}
+							brgy={items.visitorData?.brgy}
+							country={items.visitorData?.country}
+							timeIn={items.visitorData?.timeIn}
+							timeOut={items.visitorData?.timeOut}
+						/>
+					</Tabs.TabPane>
+				))}
 			</Tabs>
 		</div>
 	);
