@@ -11,18 +11,18 @@ import {
 } from "recharts";
 
 //Components
-import OuterContainer from "../../components/container";
-import InnerContainer from "../../components/container/inner-container";
-import StatisticsSummaryContent from "../../components/stats-smmry-ctnt";
-import StatisticsSummaryContentAlt from "../../components/stats-smmry-ctnt/alternative";
-import Select from "../../components/select";
+import OuterContainer from "../../../components/container";
+import InnerContainer from "../../../components/container/inner-container";
+import StatisticsSummaryContent from "../../../components/stats-smmry-ctnt";
+import StatisticsSummaryContentAlt from "../../../components/stats-smmry-ctnt/alternative";
+import Select from "../../../components/select";
 import { DatePicker } from "antd";
 
 //Styles
-import "../../utils/variables.scss";
+import "../../../utils/variables.scss";
 import "./styles.scss";
 
-export default function Statistics() {
+export default function StatisticsLayout() {
 	const data = [
 		{
 			name: "January",

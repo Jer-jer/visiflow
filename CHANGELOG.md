@@ -3,10 +3,15 @@
 ##### New
 
 - Created routing for Admin
+- Created Visitor Management Screen
+- Removed atomized Button component
 
 ##### Removed
 
 ##### Others
+
+- Removed the custom atomized Button, conlcuded that Ant Design Button is much better
+- A couple of custom atomized components might be removed in exchange to Ant Design counter parts
 
 #### 1.1.3 (2023-09-16)
 

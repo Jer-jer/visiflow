@@ -3,10 +3,14 @@ import React from "react";
 //Layouts
 import LoggedIn from "./layouts/logged-in";
 
-//Pages
+/* Pages */
 import Login from "./pages/login";
-import Dashboard from "./pages/dashboard";
-import Statistics from "./pages/statistics";
+//Admin
+import Dashboard from "./pages/admin/dashboard";
+import Statistics from "./pages/admin/statistics";
+import VisitorManagement from "./pages/admin/visitor-management";
+
+//Guard
 
 //Styles
 import "./App.scss";
@@ -15,10 +19,14 @@ import { Routes, Route } from "react-router-dom";
 function App() {
 	return (
 		<div className="min-h-screen">
+			{/* Either <Login /> or <LoggedIn></LoggedIn> depending if the user is logged in or not */}
+			{/* <Login /> */}
 			<LoggedIn>
+				{/* Add Routes here */}
 				<Routes>
 					<Route path="/" element={<Dashboard />} />
 					<Route path="/statistics" element={<Statistics />} />
+					<Route path="/visitor-management" element={<VisitorManagement />} />
 				</Routes>
 			</LoggedIn>
 		</div>

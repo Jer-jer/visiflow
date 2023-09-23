@@ -1,20 +1,20 @@
 import React from "react";
 
 //Components
-import OuterContainer from "../../components/container";
-import InnerContainer from "../../components/container/inner-container";
-import StatisticsSummaryContent from "../../components/stats-smmry-ctnt";
-import PendingAppointments from "../../components/pending-appointments";
+import OuterContainer from "../../../components/container";
+import InnerContainer from "../../../components/container/inner-container";
+import StatisticsSummaryContent from "../../../components/stats-smmry-ctnt";
+import PendingAppointments from "../../../components/pending-appointments";
 
 //Assets
-import TheRock from "../../assets/the_rock.jpg";
-import RyanReynolds from "../../assets/ryan_reynolds.jpg";
+import TheRock from "../../../assets/the_rock.jpg";
+import RyanReynolds from "../../../assets/ryan_reynolds.jpg";
 
 //Styles
-import "../../utils/variables.scss";
+import "../../../utils/variables.scss";
 import "./styles.scss";
 
-export default function Dashboard() {
+export default function DashboardLayout() {
 	return (
 		<div className="mb-[35px] ml-2 mt-3 flex">
 			<div className="w-[761px] flex-auto">

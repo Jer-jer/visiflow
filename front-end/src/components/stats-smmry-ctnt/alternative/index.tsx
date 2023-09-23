@@ -28,7 +28,7 @@ export default function StatisticsSummaryContentAlt({
 				{title.toUpperCase()}
 			</span>
 			<div className="mb-[10px] mt-[10px] flex justify-center">
-				<DateTimePicker globalStyling="w-4/5" />
+				<DateTimePicker globalStyling="w-4/5" size="middle" />
 			</div>
 			{statisticsAltDetails.map((item, index) => (
 				<AlternativeDetails

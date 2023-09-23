@@ -1,6 +1,26 @@
 import React from "react";
 
-export const ExcelDownload = () => {
+export const TabClose = () => {
+	return (
+		<svg
+			width="15"
+			height="17"
+			viewBox="0 0 15 17"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+		>
+			<g id="close-circle-svgrepo-com 1">
+				<path
+					id="Vector"
+					d="M7.5 2.03027C4.05625 2.03027 1.25 4.94445 1.25 8.52066C1.25 12.0969 4.05625 15.011 7.5 15.011C10.9437 15.011 13.75 12.0969 13.75 8.52066C13.75 4.94445 10.9437 2.03027 7.5 2.03027ZM9.6 10.0134C9.78125 10.2017 9.78125 10.5132 9.6 10.7014C9.50625 10.7988 9.3875 10.8442 9.26875 10.8442C9.15 10.8442 9.03125 10.7988 8.9375 10.7014L7.5 9.20864L6.0625 10.7014C5.96875 10.7988 5.85 10.8442 5.73125 10.8442C5.6125 10.8442 5.49375 10.7988 5.4 10.7014C5.21875 10.5132 5.21875 10.2017 5.4 10.0134L6.8375 8.52066L5.4 7.02787C5.21875 6.83965 5.21875 6.52811 5.4 6.33989C5.58125 6.15167 5.88125 6.15167 6.0625 6.33989L7.5 7.83267L8.9375 6.33989C9.11875 6.15167 9.41875 6.15167 9.6 6.33989C9.78125 6.52811 9.78125 6.83965 9.6 7.02787L8.1625 8.52066L9.6 10.0134Z"
+					fill="#0DB284"
+				/>
+			</g>
+		</svg>
+	);
+};
+
+export const ExcelDownload = (props: any) => {
 	return (
 		<svg
 			width="25"
@@ -8,7 +28,7 @@ export const ExcelDownload = () => {
 			viewBox="0 0 25 25"
 			fill="none"
 			xmlns="http://www.w3.org/2000/svg"
-			className="ml-[5px] inline-block align-baseline"
+			className={`ml-[5px] inline-block align-baseline ${props.size}`}
 		>
 			<g id="excel-document-svgrepo-com 1">
 				<path

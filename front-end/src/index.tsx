@@ -10,9 +10,12 @@ import {
 
 import App from "./App";
 
-//Pages
-import Dashboard from "./pages/dashboard";
-import Statistics from "./pages/statistics";
+/* Pages */
+//Admin
+import Dashboard from "./pages/admin/dashboard";
+import Statistics from "./pages/admin/statistics";
+
+//Guard
 
 //Styles
 import "./utils/variables.scss";
@@ -22,6 +25,7 @@ const root = ReactDOM.createRoot(
 	document.getElementById("root") as HTMLElement,
 );
 
+//? To be implemented soon
 const router = createBrowserRouter([
 	{
 		path: "/",
@@ -46,6 +50,16 @@ root.render(
 				theme={{
 					token: {
 						colorPrimary: "#0db284",
+					},
+					components: {
+						Tabs: {
+							cardBg: "#fff",
+						},
+						Button: {
+							defaultBg: "#0db284",
+							defaultBorderColor: "#0db284",
+							defaultColor: "#0db284",
+						},
 					},
 				}}
 			>
