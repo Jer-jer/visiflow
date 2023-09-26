@@ -3,11 +3,23 @@ module.exports = {
 	content: [
 		"./src/**/*.{html,js,jsx,tsx}",
 		"./node_modules/react-tailwindcss-datepicker/dist/index.esm.js",
+		"node_modules/preline/dist/*.js",
 	],
 	theme: {
 		extend: {
 			colors: {
-				primary: "#0db284",
+				primary: {
+					50: "#E7F7F3",
+					100: "#B4E7D9",
+					200: "#90DCC6",
+					300: "#5DCBAD",
+					400: "#3DC19D",
+					500: "#0db284", // Main Primary
+					600: "#0CA278",
+					700: "#097E5E",
+					800: "#076249",
+					900: "#054B37",
+				},
 				accent: "#2C4C32",
 				neutral: "#D0D2CC",
 				success: "#0db284",

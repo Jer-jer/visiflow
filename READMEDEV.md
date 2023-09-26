@@ -13,6 +13,8 @@
 - SCSS
 - Tailwind
 - Ant Design
+- Recharts _Optional_
+- React Router
 
 #### Tailwind Component Libraries and Templates Used
 
@@ -58,6 +60,10 @@
 - ES7 + React/Redux/React-Native Snippets
 - Typescript React Code Snippets
 - Color Highlight
+
+#### Notes
+
+- When creating either a component, layout or page, always import `utils/variables.scss`
 
 ### Back-end
 

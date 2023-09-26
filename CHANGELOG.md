@@ -1,3 +1,43 @@
+#### 1.1.4 (2023-09-17)
+
+##### New
+
+- Created routing for Admin
+
+##### Removed
+
+##### Others
+
+#### 1.1.3 (2023-09-16)
+
+##### New
+
+- Created Dashboard
+- Created Admin Statistics
+- Installed ReCharts
+- Created Select(atomized) component
+
+##### Removed
+
+##### Others
+
+#### 1.1.2 (2023-09-15)
+
+##### New
+
+- Added Header
+- Added responsiveness to Header
+- Added Sidebar
+- Added responsiveness to Sidebar
+- Updated Primary color in tailwind.config.js
+- Set-up layout for Admin
+
+##### Removed
+
+##### Others
+
+- Image import needs improvements
+
 #### 1.1.1 (2023-09-11)
 
 ##### New

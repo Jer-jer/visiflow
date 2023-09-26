@@ -1,0 +1,34 @@
+.sb-children-expanded {
+    width: inherit !important;
+}
+
+.sb-item-active {
+    background: transparent;
+    width: 0px;
+}
+
+@media screen and (max-width: 999px) {
+    .sb {
+        width: 100%;
+
+        .sb-item {
+            font-size: 14px;
+        }
+    }
+
+    .sb-children {
+        width: 0px;
+    }
+}
+
+@media screen and (min-width: 1000px) {
+    .sb {
+        width: 20%;
+    }
+}
+
+@media screen and (max-width: 1046px) {
+    .sb-item {
+        font-size: 14px;
+    }
+}

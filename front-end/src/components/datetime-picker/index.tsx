@@ -2,14 +2,19 @@ import React from "react";
 import { DatePicker } from "antd";
 
 // Styles
-import "./datetimePicker.scss";
+import "./styles.scss";
 
-function DateTimePicker() {
+interface DatePickerProps {
+	globalStyling?: string;
+}
+
+function DateTimePicker({ globalStyling }: DatePickerProps) {
 	const { RangePicker } = DatePicker;
 	const timeFormat = "h:mm A";
 
 	return (
-		<div>
+		//Custom Div Styling
+		<div className={`${globalStyling}`}>
 			{/* Custom Range Picker Values:
             className
             placeholder
