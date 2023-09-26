@@ -16,5 +16,7 @@
 		"noEmit": true,
 		"jsx": "react-jsx"
 	},
-	"include": ["src"]
+	"include": ["src/**/*.ts", "src/**/*.tsx"], // Adjust to match your project structure
+	"exclude": ["node_modules"],
+	"files": ["images.d.ts"]
 }
