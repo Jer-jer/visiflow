@@ -4,8 +4,7 @@ const Schema = mongoose.Schema;
 const UserSchema = new Schema({
     name: {
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     email: {
         type: String,
@@ -16,13 +15,19 @@ const UserSchema = new Schema({
         type: String,
         required: true,
     },
+    role: {
+        type: String,
+        enum: ['admin', 'employee'],
+        default: 'employee',
+        required: true
+    },
     createdAt: {
         type: Date,
-        default: Date.now,
+        default: Date.now
     },
     updatedAt: {
         type: Date,
-        default: Date.now,
+        default: Date.now
     }
 });
 
