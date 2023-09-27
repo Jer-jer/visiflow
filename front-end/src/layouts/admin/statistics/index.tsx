@@ -16,7 +16,6 @@ import InnerContainer from "../../../components/container/inner-container";
 import StatisticsSummaryContent from "../../../components/stats-smmry-ctnt";
 import StatisticsSummaryContentAlt from "../../../components/stats-smmry-ctnt/alternative";
 import Select from "../../../components/select";
-import { DatePicker } from "antd";
 
 //Styles
 import "../../../utils/variables.scss";

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "antd";
 
 //Components
@@ -12,6 +12,9 @@ import "./styles.scss";
 import { LoginPhoto } from "../../assets/login";
 
 function LoginLayout() {
+	const [email, setEmail] = useState("");
+	const [pass, setPass] = useState("");
+
 	return (
 		<div>
 			<div className="flex h-screen items-center justify-center">
@@ -57,6 +60,8 @@ function LoginLayout() {
 											inputStyling="input bg-white border-0 border-b-2 rounded-none border-neutral w-full max-w-xs focus:outline-none focus:ring-0 focus:border-primary-500 p-0"
 											inputType="text"
 											placeHolder="Email"
+											input={email}
+											setInput={setEmail}
 										/>
 										<Label spanStyling="text-error">&nbsp;</Label>
 									</div>
@@ -88,6 +93,8 @@ function LoginLayout() {
 											inputStyling="input bg-white border-0 border-b-2 rounded-none border-neutral w-full max-w-xs focus:outline-none focus:ring-0 focus:border-primary-500 p-0"
 											inputType="text"
 											placeHolder="Password"
+											input={pass}
+											setInput={setPass}
 										/>
 										<Label spanStyling="text-error">&nbsp;</Label>
 									</div>

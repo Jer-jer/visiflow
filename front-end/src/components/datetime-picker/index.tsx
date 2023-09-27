@@ -5,6 +5,8 @@ import dayjs from "dayjs";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 
+import type { Dayjs } from "dayjs";
+
 //Components
 import { DatePicker } from "antd";
 import { SizeType } from "antd/es/config-provider/SizeContext";
@@ -24,6 +26,7 @@ interface DatePickerProps {
 	placeHolder?: string[];
 	defaultVal?: DefaultProps;
 	visitorMngmnt?: boolean;
+	disabled?: boolean;
 }
 
 dayjs.extend(weekday);
@@ -36,6 +39,7 @@ function DateTimePicker({
 	placeHolder,
 	defaultVal,
 	visitorMngmnt,
+	disabled,
 }: DatePickerProps) {
 	const { RangePicker } = DatePicker;
 	const timeFormat = "hh:mm A";
@@ -43,9 +47,9 @@ function DateTimePicker({
 	return (
 		<div className={`${globalStyling}`}>
 			<RangePicker
-				className={`hover:border-primary focus:border-primary ${rangePickerStyling} ${
-					visitorMngmnt && "vm-placeholder"
-				}`}
+				className={`!border-[#d9d9d9] hover:!border-primary-500 focus:!border-primary-500 ${rangePickerStyling} ${
+					disabled && "picker-disabled"
+				} ${visitorMngmnt && "vm-placeholder"}`}
 				size={size}
 				defaultValue={
 					defaultVal === undefined
@@ -62,6 +66,7 @@ function DateTimePicker({
 				style={{
 					borderColor: "#0db284",
 				}}
+				disabled={disabled}
 			/>
 		</div>
 	);

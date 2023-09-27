@@ -61,5 +61,13 @@ $placeholder: (
             background-color: var(--theme-neutral) !important;
         }
     }
+}
 
+.picker-disabled {
+    .ant-picker-disabled {
+        background: transparent !important;
+    }
+
+    opacity: 1;
+    background: #c9dbe4 !important;
 }

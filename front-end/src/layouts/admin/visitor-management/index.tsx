@@ -4,10 +4,9 @@ import React, { useRef, useState } from "react";
 import { VisitorDetailsProps } from "../../../utils";
 
 //Components
-import { Tabs, Button } from "antd";
-import SearchInput from "../../../components/fields/input/searchInput";
+import { Tabs, Button, Input } from "antd";
 import DateTimePicker from "../../../components/datetime-picker";
-import AdminTable from "../../../components/table";
+import AdminTable from "../../../components/table/visitor-list";
 import VisitorDetails from "../visitor-details";
 
 //Styles
@@ -15,7 +14,7 @@ import "../../../utils/variables.scss";
 import "./styles.scss";
 
 //Assets
-import { ExcelDownload, TabClose } from "../../../assets/svg";
+import { ExcelDownload, Search, TabClose } from "../../../assets/svg";
 
 type TargetKey = React.MouseEvent | React.KeyboardEvent | string | number;
 
@@ -26,13 +25,19 @@ interface VisitorProps {
 interface TabItems {
 	key: TargetKey;
 	visitorData?: VisitorDetailsProps;
+	companionsDetails?: VisitorDetailsProps[];
 }
 
 const VisitorList = ({ addTab }: VisitorProps) => {
 	return (
-		<div className="ml-[45px] flex flex-col gap-[90px]">
+		<div className="ml-[45px] mt-[30px] flex flex-col gap-[90px]">
 			<div className="flex w-full items-center justify-end gap-[25px] pr-[65px]">
-				<SearchInput placeHolder="Search" globalStyling="w-[366px]" />
+				<Input
+					className="w-[366px]"
+					size="large"
+					placeholder="Search"
+					prefix={<Search />}
+				/>
 				<DateTimePicker size="large" />
 				<Button type="primary" className="search-button !bg-primary-500">
 					Search
@@ -55,16 +60,18 @@ export default function VisitorManagementLayout() {
 		setActiveKey(newActiveKey);
 	};
 
-	const add = (record?: VisitorDetailsProps) => {
+	const add = (
+		record?: VisitorDetailsProps,
+		companionRecords?: VisitorDetailsProps[],
+	) => {
 		const newActiveKey = ++newTabIndex.current;
-
-		console.log(record);
 
 		setItems([
 			...items,
 			{
 				key: newActiveKey,
 				visitorData: record,
+				companionsDetails: companionRecords,
 			},
 		]);
 
@@ -117,17 +124,8 @@ export default function VisitorManagementLayout() {
 						closeIcon={<TabClose />}
 					>
 						<VisitorDetails
-							fullName={items.visitorData?.fullName}
-							mobile={items.visitorData?.mobile}
-							email={items.visitorData?.email}
-							houseNo={items.visitorData?.houseNo}
-							city={items.visitorData?.city}
-							street={items.visitorData?.street}
-							province={items.visitorData?.province}
-							brgy={items.visitorData?.brgy}
-							country={items.visitorData?.country}
-							timeIn={items.visitorData?.timeIn}
-							timeOut={items.visitorData?.timeOut}
+							record={items.visitorData}
+							companionRecords={items.companionsDetails}
 						/>
 					</Tabs.TabPane>
 				))}

@@ -1,4 +1,9 @@
-import React, { useState, createContext, useContext } from "react";
+import React, {
+	createContext,
+	useContext,
+	Dispatch,
+	SetStateAction,
+} from "react";
 
 //Assets
 import { Hamburger, ArrowLeft } from "../../assets/svg";
@@ -7,6 +12,8 @@ import { Hamburger, ArrowLeft } from "../../assets/svg";
 import "./styles.scss";
 
 interface SidebarProps {
+	expanded: boolean;
+	setExpanded: Dispatch<SetStateAction<boolean>>;
 	children?: React.ReactNode;
 }
 
@@ -18,9 +25,11 @@ interface SidebarItemProps {
 
 const SideBarContext = createContext<any>(undefined);
 
-export default function Sidebar({ children }: SidebarProps) {
-	const [expanded, setExpanded] = useState(false);
-
+export default function Sidebar({
+	expanded,
+	setExpanded,
+	children,
+}: SidebarProps) {
 	return (
 		<div className={`h-screen  ${expanded ? "sb" : "w-fit overflow-hidden"}`}>
 			<nav className="flex h-full flex-col">

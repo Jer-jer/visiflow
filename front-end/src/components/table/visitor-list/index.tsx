@@ -1,27 +1,21 @@
 /* Built using Ant Design */
 import React from "react";
 import { Table, Tag, Button } from "antd";
-import type { ColumnsType, TableProps } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 
 //Interfaces
-import { VisitorDataType, VisitorDetailsProps } from "../../utils";
+import { VisitorDataType, VisitorDetailsProps } from "../../../utils";
 
 //Styles
-import "../../utils/variables.scss";
+import "../../../utils/variables.scss";
 import "./styles.scss";
 
 interface AdminTableProps {
-	addTab: (record: VisitorDetailsProps) => void;
+	addTab: (
+		record: VisitorDetailsProps,
+		companionRecord?: VisitorDetailsProps[],
+	) => void;
 }
-
-const onChange: TableProps<VisitorDataType>["onChange"] = (
-	pagination: any,
-	filters: any,
-	sorter: any,
-	extra: any,
-) => {
-	console.log("params", pagination, filters, sorter, extra);
-};
 
 export default function AdminTable({ addTab }: AdminTableProps) {
 	const data: VisitorDataType[] = [
@@ -44,8 +38,75 @@ export default function AdminTable({ addTab }: AdminTableProps) {
 				country: "Philippines",
 				timeIn: "2023-09-01 09:00 AM",
 				timeOut: "2023-09-01 04:30 PM",
+				status: "approved",
 			},
-
+			companionsDetails: [
+				{
+					fullName: {
+						firstName: "John",
+						middleName: "Doe",
+						lastName: "Smith",
+					},
+					mobile: "123-456-7890",
+					email: "john.smith@example.com",
+					houseNo: "123",
+					city: "Manila",
+					street: "Main Street",
+					province: "Metro Manila",
+					brgy: "Makati",
+					country: "Philippines",
+					timeIn: "2023-09-01 09:00 AM",
+					timeOut: "2023-09-01 05:00 PM",
+					status: "approved",
+				},
+				{
+					fullName: {
+						firstName: "Maria",
+						middleName: "Garcia",
+						lastName: "Perez",
+					},
+					mobile: "987-654-3210",
+					email: "maria.perez@example.com",
+					city: "Cebu",
+					province: "Cebu",
+					brgy: "Cebu City",
+					timeIn: "2023-09-02 10:30 AM",
+					timeOut: "2023-09-02 03:30 PM",
+					status: "in-progress",
+				},
+				{
+					fullName: {
+						firstName: "Pedro",
+						middleName: "Gomez",
+						lastName: "Lopez",
+					},
+					mobile: "555-123-4567",
+					email: "pedro.lopez@example.com",
+					city: "Davao",
+					province: "Davao del Sur",
+					brgy: "Davao City",
+					timeIn: "2023-09-03 11:45 AM",
+					timeOut: "2023-09-03 01:30 PM",
+					status: "in-progress",
+				},
+				{
+					fullName: {
+						firstName: "Sofia",
+						middleName: "Torres",
+						lastName: "Gonzalez",
+					},
+					mobile: "222-333-4444",
+					email: "sofia.gonzalez@example.com",
+					houseNo: "456",
+					city: "Quezon City",
+					province: "Metro Manila",
+					brgy: "Katipunan",
+					country: "Philippines",
+					timeIn: "2023-09-04 03:15 PM",
+					timeOut: "2023-09-04 06:00 PM",
+					status: "declined",
+				},
+			],
 			visitorType: "Walk-in",
 			date: "10-04-2023 4:50 AM",
 		},
@@ -68,6 +129,7 @@ export default function AdminTable({ addTab }: AdminTableProps) {
 				country: "Philippines",
 				timeIn: "2023-09-02 10:30 AM",
 				timeOut: "2023-09-02 05:45 PM",
+				status: "in-progress",
 			},
 			visitorType: "Pre-Registered",
 			date: "11-20-2023 8:25 PM",
@@ -88,7 +150,42 @@ export default function AdminTable({ addTab }: AdminTableProps) {
 				brgy: "Cubao",
 				timeIn: "2023-09-03 11:15 AM",
 				timeOut: "2023-09-03 06:00 PM",
+				status: "declined",
 			},
+			companionsDetails: [
+				{
+					fullName: {
+						firstName: "Juan",
+						middleName: "Santos",
+						lastName: "Gonzales",
+					},
+					mobile: "777-888-9999",
+					email: "juan.gonzales@example.com",
+					houseNo: "789",
+					city: "Makati",
+					province: "Metro Manila",
+					brgy: "Salcedo Village",
+					country: "Philippines",
+					timeIn: "2023-09-05 02:30 PM",
+					timeOut: "2023-09-05 04:45 PM",
+					status: "approved",
+				},
+				{
+					fullName: {
+						firstName: "Luisa",
+						middleName: "Rodriguez",
+						lastName: "Martinez",
+					},
+					mobile: "666-555-4444",
+					email: "luisa.martinez@example.com",
+					city: "Cagayan de Oro",
+					province: "Misamis Oriental",
+					brgy: "Carmen",
+					timeIn: "2023-09-06 10:15 AM",
+					timeOut: "2023-09-06 12:30 PM",
+					status: "approved",
+				},
+			],
 			visitorType: "Pre-Registered",
 			date: "10-08-2023 11:40 AM",
 		},
@@ -111,6 +208,7 @@ export default function AdminTable({ addTab }: AdminTableProps) {
 				country: "Philippines",
 				timeIn: "2023-09-04 09:30 AM",
 				timeOut: "2023-09-04 03:45 PM",
+				status: "in-progress",
 			},
 			visitorType: "Walk-in",
 			date: "12-01-2023 7:55 PM",
@@ -131,6 +229,7 @@ export default function AdminTable({ addTab }: AdminTableProps) {
 				brgy: "Downtown",
 				timeIn: "2023-09-05 10:00 AM",
 				timeOut: "2023-09-05 04:15 PM",
+				status: "approved",
 			},
 			visitorType: "Pre-Registered",
 			date: "11-12-2023 3:10 AM",
@@ -151,6 +250,7 @@ export default function AdminTable({ addTab }: AdminTableProps) {
 				brgy: "Downtown",
 				timeIn: "2023-09-06 08:45 AM",
 				timeOut: "2023-09-06 03:30 PM",
+				status: "declined",
 			},
 			visitorType: "Walk-in",
 			date: "09-30-2023 1:20 AM",
@@ -171,6 +271,7 @@ export default function AdminTable({ addTab }: AdminTableProps) {
 				brgy: "Downtown",
 				timeIn: "2023-09-07 10:15 AM",
 				timeOut: "2023-09-07 05:00 PM",
+				status: "in-progress",
 			},
 			visitorType: "Walk-in",
 			date: "09-19-2023 6:00 AM",
@@ -194,6 +295,7 @@ export default function AdminTable({ addTab }: AdminTableProps) {
 				country: "Philippines",
 				timeIn: "2023-09-09 10:30 AM",
 				timeOut: "2023-09-09 05:15 PM",
+				status: "approved",
 			},
 			visitorType: "Pre-Registered",
 			date: "10-28-2023 5:15 PM",
@@ -217,6 +319,7 @@ export default function AdminTable({ addTab }: AdminTableProps) {
 				country: "Philippines",
 				timeIn: "2023-09-10 09:45 AM",
 				timeOut: "2023-09-10 04:30 PM",
+				status: "approved",
 			},
 			visitorType: "Walk-in",
 			date: "12-15-2023 9:45 AM",
@@ -238,6 +341,7 @@ export default function AdminTable({ addTab }: AdminTableProps) {
 				country: "Philippines",
 				timeIn: "2023-09-11 08:15 AM",
 				timeOut: "2023-09-11 03:00 PM",
+				status: "declined",
 			},
 			visitorType: "Walk-in",
 			date: "11-03-2023 2:30 PM",
@@ -301,7 +405,11 @@ export default function AdminTable({ addTab }: AdminTableProps) {
 			title: "Action",
 			key: "action",
 			render: (_, record) => (
-				<Button onClick={() => addTab(record.visitorDetails)}>
+				<Button
+					onClick={() =>
+						addTab(record.visitorDetails, record.companionsDetails)
+					}
+				>
 					View Details
 				</Button>
 			),
@@ -309,11 +417,6 @@ export default function AdminTable({ addTab }: AdminTableProps) {
 	];
 
 	return (
-		<Table
-			columns={columns}
-			dataSource={data}
-			onChange={onChange}
-			pagination={{ pageSize: 8 }}
-		/>
+		<Table columns={columns} dataSource={data} pagination={{ pageSize: 8 }} />
 	);
 }

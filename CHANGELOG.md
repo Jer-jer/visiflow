@@ -13,6 +13,7 @@
 
 - Removed the custom atomized Button, conlcuded that Ant Design Button is much better
 - A couple of custom atomized components might be removed in exchange to Ant Design counter parts
+- Remove AG-Grid use in Capstone papers
 
 #### 1.1.3 (2023-09-16)
 
