@@ -2,6 +2,28 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+$placeholder: (
+    '.vm-placeholder input::-webkit-input-placeholder',
+    '.vm-placeholder input:-moz-placeholder',
+    '.vm-placeholder input::-moz-placeholder',
+    '.vm-placeholder input:-ms-input-placeholder',
+    '.vm-placeholder input::input-placeholder',
+    '.vm-placeholder input::placeholder'
+);
+
+@each $selector in $placeholder {
+    #{$selector} {
+        color: #0C0D0D !important;
+        font-weight: 600;
+    }
+}
+
+.vm-placeholder {
+    span {
+        color: #0C0D0D;
+    }
+}
+
 .ant-picker-range {
     .ant-picker-active-bar {
         background: var(--theme-primary) !important;
@@ -39,5 +61,13 @@
             background-color: var(--theme-neutral) !important;
         }
     }
+}
 
+.picker-disabled {
+    .ant-picker-disabled {
+        background: transparent !important;
+    }
+
+    opacity: 1;
+    background: #c9dbe4 !important;
 }

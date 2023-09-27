@@ -8,8 +8,8 @@ interface LabelProps {
 
 function Label({ labelStyling, spanStyling, children }: LabelProps) {
 	return (
-		<label className="label">
-			<span className="label-text">{children}</span>
+		<label className={`label ${labelStyling}`}>
+			<span className={`label-text ${spanStyling}`}>{children}</span>
 		</label>
 	);
 }
