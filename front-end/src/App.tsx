@@ -9,6 +9,7 @@ import Login from "./pages/login";
 import Dashboard from "./pages/admin/dashboard";
 import Statistics from "./pages/admin/statistics";
 import VisitorManagement from "./pages/admin/visitor-management";
+import UserManagement from "./layouts/admin/user-management";
 
 //Guard
 
@@ -27,6 +28,7 @@ function App() {
 					<Route path="/" element={<Dashboard />} />
 					<Route path="/statistics" element={<Statistics />} />
 					<Route path="/visitor-management" element={<VisitorManagement />} />
+					<Route path="/manage-users" element={<UserManagement />} />
 				</Routes>
 			</LoggedIn>
 		</div>

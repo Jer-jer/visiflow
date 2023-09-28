@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 
 //Components
 import SecondaryStats from "./secondary-stats";

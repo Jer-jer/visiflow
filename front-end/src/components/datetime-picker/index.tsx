@@ -5,8 +5,6 @@ import dayjs from "dayjs";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 
-import type { Dayjs } from "dayjs";
-
 //Components
 import { DatePicker } from "antd";
 import { SizeType } from "antd/es/config-provider/SizeContext";

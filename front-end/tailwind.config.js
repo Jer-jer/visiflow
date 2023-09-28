@@ -3,7 +3,6 @@ module.exports = {
 	content: [
 		"./src/**/*.{html,js,jsx,tsx}",
 		"./node_modules/react-tailwindcss-datepicker/dist/index.esm.js",
-		"node_modules/preline/dist/*.js",
 	],
 	theme: {
 		extend: {

@@ -2,11 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import reportWebVitals from "./reportWebVitals";
 import { ConfigProvider } from "antd";
-import {
-	createBrowserRouter,
-	RouterProvider,
-	BrowserRouter,
-} from "react-router-dom";
+import { createBrowserRouter, BrowserRouter } from "react-router-dom";
 
 import App from "./App";
 
@@ -50,13 +46,13 @@ root.render(
 				theme={{
 					token: {
 						colorPrimary: "#0db284",
+						colorBorder: "#0db284",
 					},
 					components: {
 						Tabs: {
 							cardBg: "#fff",
 						},
 						Button: {
-							defaultBg: "#0db284",
 							defaultBorderColor: "#0db284",
 							defaultColor: "#0db284",
 						},
