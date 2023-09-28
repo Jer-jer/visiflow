@@ -1,3 +1,16 @@
+#### 1.1.5 (2023-09-28)
+
+##### New
+
+- Created static User Management page
+
+##### Removed
+
+- Custom and search atomized input, decided to utilize Ant Design input and search
+- Preline
+
+##### Others
+
 #### 1.1.4 (2023-09-17)
 
 ##### New

@@ -17,7 +17,7 @@ interface AdminTableProps {
 	) => void;
 }
 
-export default function AdminTable({ addTab }: AdminTableProps) {
+export default function VisitorListTable({ addTab }: AdminTableProps) {
 	const data: VisitorDataType[] = [
 		{
 			key: 1,
