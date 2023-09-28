@@ -1,0 +1,11 @@
+.confirm-buttons {
+    .ant-btn:hover {
+        border-color: var(--theme-primary) !important;
+        color: var(--theme-primary) !important;
+    }
+
+    .ant-btn-dangerous:hover {
+        border-color: #ffa39e !important;
+        color: #ff7875 !important;
+    }
+}
