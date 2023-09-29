@@ -64,3 +64,26 @@ export interface UserDataType {
 	mobile: string;
 	role: UserRole;
 }
+
+export interface HomeEditor {
+	title: string;
+	body: string;
+}
+
+export interface OfficeSchedule {
+	officeName: string;
+	operatingHours: string;
+	inCharge: string;
+	location: string;
+	contact: string;
+	availability: string;
+}
+
+export interface EventsSchedule {
+	name: string;
+	date: string;
+	start: string;
+	end: string;
+	location: string;
+	description: string;
+}

@@ -6,8 +6,8 @@ import React, { Dispatch, SetStateAction } from "react";
 
 //Components
 import { Image } from "antd";
-import StandardModal from "../../../components/modal";
-import Label from "../../../components/fields/input/label";
+import StandardModal from "../../../../components/modal";
+import Label from "../../../../components/fields/input/label";
 
 //Styles
 import "./styles.scss";

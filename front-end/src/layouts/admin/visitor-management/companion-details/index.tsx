@@ -6,7 +6,7 @@ import React, { Dispatch, SetStateAction } from "react";
 import CompanionDetails from "./details";
 
 //Components
-import StandardModal from "../../../components/modal";
+import StandardModal from "../../../../components/modal";
 
 //Styles
 import "./styles.scss";

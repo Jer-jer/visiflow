@@ -2,6 +2,7 @@
 
 import React from "react";
 import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 
@@ -29,6 +30,7 @@ interface DatePickerProps {
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
+dayjs.extend(customParseFormat);
 
 function DateTimePicker({
 	globalStyling,
@@ -53,8 +55,8 @@ function DateTimePicker({
 					defaultVal === undefined
 						? null
 						: [
-								dayjs(`${dayjs(defaultVal?.from)}`, `YYYY-MM-DD ${timeFormat}`),
-								dayjs(`${dayjs(defaultVal?.to)}`, `YYYY-MM-DD ${timeFormat}`),
+								dayjs(defaultVal?.from, `YYYY-MM-DD ${timeFormat}`),
+								dayjs(defaultVal?.to, `YYYY-MM-DD ${timeFormat}`),
 						  ]
 				}
 				placeholder={["From", "To"]}

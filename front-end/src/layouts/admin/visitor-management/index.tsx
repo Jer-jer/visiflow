@@ -7,7 +7,7 @@ import { VisitorDetailsProps } from "../../../utils";
 import { Tabs, Button, Input } from "antd";
 import DateTimePicker from "../../../components/datetime-picker";
 import VisitorListTable from "../../../components/table/visitor-list";
-import VisitorDetails from "../visitor-details";
+import VisitorDetails from "./visitor-details";
 
 //Styles
 import "../../../utils/variables.scss";
@@ -30,7 +30,7 @@ interface TabItems {
 
 const VisitorList = ({ addTab }: VisitorProps) => {
 	return (
-		<div className="ml-[45px] mt-[30px] flex flex-col gap-[90px]">
+		<div className="ml-[45px] mt-[30px] flex flex-col gap-[50px]">
 			<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
 				<Input
 					className="w-[366px]"
