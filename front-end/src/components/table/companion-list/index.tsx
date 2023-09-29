@@ -1,11 +1,11 @@
 import React, { useState, useContext, createContext } from "react";
 
 //Interfaces
-import { VisitorCompanionsContext } from "../../../layouts/admin/visitor-details";
+import { VisitorCompanionsContext } from "../../../layouts/admin/visitor-management/visitor-details";
 
 //Layouts
-import VisitorCompanionsModal from "../../../layouts/admin/companion-details";
-import CompanionLogs from "../../../layouts/admin/companion-logs";
+import VisitorCompanionsModal from "../../../layouts/admin/visitor-management/companion-details";
+import CompanionLogs from "../../../layouts/admin/visitor-management/companion-logs";
 
 //Components
 import { Button, Table } from "antd";

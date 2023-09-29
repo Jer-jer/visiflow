@@ -6,7 +6,7 @@ import { UserDataType, UserRole } from "../../../utils";
 //Components
 import { Tabs, Button, Input } from "antd";
 import UserListTable from "../../../components/table/user-list";
-import UserDetails from "../user-details";
+import UserDetails from "./user-details";
 
 //Styles
 import "../../../utils/variables.scss";
@@ -30,7 +30,7 @@ interface TabItems {
 
 const UserList = ({ addTab, createUser }: UserListProps) => {
 	return (
-		<div className="ml-[45px] mt-[30px] flex flex-col gap-[90px]">
+		<div className="ml-[45px] mt-[30px] flex flex-col gap-[50px]">
 			<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
 				<Input
 					className="w-[366px]"
@@ -59,7 +59,7 @@ const UserList = ({ addTab, createUser }: UserListProps) => {
 	);
 };
 
-export default function UserManagement() {
+export default function UserManagementLayout() {
 	const [items, setItems] = useState<TabItems[]>([]);
 	const [activeKey, setActiveKey]: any = useState(1);
 	const newTabIndex = useRef(1);

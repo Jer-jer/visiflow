@@ -2,6 +2,18 @@
 
 ##### New
 
+- Created static Home Editor page
+
+##### Removed
+
+- Fixed a bit of folder structure
+
+##### Others
+
+#### 1.1.5 (2023-09-28)
+
+##### New
+
 - Created static User Management page
 
 ##### Removed

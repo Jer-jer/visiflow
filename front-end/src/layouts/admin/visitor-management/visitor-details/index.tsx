@@ -1,25 +1,53 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, createContext } from "react";
 
 //Interfaces
-import { WidthContext } from "../../logged-in";
-import { CompanionRecord } from "../../../components/table/companion-list";
+import { VisitorDetailsProps } from "../../../../utils";
+import { WidthContext } from "../../../logged-in";
 
 //Layouts
+import VisitorLogs from "../visitor-logs";
+import VisitorCompanions from "../visitor-companions";
+import NotifyPOI from "../notify-poi";
+import Identification from "../identification";
 
 //Components
+import type { MenuProps } from "antd";
 import { Button, Avatar, Dropdown } from "antd";
-import DateTimePicker from "../../../components/datetime-picker";
-import Input from "../../../components/fields/input/input";
-import Label from "../../../components/fields/input/label";
-import Badge from "../../../components/badge";
-import Alert from "../../../components/alert";
+import DateTimePicker from "../../../../components/datetime-picker";
+import Input from "../../../../components/fields/input/input";
+import Label from "../../../../components/fields/input/label";
+import Badge from "../../../../components/badge";
+import Alert from "../../../../components/alert";
 
 //Assets
-import { ExcelDownload, ArrowDown } from "../../../assets/svg";
-import RyanReynolds from "../../../assets/ryan_reynolds.jpg";
+import { ExcelDownload, ArrowDown } from "../../../../assets/svg";
 
 //Styles
 import "./styles.scss";
+
+interface VisitorDeetsProps {
+	record?: VisitorDetailsProps;
+	companionRecords?: VisitorDetailsProps[];
+}
+
+const exportOptions: MenuProps["items"] = [
+	{
+		label: "Export All",
+		key: "0",
+	},
+	{
+		label: "Export Visitor Details",
+		key: "1",
+	},
+	{
+		label: "Export Visitor Logs",
+		key: "2",
+	},
+	{
+		label: "Export Visitor Details + Logs",
+		key: "3",
+	},
+];
 
 const statusOptions = [
 	{
@@ -36,8 +64,14 @@ const statusOptions = [
 	},
 ];
 
-export default function CompanionDetails() {
-	const record = useContext(CompanionRecord);
+export const VisitorCompanionsContext = createContext<
+	VisitorDetailsProps[] | undefined
+>(undefined);
+
+export default function VisitorDetails({
+	record,
+	companionRecords,
+}: VisitorDeetsProps) {
 	//Form States
 	const [firstName, setFirstName] = useState("");
 	const [middleName, setMiddleName] = useState("");
@@ -54,12 +88,17 @@ export default function CompanionDetails() {
 	//Alert State
 	const [alertOpen, setAlertOpen] = useState(false);
 
+	//Modal States
+	const [visitLogsOpen, setVisitLogsOpen] = useState(false);
+	const [vistorCompanionsOpen, setVisitorCompanionsOpen] = useState(false);
+	const [notifyOpen, setNotifyOpen] = useState(false);
+	const [identificationOpen, setIdentificationOpen] = useState(false);
+
 	const [disabledInputs, setDisabledInputs] = useState<boolean>(true);
 	//setCurrentStatus is for changing the status of the visitor
 	const [currentStatus, setCurrentStatus] = useState(
 		statusOptions?.find((option) => option?.key === record?.status),
 	);
-
 	const width = useContext(WidthContext);
 
 	const editOrCancel = () => {
@@ -78,7 +117,7 @@ export default function CompanionDetails() {
 	return (
 		<>
 			<div
-				className={`transition-alert absolute right-0 z-[1] w-full scale-y-0 ease-in-out ${
+				className={`transition-alert absolute z-[1] w-full scale-y-0 ease-in-out ${
 					alertOpen && "scale-y-100"
 				}`}
 			>
@@ -97,15 +136,19 @@ export default function CompanionDetails() {
 				/>
 			</div>
 
-			<div className="mr-[135px] flex flex-col gap-[35px]">
+			<div className="mr-[135px] flex flex-col gap-[35px] pt-[30px]">
 				<div className="flex justify-end">
-					<ExcelDownload />
+					<Dropdown menu={{ items: exportOptions }} trigger={["click"]}>
+						<a onClick={(e) => e.preventDefault()} href="/">
+							<ExcelDownload />
+						</a>
+					</Dropdown>
 				</div>
-				<div className="ml-[58px] flex flex-col gap-[25px]">
+				<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
 					<div className="flex justify-between">
 						<div className="flex w-[782px] flex-col gap-[20px]">
 							<div className="flex gap-[60px]">
-								<div className="flex w-[360px] justify-between">
+								<div className="flex w-[380px] justify-between">
 									<Label spanStyling="text-black font-medium text-[16px]">
 										First Name
 									</Label>
@@ -135,7 +178,7 @@ export default function CompanionDetails() {
 								</div>
 							</div>
 							<div className="flex gap-[60px]">
-								<div className="flex w-[360px] justify-between">
+								<div className="flex w-[380px] justify-between">
 									<Label spanStyling="text-black font-medium text-[16px]">
 										Last Name
 									</Label>
@@ -182,7 +225,7 @@ export default function CompanionDetails() {
 								/>
 							</div>
 							<div className="flex gap-[60px]">
-								<div className="flex w-[360px] justify-between">
+								<div className="flex w-[380px] justify-between">
 									<Label spanStyling="text-black font-medium text-[16px]">
 										House No.
 									</Label>
@@ -212,7 +255,7 @@ export default function CompanionDetails() {
 								</div>
 							</div>
 							<div className="flex gap-[60px]">
-								<div className="flex w-[360px] justify-between">
+								<div className="flex w-[380px] justify-between">
 									<Label spanStyling="text-black font-medium text-[16px]">
 										Street
 									</Label>
@@ -242,7 +285,7 @@ export default function CompanionDetails() {
 								</div>
 							</div>
 							<div className="flex gap-[60px]">
-								<div className="flex w-[360px] justify-between">
+								<div className="flex w-[380px] justify-between">
 									<Label spanStyling="text-black font-medium text-[16px]">
 										Barangay
 									</Label>
@@ -292,7 +335,24 @@ export default function CompanionDetails() {
 							</div>
 						</div>
 						<div className="flex flex-col items-center gap-[30px]">
-							<Avatar size={width === 1210 ? 150 : 220} src={RyanReynolds} />
+							<Avatar
+								className="cursor-pointer"
+								onClick={() => setIdentificationOpen(!identificationOpen)}
+								size={width === 1210 ? 150 : 220}
+								src="https://www.sars.gov.za/wp-content/uploads/images/Verify-banking-details.jpg"
+							/>
+							<Identification
+								open={identificationOpen}
+								setOpen={setIdentificationOpen}
+								image={{
+									frontId:
+										"https://media.philstar.com/photos/2021/07/23/10_2021-07-23_18-27-24.jpg",
+									backId:
+										"https://s3-alpha-sig.figma.com/img/6541/e76f/4938b0155718de8af5610a0f82b07fc5?Expires=1696809600&Signature=g9ee7Y9K6izTlUfPBSWDgv2t9CilaBU3wsYb~xTBNwzFqBIgD~qDFl1WJms9oyFfyQXVxeFC5zydUUKHzBz-JaG~jZ31ambhXu9Gqte1D5vDh9x6WnZF8Kszq9IisRwRC1ytG02cYqFmIFpwLjb-hZ-JFXIWPbB~g-EA-pVFCSsElqjTHikVTTSSmEQiViHAXOSZo0OF3spgfGhfQhtobuWeryxKXlrr3Wu6CnxlIN0VGWKrCMzNH3qp6o99M8KZ4tkEsA8oFrhz~ijLF2GntP1DSBpZNm07wWoLJ2T1l7zSdqRJ5OOl4wiRucamxNbR8wnqPxjrKxrRGE7nJhAQ6w__&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4",
+									selfieId:
+										"https://www.sars.gov.za/wp-content/uploads/images/Verify-banking-details.jpg",
+								}}
+							/>
 							{disabledInputs ? (
 								<Badge status={record?.status} textSize="text-[20px]" />
 							) : (
@@ -313,6 +373,56 @@ export default function CompanionDetails() {
 					</div>
 					{/* <div className="divider" /> */}
 					<div className="flex justify-end gap-[15px]">
+						{disabledInputs && (
+							<>
+								<Button
+									type="primary"
+									size="large"
+									className="search-button !rounded-[18px] !bg-primary-500"
+									onClick={() => setVisitLogsOpen(!visitLogsOpen)}
+								>
+									Visitor Logs
+								</Button>
+								<VisitorLogs open={visitLogsOpen} setOpen={setVisitLogsOpen} />
+								{/* Optional only for visitors with companions */}
+								{companionRecords && (
+									<>
+										<Button
+											type="primary"
+											size="large"
+											className="search-button !rounded-[18px] !bg-primary-500"
+											onClick={() =>
+												setVisitorCompanionsOpen(!vistorCompanionsOpen)
+											}
+										>
+											View Companions
+										</Button>
+										<VisitorCompanionsContext.Provider value={companionRecords}>
+											<VisitorCompanions
+												open={vistorCompanionsOpen}
+												setOpen={setVisitorCompanionsOpen}
+											/>
+										</VisitorCompanionsContext.Provider>
+									</>
+								)}
+
+								<Button
+									type="primary"
+									size="large"
+									className="search-button !rounded-[18px] !bg-primary-500"
+									onClick={() => setNotifyOpen(!notifyOpen)}
+								>
+									Notify Person of Interest
+								</Button>
+								<NotifyPOI
+									emailInput={record?.email}
+									companionRecords={companionRecords}
+									open={notifyOpen}
+									setOpen={setNotifyOpen}
+								/>
+							</>
+						)}
+
 						{!disabledInputs && (
 							<Button
 								onClick={saveAction}

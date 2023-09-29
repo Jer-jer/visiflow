@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 //Interfaces
-import { UserDataType } from "../../../utils";
+import { UserDataType } from "../../../../utils";
 
 //Layouts
 import UserActionLogs from "../user-action-logs";
@@ -9,13 +9,13 @@ import UserActionLogs from "../user-action-logs";
 //Components
 import type { MenuProps } from "antd";
 import { Button, Dropdown, Modal } from "antd";
-import { ExclamationCircleFilled } from "@ant-design/icons";
-import Input from "../../../components/fields/input/input";
-import Label from "../../../components/fields/input/label";
-import Alert from "../../../components/alert";
+import Input from "../../../../components/fields/input/input";
+import Label from "../../../../components/fields/input/label";
+import Alert from "../../../../components/alert";
 
 //Assets
-import { ArrowDown, ExcelDownload } from "../../../assets/svg";
+import { ArrowDown, ExcelDownload } from "../../../../assets/svg";
+import { ExclamationCircleFilled } from "@ant-design/icons";
 
 //Styles
 import "./styles.scss";
@@ -54,7 +54,7 @@ const { confirm } = Modal;
 
 const showDeleteConfirm = () => {
 	confirm({
-		title: "Are you sure to delete this user?",
+		title: "Are you sure you want to delete this user?",
 		className: "confirm-buttons",
 		icon: <ExclamationCircleFilled className="!text-error" />,
 		okText: "Yes",

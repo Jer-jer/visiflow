@@ -9,7 +9,8 @@ import Login from "./pages/login";
 import Dashboard from "./pages/admin/dashboard";
 import Statistics from "./pages/admin/statistics";
 import VisitorManagement from "./pages/admin/visitor-management";
-import UserManagement from "./layouts/admin/user-management";
+import UserManagement from "./pages/admin/user-management";
+import HomeEditor from "./pages/admin/home-editor";
 
 //Guard
 
@@ -29,6 +30,7 @@ function App() {
 					<Route path="/statistics" element={<Statistics />} />
 					<Route path="/visitor-management" element={<VisitorManagement />} />
 					<Route path="/manage-users" element={<UserManagement />} />
+					<Route path="/home-editor" element={<HomeEditor />} />
 				</Routes>
 			</LoggedIn>
 		</div>

@@ -6,14 +6,14 @@ import React, { Dispatch, SetStateAction } from "react";
 
 //Components
 import { Button, Input } from "antd";
-import StandardModal from "../../../components/modal";
-import VisitorCompanionsList from "../../../components/table/companion-list";
+import StandardModal from "../../../../components/modal";
+import VisitorCompanionsList from "../../../../components/table/companion-list";
 
 //Styles
 import "./styles.scss";
 
 //Assets
-import { ExcelDownload, Search } from "../../../assets/svg";
+import { ExcelDownload, Search } from "../../../../assets/svg";
 
 interface VisitorCompanionsProps {
 	open: boolean;

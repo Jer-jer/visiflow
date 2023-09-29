@@ -3,15 +3,15 @@
 import React, { useState, Dispatch, SetStateAction } from "react";
 
 //Interfaces
-import { VisitorDetailsProps } from "../../../utils";
+import { VisitorDetailsProps } from "../../../../utils";
 
 //Layouts
 // import CompanionDetails from "./details";
 
 //Components
-import StandardModal from "../../../components/modal";
-import Label from "../../../components/fields/input/label";
-import Input from "../../../components/fields/input/input";
+import StandardModal from "../../../../components/modal";
+import Label from "../../../../components/fields/input/label";
+import Input from "../../../../components/fields/input/input";
 import TextArea from "antd/es/input/TextArea";
 
 //Styles

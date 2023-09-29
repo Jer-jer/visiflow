@@ -4,21 +4,21 @@ import React, { Dispatch, SetStateAction } from "react";
 
 //Components
 import { Button } from "antd";
-import StandardModal from "../../../components/modal";
-import VisitorLogsTable from "../../../components/table/visitor-logs";
-import DateTimePicker from "../../../components/datetime-picker";
+import StandardModal from "../../../../components/modal";
+import ActionLogsTable from "../../../../components/table/action-logs-list";
+import DateTimePicker from "../../../../components/datetime-picker";
 
 //Styles
 import "./styles.scss";
 
 //Assets
 
-interface VisitorLogsProps {
+interface UserActionLogsProps {
 	open: boolean;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export default function VisitorLogs({ open, setOpen }: VisitorLogsProps) {
+export default function UserActionLogs({ open, setOpen }: UserActionLogsProps) {
 	return (
 		<StandardModal
 			header="Visitor Logs"
@@ -32,7 +32,7 @@ export default function VisitorLogs({ open, setOpen }: VisitorLogsProps) {
 					Search
 				</Button>
 			</div>
-			<VisitorLogsTable />
+			<ActionLogsTable />
 		</StandardModal>
 	);
 }

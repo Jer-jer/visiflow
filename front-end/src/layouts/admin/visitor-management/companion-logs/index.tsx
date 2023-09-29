@@ -3,10 +3,10 @@
 import React, { Dispatch, SetStateAction } from "react";
 
 //Layouts
-import CompanionLogsTable from "../../../components/table/companion-logs";
+import CompanionLogsTable from "../../../../components/table/companion-logs";
 
 //Components
-import StandardModal from "../../../components/modal";
+import StandardModal from "../../../../components/modal";
 
 //Styles
 import "./styles.scss";
