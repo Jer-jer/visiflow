@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Get current version
         id: version
@@ -25,11 +25,11 @@ jobs:
           echo "Current SHA: ${{ github.sha }}"
           diff=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
           if echo "$diff" | grep -qE "front-end/src/layouts" | grep -qE "front-end/src/pages"; then
-            echo "##[set-output name=bump]major"
+            outputs.set("bump", "major")
           elif echo "$diff" | grep -qE "front-end/src/components"; then
-            echo "##[set-output name=bump]minor"
+            outputs.set("bump", "minor")
           else
-            echo "##[set-output name=bump]patch"
+            outputs.set("bump", "patch")
           fi
 
       - name: Bump version
