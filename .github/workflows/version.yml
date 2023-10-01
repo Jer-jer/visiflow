@@ -21,6 +21,8 @@ jobs:
       - name: Determine version bump
         id: bump
         run: |
+          echo "Before SHA: ${{ github.event.before }}"
+          echo "Current SHA: ${{ github.sha }}"
           diff=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
           if echo "$diff" | grep -qE "front-end/src/layouts" | grep -qE "front-end/src/pages"; then
             echo "##[set-output name=bump]major"
