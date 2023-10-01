@@ -3,7 +3,7 @@ name: Semantic Versioning
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   bump-version:
@@ -16,8 +16,8 @@ jobs:
         id: version
         run: echo ::set-output name=version::$(cat version.txt)
 
-# Breaking Changes (New Pages, Port Updates, etc.) should be in line 25
-# New Features should be in line 28
+      # Breaking Changes (New Pages, Port Updates, etc.) should be in line 25
+      # New Features should be in line 28
       - name: Determine version bump
         id: bump
         run: |
@@ -36,7 +36,7 @@ jobs:
         run: |
           current_version=${{ steps.version.outputs.version }}
           bump=${{ steps.bump.outputs.bump }}
-          
+
           if [ "$bump" == "major" ]; then
             new_version=$(semver -i major $current_version)
           elif [ "$bump" == "minor" ]; then
@@ -44,7 +44,7 @@ jobs:
           else
             new_version=$(semver -i patch $current_version)
           fi
-          
+
           echo "$new_version" > version.txt
           echo "::set-output name=new_version::$new_version"
 
@@ -53,7 +53,7 @@ jobs:
         run: |
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
-          
+
           git add version.txt
           git commit -m "Bump version to ${{ steps.bump-version.outputs.new_version }}"
           git push origin master
