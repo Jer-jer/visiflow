@@ -4,23 +4,23 @@ on:
   pull_request:
     branches:
       - develop
-      - main
+      - master
   push:
     branches:
       - develop
-      - main
+      - master
       - "release/**"
       - "hotfix/**"
 
 env:
   GITVERSION: "gittools/gitversion:5.10.0-alpine.3.14-6.0"
-  MAIN_BRANCHES: ("develop" "main")
+  MAIN_BRANCHES: ("develop" "master")
   GITVERSION_TAG_PROPERTY_PULL_REQUESTS: .SemVer
   GITVERSION_TAG_PROPERTY_DEFAULT: .SemVer
   GITVERSION_TAG_PROPERTY_DEVELOP: .MajorMinorPatch,.PreReleaseLabelWithDash
   GITVERSION_TAG_PROPERTY_RELEASE: .MajorMinorPatch,.PreReleaseLabelWithDash
   GITVERSION_TAG_PROPERTY_HOTFIX: .MajorMinorPatch,.PreReleaseLabelWithDash
-  GITVERSION_TAG_PROPERTY_MAIN: .MajorMinorPatch
+  GITVERSION_TAG_PROPERTY_master: .MajorMinorPatch
 
 jobs:
   gitversion:
@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Fetch all history for all tags and branches
-        run: git fetch --unshallow && git checkout develop && git checkout main
+        run: git fetch --unshallow && git checkout develop && git checkout master
 
       #- name: Check base ref
       #  run: echo "baseref='$GITHUB_BASE_REF' ref='$GITHUB_REF' headref='$GITHUB_HEAD_REF' refname='$GITHUB_REF_NAME' eventname='$GITHUB_EVENT_NAME'"
@@ -55,13 +55,13 @@ jobs:
             DIFF_DEST="${GITHUB_HEAD_REF}"
             DIFF_SOURCE="${GITHUB_BASE_REF}"
           fi
-          # use main as source if current branch is a release branch
+          # use master as source if current branch is a release branch
           if [ "$(echo "${DIFF_DEST}" | grep -o '^release/')" = "release/" ]; then
-            DIFF_SOURCE="main"
+            DIFF_SOURCE="master"
           fi
-          # use main as source if current branch is a hotfix branch
+          # use master as source if current branch is a hotfix branch
           if [ "$(echo "${DIFF_DEST}" | grep -o '^hotfix/')" = "hotfix/" ]; then
-            DIFF_SOURCE="main"
+            DIFF_SOURCE="master"
           fi
 
           # service change calculation with diff - ideally use something like 'plz' or 'bazel'
@@ -115,7 +115,7 @@ jobs:
             "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER"
 
       - name: Tag build
-        if: ${{ github.event_name == 'push' && (startsWith(steps.calculate_changed_services.outputs.diff_dest, 'release') || startsWith(steps.calculate_changed_services.outputs.diff_dest, 'hotfix') || contains(env.MAIN_BRANCHES, steps.calculate_changed_services.outputs.diff_dest)) }}
+        if: ${{ github.event_name == 'push' && (startsWith(steps.calculate_changed_services.outputs.diff_dest, 'release') || startsWith(steps.calculate_changed_services.outputs.diff_dest, 'hotfix') || contains(env.master_BRANCHES, steps.calculate_changed_services.outputs.diff_dest)) }}
         run: |
           # https://github.com/orgs/community/discussions/26560
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
