@@ -22,7 +22,6 @@ jobs:
         id: bump
         run: |
           diff=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
-          # 
           if echo "$diff" | grep -qE "front-end/src/layouts" | grep -qE "front-end/src/pages"; then
             echo "##[set-output name=bump]major"
           elif echo "$diff" | grep -qE "front-end/src/components"; then
