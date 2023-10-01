@@ -13,7 +13,7 @@ on:
       - "hotfix/**"
 
 env:
-  GITVERSION: "gittools/gitversion:5.10.0-alpine.3.14-6.0"
+  GITVERSION: "gittools/gitversion:latest"
   MAIN_BRANCHES: ("develop" "master")
   GITVERSION_TAG_PROPERTY_PULL_REQUESTS: .SemVer
   GITVERSION_TAG_PROPERTY_DEFAULT: .SemVer
@@ -23,12 +23,12 @@ env:
   GITVERSION_TAG_PROPERTY_master: .MajorMinorPatch
 
 jobs:
-  gitversion:
-    name: gitversion
-    runs-on: ubuntu-18.04
+  git-version:
+    name: git-version
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Fetch all history for all tags and branches
         run: git fetch --unshallow && git checkout develop && git checkout master
