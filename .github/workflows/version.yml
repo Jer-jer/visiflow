@@ -21,16 +21,15 @@ jobs:
       - name: Determine version bump
         id: bump
         run: |
-          git rev-parse --short HEAD
           echo "Before SHA: ${{ github.event.before }}"
-          echo "Current SHA: ${{ github.event.pull_request.head.sha }}"
-          diff=$(git diff --name-only ${{ github.event.before }} ${{ github.event.pull_request.head.sha }})
-          if echo "$diff" | grep -qE "front-end/src/layouts" | grep -qE "front-end/src/pages"; then
-            outputs.set("bump", "major")
+          echo "Current SHA: ${{ github.event.after }}"
+          diff=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})
+          if echo "$diff" | grep -qE "front-end/src/layouts" || echo "$diff" | grep -qE "front-end/src/pages"; then
+            echo "::set-output name=bump::major"
           elif echo "$diff" | grep -qE "front-end/src/components"; then
-            outputs.set("bump", "minor")
+            echo "::set-output name=bump::minor"
           else
-            outputs.set("bump", "patch")
+            echo "::set-output name=bump::patch"
           fi
 
       - name: Bump version
