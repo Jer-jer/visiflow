@@ -21,6 +21,7 @@ jobs:
       - name: Determine version bump
         id: bump
         run: |
+          git rev-parse --short HEAD
           echo "Before SHA: ${{ github.event.before }}"
           echo "Current SHA: ${{ github.sha }}"
           diff=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
