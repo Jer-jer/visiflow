@@ -1,0 +1,59 @@
+name: Semantic Versioning
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Get current version
+        id: version
+        run: echo ::set-output name=version::$(cat version.txt)
+
+# Breaking Changes (New Pages, Port Updates, etc.) should be in line 25
+# New Features should be in line 28
+      - name: Determine version bump
+        id: bump
+        run: |
+          diff=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          # 
+          if echo "$diff" | grep -qE "front-end/src/layouts" | grep -qE "front-end/src/pages"; then
+            echo "##[set-output name=bump]major"
+          elif echo "$diff" | grep -qE "front-end/src/components"; then
+            echo "##[set-output name=bump]minor"
+          else
+            echo "##[set-output name=bump]patch"
+          fi
+
+      - name: Bump version
+        id: bump-version
+        run: |
+          current_version=${{ steps.version.outputs.version }}
+          bump=${{ steps.bump.outputs.bump }}
+          
+          if [ "$bump" == "major" ]; then
+            new_version=$(semver -i major $current_version)
+          elif [ "$bump" == "minor" ]; then
+            new_version=$(semver -i minor $current_version)
+          else
+            new_version=$(semver -i patch $current_version)
+          fi
+          
+          echo "$new_version" > version.txt
+          echo "::set-output name=new_version::$new_version"
+
+      - name: Commit and push version bump
+        if: steps.bump-version.outputs.new_version != ''
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          
+          git add version.txt
+          git commit -m "Bump version to ${{ steps.bump-version.outputs.new_version }}"
+          git push origin master
