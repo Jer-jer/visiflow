@@ -272,3 +272,147 @@ export const Edit = () => {
 		</svg>
 	);
 };
+
+export const Camera = () => {
+	return (
+		<svg 
+			xmlns="http://www.w3.org/2000/svg" 
+			viewBox="0 0 24 24" 
+			fill="none"
+			strokeWidth={1.5}
+			stroke="currentColor"
+			className="h-5 w-5"
+		>
+  			<path 
+				d="M27.5916 10.5C28.4361 10.5 28.8583 10.5 29.2066 10.5844C30.2985 10.849 31.151 11.7015 31.4156 12.7933C31.5 13.1416 31.5 13.5638 31.5 14.4083V24C31.5 26.8284 31.5 28.2426 30.6213 29.1213C29.7426 30 28.3284 30 25.5 30H24H12H10.5C7.67157 30 6.25735 30 5.37868 29.1213C4.5 28.2426 4.5 26.8284 4.5 24V14.4083C4.5 13.5638 4.5 13.1416 4.58442 12.7933C4.84906 11.7015 5.70152 10.849 6.79331 10.5844C7.14161 10.5 7.56385 10.5 8.40832 10.5C8.88147 10.5 9.11803 10.5 9.33915 10.4668C10.0235 10.3643 10.6514 10.0282 11.1164 9.51573C11.2666 9.35013 11.3978 9.1533 11.6602 8.75962L12 8.25C12.5946 7.35816 12.8918 6.91224 13.2982 6.6055C13.5464 6.41818 13.8222 6.27058 14.1157 6.168C14.5964 6 15.1323 6 16.2042 6H19.7958C20.8677 6 21.4037 6 21.8843 6.168C22.1778 6.27058 22.4536 6.41818 22.7017 6.6055C23.1081 6.91224 23.4054 7.35816 24 8.25L24.3397 8.75962C24.6022 9.1533 24.7333 9.35013 24.8836 9.51573C25.3486 10.0282 25.9765 10.3643 26.6608 10.4668C26.8819 10.5 27.1185 10.5 27.5916 10.5Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+  			<path 
+				d="M22.5 19.5C22.5 21.9854 20.4854 24 18 24C15.5146 24 13.5 21.9854 13.5 19.5C13.5 17.0146 15.5146 15 18 15C20.4854 15 22.5 17.0146 22.5 19.5Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+		</svg>
+	);
+}
+
+export const WalkinQR = () => {
+	return (
+		<svg 
+			xmlns="http://www.w3.org/2000/svg" 
+			viewBox="0 0 24 24" 
+			fill="none"
+			strokeWidth={1.5}
+			stroke="currentColor"
+			className="h-5 w-5"
+		>
+  			<g clip-path="url(#clip0_666_22)">
+    			<path 
+					d="M-2.00194e-05 28.455C-2.00194e-05 29.0617 0.20998 29.575 0.62998 29.995C1.04998 30.415 1.57498 30.625 2.20498 30.625H32.83C33.4133 30.625 33.9266 30.415 34.37 29.995C34.8133 29.575 35.0233 29.0617 35 28.455V6.58C35 5.97333 34.79 5.46 34.37 5.04C33.95 4.62 33.4366 4.39833 32.83 4.375H2.20498C1.59831 4.375 1.07331 4.59667 0.62998 5.04C0.186647 5.48333 -0.0233534 5.99667 -2.00194e-05 6.58V28.455ZM2.20498 28.455V13.125H32.83V28.455H2.20498ZM2.20498 8.75V6.58H32.83V8.75H2.20498ZM4.37498 26.25H8.74998V24.08H4.37498V26.25ZM4.37498 21.875H10.955V15.33H4.37498V21.875ZM10.955 26.25H15.33V24.08H10.955V26.25ZM17.5 26.25H21.875V24.08H17.5V26.25ZM24.08 26.25H26.25V24.08H24.08V26.25ZM28.455 26.25H30.625V24.08H28.455V26.25Z" 
+					strokeLinecap="round"
+					strokeLinejoin="round"
+				/>
+  			</g>
+  			<defs>
+    			<clipPath id="clip0_666_22">
+      				<rect width="24" height="24" fill="white"/>
+    			</clipPath>
+  			</defs>
+		</svg>
+	);
+}
+
+export const PreregisterQR = () => {
+	return (
+		<svg 
+			xmlns="http://www.w3.org/2000/svg" 
+			viewBox="0 0 24 24" 
+			fill="none"
+			strokeWidth={1.5}
+			stroke="currentColor"
+			className="h-5 w-5"
+		>
+  			<path 
+				d="M13.5 22.5H8.25V27.75H13.5V22.5Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+  			<path 
+				d="M27.75 8.25H22.5V13.5H27.75V8.25Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+  			<path 
+				d="M13.5 8.25H8.25V13.5H13.5V8.25Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+  			<path 
+				d="M18.375 8.25H17.625V9H18.375V8.25Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+  			<path 
+				d="M18.375 12.9375H17.625V13.6875H18.375V12.9375Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+  			<path 
+				d="M13.6875 17.625H12.9375V18.375H13.6875V17.625Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+  			<path 
+				d="M18.375 22.3125H17.625V23.0625H18.375V22.3125Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+  			<path 
+				d="M18.375 27H17.625V27.75H18.375V27Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+  			<path 
+				d="M9 17.625H8.25V18.375H9V17.625Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+  			<path 
+				d="M18.375 17.625H17.625V18.375H18.375V17.625Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+  			<path 
+				d="M23.0625 17.625H22.3125V18.375H23.0625V17.625Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+  			<path 
+				d="M27.75 17.625H27V18.375H27.75V17.625Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+  			<path 
+				d="M23.0625 22.3125H22.3125V23.0625H23.0625V22.3125Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+  			<path 
+				d="M27.75 22.3125H27V23.0625H27.75V22.3125Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+  			<path 
+				d="M23.0625 27H22.3125V27.75H23.0625V27Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+  			<path 
+				d="M27.75 27H27V27.75H27.75V27Z" 
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+		</svg>
+	);
+}
