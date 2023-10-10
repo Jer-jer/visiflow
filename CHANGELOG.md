@@ -1,12 +1,44 @@
+#### 1.1.5 (2023-09-28)
+
+##### New
+
+- Created static Home Editor page
+
+##### Removed
+
+- Fixed a bit of folder structure
+
+##### Others
+
+#### 1.1.5 (2023-09-28)
+
+##### New
+
+- Created static User Management page
+
+##### Removed
+
+- Custom and search atomized input, decided to utilize Ant Design input and search
+- Preline
+
+##### Others
+
 #### 1.1.4 (2023-09-17)
 
 ##### New
 
 - Created routing for Admin
+- Created Visitor Management Screen
+- Removed atomized Button component
+- Added DayJS for date time objectification
 
 ##### Removed
 
 ##### Others
+
+- Removed the custom atomized Button, conlcuded that Ant Design Button is much better
+- A couple of custom atomized components might be removed in exchange to Ant Design counter parts
+- Remove AG-Grid use in Capstone papers
 
 #### 1.1.3 (2023-09-16)
 

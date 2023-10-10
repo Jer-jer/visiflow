@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
+import { Button } from "antd";
 
 //Components
 import Input from "../../components/fields/input/input";
 import Label from "../../components/fields/input/label";
-import Button from "../../components/button";
 
 //Styles
 import "./styles.scss";
@@ -12,10 +12,13 @@ import "./styles.scss";
 import { LoginPhoto } from "../../assets/login";
 
 function LoginLayout() {
+	const [email, setEmail] = useState("");
+	const [pass, setPass] = useState("");
+
 	return (
 		<div>
 			<div className="flex h-screen items-center justify-center">
-				<div className="container rounded-md border bg-white">
+				<div className="loginContainer rounded-md border bg-white">
 					<div className="flex h-full items-center justify-center">
 						<div className="loginSvg">
 							<LoginPhoto />
@@ -54,9 +57,11 @@ function LoginLayout() {
 									<div className="form-control w-full max-w-xs">
 										<Label>&nbsp;</Label>
 										<Input
-											inputStyling="input bg-white border-0 border-b-2 rounded-none border-neutral w-full max-w-xs focus:outline-none focus:ring-0 focus:border-primary p-0"
+											inputStyling="input bg-white border-0 border-b-2 rounded-none border-neutral w-full max-w-xs focus:outline-none focus:ring-0 focus:border-primary-500 p-0"
 											inputType="text"
 											placeHolder="Email"
+											input={email}
+											setInput={setEmail}
 										/>
 										<Label spanStyling="text-error">&nbsp;</Label>
 									</div>
@@ -85,16 +90,18 @@ function LoginLayout() {
 									<div className="form-control w-full max-w-xs">
 										<Label>&nbsp;</Label>
 										<Input
-											inputStyling="input bg-white border-0 border-b-2 rounded-none border-neutral w-full max-w-xs focus:outline-none focus:ring-0 focus:border-primary p-0"
+											inputStyling="input bg-white border-0 border-b-2 rounded-none border-neutral w-full max-w-xs focus:outline-none focus:ring-0 focus:border-primary-500 p-0"
 											inputType="text"
 											placeHolder="Password"
+											input={pass}
+											setInput={setPass}
 										/>
 										<Label spanStyling="text-error">&nbsp;</Label>
 									</div>
 								</div>
 							</div>
 							<div className="flex justify-end">
-								<Button buttonStyling="btn rounded-3xl w-28 text-base normal-case font-medium customButton">
+								<Button type="primary" size="large" className="bg-primary-500">
 									Log in
 								</Button>
 							</div>

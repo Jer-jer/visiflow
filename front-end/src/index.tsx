@@ -2,17 +2,16 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import reportWebVitals from "./reportWebVitals";
 import { ConfigProvider } from "antd";
-import {
-	createBrowserRouter,
-	RouterProvider,
-	BrowserRouter,
-} from "react-router-dom";
+import { createBrowserRouter, BrowserRouter } from "react-router-dom";
 
 import App from "./App";
 
-//Pages
-import Dashboard from "./pages/dashboard";
-import Statistics from "./pages/statistics";
+/* Pages */
+//Admin
+import Dashboard from "./pages/admin/dashboard";
+import Statistics from "./pages/admin/statistics";
+
+//Guard
 
 //Styles
 import "./utils/variables.scss";
@@ -22,6 +21,7 @@ const root = ReactDOM.createRoot(
 	document.getElementById("root") as HTMLElement,
 );
 
+//? To be implemented soon
 const router = createBrowserRouter([
 	{
 		path: "/",
@@ -46,6 +46,16 @@ root.render(
 				theme={{
 					token: {
 						colorPrimary: "#0db284",
+						colorBorder: "#0db284",
+					},
+					components: {
+						Tabs: {
+							cardBg: "#fff",
+						},
+						Button: {
+							defaultBorderColor: "#0db284",
+							defaultColor: "#0db284",
+						},
 					},
 				}}
 			>

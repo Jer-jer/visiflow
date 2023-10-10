@@ -1,4 +1,8 @@
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
+
+//Styles
+import "../../utils/variables.scss";
+import "./styles.scss";
 
 interface AlertProps {
 	globalCustomStyling?: string;
@@ -9,6 +13,8 @@ interface AlertProps {
 	descStyling?: string;
 	header: string;
 	desc: string;
+	open: boolean;
+	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 function Alert({
@@ -20,6 +26,8 @@ function Alert({
 	descStyling,
 	header,
 	desc,
+	open,
+	setOpen,
 }: AlertProps) {
 	return (
 		<div className={`${globalCustomStyling}`}>
@@ -33,11 +41,29 @@ function Alert({
 				</svg>
 			</div>
 
-			<div className="-mx-3 px-4 py-2">
+			<div className="-mx-3 w-full px-4 py-2">
 				<div className="mx-3">
-					<span className={`${spanStyling} ${statusTextHeaderColor}`}>
-						{header}
-					</span>
+					<div className="flex justify-between">
+						<span className={`${spanStyling} ${statusTextHeaderColor}`}>
+							{header}
+						</span>
+						<button onClick={() => setOpen(!open)}>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								strokeWidth={1.5}
+								stroke="currentColor"
+								className="h-4 w-4 text-[gray]"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									d="M6 18L18 6M6 6l12 12"
+								/>
+							</svg>
+						</button>
+					</div>
 					<p className={`${descStyling}`}>{desc}</p>
 				</div>
 			</div>

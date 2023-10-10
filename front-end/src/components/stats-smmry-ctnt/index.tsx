@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 
 //Components
 import SecondaryStats from "./secondary-stats";
@@ -38,7 +38,7 @@ export default function StatisticsSummaryContent({
 			</span>
 			{/* Optional */}
 			<div className="flex justify-center">
-				<DateTimePicker globalStyling="mb-[40px] w-4/5" />
+				<DateTimePicker globalStyling="mb-[40px] w-4/5" size="middle" />
 			</div>
 			{secondaryStatsProps.map((item, index) => (
 				<SecondaryStats

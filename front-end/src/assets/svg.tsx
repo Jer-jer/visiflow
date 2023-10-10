@@ -1,6 +1,79 @@
 import React from "react";
 
-export const ExcelDownload = () => {
+export const DangerIcon = () => {
+	return (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox="0 0 24 24"
+			fill="currentColor"
+			className="ml-2 h-7 w-7 text-error"
+		>
+			<path
+				fillRule="evenodd"
+				d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
+				clipRule="evenodd"
+			/>
+		</svg>
+	);
+};
+
+export const Search = () => {
+	return (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox="0 0 20 20"
+			fill="currentColor"
+			className="h-5 w-5"
+		>
+			<path
+				fillRule="evenodd"
+				d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
+				clipRule="evenodd"
+			/>
+		</svg>
+	);
+};
+
+export const ArrowDown = () => {
+	return (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			fill="none"
+			viewBox="0 0 24 24"
+			strokeWidth={1.5}
+			stroke="currentColor"
+			className="h-4 w-4"
+		>
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+			/>
+		</svg>
+	);
+};
+
+export const TabClose = () => {
+	return (
+		<svg
+			width="15"
+			height="17"
+			viewBox="0 0 15 17"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+		>
+			<g id="close-circle-svgrepo-com 1">
+				<path
+					id="Vector"
+					d="M7.5 2.03027C4.05625 2.03027 1.25 4.94445 1.25 8.52066C1.25 12.0969 4.05625 15.011 7.5 15.011C10.9437 15.011 13.75 12.0969 13.75 8.52066C13.75 4.94445 10.9437 2.03027 7.5 2.03027ZM9.6 10.0134C9.78125 10.2017 9.78125 10.5132 9.6 10.7014C9.50625 10.7988 9.3875 10.8442 9.26875 10.8442C9.15 10.8442 9.03125 10.7988 8.9375 10.7014L7.5 9.20864L6.0625 10.7014C5.96875 10.7988 5.85 10.8442 5.73125 10.8442C5.6125 10.8442 5.49375 10.7988 5.4 10.7014C5.21875 10.5132 5.21875 10.2017 5.4 10.0134L6.8375 8.52066L5.4 7.02787C5.21875 6.83965 5.21875 6.52811 5.4 6.33989C5.58125 6.15167 5.88125 6.15167 6.0625 6.33989L7.5 7.83267L8.9375 6.33989C9.11875 6.15167 9.41875 6.15167 9.6 6.33989C9.78125 6.52811 9.78125 6.83965 9.6 7.02787L8.1625 8.52066L9.6 10.0134Z"
+					fill="#0DB284"
+				/>
+			</g>
+		</svg>
+	);
+};
+
+export const ExcelDownload = (props: any) => {
 	return (
 		<svg
 			width="25"
@@ -8,7 +81,7 @@ export const ExcelDownload = () => {
 			viewBox="0 0 25 25"
 			fill="none"
 			xmlns="http://www.w3.org/2000/svg"
-			className="ml-[5px] inline-block align-baseline"
+			className={`ml-[5px] inline-block align-baseline ${props.size}`}
 		>
 			<g id="excel-document-svgrepo-com 1">
 				<path
