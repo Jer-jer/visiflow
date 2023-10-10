@@ -5,7 +5,9 @@ const { body, validationResult } = require('express-validator');
 
 // Middleware to validate the request body
 const validateUser = [
-    body('name').notEmpty().withMessage('Username is required'),
+    body('first_name').notEmpty().withMessage('First name is required'),
+    body('last_name').notEmpty().withMessage('Last name is required'),
+    body('username').notEmpty().withMessage('Username is required'),
     body('email').isEmail().withMessage('Email is required'),
 ];
 
@@ -13,8 +15,12 @@ const validateUser = [
 function sanitizeUser(user) {
     return {
         _id: user._id,
-        name: user.name,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        username: user.username,
         email: user.email,
+        phone: user.phone,
+        role: user.role,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
     };
@@ -58,21 +64,35 @@ exports.createNewUser = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
+    
     try {
-        const { name, email, password } = req.body;
+        const { 
+            first_name, 
+            last_name, 
+            username, 
+            email, 
+            password, 
+            phone 
+        } = req.body;
         
-        // Check if the user already exists
+        //check if the user already exists
         const existingUser = await User.findOne({ email });
-
         if (existingUser) {
             return res.status(400).json({ error: 'User already exists' });
         }
 
-        //hash password
+        //hashing the password
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
-        
-        const newUser = new User({ name, email, password: hashedPassword });
+
+        const newUser = new User({ 
+            first_name, 
+            last_name, 
+            username: username || (first_name + last_name).toLowerCase(),
+            email, 
+            password: hashedPassword, 
+            phone: phone || "000-000-0000"
+        });
 
         const createdUser = await newUser.save();
         if (createdUser) {
@@ -88,8 +108,8 @@ exports.createNewUser = async (req, res) => {
 //Update a user by ID
 exports.updateUser = async (req,res) => {
     try {
-        const { _id, name, email } = req.body;
-        const updatedUser = await User.findByIdAndUpdate( _id, { name, email }, { new: true });
+        const { _id, first_name, last_name, username, email, phone } = req.body;
+        const updatedUser = await User.findByIdAndUpdate( _id, { first_name, last_name, username, email, phone }, { new: true });
         if (updatedUser) {
             return res.status(201).json({ user: sanitizeUser(updatedUser) });
         } else {

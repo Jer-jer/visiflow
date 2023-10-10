@@ -18,5 +18,5 @@ app.use('/user', require('./api/routes/userRouter'));
 app.use('/auth', require('./api/routes/authRouter'));
 
 app.listen(PORT, () => {
-    console.log("Server started on port ${PORT}");
+    console.log(`Server started on port ${PORT}`);
 })

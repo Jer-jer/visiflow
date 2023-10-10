@@ -2,7 +2,11 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 const VisitorSchema = new Schema({
-    name: {
+    first_name: {
+        type: String,
+        require: true
+    },
+    last_name: {
         type: String,
         require: true
     },
@@ -30,4 +34,6 @@ const VisitorSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model('visitor', VisitorSchema);
+const VisitorModel = mongoose.model('visitor', VisitorSchema);
+
+module.exports = VisitorModel;
