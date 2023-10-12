@@ -4,17 +4,19 @@ import { Table, Tag, Button } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 //Interfaces
-import { UserDataType, UserRole } from "../../../utils";
+import { ScheduleDataType, ScheduleDetailsProps } from "../../../utils";
 
 //Styles
 import "../../../utils/variables.scss";
 
 interface UserListTableProps {
-	addTab: (record: UserDataType) => void;
-    editSched: (record: UserDataType) => void;
+	addTab: (
+		record: ScheduleDetailsProps,
+		companionRecord?: ScheduleDetailsProps[],
+	) => void;
 }
 
-export default function ScheduleListTable({ addTab, editSched }: UserListTableProps) {
+export default function ScheduleListTable({ addTab }: UserListTableProps) {
 	const data: UserDataType[] = [  
 		{
 			userId: 1,
@@ -94,7 +96,9 @@ export default function ScheduleListTable({ addTab, editSched }: UserListTablePr
 			render: (_, record) => (
 				<>
 					<Button>Delete</Button>
-					<Button className="ml-4" onClick={() => editSched(record)}>Edit</Button>
+					<Button className="ml-4" onClick={() => 
+						addTab(record.visitorDetails, record.companionDetails)
+					}>Edit</Button>
 				</>
 
 			),

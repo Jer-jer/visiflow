@@ -87,3 +87,21 @@ export interface EventsSchedule {
 	location: string;
 	description: string;
 }
+
+export interface ScheduleDetailsProps {
+	fullName: FullNameProps;
+	mobile: string;
+	email: string;
+	houseNo?: string;
+	city: string;
+	street?: string;
+	province: string;
+	brgy: string;
+	country?: string;
+	timeIn: string;
+	timeOut: string;
+	status: string;
+	noOfVisitors: number,
+	purpose: string,
+	personOfInterest: string,
+}
