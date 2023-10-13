@@ -36,9 +36,12 @@ export interface VisitorDataType {
 	key: number;
 	id: string;
 	visitorDetails: VisitorDetailsProps;
+	companionNumber: string,
 	companionsDetails?: VisitorDetailsProps[];
 	date: string;
 	visitorType: string;
+	personOfInterest: string;
+	purpose: string;
 }
 
 export interface UserActionLogs {
@@ -88,20 +91,29 @@ export interface EventsSchedule {
 	description: string;
 }
 
-export interface ScheduleDetailsProps {
-	fullName: FullNameProps;
-	mobile: string;
-	email: string;
-	houseNo?: string;
-	city: string;
-	street?: string;
-	province: string;
-	brgy: string;
-	country?: string;
-	timeIn: string;
-	timeOut: string;
-	status: string;
-	noOfVisitors: string,
-	purpose: string,
-	personOfInterest: string,
-}
+// export interface VisitorDataType {
+// 	key: number;
+// 	id: string;
+// 	scheduleDetails: ScheduleDetailsProps;
+// 	companionsDetails?: ScheduleDetailsProps[];
+// 	date: string;
+// }
+
+// export interface ScheduleDetailsProps {
+// 	id: string,
+// 	fullName: FullNameProps;
+// 	mobile: string;
+// 	email: string;
+// 	houseNo?: string;
+// 	city: string;
+// 	street?: string;
+// 	province: string;
+// 	brgy: string;
+// 	country?: string;
+// 	timeIn: string;
+// 	timeOut: string;
+// 	status: string;
+// 	noOfVisitors: string,
+// 	purpose: string,
+// 	personOfInterest: string,
+// }

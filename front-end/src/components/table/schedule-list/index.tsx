@@ -4,20 +4,20 @@ import { Table, Tag, Button } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 //Interfaces
-import { ScheduleDetailsProps } from "../../../utils";
+import { VisitorDataType, VisitorDetailsProps } from "../../../utils";
 
 //Styles
 import "../../../utils/variables.scss";
 
 interface ScheduleListTableProps {
 	addTab: (
-		record: ScheduleDetailsProps,
-		companionRecord?: ScheduleDetailsProps[],
+		record: VisitorDetailsProps,
+		companionRecord?: VisitorDetailsProps[],
 	) => void;
 }
 
 export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
-	const data: ScheduleDetailsProps[] = [
+	const data: VisitorDataType[] = [
 		{
 			key: 1,
 			id: "UVG4827",
@@ -39,6 +39,7 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 				timeOut: "2023-09-01 04:30 PM",
 				status: "approved",
 			},
+			companionNumber: "4",
 			companionsDetails: [
 				{
 					fullName: {
@@ -106,6 +107,8 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 					status: "declined",
 				},
 			],
+			personOfInterest: "Jose Mari Chan",
+			purpose: "Document Signing",
 			visitorType: "Walk-in",
 			date: "10-04-2023 4:50 AM",
 		},
@@ -130,7 +133,11 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 				timeOut: "2023-09-02 05:45 PM",
 				status: "in-progress",
 			},
+			companionNumber: "0",
+			personOfInterest: "Example Example",
+			purpose: "Check up",
 			visitorType: "Pre-Registered",
+
 			date: "11-20-2023 8:25 PM",
 		},
 		{
@@ -151,6 +158,7 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 				timeOut: "2023-09-03 06:00 PM",
 				status: "declined",
 			},
+			companionNumber: "2",
 			companionsDetails: [
 				{
 					fullName: {
@@ -186,6 +194,8 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 				},
 			],
 			visitorType: "Pre-Registered",
+			personOfInterest: "Alexa Google",
+			purpose: "Contract",
 			date: "10-08-2023 11:40 AM",
 		},
 		{
@@ -209,7 +219,10 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 				timeOut: "2023-09-04 03:45 PM",
 				status: "in-progress",
 			},
+			companionNumber: "0",
 			visitorType: "Walk-in",
+			personOfInterest: "Manny Pacquiao",
+			purpose: "Meeting",
 			date: "12-01-2023 7:55 PM",
 		},
 		{
@@ -230,7 +243,10 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 				timeOut: "2023-09-05 04:15 PM",
 				status: "approved",
 			},
+			companionNumber: "0",
 			visitorType: "Pre-Registered",
+			personOfInterest: "Alex Gonzaga",
+			purpose: "Research",
 			date: "11-12-2023 3:10 AM",
 		},
 		{
@@ -251,6 +267,9 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 				timeOut: "2023-09-06 03:30 PM",
 				status: "declined",
 			},
+			companionNumber: "0",
+			personOfInterest: "Jose Mari Chan",
+			purpose: "Tournament",
 			visitorType: "Walk-in",
 			date: "09-30-2023 1:20 AM",
 		},
@@ -272,7 +291,10 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 				timeOut: "2023-09-07 05:00 PM",
 				status: "in-progress",
 			},
+			companionNumber: "0",
 			visitorType: "Walk-in",
+			personOfInterest: "Bea Alonzo",
+			purpose: "Check up",
 			date: "09-19-2023 6:00 AM",
 		},
 		{
@@ -296,7 +318,10 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 				timeOut: "2023-09-09 05:15 PM",
 				status: "approved",
 			},
+			companionNumber: "0",
 			visitorType: "Pre-Registered",
+			personOfInterest: "Jose Mari Chan",
+			purpose: "Meeting",
 			date: "10-28-2023 5:15 PM",
 		},
 		{
@@ -320,7 +345,10 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 				timeOut: "2023-09-10 04:30 PM",
 				status: "approved",
 			},
+			companionNumber: "0",
 			visitorType: "Walk-in",
+			personOfInterest: "Toni Gonzaga",
+			purpose: "Speaker",
 			date: "12-15-2023 9:45 AM",
 		},
 		{
@@ -342,12 +370,15 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 				timeOut: "2023-09-11 03:00 PM",
 				status: "declined",
 			},
+			companionNumber: "0",
 			visitorType: "Walk-in",
+			personOfInterest: "Kim Chiu",
+			purpose: "Lunch",
 			date: "11-03-2023 2:30 PM",
 		},
 	];
 
-	const columns: ColumnsType<ScheduleDetailsProps> = [
+	const columns: ColumnsType<VisitorDetailsProps> = [
 		{
 			title: "ID",
 			dataIndex: "userId",
