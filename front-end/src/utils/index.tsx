@@ -101,7 +101,7 @@ export interface ScheduleDetailsProps {
 	timeIn: string;
 	timeOut: string;
 	status: string;
-	noOfVisitors: number,
+	noOfVisitors: string,
 	purpose: string,
 	personOfInterest: string,
 }
