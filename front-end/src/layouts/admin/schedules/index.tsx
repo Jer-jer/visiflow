@@ -1,7 +1,7 @@
 /* Components designed using Ant Design */
 import React, { useRef, useState } from "react";
 
-import { ScheduleDetailsProps } from "../../../utils";
+import { VisitorDataType, VisitorDetailsProps } from "../../../utils";
 
 //Components
 import { Tabs, Button, Input } from "antd";
@@ -18,44 +18,16 @@ type TargetKey = React.MouseEvent | React.KeyboardEvent | string | number;
 
 interface ScheduleProps {
 	addTab: () => void;
+	createSched: () => void;
 }
 
 interface TabItems {
 	key: TargetKey;
-	scheduleData?:ScheduleDetailsProps;
-	companionionsDetails?: ScheduleDetailsProps[];
+	visitorData?:VisitorDataType;
 }
 
 //Functions
-const createSched = () => {
-	// const newActiveKey = ++newTabIndex.current;
-
-	// setItems([
-	// 	...items,
-	// 	{
-	// 		key: newActiveKey,
-	// 		tabName: "New User",
-	// 		userData: {
-	// 			userId: 12345,
-	// 			officeId: 54321,
-	// 			fullName: {
-	// 				firstName: "",
-	// 				middleName: "",
-	// 				lastName: "",
-	// 			},
-	// 			username: "12345",
-	// 			email: "",
-	// 			password: "12345",
-	// 			mobile: "",
-	// 			role: UserRole.Security,
-	// 		},
-	// 	},
-	// ]);
-
-	// setActiveKey(newActiveKey);
-};
-
-const SchedulesList = ({ addTab }: ScheduleProps) => {
+const SchedulesList = ({ addTab, createSched }: ScheduleProps) => {
 	return (
 		<div className="mb-[35px] ml-2 mr-[25px] mt-3 h-fit">
 			<Tabs hideAdd className="h-full" type="editable-card" size="middle">
@@ -97,10 +69,90 @@ export default function ScheduleManagement() {
 	const [activeKey, setActiveKey]: any = useState(1);
 	const newTabIndex = useRef(1);
 
+	const createSched = () => {
+		const newActiveKey = ++newTabIndex.current;
+	
+		setItems([
+			...items,
+			{
+				key: newActiveKey,
+				visitorData: {
+					key: 0,
+					id: "",
+					visitorDetails: {
+						fullName: {
+							firstName: "",
+							middleName: "",
+							lastName: "",
+						},
+						mobile: "",
+						email: "",
+						houseNo: "",
+						city: "",
+						street: "",
+						province: "",
+						brgy: "",
+						country: "",
+						timeIn: "",
+						timeOut: "",
+						status: "",
+					},
+					companionNumber: "",
+					visitorType: "",
+					personOfInterest: "",
+					purpose: "",
+					date: "",
+				}
+			},
+		]);
+	
+		setActiveKey(newActiveKey);
+	};
+
+	const onChange = (newActiveKey: string) => {
+		setActiveKey(newActiveKey);
+	};
+
 	const add = (
-		record?: ScheduleDetailsProps,
-		companionRecords?: ScheduleDetailsProps[],
-	) => { return null };
+		record?: VisitorDataType,
+	) => {
+		const newActiveKey = ++newTabIndex.current;
+
+		setItems([
+			...items,
+			{
+				key: newActiveKey,
+				visitorData: record,
+			},
+		]);
+
+		setActiveKey(newActiveKey);
+	};
+
+	const remove = (targetKey: TargetKey) => {
+		const targetIndex = items.findIndex(
+			(pane) => pane.key.toString() === targetKey,
+		);
+		const newPanes = items.filter((pane) => pane.key.toString() !== targetKey);
+
+		if (newPanes.length && targetKey === activeKey.toString()) {
+			const newActiveKey =
+				newPanes[
+					targetIndex === newPanes.length ? targetIndex - 1 : targetIndex
+				];
+
+			setActiveKey(newActiveKey.key);
+		} else setActiveKey(1);
+
+		setItems(newPanes);
+	};
+
+	const onEdit = (
+		targetKey: React.MouseEvent | React.KeyboardEvent | string | number,
+		action: "add" | "remove",
+	) => {
+		if (action === "remove") remove(targetKey);
+	};
 
 	return (
 		<div className="mb-[35px] ml-2 mr-[25px] mt-3 h-fit">
@@ -109,12 +161,12 @@ export default function ScheduleManagement() {
 				className="h-full"
 				type="editable-card"
 				size="middle"
-				// onChange={onChange}
-				// activeKey={activeKey.toString()}
-				// onEdit={onEdit}
+				onChange={onChange}
+				activeKey={activeKey.toString()}
+				onEdit={onEdit}
 			>
 				<Tabs.TabPane closable={false} tab="" key="1">
-					<SchedulesList addTab={add} />
+					<SchedulesList addTab={add} createSched={createSched}/>
 				</Tabs.TabPane>
 				{items.map((items, key) => (
 					<Tabs.TabPane
@@ -123,8 +175,7 @@ export default function ScheduleManagement() {
 						closeIcon={<TabClose />}
 					>
 						<ScheduleDetails
-							// record={items.visitorData}
-							// companionRecords={items.companionsDetails}
+							record={items.visitorData}
 						/>
 					</Tabs.TabPane>
 				))}

@@ -1,7 +1,7 @@
 import React, { useState, useContext, createContext } from "react";
 
 //Interfaces
-import { ScheduleDetailsProps } from "../../../../utils";
+import { VisitorDetailsProps, VisitorDataType} from "../../../../utils";
 import { WidthContext } from "../../../logged-in";
 
 //Layouts
@@ -19,8 +19,7 @@ import Badge from "../../../../components/badge";
 import { ExcelDownload, ArrowDown } from "../../../../assets/svg";
 
 interface ScheduleDeetsProps {
-	record?: ScheduleDetailsProps;
-	companionRecords?: ScheduleDetailsProps[];
+	record?: VisitorDataType;
 }
 
 const exportOptions: MenuProps["items"] = [
@@ -58,7 +57,7 @@ const statusOptions = [
 ];
 
 
-export default function ScheduleDetails ({record, companionRecords,}: ScheduleDeetsProps) {
+export default function ScheduleDetails ({ record }: ScheduleDeetsProps) {
   //Form States
   const [firstName, setFirstName] = useState("");
 	const [middleName, setMiddleName] = useState("");
@@ -80,15 +79,16 @@ export default function ScheduleDetails ({record, companionRecords,}: ScheduleDe
 
   //setCurrentStatus is for changing the status of the visitor
   const [currentStatus, setCurrentStatus] = useState(
-		statusOptions?.find((option) => option?.key === record?.status),
+		statusOptions?.find((option) => option?.key === record?.visitorDetails.status),
 	);
   const [disabledInputs, setDisabledInputs] = useState<boolean>(true);
   const width = useContext(WidthContext);
 
+  console.log("CONSOLE", record);
+
 
   return (
-    <div className="mr-[135px] flex flex-col gap-[35px] pt-[30px]">
-      index
+    <div className="mr-[135px] flex flex-col gap-[35px] pt-[30px]"> 
       {/* Excel download */}
       <div className="flex justify-end">
 					<Dropdown menu={{ items: exportOptions }} trigger={["click"]}>
@@ -112,7 +112,7 @@ export default function ScheduleDetails ({record, companionRecords,}: ScheduleDe
                 <Input
                   inputType="text"
                   inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-                  placeHolder={record?.fullName.firstName}
+                  placeHolder={record?.visitorDetails.fullName.firstName}
                   input={firstName}
                   setInput={setFirstName}
                   visitorMngmnt
@@ -126,7 +126,7 @@ export default function ScheduleDetails ({record, companionRecords,}: ScheduleDe
                 <Input
                   inputType="text"
                   inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-                  placeHolder={record?.fullName.middleName}
+                  placeHolder={record?.visitorDetails.fullName.middleName}
                   input={middleName}
                   setInput={setMiddleName}
                   visitorMngmnt
@@ -143,7 +143,7 @@ export default function ScheduleDetails ({record, companionRecords,}: ScheduleDe
                 <Input
                   inputType="text"
                   inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-                  placeHolder={record?.fullName.lastName}
+                  placeHolder={record?.visitorDetails.fullName.lastName}
                   input={lastName}
                   setInput={setLastName}
                   visitorMngmnt
@@ -157,7 +157,7 @@ export default function ScheduleDetails ({record, companionRecords,}: ScheduleDe
                 <Input
                   inputType="text"
                   inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-                  placeHolder={record?.mobile}
+                  placeHolder={record?.visitorDetails.mobile}
                   input={mobileInput}
                   setInput={setMobileInput}
                   visitorMngmnt
@@ -176,7 +176,7 @@ export default function ScheduleDetails ({record, companionRecords,}: ScheduleDe
               <Input
                 inputType="text"
                 inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500 basis-[82%]"
-                placeHolder={record?.email}
+                placeHolder={record?.visitorDetails.email}
                 input={emailAddress}
                 setInput={setEmailAddress}
                 visitorMngmnt
@@ -192,7 +192,7 @@ export default function ScheduleDetails ({record, companionRecords,}: ScheduleDe
                 <Input
                   inputType="text"
                   inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-                  placeHolder={record?.houseNo}
+                  placeHolder={record?.visitorDetails.houseNo}
                   input={house}
                   setInput={setHouse}
                   visitorMngmnt
@@ -206,7 +206,7 @@ export default function ScheduleDetails ({record, companionRecords,}: ScheduleDe
                 <Input
                   inputType="text"
                   inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-                  placeHolder={record?.city}
+                  placeHolder={record?.visitorDetails.city}
                   input={cityInput}
                   setInput={setCityInput}
                   visitorMngmnt
@@ -223,7 +223,7 @@ export default function ScheduleDetails ({record, companionRecords,}: ScheduleDe
                 <Input
                   inputType="text"
                   inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-                  placeHolder={record?.street}
+                  placeHolder={record?.visitorDetails.street}
                   input={streetInput}
                   setInput={setStreeInput}
                   visitorMngmnt
@@ -237,7 +237,7 @@ export default function ScheduleDetails ({record, companionRecords,}: ScheduleDe
                 <Input
                   inputType="text"
                   inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-                  placeHolder={record?.province}
+                  placeHolder={record?.visitorDetails.province}
                   input={provinceInput}
                   setInput={setProvinceInput}
                   visitorMngmnt
@@ -254,7 +254,7 @@ export default function ScheduleDetails ({record, companionRecords,}: ScheduleDe
                 <Input
                   inputType="text"
                   inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-                  placeHolder={record?.brgy}
+                  placeHolder={record?.visitorDetails.brgy}
                   input={brgyInput}
                   setInput={setBrgyInput}
                   visitorMngmnt
@@ -268,7 +268,7 @@ export default function ScheduleDetails ({record, companionRecords,}: ScheduleDe
                 <Input
                   inputType="text"
                   inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-                  placeHolder={record?.country}
+                  placeHolder={record?.visitorDetails.country}
                   input={countryInput}
                   setInput={setCountryInput}
                   visitorMngmnt
@@ -298,7 +298,7 @@ export default function ScheduleDetails ({record, companionRecords,}: ScheduleDe
               }}
             />
             {disabledInputs ? (
-              <Badge status={record?.status} textSize="text-[20px]" />
+              <Badge status={record?.visitorDetails.status} textSize="text-[20px]" />
             ) : (
               <Dropdown
                 menu={{ items: statusOptions }}
@@ -330,8 +330,8 @@ export default function ScheduleDetails ({record, companionRecords,}: ScheduleDe
               rangePickerStyling="bg-[#e0ebf0] border-none w-[inherit]"
               size="large"
               defaultVal={{
-                from: record?.timeIn || "9999-99-99 99:90 PM",
-                to: record?.timeOut || "9999-99-99 99:99 PM",
+                from: record?.visitorDetails.timeIn || "9999-99-99 99:90 PM",
+                to: record?.visitorDetails.timeOut || "9999-99-99 99:99 PM",
               }}
               visitorMngmnt
               disabled={disabledInputs}

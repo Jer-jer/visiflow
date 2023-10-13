@@ -11,8 +11,7 @@ import "../../../utils/variables.scss";
 
 interface ScheduleListTableProps {
 	addTab: (
-		record: VisitorDetailsProps,
-		companionRecord?: VisitorDetailsProps[],
+		record: VisitorDataType,
 	) => void;
 }
 
@@ -378,7 +377,7 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 		},
 	];
 
-	const columns: ColumnsType<VisitorDetailsProps> = [
+	const columns: ColumnsType<VisitorDataType> = [
 		{
 			title: "ID",
 			dataIndex: "userId",
@@ -386,16 +385,50 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 		{
 			title: "Name",
 			dataIndex: "visitorDetails",
-			sorter: (a, b) => a.fullName.lastName.localeCompare(b.fullName.lastName),
-			render: (_, { fullName }) => {
-				return `${fullName.lastName}, ${fullName.firstName} ${fullName.middleName}`;
+			sorter: (a, b) => a.visitorDetails.fullName.lastName.localeCompare(b.visitorDetails.fullName.lastName),
+			render: (_, { visitorDetails }) => {
+				return `${visitorDetails.fullName.lastName}, ${visitorDetails.fullName.firstName} ${visitorDetails.fullName.middleName}`;
 			},
 		},
 		{
 			title: "Contact Number",
 			dataIndex: "contact",
-			render: (_, { mobile }) => {
-				return mobile;
+			render: (_, { visitorDetails }) => {
+				return visitorDetails.mobile;
+			},
+		},
+		{
+			title: "Status",
+			dataIndex: "status",
+			filters: [
+				{
+					text: "In-Progress",
+					value: "In-Progress",
+				},
+				{
+					text: "Approved",
+					value: "Approved",
+				},
+				{
+					text: "Declined",
+					value: "Declined",
+				},
+				{
+					text: "Completed",
+					value: "Completed"
+				}
+			],
+			render: (_, { visitorDetails }) => {
+				let color;
+				if(visitorDetails.status === "In-Progress") color = "#E88B23";
+				else if(visitorDetails.status === "Approved") color = "#0db284";
+				else if(visitorDetails.status === "Declined") color = "#FF0000";
+				else if(visitorDetails.status === "Completed") color = "#9C9C9C";
+				return (
+					<Tag color={color} key={visitorDetails.status}>
+						{visitorDetails.status.toUpperCase()}
+					</Tag>
+				);
 			},
 		},
         {
@@ -404,9 +437,12 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 			render: (_, record) => (
 				<>
 					<Button>Delete</Button>
-					<Button className="ml-4" onClick={() => 
-						addTab(record.visitorDetails, record.companionDetails)
-					}>Edit</Button>
+					<Button className="ml-4" onClick={() => {
+						console.log("Clicked edit button");
+						console.log("CONSOLE", record);
+						addTab(record)
+					}}
+					>Edit</Button>
 				</>
 
 			),
