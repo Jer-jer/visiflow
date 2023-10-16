@@ -110,7 +110,6 @@ export default function VisitorDetails({
 	const saveAction = () => {
 		//This needs to be customized to whatever the DB returns
 		setAlertOpen(!alertOpen);
-
 		setDisabledInputs(!disabledInputs);
 	};
 

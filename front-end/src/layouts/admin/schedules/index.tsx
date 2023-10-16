@@ -1,7 +1,7 @@
 /* Components designed using Ant Design */
 import React, { useRef, useState } from "react";
 
-import { VisitorDataType, VisitorDetailsProps } from "../../../utils";
+import { VisitorDataType } from "../../../utils";
 
 //Components
 import { Tabs, Button, Input } from "antd";
@@ -97,7 +97,7 @@ export default function ScheduleManagement() {
 						timeOut: "",
 						status: "",
 					},
-					companionNumber: "",
+					companionNumber: 0,
 					visitorType: "",
 					personOfInterest: "",
 					purpose: "",
@@ -176,6 +176,7 @@ export default function ScheduleManagement() {
 					>
 						<ScheduleDetails
 							record={items.visitorData}
+							companionRecords={items.visitorData?.companionsDetails}
 						/>
 					</Tabs.TabPane>
 				))}

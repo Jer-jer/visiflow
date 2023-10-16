@@ -36,7 +36,7 @@ export interface VisitorDataType {
 	key: number;
 	id: string;
 	visitorDetails: VisitorDetailsProps;
-	companionNumber: string,
+	companionNumber: number,
 	companionsDetails?: VisitorDetailsProps[];
 	date: string;
 	visitorType: string;
