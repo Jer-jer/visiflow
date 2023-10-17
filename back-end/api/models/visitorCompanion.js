@@ -45,11 +45,15 @@ const IdPhoto = new Schema({
     selfie: Photo
 })
 
-const VisitorSchema = new Schema({
-    visitor_id: {
+const VisitorCompanionSchema = new Schema({
+    companion_id: {
         type: String,
         require: true,
         unique: true
+    },
+    visitor_id: {
+        type: String,
+        require: true,
     },
     name: Name,
     email: {
@@ -58,18 +62,6 @@ const VisitorSchema = new Schema({
         unique: true
     },
     phone: String,
-    plate_num: String,
-    visitor_type: {
-        type: String,
-        enum: ['W', 'Pr'],
-        required: true
-    },
-    status: {
-        type: String,
-        enum: ['approved', 'pending', 'declined'],
-        default: 'pending',
-        required: true
-    },
     address: Address,
     id_picture: IdPhoto,
     created_at: {
@@ -82,4 +74,4 @@ const VisitorSchema = new Schema({
     }
 });
 
-module.exports = processConnection.model('visitor', VisitorSchema);
+module.exports = processConnection.model('visitor_companion', VisitorCompanionSchema);
