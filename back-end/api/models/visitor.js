@@ -16,7 +16,7 @@ const VisitorSchema = new Schema({
         unique: true
     },
     phone: {
-        type: String,
+        type: String
     },
     status: {
         type: String,

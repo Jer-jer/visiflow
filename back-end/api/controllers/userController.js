@@ -105,20 +105,41 @@ exports.createNewUser = async (req, res) => {
     }
 };
 
-//Update a user by ID
-exports.updateUser = async (req,res) => {
+// Update a user by ID
+exports.updateUser = async (req, res) => {
     try {
         const { _id, first_name, last_name, username, email, phone } = req.body;
-        const updatedUser = await User.findByIdAndUpdate( _id, { first_name, last_name, username, email, phone }, { new: true });
-        if (updatedUser) {
-            return res.status(201).json({ user: sanitizeUser(updatedUser) });
-        } else {
+
+        const user = await User.findById(_id);
+
+        if (!user) {
             return res.status(404).json({ error: 'User not found' });
-        }   
+        }
+
+        const updateFields = {
+            first_name: first_name !== undefined ? first_name : user.first_name,
+            last_name: last_name !== undefined ? last_name : user.last_name,
+            username: username !== undefined ? username : user.username,
+            email: email !== undefined ? email : user.email,
+            phone: phone !== undefined ? phone : user.phone,
+        };
+
+        const filteredUpdateFields = Object.fromEntries(
+            Object.entries(updateFields).filter(([key, value]) => value !== undefined)
+        );
+
+        if (Object.keys(filteredUpdateFields).length === 0) {
+            return res.status(400).json({ error: 'No valid fields to update' });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(_id, filteredUpdateFields, { new: true });
+
+        return res.status(201).json({ user: sanitizeUser(updatedUser) });
     } catch (error) {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
 
 //Delete a user by ID
 exports.deleteUser = async (req, res) => {

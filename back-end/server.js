@@ -16,6 +16,7 @@ connectDB();
 
 app.use('/user', require('./api/routes/userRouter'));
 app.use('/auth', require('./api/routes/authRouter'));
+app.use('/visitor', require('./api/routes/visitorRouter'));
 
 app.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);
