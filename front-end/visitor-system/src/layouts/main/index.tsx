@@ -10,7 +10,7 @@ function MainLayout() {
 	return (
 		<div>
 			{/* NAVBAR */}
-			<div className="navbar-visitor h-[100px] w-full">
+			<div className="w-full shadow-lg lg:h-[100px]">
 				<Navbar />
 			</div>
 			{/* MAIN CONTENT */}
