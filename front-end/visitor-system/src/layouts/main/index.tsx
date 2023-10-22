@@ -1,10 +1,15 @@
 import React from "react";
 
 // Layouts
-import Navbar from "../navbar";
+import Navbar from "../../components/navbar";
+import Home from "../home";
+
+// Components
 
 // Styles
 import "./styles.scss";
+
+// Assets
 
 function MainLayout() {
 	return (
@@ -13,9 +18,10 @@ function MainLayout() {
 			<div className="w-full shadow-lg lg:h-[100px]">
 				<Navbar />
 			</div>
+
 			{/* MAIN CONTENT */}
 			<div className="">
-				<h1>Main Content</h1>
+				<Home />
 			</div>
 		</div>
 	);

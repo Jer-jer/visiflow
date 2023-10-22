@@ -28,6 +28,19 @@ $green-gradient: linear-gradient(180deg, #2C4C32 51.56%, rgba(44, 76, 50, 0.80) 
     height: 1.5px;
 }
 
+
+.ant-select-selector {
+    padding: 0px !important;
+
+    span {
+        font-size: 15px;
+        background: $green-gradient;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+}
+
 @media screen and (max-width: 640px) {
     .main-nav {
         .logo {
