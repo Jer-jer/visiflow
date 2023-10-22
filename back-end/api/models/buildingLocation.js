@@ -17,7 +17,7 @@ const BuildingLocSchema = new Schema({
     updatedAt: {
         type: Date,
         default: Date.now
-    }b
+    }
 });
 
 const BuildingLocModel = mongoose.model('buildingLocation', BuildingLocSchema);

@@ -4,14 +4,22 @@ const bcrypt = require('bcrypt');
 const { body, validationResult } = require('express-validator');
 
 // Middleware to validate the request body
-const validateUser = [
-    body('first_name').notEmpty().withMessage('First name is required'),
-    body('last_name').notEmpty().withMessage('Last name is required'),
-    body('username').notEmpty().withMessage('Username is required'),
+const validateData = [
+    body('first_name').isString().withMessage('First name must be a string')
+    .notEmpty().withMessage("First name is required"),
+    body('last_name').isString().withMessage('Last name must be a string')
+    .notEmpty().withMessage("Last name is required"),
+    body('username').notEmpty().isString().withMessage('Username is required').optional(),
     body('email').isEmail().withMessage('Email is required'),
+    body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+    body('phone').isLength({ min: 11 }).withMessage('Phone number must be at least 11 digits')
+    .isString().withMessage('Phone must be a string')
+    .notEmpty().withMessage("Phone number is required"),
+    body('role').isString().withMessage('Role must be a string')
+    .isIn(['admin', 'employee']).withMessage('Invalid role').optional(),
 ];
 
-//function to not return hashed password in json
+//used to return only values we want (to remove password)
 function sanitizeUser(user) {
     return {
         _id: user._id,
@@ -42,29 +50,16 @@ exports.getAllUsers = async (req, res) => {
     }
 };
 
-//Get user by ID
-exports.getUserById = async (req, res) => {
-    try {
-        const {_id} = req.body;
-        const searchedUser = await User.findById(_id, '-password');
-        
-        if(searchedUser) {
-            return res.status(201).json({ user: searchedUser });
-        } else {
-            return res.status(404).json({ error: 'user not found'});
-        }
-    } catch (error) {
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-};
-
 //Create a new user
 exports.createNewUser = async (req, res) => {
+    // Run validation middleware
+    await Promise.all(validateData.map(validation => validation.run(req)));
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-    
+        return res.status(400).json({ errors: errors.array()[0].msg });
+    } 
+
     try {
         const { 
             first_name, 
@@ -72,7 +67,8 @@ exports.createNewUser = async (req, res) => {
             username, 
             email, 
             password, 
-            phone 
+            phone,
+            role,
         } = req.body;
         
         //check if the user already exists
@@ -91,7 +87,8 @@ exports.createNewUser = async (req, res) => {
             username: username || (first_name + last_name).toLowerCase(),
             email, 
             password: hashedPassword, 
-            phone: phone || "000-000-0000"
+            phone,
+            role,
         });
 
         const createdUser = await newUser.save();
@@ -102,6 +99,22 @@ exports.createNewUser = async (req, res) => {
         }
     } catch (error) {
         return res.status(500).json({ error: 'Internal Server Error'});
+    }
+};
+
+//Get user by ID
+exports.getUserById = async (req, res) => {
+    try {
+        const {_id} = req.body;
+        const searchedUser = await User.findById(_id, '-password');
+        
+        if(searchedUser) {
+            return res.status(201).json({ user: searchedUser });
+        } else {
+            return res.status(404).json({ error: 'user not found'});
+        }
+    } catch (error) {
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 
@@ -139,7 +152,6 @@ exports.updateUser = async (req, res) => {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 };
-
 
 //Delete a user by ID
 exports.deleteUser = async (req, res) => {
