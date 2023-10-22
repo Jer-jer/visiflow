@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 
+// Components
+import { Select } from "antd";
+
 // Styles
 import "./styles.scss";
 import "hamburgers/dist/hamburgers.css";
@@ -12,7 +15,7 @@ export default function Navbar() {
 
 	return (
 		<div
-			className={`main-nav h-[inherit] items-center justify-around lg:ml-[200px] lg:mr-[300px] lg:flex lg:justify-between ${
+			className={`main-nav h-[inherit] items-center justify-around lg:ml-[200px] lg:flex lg:justify-between ${
 				expand && "!shadow-transparent"
 			}`}
 		>
@@ -32,7 +35,7 @@ export default function Navbar() {
 				</button>
 			</div>
 			<div
-				className={`nav-links absolute left-0 flex w-full flex-col gap-[10px] bg-white pb-[15px] pl-[40px] shadow-lg transition-all duration-500 ease-in-out sm:items-start lg:static lg:w-auto lg:flex-row lg:gap-[100px] lg:pb-0 lg:pl-0 lg:opacity-100 lg:shadow-transparent ${
+				className={`nav-links absolute left-0 flex w-full flex-col items-start gap-[10px] bg-white pb-[15px] pl-[40px] pt-[10px] shadow-lg transition-all duration-500 ease-in-out md:pt-[20px] lg:static lg:w-auto lg:flex-row lg:items-center lg:gap-[100px] lg:pb-0 lg:pl-0 lg:pt-0 lg:opacity-100 lg:shadow-transparent ${
 					expand ? "nav-links-expanded sm:top-20" : "-top-[490px]"
 				}`}
 			>
@@ -48,6 +51,16 @@ export default function Navbar() {
 				<button>
 					<span className="item">Events</span>
 				</button>
+				<Select
+					className="lg:ml-[140px] lg:mr-[42px]"
+					defaultValue="english"
+					style={{ width: 90 }}
+					bordered={false}
+					options={[
+						{ value: "english", label: "English" },
+						{ value: "hindi", label: "Hindi" },
+					]}
+				/>
 			</div>
 		</div>
 	);
