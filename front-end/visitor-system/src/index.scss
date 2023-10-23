@@ -1,0 +1,31 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+:root {
+  --theme-primary: #0db284;
+  --theme-accent: #2C4C32;
+  --theme-neutral: #D0D2CC;
+  --theme-success: #0db284;
+  --theme-warning: #ffce0a;
+  --theme-error: #FD4A4A;
+  --theme-red: #FD4A4A;
+  --theme-yellow: #ffce0a;
+  --theme-orange: #E88B23;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}

@@ -1,10 +1,16 @@
 const mongoose = require('mongoose');
 
+const authConnection = mongoose.createConnection(`${process.env.MONGODB_URI}/auth`);
+
 const Schema = mongoose.Schema;
 const UserSchema = new Schema({
     name: {
         type: String,
         required: true
+    },
+    username: {
+        type: String,
+        required: true,
     },
     email: {
         type: String,
@@ -17,8 +23,8 @@ const UserSchema = new Schema({
     },
     role: {
         type: String,
-        enum: ['admin', 'employee'],
-        default: 'employee',
+        enum: ['admin', 'security'],
+        default: 'security',
         required: true
     },
     createdAt: {
@@ -31,4 +37,4 @@ const UserSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model('user', UserSchema);
+module.exports = authConnection.model('user', UserSchema);
