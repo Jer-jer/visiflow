@@ -21,9 +21,15 @@ interface EventCardProps {
 const CardTitle = ({ title, date, loc }: HeaderProps) => {
 	return (
 		<div className="flex flex-col items-center">
-			<span className="text-[28px] font-bold text-primary-500">{title}</span>
-			<span className="text-[16px] font-normal">{date}</span>
-			<span className="text-[16px] font-normal">{loc}</span>
+			<span className="whitespace-pre-wrap text-center text-[28px] font-bold text-primary-500">
+				{title}
+			</span>
+			<span className="whitespace-pre-wrap text-center text-[16px] font-normal">
+				{date}
+			</span>
+			<span className="whitespace-pre-wrap text-center text-[16px] font-normal">
+				{loc}
+			</span>
 		</div>
 	);
 };
