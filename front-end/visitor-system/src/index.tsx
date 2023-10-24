@@ -3,7 +3,9 @@ import ReactDOM from "react-dom/client";
 import reportWebVitals from "./reportWebVitals";
 import { ConfigProvider } from "antd";
 import Kommunicate from "@kommunicate/kommunicate-chatbot-plugin";
+import { BrowserRouter } from "react-router-dom";
 
+// Components
 import App from "./App";
 
 // Styles
@@ -37,7 +39,9 @@ root.render(
 				},
 			}}
 		>
-			<App />
+			<BrowserRouter basename="/">
+				<App />
+			</BrowserRouter>
 		</ConfigProvider>
 	</React.StrictMode>,
 );
