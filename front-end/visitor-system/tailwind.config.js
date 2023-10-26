@@ -17,7 +17,6 @@ module.exports = {
 					900: "#054B37",
 				},
 				accent: "#2C4C32",
-				// neutral: "#D0D2CC",
 				neutral: {
 					50: "#fafbfa",
 					100: "#f0f1ef",
