@@ -12,3 +12,13 @@ export interface EventsProps {
 export interface EventsPropsAggregate {
 	events: EventsProps[];
 }
+
+export interface OfficesProps {
+	title?: String;
+	op: String; // Operating Hours
+	pic: String; // Personnel in charge
+	location: String;
+	contact: String;
+	img?: string;
+	availability: Boolean;
+}

@@ -33,9 +33,9 @@ export default function Events() {
 
 	return (
 		<div className="flex flex-col gap-[50px] pb-[50px]">
-			<div className="mt-[62px] flex flex-col justify-around gap-[30px] lg:flex-row">
-				<div className="flex h-[55px] items-center justify-center gap-[23px] lg:justify-between">
-					<span className="event-title font-[500] text-[#1B3B22] md:text-[36px]">
+			<div className="mt-[25px] flex flex-col justify-around gap-[30px] md:mt-[35px] lg:mt-[62px] lg:flex-row">
+				<div className="flex h-[55px] items-center justify-center gap-[23px] md:ml-[90px] md:justify-normal lg:ml-0">
+					<span className="event-title hidden font-[500] text-[#1B3B22] md:block md:text-[36px]">
 						Events
 					</span>
 					<div className="flex">
@@ -63,7 +63,7 @@ export default function Events() {
 				</div>
 				<div className="flex w-full items-center justify-center lg:w-auto">
 					<Input
-						className="search-input md:w-[60%] lg:w-[350px]"
+						className="search-input md:w-[584px] lg:w-[350px]"
 						size="large"
 						placeholder="Search"
 						prefix={<SearchOutlined />}

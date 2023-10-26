@@ -7,7 +7,7 @@ import { formatDateTimeRange } from "../../../utils";
 import { EventsPropsAggregate } from "../../../utils/interfaces";
 
 // Components
-import EventCard from "../../../components/card";
+import EventCard from "../../../components/card/events";
 
 // Styles
 import "./styles.scss";

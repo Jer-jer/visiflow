@@ -6,6 +6,7 @@ import Navbar from "./components/navbar";
 
 // Layout
 import Home from "./layouts/home";
+import Offices from "./layouts/offices";
 import Events from "./layouts/events";
 
 // Styles
@@ -37,7 +38,7 @@ function App() {
 						{({ isActive }) => (
 							<button>
 								<span className={`item ${isActive ? "active" : ""}`}>
-									Office
+									Offices
 								</span>
 							</button>
 						)}
@@ -59,7 +60,7 @@ function App() {
 				<Routes>
 					<Route path="/" element={<Home />} />
 					<Route path="/pre-register" element={<div>Pre-register</div>} />
-					<Route path="/offices" element={<div>Offices</div>} />
+					<Route path="/offices" element={<Offices />} />
 					<Route path="/events" element={<Events />} />
 				</Routes>
 			</div>
