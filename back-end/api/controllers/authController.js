@@ -10,8 +10,12 @@ const secretKey = process.env.JWT_SECRET;
 function sanitizeUser(user) {
     return {
         _id: user._id,
-        name: user.name,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        username: user.username,
         email: user.email,
+        phone: user.phone,
+        role: user.role,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
     };
@@ -19,8 +23,16 @@ function sanitizeUser(user) {
 
 exports.register = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { 
+            first_name, 
+            last_name,
+            username,
+            email, 
+            password,
+            phone
+        } = req.body;
         // Check if the user already exists
+
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
@@ -32,7 +44,13 @@ exports.register = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
         // Create new user
-        const newUser = new User({ name, email, password: hashedPassword });
+        const newUser = new User({ 
+            first_name, 
+            last_name, 
+            username: username || (first_name + last_name).toLowerCase(), 
+            email, 
+            password: hashedPassword, 
+            phone: phone || "000-000-0000" });
         const savedUser = await newUser.save();
 
         if (savedUser) {

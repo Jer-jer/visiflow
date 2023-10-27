@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
 
-const processConnection = mongoose.createConnection(`${process.env.MONGODB_URI}/process`);
-
 const Schema = mongoose.Schema;
 
 const Name = new Schema({
@@ -57,6 +55,7 @@ const VisitorSchema = new Schema({
         required: true,
         unique: true
     },
+    
     phone: String,
     plate_num: String,
     visitor_type: {
@@ -82,4 +81,6 @@ const VisitorSchema = new Schema({
     }
 });
 
-module.exports = processConnection.model('visitor', VisitorSchema);
+const VisitorModel = mongoose.model('visitor', VisitorSchema);
+
+module.exports = VisitorModel;
