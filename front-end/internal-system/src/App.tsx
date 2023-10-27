@@ -1,4 +1,5 @@
 import React from "react";
+import { Routes, Route } from "react-router-dom";
 
 //Layouts
 import LoggedIn from "./layouts/logged-in";
@@ -16,7 +17,6 @@ import HomeEditor from "./pages/admin/home-editor";
 
 //Styles
 import "./App.scss";
-import { Routes, Route } from "react-router-dom";
 
 function App() {
 	return (

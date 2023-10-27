@@ -1,15 +1,23 @@
 const mongoose = require('mongoose');
 
+const authConnection = mongoose.createConnection(`${process.env.MONGODB_URI}/auth`);
+
 const Schema = mongoose.Schema;
-const UserSchema = new Schema({
+
+const Name = new Schema({
     first_name: {
         type: String,
-        required: true
+        require: true,
     },
     last_name: {
         type: String,
-        required: true
-    },
+        require: true,
+    }
+});
+
+const UserSchema = new Schema({
+    name: Name,
+    
     username: {
         type: String,
         required: true,
@@ -29,8 +37,8 @@ const UserSchema = new Schema({
     },
     role: {
         type: String,
-        enum: ['admin', 'employee'],
-        default: 'employee',
+        enum: ['admin', 'security'],
+        default: 'security',
         required: true
     },
     createdAt: {

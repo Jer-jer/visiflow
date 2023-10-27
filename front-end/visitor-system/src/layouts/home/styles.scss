@@ -1,0 +1,10 @@
+.cover-photo {
+    background: url('../../assets/cover-photo.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    .cover-color-gradient {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.00) 0%, #2C4C32 100%);
+    }
+}
