@@ -1,23 +1,19 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const bodyParser = require("body-parser");
-const visitorController = require('../controllers/visitorController')
+const bodyParser = require('body-parser');
+const visitorController = require('../controllers/visitorController');
 
 //Middlware to parse JSON request bodies
 router.use(bodyParser.json());
 
-router.get("/all", visitorController.getVisitors);
+router.get('/', visitorController.getAllVisitors);
 
-router.get("/search", async (req, res) => {
-  res.send(req.query);
-});
+router.post('/', visitorController.createNewVisitor);
 
-router.get("/:id", visitorController.searchVisitor);
+router.post('/search', visitorController.getVisitorById);
 
-router.post("/new", visitorController.addVisitor);
+router.post('/update', visitorController.updateVisitor);
 
-router.put("/update/:id", visitorController.updateVisitor);
-
-router.delete("/delete/:id", visitorController.deleteVisitor);
+router.post('/delete', visitorController.deleteVisitor);
 
 module.exports = router;

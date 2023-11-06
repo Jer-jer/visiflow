@@ -4,17 +4,31 @@ const bcrypt = require('bcrypt');
 const { body, validationResult } = require('express-validator');
 
 // Middleware to validate the request body
-const validateUser = [
-    body('name').notEmpty().withMessage('Username is required'),
+const validateData = [
+    body('first_name').isString().withMessage('First name must be a string')
+    .notEmpty().withMessage("First name is required"),
+    body('last_name').isString().withMessage('Last name must be a string')
+    .notEmpty().withMessage("Last name is required"),
+    body('username').notEmpty().isString().withMessage('Username is required').optional(),
     body('email').isEmail().withMessage('Email is required'),
+    body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+    body('phone').isLength({ min: 11 }).withMessage('Phone number must be at least 11 digits')
+    .isString().withMessage('Phone must be a string')
+    .notEmpty().withMessage("Phone number is required"),
+    body('role').isString().withMessage('Role must be a string')
+    .isIn(['admin', 'employee']).withMessage('Invalid role').optional(),
 ];
 
-//function to not return hashed password in json
+//used to return only values we want (to remove password)
 function sanitizeUser(user) {
     return {
         _id: user._id,
-        name: user.name,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        username: user.username,
         email: user.email,
+        phone: user.phone,
+        role: user.role,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
     };
@@ -36,6 +50,58 @@ exports.getAllUsers = async (req, res) => {
     }
 };
 
+//Create a new user
+exports.createNewUser = async (req, res) => {
+    // Run validation middleware
+    await Promise.all(validateData.map(validation => validation.run(req)));
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array()[0].msg });
+    } 
+
+    try {
+        const { 
+            first_name, 
+            last_name, 
+            username, 
+            email, 
+            password, 
+            phone,
+            role,
+        } = req.body;
+        
+        //check if the user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ error: 'User already exists' });
+        }
+
+        //hashing the password
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        const newUser = new User({ 
+            first_name, 
+            last_name, 
+            username: username || (first_name + last_name).toLowerCase(),
+            email, 
+            password: hashedPassword, 
+            phone,
+            role,
+        });
+
+        const createdUser = await newUser.save();
+        if (createdUser) {
+            return res.status(201).json({ user: sanitizeUser(createdUser) });
+        } else {
+            return res.status(400).json({ error: 'Failed to Create new User' });
+        }
+    } catch (error) {
+        return res.status(500).json({ error: 'Internal Server Error'});
+    }
+};
+
 //Get user by ID
 exports.getUserById = async (req, res) => {
     try {
@@ -52,49 +118,36 @@ exports.getUserById = async (req, res) => {
     }
 };
 
-//Create a new user
-exports.createNewUser = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
+// Update a user by ID
+exports.updateUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
-        
-        // Check if the user already exists
-        const existingUser = await User.findOne({ email });
+        const { _id, first_name, last_name, username, email, phone } = req.body;
 
-        if (existingUser) {
-            return res.status(400).json({ error: 'User already exists' });
-        }
+        const user = await User.findById(_id);
 
-        //hash password
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-        
-        const newUser = new User({ name, email, password: hashedPassword });
-
-        const createdUser = await newUser.save();
-        if (createdUser) {
-            return res.status(201).json({ user: sanitizeUser(createdUser) });
-        } else {
-            return res.status(400).json({ error: 'Failed to Create new User' });
-        }
-    } catch (error) {
-        return res.status(500).json({ error: 'Internal Server Error'});
-    }
-};
-
-//Update a user by ID
-exports.updateUser = async (req,res) => {
-    try {
-        const { _id, name, email } = req.body;
-        const updatedUser = await User.findByIdAndUpdate( _id, { name, email }, { new: true });
-        if (updatedUser) {
-            return res.status(201).json({ user: sanitizeUser(updatedUser) });
-        } else {
+        if (!user) {
             return res.status(404).json({ error: 'User not found' });
-        }   
+        }
+
+        const updateFields = {
+            first_name: first_name !== undefined ? first_name : user.first_name,
+            last_name: last_name !== undefined ? last_name : user.last_name,
+            username: username !== undefined ? username : user.username,
+            email: email !== undefined ? email : user.email,
+            phone: phone !== undefined ? phone : user.phone,
+        };
+
+        const filteredUpdateFields = Object.fromEntries(
+            Object.entries(updateFields).filter(([key, value]) => value !== undefined)
+        );
+
+        if (Object.keys(filteredUpdateFields).length === 0) {
+            return res.status(400).json({ error: 'No valid fields to update' });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(_id, filteredUpdateFields, { new: true });
+
+        return res.status(201).json({ user: sanitizeUser(updatedUser) });
     } catch (error) {
         return res.status(500).json({ error: 'Internal Server Error' });
     }

@@ -1,44 +1,31 @@
 const mongoose = require('mongoose');
 
-const authConnection = mongoose.createConnection(`${process.env.MONGODB_URI}/auth`);
-
 const Schema = mongoose.Schema;
-
-const Name = new Schema({
+const POISchema = new Schema({
     first_name: {
         type: String,
-        require: true,
+        required: true
     },
     last_name: {
         type: String,
-        require: true,
-    }
-});
-
-const UserSchema = new Schema({
-    name: Name,
-    
-    username: {
-        type: String,
-        required: true,
+        required: true
     },
     email: {
         type: String,
         required: true,
         unique: true
     },
-    password: {
-        type: String,
-        required: true,
-    },
     phone: {
         type: String,
         required: true,
+        unique: true
     },
-    role: {
+    position: {
         type: String,
-        enum: ['admin', 'security'],
-        default: 'security',
+        required: true
+    },
+    department: {
+        type: String,
         required: true
     },
     createdAt: {
@@ -51,6 +38,6 @@ const UserSchema = new Schema({
     }
 });
 
-const UserModel = mongoose.model('user', UserSchema);
+const POIModel = mongoose.model('personOfInterest', POISchema);
 
-module.exports = UserModel;
+module.exports = POIModel;
