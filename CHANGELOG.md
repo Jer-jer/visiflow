@@ -1,3 +1,16 @@
+#### 1.1.6 (2023-10-22)
+
+##### New
+
+- Set-up Visitor System
+- Created Navbar
+- Created Home Page
+- Created and Added Basic AI Chatbot via Kommunicate and Dialog Flow (Google)
+
+##### Removed
+
+##### Others
+
 #### 1.1.5 (2023-09-28)
 
 ##### New

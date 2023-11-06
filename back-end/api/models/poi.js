@@ -1,10 +1,14 @@
 const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
-const VisitorSchema = new Schema({
-    name: {
+const POISchema = new Schema({
+    first_name: {
         type: String,
-        require: true
+        required: true
+    },
+    last_name: {
+        type: String,
+        required: true
     },
     email: {
         type: String,
@@ -13,16 +17,20 @@ const VisitorSchema = new Schema({
     },
     phone: {
         type: String,
+        required: true,
+        unique: true
     },
-    status: {
+    position: {
         type: String,
-        enum: ['Approved', 'Pending', 'Declined'],
-        default: 'Pending',
+        required: true
+    },
+    department: {
+        type: String,
         required: true
     },
     createdAt: {
         type: Date,
-        default: Date.now,
+        default: Date.now
     },
     updatedAt: {
         type: Date,
@@ -30,4 +38,6 @@ const VisitorSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model('visitor', VisitorSchema);
+const POIModel = mongoose.model('personOfInterest', POISchema);
+
+module.exports = POIModel;
