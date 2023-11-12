@@ -36,6 +36,9 @@ root.render(
 						colorPrimary: "#E88B23",
 						colorPrimaryHover: "#eda24f",
 					},
+					Input: {
+						activeBorderColor: "#0db284",
+					},
 				},
 			}}
 		>

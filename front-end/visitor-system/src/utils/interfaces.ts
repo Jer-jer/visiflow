@@ -22,3 +22,22 @@ export interface OfficesProps {
 	img?: string;
 	availability: Boolean;
 }
+
+export interface VisitorInput {
+	firstName: string;
+	middleName: string;
+	lastName: string;
+	email: string;
+	mobile: string;
+	house: string;
+	street: string;
+	barangay: string;
+	city: string;
+	province: string;
+	country: string;
+}
+
+export interface VisitorData {
+	id: number;
+	data: VisitorInput;
+}

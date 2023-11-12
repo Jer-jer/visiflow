@@ -40,7 +40,6 @@ const router = createBrowserRouter([
 
 root.render(
 	<React.StrictMode>
-		{/* <RouterProvider router={router} fallbackElement={<span>HUH?!</span>} /> */}
 		<BrowserRouter basename="/">
 			<ConfigProvider
 				theme={{
