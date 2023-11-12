@@ -7,6 +7,7 @@ import Navbar from "./components/navbar";
 // Layout
 import Home from "./layouts/home";
 import Offices from "./layouts/offices";
+import PreRegister from "./layouts/pre-register";
 import Events from "./layouts/events";
 
 // Styles
@@ -59,7 +60,7 @@ function App() {
 			<div>
 				<Routes>
 					<Route path="/" element={<Home />} />
-					<Route path="/pre-register" element={<div>Pre-register</div>} />
+					<Route path="/pre-register" element={<PreRegister />} />
 					<Route path="/offices" element={<Offices />} />
 					<Route path="/events" element={<Events />} />
 				</Routes>
