@@ -22,10 +22,7 @@ export default function Stepper({ progress, setProgress }: StepperProgress) {
 				</div>
 
 				<ol className="mt-4 grid grid-cols-3 text-lg font-normal text-white">
-					<li
-						className="flex cursor-pointer items-center justify-start text-primary-600 sm:gap-1.5"
-						onClick={() => setProgress(1)}
-					>
+					<li className="flex cursor-default items-center justify-start text-primary-600 sm:gap-1.5">
 						<span className="hidden sm:inline">Visit Date & Purpose</span>
 
 						<svg
@@ -45,10 +42,9 @@ export default function Stepper({ progress, setProgress }: StepperProgress) {
 					</li>
 
 					<li
-						className={`flex cursor-pointer items-center justify-center ${
+						className={`flex cursor-default items-center justify-center ${
 							(progress === 2 || progress === 3) && "text-primary-600"
 						} sm:gap-1.5`}
-						onClick={() => setProgress(2)}
 					>
 						<span className="hidden sm:inline"> Visitor Information </span>
 
@@ -68,10 +64,9 @@ export default function Stepper({ progress, setProgress }: StepperProgress) {
 					</li>
 
 					<li
-						className={`flex cursor-pointer items-center justify-end ${
+						className={`flex cursor-default items-center justify-end ${
 							progress === 3 && "text-primary-600"
 						} sm:gap-1.5`}
-						onClick={() => setProgress(3)}
 					>
 						<span className="hidden sm:inline"> Confirmation </span>
 

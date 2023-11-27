@@ -39,5 +39,9 @@ export interface VisitorInput {
 
 export interface VisitorData {
 	id: number;
+	poi?: string;
+	checkInOut?: string[];
+	purpose?: string;
+	termsConditions?: boolean;
 	data: VisitorInput;
 }

@@ -1,12 +1,13 @@
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
 
 // Interfaces
 import { VisitorInput, VisitorData } from "../../../utils/interfaces";
 
 // Components
-import { Tabs, Divider } from "antd";
+import { Tabs, Divider, Button, Form } from "antd";
 
 interface StepThreeProps {
+	setProgress: Dispatch<SetStateAction<number>>;
 	visitors: VisitorData[];
 }
 
@@ -14,7 +15,11 @@ interface ConfirmFormProps {
 	visitor: VisitorInput;
 }
 
-export default function StepThree({ visitors }: StepThreeProps) {
+export default function StepThree({ setProgress, visitors }: StepThreeProps) {
+	const previousStep = () => {
+		setProgress((prev) => prev - 1);
+	};
+
 	const ConfirmForm = ({ visitor }: ConfirmFormProps) => {
 		return (
 			<div className="flex flex-col">
@@ -108,6 +113,26 @@ export default function StepThree({ visitors }: StepThreeProps) {
 					};
 				})}
 			/>
+			<div className="mr-[30px] flex items-center justify-center gap-2 lg:mr-0 lg:w-[80%] lg:justify-end">
+				<div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row">
+					<Button
+						className="w-[inherit] bg-primary-500"
+						type="primary"
+						onClick={previousStep}
+					>
+						Previous
+					</Button>
+					<Form.Item>
+						<Button
+							className="w-[inherit] bg-primary-500"
+							type="primary"
+							htmlType="submit"
+						>
+							Submit
+						</Button>
+					</Form.Item>
+				</div>
+			</div>
 		</>
 	);
 }
