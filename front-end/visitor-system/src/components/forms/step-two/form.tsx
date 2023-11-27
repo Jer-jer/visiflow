@@ -368,9 +368,9 @@ export default function StepTwoForm({
 						} justify-between gap-[5%]`}
 					>
 						<span
-							className={`w-[50px] ${
+							className={`w-[120px] ${
 								errors?.city && "mt-[6px]"
-							} text-[16px] font-[400] text-[#0000004d]`}
+							} text-[16px] font-[400] text-[#0000004d] lg:w-[50px]`}
 						>
 							City
 						</span>
