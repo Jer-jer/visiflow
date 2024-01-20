@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from "react";
+import React, { useEffect, Dispatch, SetStateAction } from "react";
 
 // Components
 import { Input, Divider, Form } from "antd";
@@ -10,7 +10,6 @@ import type {
 	UseFormRegister,
 	UseFormSetValue,
 	FieldErrors,
-	FieldValues,
 } from "react-hook-form";
 
 // Styles
@@ -18,18 +17,20 @@ import "./form.scss";
 
 interface FormProps {
 	visitorId: number;
-	visitors: VisitorData[];
+	visitors: VisitorData;
+	visitorsData: VisitorInput[];
 	visitor: VisitorInput;
 	increment: number;
 	errors: FieldErrors<StepTwoData>;
-	register: UseFormRegister<FieldValues>;
-	setValue: UseFormSetValue<FieldValues>;
-	setVisitors: Dispatch<SetStateAction<VisitorData[]>>;
+	register: UseFormRegister<StepTwoData>;
+	setValue: UseFormSetValue<StepTwoData>;
+	setVisitors: Dispatch<SetStateAction<VisitorData>>;
 }
 
 export default function StepTwoForm({
 	visitorId,
 	visitors,
+	visitorsData,
 	visitor,
 	increment,
 	errors,
@@ -37,76 +38,79 @@ export default function StepTwoForm({
 	setValue,
 	setVisitors,
 }: FormProps) {
-	function findIndexById(id: number) {
-		return visitors.findIndex((item) => item.id === id);
-	}
+	useEffect(() => {
+		if (visitor) {
+			setValue("firstName", visitor.firstName);
+			setValue("middleName", visitor.middleName);
+			setValue("lastName", visitor.lastName);
+			setValue("email", visitor.email);
+			setValue("mobile", visitor.mobile);
+			setValue("house", visitor.house);
+			setValue("street", visitor.street);
+			setValue("barangay", visitor.barangay);
+			setValue("city", visitor.city);
+			setValue("province", visitor.province);
+			setValue("country", visitor.country);
+		}
+	}, [setValue, visitor]);
 
 	const updateData = (value: string, property: string) => {
-		const index = findIndexById(visitorId);
+		const updatedVisitors = visitors.data;
 
-		setVisitors((prevVisitors) => {
-			const updatedVisitors = [...prevVisitors];
+		switch (property) {
+			case "firstName":
+				setValue(property, value);
+				updatedVisitors[increment].firstName = value;
+				break;
+			case "middleName":
+				setValue(property, value);
+				updatedVisitors[increment].middleName = value;
+				break;
+			case "lastName":
+				setValue(property, value);
+				updatedVisitors[increment].lastName = value;
+				break;
+			case "email":
+				setValue(property, value);
+				updatedVisitors[increment].email = value;
+				break;
+			case "mobile":
+				const reg = /^[0-9\-+\b]*$/;
+				if (reg.test(value)) {
+					setValue(property, value);
+					updatedVisitors[increment].mobile = value;
+				}
 
-			switch (property) {
-				case "firstName":
-					setValue(property, value);
-					updatedVisitors[index].data.firstName = value;
-					break;
-				case "middleName":
-					setValue(property, value);
-					updatedVisitors[index].data.middleName = value;
-					break;
-				case "lastName":
-					setValue(property, value);
-					updatedVisitors[index].data.lastName = value;
-					break;
-				case "email":
-					setValue(property, value);
-					updatedVisitors[index].data.email = value;
-					break;
-				case "mobile":
-					const reg = /^-?\d*(\.\d*)?$/;
-					if (
-						reg.test(value) ||
-						value === "" ||
-						value === "-" ||
-						value === "+"
-					) {
-						setValue(property, value);
-						updatedVisitors[index].data.mobile = value;
-					}
+				break;
+			case "house":
+				setValue(property, value);
+				updatedVisitors[increment].house = value;
+				break;
+			case "street":
+				setValue(property, value);
+				updatedVisitors[increment].street = value;
+				break;
+			case "barangay":
+				setValue(property, value);
+				updatedVisitors[increment].barangay = value;
+				break;
+			case "city":
+				setValue(property, value);
+				updatedVisitors[increment].city = value;
+				break;
+			case "province":
+				setValue(property, value);
+				updatedVisitors[increment].province = value;
+				break;
+			case "country":
+				setValue(property, value);
+				updatedVisitors[increment].country = value;
+				break;
+			default:
+				console.error("Something went wrong");
+		}
 
-					break;
-				case "house":
-					setValue(property, value);
-					updatedVisitors[index].data.house = value;
-					break;
-				case "street":
-					setValue(property, value);
-					updatedVisitors[index].data.street = value;
-					break;
-				case "barangay":
-					setValue(property, value);
-					updatedVisitors[index].data.barangay = value;
-					break;
-				case "city":
-					setValue(property, value);
-					updatedVisitors[index].data.city = value;
-					break;
-				case "province":
-					setValue(property, value);
-					updatedVisitors[index].data.province = value;
-					break;
-				case "country":
-					setValue(property, value);
-					updatedVisitors[index].data.country = value;
-					break;
-				default:
-					console.error("Something went wrong");
-			}
-
-			return updatedVisitors;
-		});
+		setVisitors({ ...visitors, data: updatedVisitors });
 	};
 
 	return (
@@ -137,7 +141,7 @@ export default function StepTwoForm({
 							/>
 							{errors?.firstName && (
 								<p className="mt-1 text-sm text-red-500">
-									{errors.firstName.message}
+									{errors.firstName?.message}
 								</p>
 							)}
 						</div>

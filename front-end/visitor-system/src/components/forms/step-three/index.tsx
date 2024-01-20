@@ -4,11 +4,11 @@ import React, { Dispatch, SetStateAction } from "react";
 import { VisitorInput, VisitorData } from "../../../utils/interfaces";
 
 // Components
-import { Tabs, Divider, Button, Form } from "antd";
+import { Tabs, Divider, Button } from "antd";
 
 interface StepThreeProps {
 	setProgress: Dispatch<SetStateAction<number>>;
-	visitors: VisitorData[];
+	visitors: VisitorData;
 }
 
 interface ConfirmFormProps {
@@ -105,11 +105,11 @@ export default function StepThree({ setProgress, visitors }: StepThreeProps) {
 				defaultActiveKey="1"
 				size="middle"
 				style={{ marginBottom: 32 }}
-				items={visitors.map((visitor, key) => {
+				items={visitors.data.map((visitor, key) => {
 					return {
 						label: `Visitor ${key + 1}`,
 						key: key.toString(),
-						children: <ConfirmForm visitor={visitor.data} />,
+						children: <ConfirmForm visitor={visitor} />,
 					};
 				})}
 			/>
@@ -122,15 +122,13 @@ export default function StepThree({ setProgress, visitors }: StepThreeProps) {
 					>
 						Previous
 					</Button>
-					<Form.Item>
-						<Button
-							className="w-[inherit] bg-primary-500"
-							type="primary"
-							htmlType="submit"
-						>
-							Submit
-						</Button>
-					</Form.Item>
+					<Button
+						className="w-[inherit] bg-primary-500"
+						type="primary"
+						htmlType="submit"
+					>
+						Submit
+					</Button>
 				</div>
 			</div>
 		</>

@@ -9,6 +9,9 @@ const Name = new Schema({
         type: String,
         require: true,
     },
+    middle_name: { 
+        type: String,
+    },
     last_name: {
         type: String,
         require: true,
@@ -16,6 +19,11 @@ const Name = new Schema({
 });
 
 const UserSchema = new Schema({
+    user_id: {
+        type: String,
+        required: true,
+    },
+
     name: Name,
     
     username: {
@@ -51,6 +59,6 @@ const UserSchema = new Schema({
     }
 });
 
-const UserModel = mongoose.model('user', UserSchema);
+const UserModel = authConnection.model('user', UserSchema);
 
 module.exports = UserModel;

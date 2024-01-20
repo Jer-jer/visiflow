@@ -3,7 +3,10 @@
 import React, { useState, Dispatch, SetStateAction } from "react";
 
 //Interfaces
-import { VisitorDetailsProps } from "../../../../utils";
+import {
+	VisitorDetailsProps,
+	CompanionDetailsProps,
+} from "../../../../utils/interfaces";
 
 //Layouts
 // import CompanionDetails from "./details";
@@ -23,7 +26,7 @@ interface VisitorCompanionsProps {
 	open: boolean;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 	emailInput?: string;
-	companionRecords?: VisitorDetailsProps[];
+	companionRecords?: CompanionDetailsProps[];
 }
 
 export default function NotifyPOI({
@@ -33,7 +36,9 @@ export default function NotifyPOI({
 	companionRecords,
 }: VisitorCompanionsProps) {
 	let emailArray: any = [];
-	companionRecords?.map((item) => emailArray.push(item.email));
+	companionRecords?.map((item) =>
+		emailArray.push(item.companion_details.email),
+	);
 	const combinedEmail = emailArray.join(",");
 
 	const [email, setEmail] = useState(emailInput || "");

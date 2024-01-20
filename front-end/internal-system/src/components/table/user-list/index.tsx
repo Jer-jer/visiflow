@@ -4,88 +4,36 @@ import { Table, Tag, Button } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 //Interfaces
-import { UserDataType, UserRole } from "../../../utils";
+import { UserDataType, UserRole } from "../../../utils/interfaces";
 
 //Styles
 import "../../../utils/variables.scss";
 import "./styles.scss";
 
 interface UserListTableProps {
+	users: UserDataType[];
 	addTab: (record: UserDataType) => void;
 }
 
-export default function UserListTable({ addTab }: UserListTableProps) {
-	const data: UserDataType[] = [
-		{
-			userId: 1,
-			officeId: 101,
-			fullName: { firstName: "Juan", middleName: "Dela", lastName: "Cruz" },
-			username: "jcruz",
-			email: "juan.delacruz@example.com",
-			password: "securepassword1",
-			mobile: "123-456-7890",
-			role: UserRole.Admin,
-		},
-		{
-			userId: 2,
-			officeId: 102,
-			fullName: { firstName: "Maria", middleName: "Santos", lastName: "Reyes" },
-			username: "mreyes",
-			email: "maria.reyes@example.com",
-			password: "password123",
-			mobile: "987-654-3210",
-			role: UserRole.Security,
-		},
-		{
-			userId: 3,
-			officeId: 103,
-			fullName: { firstName: "Roberto", middleName: "Lim", lastName: "Garcia" },
-			username: "rgarcia",
-			email: "roberto.garcia@example.com",
-			password: "userpass456",
-			mobile: "555-555-5555",
-			role: UserRole.Admin,
-		},
-		{
-			userId: 4,
-			officeId: 104,
-			fullName: { firstName: "Maria", middleName: "Isabel", lastName: "Perez" },
-			username: "mperez",
-			email: "maria.perez@example.com",
-			password: "mypassword789",
-			mobile: "777-777-7777",
-			role: UserRole.Security,
-		},
-		{
-			userId: 5,
-			officeId: 105,
-			fullName: { firstName: "Pedro", middleName: "Jose", lastName: "Lopez" },
-			username: "plopez",
-			email: "pedro.lopez@example.com",
-			password: "thepassword123",
-			mobile: "999-999-9999",
-			role: UserRole.Admin,
-		},
-	];
-
+export default function UserListTable({ users, addTab }: UserListTableProps) {
 	const columns: ColumnsType<UserDataType> = [
 		{
 			title: "ID",
-			dataIndex: "userId",
+			dataIndex: "user_id",
 		},
 		{
 			title: "Name",
-			dataIndex: "visitorDetails",
-			sorter: (a, b) => a.fullName.lastName.localeCompare(b.fullName.lastName),
-			render: (_, { fullName }) => {
-				return `${fullName.lastName}, ${fullName.firstName} ${fullName.middleName}`;
+			dataIndex: "name",
+			sorter: (a, b) => a.name.last_name.localeCompare(b.name.last_name),
+			render: (_, { name }) => {
+				return `${name.last_name}, ${name.first_name} ${name.middle_name}`;
 			},
 		},
 		{
 			title: "Contact Number",
 			dataIndex: "contact",
-			render: (_, { mobile }) => {
-				return mobile;
+			render: (_, { phone }) => {
+				return phone;
 			},
 		},
 		{
@@ -123,6 +71,6 @@ export default function UserListTable({ addTab }: UserListTableProps) {
 	];
 
 	return (
-		<Table columns={columns} dataSource={data} pagination={{ pageSize: 8 }} />
+		<Table columns={columns} dataSource={users} pagination={{ pageSize: 8 }} />
 	);
 }

@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 
 //Interfaces
-import { EventsSchedule } from "../../../../utils";
+import { EventsSchedule } from "../../../../utils/interfaces";
 import type { UploadChangeParam } from "antd/es/upload";
 import type { RcFile, UploadFile, UploadProps } from "antd/es/upload/interface";
 
@@ -66,7 +66,7 @@ const showDeleteConfirm = () => {
 	confirm({
 		title: "Are you sure you want to delete this?",
 		className: "confirm-buttons",
-		icon: <ExclamationCircleFilled className="!text-error" />,
+		icon: <ExclamationCircleFilled className="!text-error-500" />,
 		okText: "Yes",
 		okType: "danger",
 		cancelText: "No",
@@ -273,7 +273,7 @@ export default function EventsSchedDetails({
 								onClick={showDeleteConfirm}
 								type="primary"
 								size="large"
-								className="search-button !rounded-[18px] !bg-error"
+								className="search-button !bg-error-500 !rounded-[18px]"
 							>
 								Delete
 							</Button>

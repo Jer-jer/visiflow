@@ -1,4 +1,36 @@
+$placeholder: (
+    '.vm-placeholder::-webkit-input-placeholder',
+    '.vm-placeholder:-moz-placeholder',
+    '.vm-placeholder::-moz-placeholder',
+    '.vm-placeholder:-ms-input-placeholder',
+    '.vm-placeholder::input-placeholder',
+    '.vm-placeholder::placeholder'
+);
+
+@each $selector in $placeholder {
+    #{$selector} {
+        color: #0C0D0D !important;
+        font-weight: 600;
+    }
+}
+
 .transition-alert {
     transition-timing-function: linear;
     transition-duration: 150ms;
+}
+
+.visitor-details {
+    .ant-input {
+        border: none !important;
+        background-color: #DFEAEF !important;
+    }
+
+    .ant-input-password {
+        border: none !important;
+        background-color: #DFEAEF !important;
+
+        input {
+            background-color: #DFEAEF !important
+        }
+    }
 }

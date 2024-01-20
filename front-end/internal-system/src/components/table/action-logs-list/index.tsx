@@ -6,7 +6,7 @@ import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 //Interfaces
-import { UserActionLogs } from "../../../utils";
+import { UserActionLogs } from "../../../utils/interfaces";
 
 //Styles
 import "../../../utils/variables.scss";

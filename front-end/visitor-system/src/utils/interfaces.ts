@@ -40,8 +40,9 @@ export interface VisitorInput {
 export interface VisitorData {
 	id: number;
 	poi?: string;
-	checkInOut?: string[];
+	timeIn: string;
+	timeOut: string;
 	purpose?: string;
 	termsConditions?: boolean;
-	data: VisitorInput;
+	data: VisitorInput[];
 }

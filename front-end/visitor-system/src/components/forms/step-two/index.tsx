@@ -1,5 +1,4 @@
 import React, { useState, SetStateAction, Dispatch } from "react";
-import { ZodType, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
@@ -8,8 +7,7 @@ import { Form } from "antd";
 
 // Interfaces
 import { VisitorData } from "../../../utils/interfaces";
-import type { StepTwoData } from "../../../utils/zodSchemas";
-import { StepTwoZod } from "../../../utils/zodSchemas";
+import { StepTwoData, StepTwoZod } from "../../../utils/zodSchemas";
 
 // Components
 import StepForm from "./form";
@@ -18,8 +16,8 @@ import { Tabs, Image, Button, Modal } from "antd";
 interface StepTwoProps {
 	setProgress: Dispatch<SetStateAction<number>>;
 	visitorNo: number;
-	visitors: VisitorData[];
-	setVisitors: Dispatch<SetStateAction<VisitorData[]>>;
+	visitors: VisitorData;
+	setVisitors: Dispatch<SetStateAction<VisitorData>>;
 }
 
 export default function StepTwo({
@@ -30,14 +28,14 @@ export default function StepTwo({
 }: StepTwoProps) {
 	const [isPhotoOpen, setIsPhotoOpen] = useState(false);
 
-	const StepTwoZodArray = z.array(StepTwoZod);
-
 	const {
 		register,
 		handleSubmit,
 		setValue,
 		formState: { errors },
-	} = useForm({ resolver: zodResolver(StepTwoZod) });
+	} = useForm<StepTwoData>({
+		resolver: zodResolver(StepTwoZod),
+	});
 
 	const handleOkPhoto = () => {
 		setIsPhotoOpen(false);
@@ -65,7 +63,7 @@ export default function StepTwo({
 	});
 
 	return (
-		<Form name="Step One Form" onFinish={onSubmit} autoComplete="off">
+		<Form name="Step Two Form" onFinish={onSubmit} autoComplete="off">
 			<Tabs
 				className="w-[80%]"
 				size="middle"
@@ -77,9 +75,10 @@ export default function StepTwo({
 						key: id,
 						children: (
 							<StepForm
-								visitorId={visitors[i].id}
-								visitors={visitors}
-								visitor={visitors[i].data}
+								visitorId={visitors.id}
+								visitors={visitors} //? Visitor Object
+								visitorsData={visitors.data} //? All visitor and companions
+								visitor={visitors.data[i]} //? Every visitor information
 								increment={i}
 								errors={errors}
 								register={register}
