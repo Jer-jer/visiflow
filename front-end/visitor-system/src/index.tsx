@@ -11,10 +11,10 @@ import App from "./App";
 // Styles
 import "./index.scss";
 
-Kommunicate.init("1533584fa23c162f32fe0da228affe252", {
-	automaticChatOpenOnNavigation: true,
-	popupWidget: true,
-});
+// Kommunicate.init("1533584fa23c162f32fe0da228affe252", {
+// 	automaticChatOpenOnNavigation: true,
+// 	popupWidget: true,
+// });
 
 const root = ReactDOM.createRoot(
 	document.getElementById("root") as HTMLElement,

@@ -1,7 +1,7 @@
 import React, { useState, Dispatch, SetStateAction } from "react";
 
 //Interfaces
-import { OfficeSchedule } from "../../../../utils";
+import { OfficeSchedule } from "../../../../utils/interfaces";
 import type { MenuProps } from "antd";
 
 //Layouts
@@ -29,7 +29,7 @@ const showDeleteConfirm = () => {
 	confirm({
 		title: "Are you sure you want to delete this?",
 		className: "confirm-buttons",
-		icon: <ExclamationCircleFilled className="!text-error" />,
+		icon: <ExclamationCircleFilled className="!text-error-500" />,
 		okText: "Yes",
 		okType: "danger",
 		cancelText: "No",
@@ -215,7 +215,7 @@ export default function OfficeSchedDetails({
 								onClick={showDeleteConfirm}
 								type="primary"
 								size="large"
-								className="search-button !rounded-[18px] !bg-error"
+								className="search-button !bg-error-500 !rounded-[18px]"
 							>
 								Delete
 							</Button>

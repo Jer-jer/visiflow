@@ -22,9 +22,8 @@ const validateData = [
 //used to return only values we want (to remove password)
 function sanitizeUser(user) {
     return {
-        _id: user._id,
-        first_name: user.first_name,
-        last_name: user.last_name,
+        user_id: user.user_id,
+        name: user.name,
         username: user.username,
         email: user.email,
         phone: user.phone,
@@ -62,7 +61,9 @@ exports.createNewUser = async (req, res) => {
 
     try {
         const { 
+            user_id,
             first_name, 
+            middle_name,
             last_name, 
             username, 
             email, 
@@ -82,8 +83,12 @@ exports.createNewUser = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
         const newUser = new User({ 
-            first_name, 
-            last_name, 
+            user_id,
+            name: {
+                first_name, 
+                middle_name,
+                last_name, 
+            },
             username: username || (first_name + last_name).toLowerCase(),
             email, 
             password: hashedPassword, 
@@ -92,8 +97,9 @@ exports.createNewUser = async (req, res) => {
         });
 
         const createdUser = await newUser.save();
+
         if (createdUser) {
-            return res.status(201).json({ user: sanitizeUser(createdUser) });
+            res.status(201).json({ user: sanitizeUser(createdUser) });
         } else {
             return res.status(400).json({ error: 'Failed to Create new User' });
         }
@@ -120,34 +126,68 @@ exports.getUserById = async (req, res) => {
 
 // Update a user by ID
 exports.updateUser = async (req, res) => {
+
     try {
-        const { _id, first_name, last_name, username, email, phone } = req.body;
+        const { user_id, first_name, middle_name, last_name, username, email, phone, password, role } = req.body;
 
-        const user = await User.findById(_id);
+        // const user = await User.findById(_id);
 
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
+        // if (!user) {
+        //     return res.status(404).json({ error: 'User not found' });
+        // }
+
+        //hashing the password
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        // const updateFields = {
+        //     name: {
+        //         first_name: first_name !== undefined ? first_name : user.first_name,
+        //         middle_name: middle_name !== undefined ? middle_name : user.middle_name,
+        //         last_name: last_name !== undefined ? last_name : user.last_name,
+        //     },
+        //     username: username !== undefined ? username : user.username,
+        //     password: hashedPassword !== undefined ? hashedPassword : user.password, 
+        //     email: email !== undefined ? email : user.email,
+        //     phone: phone !== undefined ? phone : user.phone,
+        //     role: role !== undefined ? role : user.role,
+        // };
 
         const updateFields = {
-            first_name: first_name !== undefined ? first_name : user.first_name,
-            last_name: last_name !== undefined ? last_name : user.last_name,
-            username: username !== undefined ? username : user.username,
-            email: email !== undefined ? email : user.email,
-            phone: phone !== undefined ? phone : user.phone,
+            name: {
+                first_name,
+                middle_name,
+                last_name,
+            },
+            username,
+            password: hashedPassword, 
+            phone,
+            email,
+            role,
         };
 
-        const filteredUpdateFields = Object.fromEntries(
-            Object.entries(updateFields).filter(([key, value]) => value !== undefined)
-        );
+        const filter = { user_id }
 
-        if (Object.keys(filteredUpdateFields).length === 0) {
-            return res.status(400).json({ error: 'No valid fields to update' });
+        // const filteredUpdateFields = Object.fromEntries(
+        //     Object.entries(updateFields).filter(([key, value]) => value !== undefined)
+        // );
+
+        // if (Object.keys(filteredUpdateFields).length === 0) {
+        //     return res.status(400).json({ error: 'No valid fields to update' });
+        // }
+
+        // const updatedUser = await User.findByIdAndUpdate(_id, filteredUpdateFields, { new: true });
+
+        const userUpdated = await User.findOneAndUpdate(filter, updateFields);
+        
+        if (userUpdated) {
+            return res.status(201).json({
+                success: "User has been updated",
+                user: sanitizeUser(updateFields),
+            });
+        } else {
+            return res.status(404).json({ error: "User not found" });
         }
-
-        const updatedUser = await User.findByIdAndUpdate(_id, filteredUpdateFields, { new: true });
-
-        return res.status(201).json({ user: sanitizeUser(updatedUser) });
     } catch (error) {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -156,8 +196,11 @@ exports.updateUser = async (req, res) => {
 //Delete a user by ID
 exports.deleteUser = async (req, res) => {
     try {
-        const { _id } = req.body;
-        const deletedUser = await User.findByIdAndDelete(_id);
+        const { user_id } = req.body;
+        const deletedUser = await User.findOneAndDelete({
+            user_id: user_id,
+        });
+
         if (deletedUser) {
             return res.status(201).json({ message: 'User deleted sucessfully' });
         } else {

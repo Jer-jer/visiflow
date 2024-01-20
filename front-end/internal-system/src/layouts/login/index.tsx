@@ -63,7 +63,7 @@ function LoginLayout() {
 											input={email}
 											setInput={setEmail}
 										/>
-										<Label spanStyling="text-error">&nbsp;</Label>
+										<Label spanStyling="text-error-500">&nbsp;</Label>
 									</div>
 								</div>
 							</div>
@@ -96,7 +96,7 @@ function LoginLayout() {
 											input={pass}
 											setInput={setPass}
 										/>
-										<Label spanStyling="text-error">&nbsp;</Label>
+										<Label spanStyling="text-error-500">&nbsp;</Label>
 									</div>
 								</div>
 							</div>

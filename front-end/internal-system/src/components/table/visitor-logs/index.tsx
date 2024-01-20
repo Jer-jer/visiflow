@@ -6,7 +6,7 @@ import { Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 //Interfaces
-import { VisitorLogDetails } from "../../../utils";
+import { VisitorLogDetails } from "../../../utils/interfaces";
 
 //Styles
 import "../../../utils/variables.scss";

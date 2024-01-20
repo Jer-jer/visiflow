@@ -6,7 +6,10 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 
-//Components
+// Interface
+import type { Dayjs } from "dayjs";
+
+// Components
 import { DatePicker } from "antd";
 import { SizeType } from "antd/es/config-provider/SizeContext";
 
@@ -20,6 +23,7 @@ interface DefaultProps {
 
 interface DatePickerProps {
 	globalStyling?: string;
+	onRangeChange?: (dates: any, dateStrings: string[]) => void;
 	rangePickerStyling?: string;
 	size: SizeType;
 	placeHolder?: string[];
@@ -35,6 +39,7 @@ dayjs.extend(customParseFormat);
 function DateTimePicker({
 	globalStyling,
 	rangePickerStyling,
+	onRangeChange,
 	size,
 	placeHolder,
 	defaultVal,
@@ -59,6 +64,7 @@ function DateTimePicker({
 								dayjs(defaultVal?.to, `YYYY-MM-DD ${timeFormat}`),
 						  ]
 				}
+				onChange={onRangeChange}
 				placeholder={["From", "To"]}
 				changeOnBlur={false}
 				format={`YYYY-MM-DD ${timeFormat}`}
