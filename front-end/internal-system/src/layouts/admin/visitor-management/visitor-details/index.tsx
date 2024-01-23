@@ -182,7 +182,6 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 	const saveAction = (visitorId: string, data: VisitorDetailsInterfaceZod) => {
 		//This needs to be customized to whatever the DB returns
 		setAlertOpen(!alertOpen);
-
 		setDisabledInputs(!disabledInputs);
 	};
 

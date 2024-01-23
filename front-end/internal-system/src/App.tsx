@@ -12,6 +12,7 @@ import Statistics from "./pages/admin/statistics";
 import VisitorManagement from "./pages/admin/visitor-management";
 import UserManagement from "./pages/admin/user-management";
 import HomeEditor from "./pages/admin/home-editor";
+import Schedules from './pages/admin/schedules';
 
 //Guard
 
@@ -31,6 +32,7 @@ function App() {
 					<Route path="/visitor-management" element={<VisitorManagement />} />
 					<Route path="/manage-users" element={<UserManagement />} />
 					<Route path="/home-editor" element={<HomeEditor />} />
+					<Route path="/schedules" element={<Schedules />} />
 				</Routes>
 			</LoggedIn>
 		</div>
