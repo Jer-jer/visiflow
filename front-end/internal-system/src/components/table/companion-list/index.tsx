@@ -2,6 +2,10 @@ import React, { useState, useContext, createContext } from "react";
 
 //Interfaces
 import { VisitorCompanionsContext } from "../../../layouts/admin/visitor-management/visitor-details";
+import {
+	VisitorDetailsProps,
+	CompanionDetailsProps,
+} from "../../../utils/interfaces";
 
 //Layouts
 import VisitorCompanionsModal from "../../../layouts/admin/visitor-management/companion-details";
@@ -11,33 +15,31 @@ import CompanionLogs from "../../../layouts/admin/visitor-management/companion-l
 import { Button, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-//Interface
-import { VisitorDetailsProps } from "../../../utils";
-
 //Styles
 import "../../../utils/variables.scss";
 import "./styles.scss";
 
-export const CompanionRecord = createContext<VisitorDetailsProps | undefined>(
+export const CompanionRecord = createContext<CompanionDetailsProps | undefined>(
 	undefined,
 );
 
 export default function VisitorCompanionsList() {
 	const [openDetails, setOpenDetails] = useState(false);
 	const [openLogs, setOpenLogs] = useState(false);
-	const [companionRecord, setCompanionRecord] = useState<VisitorDetailsProps>();
+	const [companionRecord, setCompanionRecord] =
+		useState<CompanionDetailsProps>();
 	const companionsContext = useContext(VisitorCompanionsContext);
 
 	const viewLogs = () => {
 		setOpenLogs(!openLogs);
 	};
 
-	const viewDetails = (record: VisitorDetailsProps) => {
+	const viewDetails = (record: CompanionDetailsProps) => {
 		setOpenDetails(!openDetails);
 		setCompanionRecord(record);
 	};
 
-	const columns: ColumnsType<VisitorDetailsProps> = [
+	const columns: ColumnsType<CompanionDetailsProps> = [
 		{
 			title: "ID",
 			dataIndex: "id",
@@ -46,17 +48,23 @@ export default function VisitorCompanionsList() {
 		},
 		{
 			title: "Name",
-			dataIndex: "fullName",
+			dataIndex: "companion_details",
 			key: "fullName",
-			render: (_, { fullName }) => {
-				return `${fullName.lastName}, ${fullName.firstName} ${fullName.middleName}`;
+			render: (_, { companion_details }) => {
+				return `${companion_details.fullName.last_name}, ${companion_details.fullName.first_name} ${companion_details.fullName.middle_name}`;
 			},
-			sorter: (a, b) => a.fullName.lastName.localeCompare(b.fullName.lastName),
+			sorter: (a, b) =>
+				a.companion_details.fullName.last_name.localeCompare(
+					b.companion_details.fullName.last_name,
+				),
 		},
 		{
 			title: "Email",
-			dataIndex: "email",
+			dataIndex: "companion_details",
 			key: "email",
+			render: (_, { companion_details }) => {
+				return companion_details.email;
+			},
 		},
 		{
 			title: "Actions",

@@ -1,11 +1,16 @@
 const mongoose = require('mongoose');
 
+const processConnection = mongoose.createConnection(`${process.env.MONGODB_URI}/process`);
+
 const Schema = mongoose.Schema;
 
 const Name = new Schema({
     first_name: {
         type: String,
         require: true,
+    },
+    middle_name: {
+        type: String,
     },
     last_name: {
         type: String,
@@ -81,6 +86,6 @@ const VisitorSchema = new Schema({
     }
 });
 
-const VisitorModel = mongoose.model('visitor', VisitorSchema);
+const VisitorModel = processConnection.model('visitor', VisitorSchema);
 
 module.exports = VisitorModel;

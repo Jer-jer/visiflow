@@ -1,3 +1,19 @@
+$placeholder: (
+    '.vm-placeholder::-webkit-input-placeholder',
+    '.vm-placeholder:-moz-placeholder',
+    '.vm-placeholder::-moz-placeholder',
+    '.vm-placeholder:-ms-input-placeholder',
+    '.vm-placeholder::input-placeholder',
+    '.vm-placeholder::placeholder'
+);
+
+@each $selector in $placeholder {
+    #{$selector} {
+        color: #0C0D0D !important;
+        font-weight: 600;
+    }
+}
+
 .confirm-buttons {
     .ant-btn:hover {
         border-color: var(--theme-primary) !important;
@@ -7,5 +23,31 @@
     .ant-btn-dangerous:hover {
         border-color: #ffa39e !important;
         color: #ff7875 !important;
+    }
+}
+
+.ant-select-selector {
+    border: none !important;
+    background-color: #DFEAEF !important;
+
+    .ant-select-selection-item {
+        font-weight: 600 !important;
+        font-size: 16px;
+    }
+}
+
+.user-details {
+    .ant-input {
+        border: none !important;
+        background-color: #DFEAEF !important;
+    }
+
+    .ant-input-password {
+        border: none !important;
+        background-color: #DFEAEF !important;
+
+        input {
+            background-color: #DFEAEF !important
+        }
     }
 }

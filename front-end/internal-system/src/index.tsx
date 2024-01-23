@@ -2,14 +2,13 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import reportWebVitals from "./reportWebVitals";
 import { ConfigProvider } from "antd";
-import { createBrowserRouter, BrowserRouter } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
+import { Provider } from "react-redux";
+
+// Store
+import { store } from "./store/store";
 
 import App from "./App";
-
-/* Pages */
-//Admin
-import Dashboard from "./pages/admin/dashboard";
-import Statistics from "./pages/admin/statistics";
 
 //Guard
 
@@ -21,26 +20,8 @@ const root = ReactDOM.createRoot(
 	document.getElementById("root") as HTMLElement,
 );
 
-//? To be implemented soon
-const router = createBrowserRouter([
-	{
-		path: "/",
-		element: <Dashboard />,
-		// loader: rootLoader,
-		children: [
-			// Add routes here
-			{
-				path: "statistics",
-				element: <Statistics />,
-				// loader: teamLoader,
-			},
-		],
-	},
-]);
-
 root.render(
 	<React.StrictMode>
-		{/* <RouterProvider router={router} fallbackElement={<span>HUH?!</span>} /> */}
 		<BrowserRouter basename="/">
 			<ConfigProvider
 				theme={{
@@ -59,7 +40,9 @@ root.render(
 					},
 				}}
 			>
-				<App />
+				<Provider store={store}>
+					<App />
+				</Provider>
 			</ConfigProvider>
 		</BrowserRouter>
 	</React.StrictMode>,

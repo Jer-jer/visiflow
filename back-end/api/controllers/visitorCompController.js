@@ -38,7 +38,7 @@ exports.addCompanion = async (req, res) => {
             visitorId,
             firstName,
             lastName,
-            email,
+            email, 
             phone,
             street,
             city,

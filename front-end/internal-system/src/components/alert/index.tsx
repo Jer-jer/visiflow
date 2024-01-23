@@ -47,7 +47,7 @@ function Alert({
 						<span className={`${spanStyling} ${statusTextHeaderColor}`}>
 							{header}
 						</span>
-						<button onClick={() => setOpen(!open)}>
+						<button title="Open" onClick={() => setOpen(!open)}>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								fill="none"
