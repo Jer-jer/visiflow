@@ -120,7 +120,7 @@ export default function VisitorManagementLayout() {
 				activeKey={activeKey.toString()}
 				onEdit={onEdit}
 			>
-				<Tabs.TabPane closable={false} tab="Visitor List" key="1">
+				<Tabs.TabPane closable={false} tab="" key="1">
 					<VisitorList addTab={add} />
 				</Tabs.TabPane>
 				{items.map((items, key) => (
