@@ -33,6 +33,7 @@ const VisitorSchema = new Schema({
     email: {type: String, require: true, unique: true },
     phone: {type: String, require: true },
     plate_num: {type: String, require: true },
+
     visitor_type: {
         type: String,
         enum: ['W', 'P'],

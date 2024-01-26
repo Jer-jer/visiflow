@@ -100,6 +100,7 @@ exports.deleteUser = async (req, res) => {
     try {
         const { _id } = req.body;
         const deletedUser = await User.findOneAndDelete({ _id });
+      
         if (deletedUser) {
             return res.status(201).json({ message: 'User deleted sucessfully' });
         } else {
