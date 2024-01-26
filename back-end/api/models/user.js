@@ -3,9 +3,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const Name = new Schema({
-    first_name: {type: String,require: true},
-    middle_name: {type: String,require: true},
-    last_name: {type: String,require: true}
+    first_name: {type: String, require: true},
+    middle_name: {type: String, require: true},
+    last_name: {type: String, require: true}
 });
 
 const UserSchema = new Schema({
@@ -22,4 +22,7 @@ const UserSchema = new Schema({
     updatedAt: {type: Date, default: Date.now}
 });
 
-module.exports = mongoose.model('user', UserSchema);
+const UserModel = mongoose.model('user', UserSchema);
+
+module.exports = UserModel;
+

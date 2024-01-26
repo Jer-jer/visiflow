@@ -1,71 +1,41 @@
 const mongoose = require('mongoose');
 
-const processConnection = mongoose.createConnection(`${process.env.MONGODB_URI}/process`);
-
 const Schema = mongoose.Schema;
 
 const Name = new Schema({
-    first_name: {
-        type: String,
-        require: true,
-    },
-    middle_name: {
-        type: String,
-    },
-    last_name: {
-        type: String,
-        require: true,
-    }
+    first_name: {type: String, require: true},
+    middle_name: {type: String, require: true},
+    last_name: {type: String, require: true}
 });
 
 const Address = new Schema({
-    street: String,
-    house: String,
-    barangay: {
-        type: String,
-        required: true
-    },
-    city: {
-        type: String,
-        required: true
-    },
-    province: {
-        type: String,
-        required: true
-    },
-    country: String
+    street: { type: String},
+    house: { type: String},
+    barangay: {type: String, require: true },
+    city: {type: String, require: true },
+    province: {type: String, require: true},
+    country: { type: String},
 });
 
 const Photo = new Schema({
-    name: String,
-    image: String,
-})
+    name: { type: String},
+    image: { type: String},
+});
 
 const IdPhoto = new Schema({
-    type: String,
     front: Photo,
     back: Photo,
     selfie: Photo
-})
+}); 
 
 const VisitorSchema = new Schema({
-    visitor_id: {
-        type: String,
-        require: true,
-        unique: true
-    },
     name: Name,
-    email: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    
-    phone: String,
-    plate_num: String,
+    email: {type: String, require: true, unique: true},
+    phone: {type: String, require: true},
+    plate_num: {type: String, require: true},
     visitor_type: {
         type: String,
-        enum: ['W', 'Pr'],
+        enum: ['W', 'P'],
         required: true
     },
     status: {
@@ -76,16 +46,10 @@ const VisitorSchema = new Schema({
     },
     address: Address,
     id_picture: IdPhoto,
-    created_at: {
-        type: Date,
-        default: Date.now,
-    },
-    updated_at: {
-        type: Date,
-        default: Date.now
-    }
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now }
 });
 
-const VisitorModel = processConnection.model('visitor', VisitorSchema);
+const VisitorModel = mongoose.model('visitor', VisitorSchema);
 
 module.exports = VisitorModel;

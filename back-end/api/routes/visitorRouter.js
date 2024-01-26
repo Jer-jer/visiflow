@@ -8,7 +8,7 @@ router.use(bodyParser.json());
 
 router.get('/', visitorController.getAllVisitors);
 
-router.post('/', visitorController.createNewVisitor);
+router.post('/new', visitorController.createNewVisitor);
 
 router.post('/search', visitorController.getVisitorById);
 

@@ -3,19 +3,6 @@ const bcrypt = require('bcrypt');
 const { validateData, handleValidationErrors, validationResult } = require('../middleware/userValidation');
 const { filterData } = require('../middleware/filterData');
 
-//used to return only values we want (to remove password)
-function sanitizeData(user) {
-    return {
-        name: user.name,
-        username: user.username,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
-    };
-}
-
 //Get list of all users
 exports.getAllUsers = async (req, res) => {
     try {
@@ -87,7 +74,6 @@ exports.updateUser = async (req, res) => {
         const user = await User.findById(_id);
         if(user) {
             //need to add validation for data here
-            // Update user information based on the request body
             user.name.first_name = req.body.first_name || user.name.first_name;
             user.name.middle_name = req.body.middle_name || user.name.middle_name;
             user.name.last_name = req.body.last_name || user.name.last_name;
@@ -101,7 +87,6 @@ exports.updateUser = async (req, res) => {
             await user.save();
 
             res.json({ message: 'User updated successfully', updatedUser: user });
-            
         } else {
             return res.status(404).json({ error: 'user not found'});
         }
@@ -114,10 +99,7 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
     try {
         const { user_id } = req.body;
-        const deletedUser = await User.findOneAndDelete({
-            user_id: user_id,
-        });
-
+        const deletedUser = await User.findOneAndDelete({ user_id: user_id,});
         if (deletedUser) {
             return res.status(201).json({ message: 'User deleted sucessfully' });
         } else {
