@@ -5,7 +5,7 @@ const { filterData} = require('../middleware/filterVisitorData');
 //Get list of all visitors
 exports.getAllVisitors = async (req, res) => {
     try {
-        const visitors = await Visitor.find({}, '-password');
+        const visitors = await Visitor.find();
         return res.json({ visitors });
     } catch (error) {
         return res.status(500).json({ error: 'Internal Server Error '});

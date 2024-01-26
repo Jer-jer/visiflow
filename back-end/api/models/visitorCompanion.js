@@ -1,12 +1,19 @@
 const mongoose = require('mongoose');
-
 const Schema = mongoose.Schema;
+const VisitorModel = require('./visitor');
 
 const VisitorCompanionSchema = new Schema({
-    visitorId: {
+    visitor_id: {
         type: Schema.Types.ObjectId,
         ref: 'Visitor',
-        required: true
+        require: true
+    }
+});
+
+Object.keys(VisitorModel.schema.paths).forEach((key) => {
+    // Exclude _id and __v fields from inheritance
+    if (key !== '_id' && key !== '__v') {
+        VisitorCompanionSchema.add({ [key]: VisitorModel.schema.paths[key] });
     }
 });
 
