@@ -10,10 +10,10 @@ router.get("/all", EventsController.getEvents);
 
 router.get("/:id", EventsController.getEventsbyID);
 
-// router.post("/new", VisitorCompanionController.addCompanion);
+router.post("/new", EventsController.addEvents);
 
-// router.put("/update/:id", VisitorCompanionController.updateCompanion);
+router.post('/update', EventsController.updateEvents);
 
-// router.delete("/delete/:id", VisitorCompanionController.deleteCompanion);
+router.post("/delete/", EventsController.deleteEvents);
 
 module.exports = router;

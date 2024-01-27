@@ -28,9 +28,6 @@ connectDB();
 //Events Related Links
 app.use('/events',require('./api/routes/eventsRouter'));
 
-//Events Related Links
-app.use('/events',require('./api/routes/eventsRouter'));
-
 app.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);
 })
