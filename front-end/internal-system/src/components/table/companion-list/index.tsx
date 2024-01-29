@@ -49,13 +49,13 @@ export default function VisitorCompanionsList() {
 		{
 			title: "Name",
 			dataIndex: "companion_details",
-			key: "fullName",
+			key: "name",
 			render: (_, { companion_details }) => {
-				return `${companion_details.fullName.last_name}, ${companion_details.fullName.first_name} ${companion_details.fullName.middle_name}`;
+				return `${companion_details.name.last_name}, ${companion_details.name.first_name} ${companion_details.name.middle_name}`;
 			},
 			sorter: (a, b) =>
-				a.companion_details.fullName.last_name.localeCompare(
-					b.companion_details.fullName.last_name,
+				a.companion_details.name.last_name.localeCompare(
+					b.companion_details.name.last_name,
 				),
 		},
 		{

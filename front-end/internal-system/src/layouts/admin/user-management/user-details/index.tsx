@@ -163,10 +163,7 @@ export default function UserDetails({
 				setValue(property, value);
 				break;
 			case "phone":
-				const reg = /^[0-9\-+\b]*$/;
-				if (reg.test(value)) {
-					setValue(property, value);
-				}
+				setValue(property, value);
 				break;
 			case "username":
 				setValue(property, value);

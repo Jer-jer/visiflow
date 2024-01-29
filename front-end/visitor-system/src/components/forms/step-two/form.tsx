@@ -75,7 +75,7 @@ export default function StepTwoForm({
 				updatedVisitors[increment].email = value;
 				break;
 			case "mobile":
-				const reg = /^[0-9\-+\b]*$/;
+				const reg = /([0-9\-+\b])\w+/;
 				if (reg.test(value)) {
 					setValue(property, value);
 					updatedVisitors[increment].mobile = value;

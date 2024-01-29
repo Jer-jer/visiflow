@@ -2,6 +2,8 @@
 	?	GENERALLY USED TO HANDLE DATA SENT FROM THE DATABASE AND SEND DATA TO THE DATABASE
 */
 
+import { VisitorStatus, VisitorType } from "./enums";
+
 export interface VisitorLogDetails {
 	key: string;
 	purpose: string;
@@ -30,29 +32,19 @@ export interface CompanionListProps {
 	email: string;
 }
 
-export enum VisitorStatus {
-	Approved = "Approved",
-	InProgress = "In progress",
-	Declined = "Declined",
-}
-
-export enum VisitorType {
-	PreRegistered = "Pre-Registered",
-	WalkIn = "Walk-In",
-}
-
 export interface VisitorDetailsProps {
-	fullName: FullNameProps;
-	mobile: string;
+	visitor_id: string;
+	name: FullNameProps;
+	phone: string;
 	email: string;
-	houseNo?: string;
+	house_no?: string;
 	city: string;
 	street?: string;
 	province: string;
 	brgy: string;
 	country?: string;
-	timeIn: string;
-	timeOut: string;
+	time_in: string;
+	time_out: string;
 }
 
 export interface CompanionDetailsProps {
@@ -60,14 +52,23 @@ export interface CompanionDetailsProps {
 	companion_details: VisitorDetailsProps;
 }
 
-//TODO Lacking Plate Number and ID Picture
+export interface PurposeProps {
+	what: string;
+	when: string;
+	where: string;
+	who?: string;
+	why?: string;
+}
+
+//TODO Lacking ID Picture
 export interface VisitorDataType {
 	key: number;
-	id: string;
+	_id: string;
 	visitor_details: VisitorDetailsProps;
 	companions_details?: CompanionDetailsProps[];
 	date: string;
-	purpose: string;
+	purpose: PurposeProps;
+	plate_num: string;
 	status: VisitorStatus;
 	visitor_type: VisitorType;
 }

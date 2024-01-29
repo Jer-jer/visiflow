@@ -51,20 +51,20 @@ export default function CompanionDetails() {
 	} = useForm<CompanionDetailTypeZod>({
 		resolver: zodResolver(CompanionDetailZod),
 		defaultValues: {
-			first_name: record!.companion_details.fullName.first_name,
-			middle_name: record!.companion_details.fullName.middle_name,
-			last_name: record!.companion_details.fullName.last_name,
-			mobile: record!.companion_details.mobile,
+			first_name: record!.companion_details.name.first_name,
+			middle_name: record!.companion_details.name.middle_name,
+			last_name: record!.companion_details.name.last_name,
+			mobile: record!.companion_details.phone,
 			email: record!.companion_details.email,
-			house: record!.companion_details.houseNo,
+			house: record!.companion_details.house_no,
 			street: record!.companion_details.street,
 			barangay: record!.companion_details.brgy,
 			city: record!.companion_details.city,
 			province: record!.companion_details.province,
 			country: record!.companion_details.country,
 			check_in_out: [
-				record!.companion_details.timeIn,
-				record!.companion_details.timeOut,
+				record!.companion_details.time_in,
+				record!.companion_details.time_out,
 			],
 		},
 	});
@@ -199,9 +199,7 @@ export default function CompanionDetails() {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={
-													record!.companion_details.fullName.first_name
-												}
+												placeholder={record!.companion_details.name.first_name}
 												{...register("first_name")}
 												onChange={(e) =>
 													updateInput(e.target.value, "first_name")
@@ -226,9 +224,7 @@ export default function CompanionDetails() {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={
-													record!.companion_details.fullName.middle_name
-												}
+												placeholder={record!.companion_details.name.middle_name}
 												{...register("middle_name")}
 												onChange={(e) =>
 													updateInput(e.target.value, "middle_name")
@@ -255,9 +251,7 @@ export default function CompanionDetails() {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={
-													record!.companion_details.fullName.last_name
-												}
+												placeholder={record!.companion_details.name.last_name}
 												{...register("last_name")}
 												onChange={(e) =>
 													updateInput(e.target.value, "last_name")
@@ -282,7 +276,7 @@ export default function CompanionDetails() {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.companion_details.mobile}
+												placeholder={record!.companion_details.phone}
 												{...register("mobile")}
 												onChange={(e) => updateInput(e.target.value, "mobile")}
 												disabled={disabledInputs}
@@ -333,7 +327,7 @@ export default function CompanionDetails() {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.companion_details.houseNo}
+												placeholder={record!.companion_details.house_no}
 												{...register("house")}
 												onChange={(e) => updateInput(e.target.value, "house")}
 												disabled={disabledInputs}
@@ -487,10 +481,10 @@ export default function CompanionDetails() {
 											size="large"
 											defaultVal={{
 												from:
-													record!.companion_details.timeIn ||
+													record!.companion_details.time_in ||
 													"9999-99-99 99:90 PM",
 												to:
-													record!.companion_details.timeOut ||
+													record!.companion_details.time_out ||
 													"9999-99-99 99:99 PM",
 											}}
 											onRangeChange={onRangeChange}

@@ -83,7 +83,7 @@ export const StepTwoZod: ZodType<StepTwoData> = z.object({
 			required_error: "Mobile Number is required.",
 			invalid_type_error: "Mobile Number must not have a letter or symbol.",
 		})
-		.regex(/^[0-9\-+\b]*$/, { message: "Only numeric values allowed." }),
+		.regex(/([0-9\-+\b])\w+/, { message: "Only numeric values allowed." }),
 
 	house: z.string().optional(),
 	street: z.string().optional(),

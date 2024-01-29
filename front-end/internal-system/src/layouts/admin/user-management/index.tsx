@@ -2,8 +2,6 @@ import React, {
 	useRef,
 	useState,
 	useEffect,
-	SetStateAction,
-	Dispatch,
 } from "react";
 import AxiosInstace from "../../../lib/axios";
 
