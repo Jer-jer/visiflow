@@ -1,7 +1,9 @@
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
+const { hashPassword, comparePassword } = require('../utils/helper');
 const { validateData, handleValidationErrors, validationResult } = require('../middleware/userValidation');
 const { filterData } = require('../middleware/filterData');
+
 
 //Get list of all users
 exports.getAllUsers = async (req, res) => {
@@ -29,9 +31,7 @@ exports.createNewUser = async (req, res) => {
         if(userDB) {
             res.status(401).json({error: 'User already exists'});
         } else {
-            const saltRounds = 10;
-            const hashedPassword = await bcrypt.hash(password, saltRounds);
-
+            const hashedPassword = hashPassword(password);
             const newUser = await User.create({
                 name: {
                     first_name,

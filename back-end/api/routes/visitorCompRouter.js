@@ -1,10 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const bodyParser = require("body-parser");
 const VisitorCompanionController = require('../controllers/visitorCompController');
-
-//Middlware to parse JSON request bodies
-router.use(bodyParser.json());
 
 router.get("/", VisitorCompanionController.getAllCompanions);
 
