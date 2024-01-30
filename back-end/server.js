@@ -25,6 +25,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // User Related and Authentication Links
+
 app.use('/user', require('./api/routes/userRouter'));
 app.use('/auth', require('./api/routes/authRouter'));
 app.use('/visitor', require('./api/routes/visitorRouter'));
