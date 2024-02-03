@@ -40,8 +40,6 @@ export default function StepTwoForm({
 	setValue,
 	setVisitors,
 }: FormProps) {
-	//TODO Improve StepTwo
-
 	useEffect(() => {
 		if (increment === 0) {
 			if (mainVisitor) {
