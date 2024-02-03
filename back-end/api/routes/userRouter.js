@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const bodyParser = require("body-parser");
 const userController = require("../controllers/userController");
 
-//Middlware to parse JSON request bodies
-router.use(bodyParser.json());
+router.use((req, res, next) => {
+    if(req.user) next();
+    else res.send(401);
+});
 
 router.get("/", userController.getAllUsers);
 

@@ -8,6 +8,7 @@ const {
 const { filterData } = require("../middleware/filterData");
 const mongoose = require("mongoose");
 
+
 //Get list of all users
 exports.getAllUsers = async (req, res) => {
   try {
