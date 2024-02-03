@@ -1,10 +1,18 @@
-import React, { useRef, useState } from "react";
+import React, {
+	useRef,
+	useState,
+	useEffect,
+	SetStateAction,
+	Dispatch,
+} from "react";
+import AxiosInstace from "../../../lib/axios";
 
 //Interfaces
-import { UserDataType, UserRole } from "../../../utils";
+import { UserDataType } from "../../../utils/interfaces";
 
 //Components
 import { Tabs, Button, Input } from "antd";
+import Alert from "../../../components/alert";
 import UserListTable from "../../../components/table/user-list";
 import UserDetails from "./user-details";
 
@@ -18,20 +26,21 @@ import { ExcelDownload, Search, TabClose } from "../../../assets/svg";
 type TargetKey = React.MouseEvent | React.KeyboardEvent | string | number;
 
 interface UserListProps {
+	users: UserDataType[];
 	addTab: () => void;
 	createUser: () => void;
 }
 
-interface TabItems {
+export interface TabItems {
 	key: TargetKey;
 	tabName: string;
 	userData?: UserDataType;
 }
 
-const UserList = ({ addTab, createUser }: UserListProps) => {
+const UserList = ({ users, addTab, createUser }: UserListProps) => {
 	return (
-		<div className="ml-[45px] mt-[30px] flex flex-col gap-[50px]">
-			<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
+		<div className="ml-[45px] flex flex-col gap-[50px]">
+			<div className="mt-[30px] flex w-full items-center justify-start gap-[25px] pr-[65px]">
 				<Input
 					className="w-[366px]"
 					size="large"
@@ -53,47 +62,70 @@ const UserList = ({ addTab, createUser }: UserListProps) => {
 				</div>
 			</div>
 			<div className="mr-[50px]">
-				<UserListTable addTab={addTab} />
+				<UserListTable users={users} addTab={addTab} />
 			</div>
 		</div>
 	);
 };
 
+const generateUserId = (userLength: number) => {
+	return ("UVGU000" + (userLength + 1)).slice(-9);
+};
+
 export default function UserManagementLayout() {
 	const [items, setItems] = useState<TabItems[]>([]);
+	const [users, setUsers] = useState<UserDataType[]>([]);
 	const [activeKey, setActiveKey]: any = useState(1);
 	const newTabIndex = useRef(1);
+
+	// Alert
+	const [alertOpen, setAlertOpen] = useState(false);
+	const [status, setStatus] = useState(false);
+	const [alertMsg, setAlertMsg] = useState("");
+
+	useEffect(() => {
+		AxiosInstace.get("/user")
+			.then((res) => {
+				setUsers(res.data.users);
+			})
+			.catch((err) => {
+				console.error(err);
+			});
+	}, [items]);
 
 	const onChange = (newActiveKey: string) => {
 		setActiveKey(newActiveKey);
 	};
 
 	const createUser = () => {
-		const newActiveKey = ++newTabIndex.current;
+		AxiosInstace.post("/user/new", {
+			user_id: generateUserId(users.length),
+			first_name: " ",
+			middle_name: " ",
+			last_name: " ",
+			username: " ",
+			email: "mail@mail.com",
+			password: "admin1234",
+			phone: "09999999999",
+		})
+			.then((res) => {
+				const newActiveKey = ++newTabIndex.current;
 
-		setItems([
-			...items,
-			{
-				key: newActiveKey,
-				tabName: "New User",
-				userData: {
-					userId: 12345,
-					officeId: 54321,
-					fullName: {
-						firstName: "",
-						middleName: "",
-						lastName: "",
+				setItems([
+					...items,
+					{
+						key: newActiveKey,
+						tabName: "New User",
+						userData: res.data.user,
 					},
-					username: "12345",
-					email: "",
-					password: "12345",
-					mobile: "",
-					role: UserRole.Security,
-				},
-			},
-		]);
+				]);
 
-		setActiveKey(newActiveKey);
+				setActiveKey(newActiveKey);
+			})
+			.catch((err) => {
+				setAlertMsg(err.response.data.error || err.response.data.errors);
+				setAlertOpen(!alertOpen);
+			});
 	};
 
 	const add = (record?: UserDataType) => {
@@ -148,15 +180,43 @@ export default function UserManagementLayout() {
 				onEdit={onEdit}
 			>
 				<Tabs.TabPane closable={false} tab="User List" key="1">
-					<UserList addTab={add} createUser={createUser} />
+					<div>
+						<div
+							className={`transition-alert absolute z-[1] w-full scale-y-0 ease-in-out ${
+								alertOpen && "scale-y-100"
+							}`}
+						>
+							<Alert
+								globalCustomStyling={`flex w-full overflow-hidden rounded-lg rounded-tl-none bg-white shadow-md`}
+								statusStyling="flex w-12 items-center justify-center"
+								statusColor={status ? "bg-primary-500" : "bg-error-500"}
+								spanStyling="font-semibold"
+								statusTextHeaderColor={
+									status ? "text-primary-500" : "text-error-500"
+								}
+								descStyling="text-sm text-gray-600"
+								header="Information Box"
+								desc={alertMsg}
+								open={alertOpen}
+								setOpen={setAlertOpen}
+							/>
+						</div>
+						<UserList users={users} addTab={add} createUser={createUser} />
+					</div>
 				</Tabs.TabPane>
-				{items.map((items, key) => (
+				{items.map((item, key) => (
 					<Tabs.TabPane
-						tab={items.tabName}
-						key={items.key.toString()}
+						tab={item.tabName}
+						key={item.key.toString()}
 						closeIcon={<TabClose />}
 					>
-						<UserDetails record={items.userData} />
+						<UserDetails
+							record={item.userData}
+							items={items}
+							setItems={setItems}
+							setActiveKey={setActiveKey}
+							newTabIndex={newTabIndex}
+						/>
 					</Tabs.TabPane>
 				))}
 			</Tabs>

@@ -1,7 +1,10 @@
 import React, { useRef, useState } from "react";
 
 //Interfaces
-import { VisitorDetailsProps } from "../../../utils";
+import {
+	VisitorDataType,
+	VisitorDetailsProps,
+} from "../../../utils/interfaces";
 
 //Components
 import { Tabs, Button, Input } from "antd";
@@ -24,8 +27,8 @@ interface VisitorProps {
 
 interface TabItems {
 	key: TargetKey;
-	visitorData?: VisitorDetailsProps;
-	companionsDetails?: VisitorDetailsProps[];
+	visitorData: VisitorDataType;
+	// companionsDetails?: VisitorDetailsProps[];
 }
 
 const VisitorList = ({ addTab }: VisitorProps) => {
@@ -55,6 +58,7 @@ const VisitorList = ({ addTab }: VisitorProps) => {
 
 export default function VisitorManagementLayout() {
 	const [items, setItems] = useState<TabItems[]>([]);
+	// const [visitors, setVisitors] = useState<UserDataType[]>([]);
 	const [activeKey, setActiveKey]: any = useState(1);
 	const newTabIndex = useRef(1);
 
@@ -63,8 +67,8 @@ export default function VisitorManagementLayout() {
 	};
 
 	const add = (
-		record?: VisitorDetailsProps,
-		companionRecords?: VisitorDetailsProps[],
+		record?: VisitorDataType,
+		// companionRecords?: VisitorDetailsProps[],
 	) => {
 		const newActiveKey = ++newTabIndex.current;
 
@@ -72,8 +76,8 @@ export default function VisitorManagementLayout() {
 			...items,
 			{
 				key: newActiveKey,
-				visitorData: record,
-				companionsDetails: companionRecords,
+				visitorData: record!,
+				// companionsDetails: companionRecords,
 			},
 		]);
 
@@ -116,7 +120,7 @@ export default function VisitorManagementLayout() {
 				activeKey={activeKey.toString()}
 				onEdit={onEdit}
 			>
-				<Tabs.TabPane closable={false} tab="Visitor List" key="1">
+				<Tabs.TabPane closable={false} tab="" key="1">
 					<VisitorList addTab={add} />
 				</Tabs.TabPane>
 				{items.map((items, key) => (
@@ -126,8 +130,10 @@ export default function VisitorManagementLayout() {
 						closeIcon={<TabClose />}
 					>
 						<VisitorDetails
+							// record={items.visitorData}
 							record={items.visitorData}
-							companionRecords={items.companionsDetails}
+							// status={items.}
+							// companionRecords={items.companionsDetails}
 						/>
 					</Tabs.TabPane>
 				))}

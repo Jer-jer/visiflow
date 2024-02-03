@@ -1,19 +1,20 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const bodyParser = require('body-parser');
-const userController = require('../controllers/userController');
+const userController = require("../controllers/userController");
 
-//Middlware to parse JSON request bodies
-router.use(bodyParser.json());
+router.use((req, res, next) => {
+    if(req.user) next();
+    else res.send(401);
+});
 
-router.get('/', userController.getAllUsers);
+router.get("/", userController.getAllUsers);
 
-router.post('/', userController.createNewUser);
+router.post("/new", userController.createNewUser);
 
-router.post('/search', userController.getUserById);
+router.post("/search", userController.getUserById);
 
-router.post('/update', userController.updateUser);
+router.put("/update", userController.updateUser);
 
-router.post('/delete', userController.deleteUser);
+router.delete("/delete", userController.deleteUser);
 
 module.exports = router;

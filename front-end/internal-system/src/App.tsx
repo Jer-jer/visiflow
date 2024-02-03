@@ -11,6 +11,7 @@ import Statistics from "./pages/admin/statistics";
 import VisitorManagement from "./pages/admin/visitor-management";
 import UserManagement from "./pages/admin/user-management";
 import HomeEditor from "./pages/admin/home-editor";
+import Schedules from './pages/admin/schedules';
 
 //Guard
 import Capture from "./pages/guard/capture";

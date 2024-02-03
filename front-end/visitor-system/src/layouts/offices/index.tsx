@@ -100,6 +100,7 @@ export default function Offices() {
 			</div>
 		);
 	};
+
 	return (
 		<div className="ml-[24px] mr-[24px] mt-[25px] flex flex-col items-center gap-[50px] md:ml-[40px] md:mt-[50px] lg:items-start lg:gap-[94px]">
 			<Input

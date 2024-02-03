@@ -3,7 +3,7 @@ import React, { useState } from "react";
 
 //Interfaces
 import type { ColumnsType } from "antd/es/table";
-import { HomeEditor } from "../../../utils";
+import { HomeEditor } from "../../../utils/interfaces";
 
 //Components
 import { Table, Button, Modal, Input } from "antd";
@@ -25,7 +25,7 @@ const showDeleteConfirm = () => {
 	confirm({
 		title: "Are you sure you want to delete this?",
 		className: "confirm-buttons",
-		icon: <ExclamationCircleFilled className="!text-error" />,
+		icon: <ExclamationCircleFilled className="!text-error-500" />,
 		okText: "Yes",
 		okType: "danger",
 		cancelText: "No",

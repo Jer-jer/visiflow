@@ -6,7 +6,7 @@ export const DangerIcon = () => {
 			xmlns="http://www.w3.org/2000/svg"
 			viewBox="0 0 24 24"
 			fill="currentColor"
-			className="ml-2 h-7 w-7 text-error"
+			className="text-error-500 ml-2 h-7 w-7"
 		>
 			<path
 				fillRule="evenodd"

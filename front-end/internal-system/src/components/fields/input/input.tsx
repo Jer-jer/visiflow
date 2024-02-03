@@ -6,7 +6,7 @@ interface InputProps {
 	inputStyling?: string;
 	inputType: string;
 	placeHolder?: string;
-	input: string;
+	input?: string;
 	setInput: Dispatch<SetStateAction<string>>;
 	visitorMngmnt?: boolean;
 	disabled?: boolean;

@@ -1,19 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const bodyParser = require("body-parser");
 const VisitorCompanionController = require('../controllers/visitorCompController');
 
-//Middlware to parse JSON request bodies
-router.use(bodyParser.json());
+router.get("/", VisitorCompanionController.getAllCompanions);
 
-router.get("/all", VisitorCompanionController.getCompanions);
+router.post("/new", VisitorCompanionController.createNewCompanion);
 
-router.get("/:id", VisitorCompanionController.searchCompanion);
+router.post("/search", VisitorCompanionController.getCompanionById);
 
-router.post("/new", VisitorCompanionController.addCompanion);
+router.post("/update", VisitorCompanionController.updateCompanion);
 
-router.put("/update/:id", VisitorCompanionController.updateCompanion);
-
-router.delete("/delete/:id", VisitorCompanionController.deleteCompanion);
+router.post("/delete", VisitorCompanionController.deleteCompanion);
 
 module.exports = router;

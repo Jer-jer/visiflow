@@ -1,77 +1,22 @@
 const mongoose = require('mongoose');
-
-const processConnection = mongoose.createConnection(`${process.env.MONGODB_URI}/process`);
-
 const Schema = mongoose.Schema;
-
-const Name = new Schema({
-    first_name: {
-        type: String,
-        require: true,
-    },
-    last_name: {
-        type: String,
-        require: true,
-    }
-});
-
-const Address = new Schema({
-    street: String,
-    house: String,
-    barangay: {
-        type: String,
-        required: true
-    },
-    city: {
-        type: String,
-        required: true
-    },
-    province: {
-        type: String,
-        required: true
-    },
-    country: String
-});
-
-const Photo = new Schema({
-    name: String,
-    image: String,
-})
-
-const IdPhoto = new Schema({
-    type: String,
-    front: Photo,
-    back: Photo,
-    selfie: Photo
-})
+const VisitorModel = require('./visitor');
 
 const VisitorCompanionSchema = new Schema({
-    companion_id: {
-        type: String,
-        require: true,
-        unique: true
-    },
     visitor_id: {
-        type: String,
-        require: true,
-    },
-    name: Name,
-    email: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    phone: String,
-    address: Address,
-    id_picture: IdPhoto,
-    created_at: {
-        type: Date,
-        default: Date.now,
-    },
-    updated_at: {
-        type: Date,
-        default: Date.now
+        type: Schema.Types.ObjectId,
+        ref: 'Visitor',
+        require: true
     }
 });
 
-module.exports = processConnection.model('visitor_companion', VisitorCompanionSchema);
+Object.keys(VisitorModel.schema.paths).forEach((key) => {
+    // Exclude _id and __v fields from inheritance
+    if (key !== '_id' && key !== '__v') {
+        VisitorCompanionSchema.add({ [key]: VisitorModel.schema.paths[key] });
+    }
+});
+
+const VisitorCompanionModel = mongoose.model('VisitorCompanion', VisitorCompanionSchema);
+
+module.exports = VisitorCompanionModel;

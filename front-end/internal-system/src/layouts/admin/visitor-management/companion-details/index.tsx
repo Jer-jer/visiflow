@@ -26,7 +26,7 @@ export default function VisitorCompanionsModal({
 		<StandardModal
 			header="Companion Details"
 			centered
-			size={2000}
+			size={1400}
 			open={open}
 			setOpen={setOpen}
 			footer={false}
