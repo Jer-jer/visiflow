@@ -1,5 +1,4 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
 
 //Layouts
 import LoggedIn from "./layouts/logged-in";
@@ -14,9 +13,15 @@ import UserManagement from "./pages/admin/user-management";
 import HomeEditor from "./pages/admin/home-editor";
 
 //Guard
+import Capture from "./pages/guard/capture";
+import VisitorForm from "./pages/guard/visitor-form";
+import WalkinQR from "./pages/guard/walkin-qr";
+import PreregisteredQR from "./pages/guard/preregistered-qr";
+import VisitorStatus from "./pages/guard/visitor-status";
 
 //Styles
 import "./App.scss";
+import { Routes, Route } from "react-router-dom";
 
 function App() {
 	return (
@@ -31,6 +36,11 @@ function App() {
 					<Route path="/visitor-management" element={<VisitorManagement />} />
 					<Route path="/manage-users" element={<UserManagement />} />
 					<Route path="/home-editor" element={<HomeEditor />} />
+					<Route path="/capture" element={<Capture />} />
+					<Route path="/visitor-form" element={<VisitorForm />} />
+					<Route path="/walkin-qr" element={<WalkinQR />} />
+					<Route path="/preregistered-qr" element={<PreregisteredQR />} />
+					<Route path="/visitor-status" element={<VisitorStatus />} />
 				</Routes>
 			</LoggedIn>
 		</div>

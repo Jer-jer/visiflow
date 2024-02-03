@@ -40,7 +40,6 @@ module.exports = {
 		require("@tailwindcss/typography"),
 		require("tailwindcss-animate"),
 		require("daisyui"),
-		require("preline/plugin"),
 		require("@headlessui/react"),
 	],
 	daisyui: {

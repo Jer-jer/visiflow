@@ -15,6 +15,10 @@ import {
 	UserGroup,
 	Users,
 	Edit,
+	Camera,
+	WalkinQR,
+	PreregisterQR,
+	Form,
 } from "../../assets/svg";
 
 //Styles
@@ -41,56 +45,118 @@ function LoggedIn({ children }: LoggedInProps) {
 		}
 	}, [width, expanded]);
 
+	// return (
+	// 	<WidthContext.Provider value={width}>
+	// 		<div className="flex h-60">
+	// 			<Sidebar expanded={expanded} setExpanded={setExpanded}>
+	// 				<NavLink to="/">
+	// 					{({ isActive }) => (
+	// 						<SidebarItem icon={<Home />} text="Dashboard" active={isActive} />
+	// 					)}
+	// 				</NavLink>
+	// 				<NavLink to="/statistics">
+	// 					{({ isActive }) => (
+	// 						<SidebarItem
+	// 							icon={<PieChart />}
+	// 							text="Statistics"
+	// 							active={isActive}
+	// 						/>
+	// 					)}
+	// 				</NavLink>
+	// 				<NavLink to="/schedules">
+	// 					{({ isActive }) => (
+	// 						<SidebarItem
+	// 							icon={<Calendar />}
+	// 							text="Schedules"
+	// 							active={isActive}
+	// 						/>
+	// 					)}
+	// 				</NavLink>
+	// 				<NavLink to="/visitor-management">
+	// 					{({ isActive }) => (
+	// 						<SidebarItem
+	// 							icon={<UserGroup />}
+	// 							text="Visitor Management"
+	// 							active={isActive}
+	// 						/>
+	// 					)}
+	// 				</NavLink>
+	// 				<NavLink to="/manage-users">
+	// 					{({ isActive }) => (
+	// 						<SidebarItem
+	// 							icon={<Users />}
+	// 							text="Manage Users"
+	// 							active={isActive}
+	// 						/>
+	// 					)}
+	// 				</NavLink>
+	// 				<NavLink to="/home-editor">
+	// 					{({ isActive }) => (
+	// 						<SidebarItem
+	// 							icon={<Edit />}
+	// 							text="Visitor Home Editor"
+	// 							active={isActive}
+	// 						/>
+	// 					)}
+	// 				</NavLink>
+	// 			</Sidebar>
+	// 			<div className="h-fit min-w-0 flex-1">
+	// 				<div>
+	// 					<Header />
+	// 				</div>
+	// 				{/* Main content Here */}
+	// 				<div id="parentDiv" className="children" ref={ref}>
+	// 					{children}
+	// 				</div>
+	// 			</div>
+	// 		</div>
+	// 	</WidthContext.Provider>
+	// );
+
 	return (
 		<WidthContext.Provider value={width}>
 			<div className="flex h-60">
 				<Sidebar expanded={expanded} setExpanded={setExpanded}>
-					<NavLink to="/">
+					<NavLink to="/Capture">
 						{({ isActive }) => (
-							<SidebarItem icon={<Home />} text="Dashboard" active={isActive} />
+							<SidebarItem 
+								icon={<Camera />} 
+								text="Capture" 
+								active={isActive} />
 						)}
 					</NavLink>
-					<NavLink to="/statistics">
+					<NavLink to="/visitor-form">
 						{({ isActive }) => (
 							<SidebarItem
-								icon={<PieChart />}
-								text="Statistics"
+								icon={<Form />}
+								text="Visitor Form"
 								active={isActive}
 							/>
 						)}
 					</NavLink>
-					<NavLink to="/schedules">
+					<NavLink to="/walkin-qr">
 						{({ isActive }) => (
 							<SidebarItem
-								icon={<Calendar />}
-								text="Schedules"
+								icon={<WalkinQR />}
+								text="Walk-In QR"
 								active={isActive}
 							/>
 						)}
 					</NavLink>
-					<NavLink to="/visitor-management">
+					<NavLink to="/preregistered-qr">
+						{({ isActive }) => (
+							<SidebarItem
+								icon={<PreregisterQR />}
+								text="Pre-Register QR"
+								active={isActive}
+							/>
+						)}
+					</NavLink>
+					<NavLink to="/visitor-status">
 						{({ isActive }) => (
 							<SidebarItem
 								icon={<UserGroup />}
-								text="Visitor Management"
-								active={isActive}
-							/>
-						)}
-					</NavLink>
-					<NavLink to="/manage-users">
-						{({ isActive }) => (
-							<SidebarItem
-								icon={<Users />}
-								text="Manage Users"
-								active={isActive}
-							/>
-						)}
-					</NavLink>
-					<NavLink to="/home-editor">
-						{({ isActive }) => (
-							<SidebarItem
-								icon={<Edit />}
-								text="Visitor Home Editor"
+								text="Visitor Status"
 								active={isActive}
 							/>
 						)}
