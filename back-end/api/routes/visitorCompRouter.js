@@ -6,14 +6,14 @@ const VisitorCompanionController = require('../controllers/visitorCompController
 //Middlware to parse JSON request bodies
 router.use(bodyParser.json());
 
-router.get("/all", VisitorCompanionController.getCompanions);
+router.get("/", VisitorCompanionController.getAllCompanions);
 
-router.get("/:id", VisitorCompanionController.searchCompanion);
+router.post("/new", VisitorCompanionController.createNewCompanion);
 
-router.post("/new", VisitorCompanionController.addCompanion);
+router.post("/search", VisitorCompanionController.getCompanionById);
 
-router.put("/update/:id", VisitorCompanionController.updateCompanion);
+router.post("/update", VisitorCompanionController.updateCompanion);
 
-router.delete("/delete/:id", VisitorCompanionController.deleteCompanion);
+router.post("/delete", VisitorCompanionController.deleteCompanion);
 
 module.exports = router;

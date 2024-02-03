@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { Form } from "antd";
 
 // Interfaces
-import { VisitorData } from "../../../utils/interfaces";
+import { VisitorDataType } from "../../../utils/interfaces";
 import { StepTwoData, StepTwoZod } from "../../../utils/zodSchemas";
 
 // Components
@@ -16,8 +16,8 @@ import { Tabs, Image, Button, Modal } from "antd";
 interface StepTwoProps {
 	setProgress: Dispatch<SetStateAction<number>>;
 	visitorNo: number;
-	visitors: VisitorData;
-	setVisitors: Dispatch<SetStateAction<VisitorData>>;
+	visitors: VisitorDataType;
+	setVisitors: Dispatch<SetStateAction<VisitorDataType>>;
 }
 
 export default function StepTwo({
@@ -75,10 +75,8 @@ export default function StepTwo({
 						key: id,
 						children: (
 							<StepForm
-								visitorId={visitors.id}
-								visitors={visitors} //? Visitor Object
-								visitorsData={visitors.data} //? All visitor and companions
-								visitor={visitors.data[i]} //? Every visitor information
+								mainVisitor={visitors.visitor_details} //? Main Visitor Information
+								companions={visitors.companions_details!} //? Companions Visitor Information
 								increment={i}
 								errors={errors}
 								register={register}

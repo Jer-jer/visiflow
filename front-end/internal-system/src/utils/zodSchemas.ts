@@ -24,7 +24,7 @@ export interface VisitorDetailsInterfaceZod {
 	when?: string;
 	where?: string;
 	who?: string;
-	why?: string;
+	// why?: string;
 }
 
 export const VisitorDetailZod: ZodType<VisitorDetailsInterfaceZod> = z.object({
@@ -41,7 +41,7 @@ export const VisitorDetailZod: ZodType<VisitorDetailsInterfaceZod> = z.object({
 			required_error: "Middle Name is required.",
 			invalid_type_error: "Middle Name must not have number.",
 		})
-		.regex(/^[a-zA-Z]+/, {
+		.regex(/^[a-zA-Z\s]/, {
 			message: "Must not contain any numerals.",
 		})
 		.optional(),
@@ -147,7 +147,7 @@ export const CompanionDetailZod: ZodType<CompanionDetailsInterfaceZod> =
 				required_error: "Middle Name is required.",
 				invalid_type_error: "Middle Name must not have number.",
 			})
-			.regex(/^[a-zA-Z]+/, {
+			.regex(/^[a-zA-Z\s]/, {
 				message: "Must not contain any numerals.",
 			})
 			.optional(),
@@ -237,7 +237,7 @@ export const UserDetailsZod: ZodType<UserDetailsInterfaceZod> = z.object({
 			required_error: "Middle Name is required.",
 			invalid_type_error: "Middle Name must not have number.",
 		})
-		.regex(/^[a-zA-Z]+/, {
+		.regex(/^[a-zA-Z\s]/, {
 			message: "Must not contain any numerals.",
 		})
 		.min(1, { message: "Please enter a middle name." })

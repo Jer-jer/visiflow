@@ -12,7 +12,7 @@ router.post("/new", userController.createNewUser);
 
 router.post("/search", userController.getUserById);
 
-router.post("/update", userController.updateUser);
+router.put("/update", userController.updateUser);
 
 router.delete("/delete", userController.deleteUser);
 

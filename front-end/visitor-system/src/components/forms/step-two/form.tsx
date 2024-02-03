@@ -4,7 +4,10 @@ import React, { useEffect, Dispatch, SetStateAction } from "react";
 import { Input, Divider, Form } from "antd";
 
 // Interfaces
-import { VisitorInput, VisitorData } from "../../../utils/interfaces";
+import {
+	VisitorDataType,
+	VisitorDetailsProps,
+} from "../../../utils/interfaces";
 import type { StepTwoData } from "../../../utils/zodSchemas";
 import type {
 	UseFormRegister,
@@ -12,105 +15,135 @@ import type {
 	FieldErrors,
 } from "react-hook-form";
 
+// Utils
+import { mainOrCompanion } from "../../../utils";
+
 // Styles
 import "./form.scss";
 
 interface FormProps {
-	visitorId: number;
-	visitors: VisitorData;
-	visitorsData: VisitorInput[];
-	visitor: VisitorInput;
+	mainVisitor: VisitorDetailsProps;
+	companions: VisitorDetailsProps[];
 	increment: number;
 	errors: FieldErrors<StepTwoData>;
 	register: UseFormRegister<StepTwoData>;
 	setValue: UseFormSetValue<StepTwoData>;
-	setVisitors: Dispatch<SetStateAction<VisitorData>>;
+	setVisitors: Dispatch<SetStateAction<VisitorDataType>>;
 }
 
 export default function StepTwoForm({
-	visitorId,
-	visitors,
-	visitorsData,
-	visitor,
+	mainVisitor,
+	companions,
 	increment,
 	errors,
 	register,
 	setValue,
 	setVisitors,
 }: FormProps) {
+	//TODO Improve StepTwo
+
 	useEffect(() => {
-		if (visitor) {
-			setValue("firstName", visitor.firstName);
-			setValue("middleName", visitor.middleName);
-			setValue("lastName", visitor.lastName);
-			setValue("email", visitor.email);
-			setValue("mobile", visitor.mobile);
-			setValue("house", visitor.house);
-			setValue("street", visitor.street);
-			setValue("barangay", visitor.barangay);
-			setValue("city", visitor.city);
-			setValue("province", visitor.province);
-			setValue("country", visitor.country);
+		if (increment === 0) {
+			if (mainVisitor) {
+				setValue("firstName", mainVisitor.name.first_name);
+				setValue("middleName", mainVisitor.name.middle_name);
+				setValue("lastName", mainVisitor.name.last_name);
+				setValue("email", mainVisitor.email);
+				setValue("mobile", mainVisitor.phone);
+				setValue("house", mainVisitor.address.house_no);
+				setValue("street", mainVisitor.address.street);
+				setValue("barangay", mainVisitor.address.brgy);
+				setValue("city", mainVisitor.address.city);
+				setValue("province", mainVisitor.address.province);
+				setValue("country", mainVisitor.address.country);
+			}
+		} else if (increment > 0) {
+			if (companions[increment - 1]) {
+				setValue("firstName", companions[increment - 1].name.first_name);
+				setValue("middleName", companions[increment - 1].name.middle_name);
+				setValue("lastName", companions[increment - 1].name.last_name);
+				setValue("email", companions[increment - 1].email);
+				setValue("mobile", companions[increment - 1].phone);
+				setValue("house", companions[increment - 1].address.house_no);
+				setValue("street", companions[increment - 1].address.street);
+				setValue("barangay", companions[increment - 1].address.brgy);
+				setValue("city", companions[increment - 1].address.city);
+				setValue("province", companions[increment - 1].address.province);
+				setValue("country", companions[increment - 1].address.country);
+			}
 		}
-	}, [setValue, visitor]);
+	}, [setValue, mainVisitor, increment, companions]);
+
+	// const mainOrCompanion = () => {
+	// 	return increment === 0 ? mainVisitor : companions[increment - 1];
+	// };
 
 	const updateData = (value: string, property: string) => {
-		const updatedVisitors = visitors.data;
+		const updatedVisitors = mainOrCompanion(increment, mainVisitor, companions);
+		let updatedCompanions = companions;
 
 		switch (property) {
 			case "firstName":
 				setValue(property, value);
-				updatedVisitors[increment].firstName = value;
+				updatedVisitors.name.first_name = value;
 				break;
 			case "middleName":
 				setValue(property, value);
-				updatedVisitors[increment].middleName = value;
+				updatedVisitors.name.middle_name = value;
 				break;
 			case "lastName":
 				setValue(property, value);
-				updatedVisitors[increment].lastName = value;
+				updatedVisitors.name.last_name = value;
 				break;
 			case "email":
 				setValue(property, value);
-				updatedVisitors[increment].email = value;
+				updatedVisitors.email = value;
 				break;
 			case "mobile":
-				const reg = /([0-9\-+\b])\w+/;
-				if (reg.test(value)) {
-					setValue(property, value);
-					updatedVisitors[increment].mobile = value;
-				}
-
+				setValue(property, value);
+				updatedVisitors.phone = value;
 				break;
 			case "house":
 				setValue(property, value);
-				updatedVisitors[increment].house = value;
+				updatedVisitors.address.house_no = value;
 				break;
 			case "street":
 				setValue(property, value);
-				updatedVisitors[increment].street = value;
+				updatedVisitors.address.street = value;
 				break;
 			case "barangay":
 				setValue(property, value);
-				updatedVisitors[increment].barangay = value;
+				updatedVisitors.address.brgy = value;
 				break;
 			case "city":
 				setValue(property, value);
-				updatedVisitors[increment].city = value;
+				updatedVisitors.address.city = value;
 				break;
 			case "province":
 				setValue(property, value);
-				updatedVisitors[increment].province = value;
+				updatedVisitors.address.province = value;
 				break;
 			case "country":
 				setValue(property, value);
-				updatedVisitors[increment].country = value;
+				updatedVisitors.address.country = value;
 				break;
 			default:
 				console.error("Something went wrong");
 		}
 
-		setVisitors({ ...visitors, data: updatedVisitors });
+		if (increment === 0) {
+			setVisitors((prevVisitors) => ({
+				...prevVisitors,
+				visitor_details: updatedVisitors,
+			}));
+		} else {
+			updatedCompanions[increment - 1] = updatedVisitors;
+
+			setVisitors((prevVisitors) => ({
+				...prevVisitors,
+				companions_details: updatedCompanions,
+			}));
+		}
 	};
 
 	return (
@@ -134,7 +167,11 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("firstName")}
-								value={visitor.firstName}
+								// value={visitor.firstName}
+								value={
+									mainOrCompanion(increment, mainVisitor, companions).name
+										.first_name
+								}
 								onChange={(event: any) =>
 									updateData(event.target.value, "firstName")
 								}
@@ -165,7 +202,11 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("middleName")}
-								value={visitor.middleName}
+								// value={visitor.middleName}
+								value={
+									mainOrCompanion(increment, mainVisitor, companions).name
+										.middle_name
+								}
 								onChange={(event: any) =>
 									updateData(event.target.value, "middleName")
 								}
@@ -196,7 +237,11 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("lastName")}
-								value={visitor.lastName}
+								// value={visitor.lastName}
+								value={
+									mainOrCompanion(increment, mainVisitor, companions).name
+										.last_name
+								}
 								onChange={(event: any) =>
 									updateData(event.target.value, "lastName")
 								}
@@ -227,7 +272,10 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("email")}
-								value={visitor.email}
+								// value={visitor.email}
+								value={
+									mainOrCompanion(increment, mainVisitor, companions).email
+								}
 								onChange={(event: any) =>
 									updateData(event.target.value, "email")
 								}
@@ -258,7 +306,10 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("mobile")}
-								value={visitor.mobile}
+								// value={visitor.mobile}
+								value={
+									mainOrCompanion(increment, mainVisitor, companions).phone
+								}
 								onChange={(event: any) =>
 									updateData(event.target.value, "mobile")
 								}
@@ -290,7 +341,11 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("house")}
-								value={visitor.house}
+								// value={visitor.house}
+								value={
+									mainOrCompanion(increment, mainVisitor, companions).address
+										.house_no
+								}
 								onChange={(event: any) =>
 									updateData(event.target.value, "house")
 								}
@@ -321,7 +376,11 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("street")}
-								value={visitor.street}
+								// value={visitor.street}
+								value={
+									mainOrCompanion(increment, mainVisitor, companions).address
+										.street
+								}
 								onChange={(event: any) =>
 									updateData(event.target.value, "street")
 								}
@@ -352,7 +411,11 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("barangay")}
-								value={visitor.barangay}
+								// value={visitor.barangay}
+								value={
+									mainOrCompanion(increment, mainVisitor, companions).address
+										.brgy
+								}
 								onChange={(event: any) =>
 									updateData(event.target.value, "barangay")
 								}
@@ -383,7 +446,11 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("city")}
-								value={visitor.city}
+								// value={visitor.city}
+								value={
+									mainOrCompanion(increment, mainVisitor, companions).address
+										.city
+								}
 								onChange={(event: any) =>
 									updateData(event.target.value, "city")
 								}
@@ -414,7 +481,11 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("province")}
-								value={visitor.province}
+								// value={visitor.province}
+								value={
+									mainOrCompanion(increment, mainVisitor, companions).address
+										.province
+								}
 								onChange={(event: any) =>
 									updateData(event.target.value, "province")
 								}
@@ -445,7 +516,11 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("country")}
-								value={visitor.country}
+								// value={visitor.country}
+								value={
+									mainOrCompanion(increment, mainVisitor, companions).address
+										.country
+								}
 								onChange={(event: any) =>
 									updateData(event.target.value, "country")
 								}

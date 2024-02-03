@@ -56,12 +56,12 @@ export default function CompanionDetails() {
 			last_name: record!.companion_details.name.last_name,
 			mobile: record!.companion_details.phone,
 			email: record!.companion_details.email,
-			house: record!.companion_details.house_no,
-			street: record!.companion_details.street,
-			barangay: record!.companion_details.brgy,
-			city: record!.companion_details.city,
-			province: record!.companion_details.province,
-			country: record!.companion_details.country,
+			house: record!.companion_details.address.house_no,
+			street: record!.companion_details.address.street,
+			barangay: record!.companion_details.address.brgy,
+			city: record!.companion_details.address.city,
+			province: record!.companion_details.address.province,
+			country: record!.companion_details.address.country,
 			check_in_out: [
 				record!.companion_details.time_in,
 				record!.companion_details.time_out,
@@ -327,7 +327,7 @@ export default function CompanionDetails() {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.companion_details.house_no}
+												placeholder={record!.companion_details.address.house_no}
 												{...register("house")}
 												onChange={(e) => updateInput(e.target.value, "house")}
 												disabled={disabledInputs}
@@ -350,7 +350,7 @@ export default function CompanionDetails() {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.companion_details.city}
+												placeholder={record!.companion_details.address.city}
 												{...register("city")}
 												onChange={(e) => updateInput(e.target.value, "city")}
 												disabled={disabledInputs}
@@ -375,7 +375,7 @@ export default function CompanionDetails() {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.companion_details.city}
+												placeholder={record!.companion_details.address.city}
 												{...register("street")}
 												onChange={(e) => updateInput(e.target.value, "street")}
 												disabled={disabledInputs}
@@ -398,7 +398,7 @@ export default function CompanionDetails() {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.companion_details.province}
+												placeholder={record!.companion_details.address.province}
 												{...register("province")}
 												onChange={(e) =>
 													updateInput(e.target.value, "province")
@@ -425,7 +425,7 @@ export default function CompanionDetails() {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.companion_details.brgy}
+												placeholder={record!.companion_details.address.brgy}
 												{...register("barangay")}
 												onChange={(e) =>
 													updateInput(e.target.value, "barangay")
@@ -450,7 +450,7 @@ export default function CompanionDetails() {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.companion_details.country}
+												placeholder={record!.companion_details.address.country}
 												{...register("country")}
 												onChange={(e) => updateInput(e.target.value, "country")}
 												disabled={disabledInputs}

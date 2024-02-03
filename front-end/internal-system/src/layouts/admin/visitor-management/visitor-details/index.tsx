@@ -21,7 +21,7 @@ import {
 } from "../../../../utils/zodSchemas";
 import {
 	VisitorDataType,
-	CompanionDetailsProps,
+	VisitorDetailsProps,
 } from "../../../../utils/interfaces";
 import { VisitorStatus, VisitorType } from "../../../../utils/enums";
 import { WidthContext } from "../../../logged-in";
@@ -58,6 +58,8 @@ import { ExclamationCircleFilled } from "@ant-design/icons";
 
 //Styles
 import "./styles.scss";
+
+// Libraries
 import AxiosInstace from "../../../../lib/axios";
 
 dayjs.extend(weekday);
@@ -96,7 +98,7 @@ const exportOptions: MenuProps["items"] = [
 const { confirm } = Modal;
 
 const closeTab = (
-	visitorId: string | undefined,
+	_id: string | undefined,
 	newTabIndex: MutableRefObject<number>,
 	items: TabItems[],
 	setItems: Dispatch<React.SetStateAction<TabItems[]>>,
@@ -104,9 +106,7 @@ const closeTab = (
 ) => {
 	const newActiveKey = --newTabIndex.current;
 	const newItems = [...items];
-	const index = newItems
-		.map((e) => e.visitorData.visitor_details.visitor_id)
-		.indexOf(visitorId!);
+	const index = newItems.map((e) => e.visitorData._id).indexOf(_id!);
 	if (index !== -1) {
 		newItems.splice(index, 1);
 		setItems(newItems);
@@ -116,7 +116,6 @@ const closeTab = (
 
 const showDeleteConfirm = (
 	_id: string,
-	visitorId: string | undefined,
 	newTabIndex: MutableRefObject<number>,
 	items: TabItems[],
 	setItems: Dispatch<React.SetStateAction<TabItems[]>>,
@@ -132,11 +131,11 @@ const showDeleteConfirm = (
 		onOk() {
 			AxiosInstace.delete("/visitor/delete", {
 				data: {
-					_id: _id,
+					_id,
 				},
 			})
 				.then((res) => {
-					closeTab(visitorId, newTabIndex, items, setItems, setActiveKey);
+					closeTab(_id, newTabIndex, items, setItems, setActiveKey);
 				})
 				.catch((err) => {
 					console.error(err.response.data.error || err.response.data.errors);
@@ -149,7 +148,7 @@ const showDeleteConfirm = (
 };
 
 export const VisitorCompanionsContext = createContext<
-	CompanionDetailsProps[] | undefined
+	VisitorDetailsProps[] | undefined
 >(undefined);
 
 export default function VisitorDetails({
@@ -188,12 +187,12 @@ export default function VisitorDetails({
 			last_name: record.visitor_details.name.last_name,
 			mobile: record.visitor_details.phone,
 			email: record.visitor_details.email,
-			house: record.visitor_details.house_no,
-			street: record.visitor_details.street,
-			barangay: record.visitor_details.brgy,
-			city: record.visitor_details.city,
-			province: record.visitor_details.province,
-			country: record.visitor_details.country,
+			house: record.visitor_details.address.house_no,
+			street: record.visitor_details.address.street,
+			barangay: record.visitor_details.address.brgy,
+			city: record.visitor_details.address.city,
+			province: record.visitor_details.address.province,
+			country: record.visitor_details.address.country,
 			check_in_out: [
 				record.visitor_details.time_in,
 				record.visitor_details.time_out,
@@ -268,9 +267,9 @@ export default function VisitorDetails({
 			case "who":
 				setValue(property, value as string);
 				break;
-			case "why":
-				setValue(property, value as string);
-				break;
+			// case "why":
+			// 	setValue(property, value as string);
+			// 	break;
 		}
 	};
 
@@ -309,39 +308,50 @@ export default function VisitorDetails({
 		clearErrors();
 	};
 
-	const saveAction = (
-		_id: string,
-		visitor_id: string,
-		data: VisitorDetailsInterfaceZod,
-	) => {
+	const saveAction = (_id: string, data: VisitorDetailsInterfaceZod) => {
 		//This needs to be customized to whatever the DB returns
 		setAlertOpen(!alertOpen);
-
 		setDisabledInputs(!disabledInputs);
 
 		AxiosInstace.put("/visitor/update", {
-			_id: _id,
-			visitor_id: visitor_id,
-			first_name: data.first_name,
-			middle_name: data.middle_name,
-			last_name: data.last_name,
-			phone: data.mobile,
-			email: data.email,
-			house_no: data.house,
-			street: data.street,
-			brgy: data.barangay,
-			city: data.city,
-			province: data.province,
-			country: data.country,
-			time_in: data.check_in_out[0],
-			time_out: data.check_in_out[1],
-			plate_num: data.plate_num,
-			status: data.status,
-			visitor_type: data.visitor_type,
+			_id,
+			first_name:
+				data.first_name !== record.visitor_details.name.first_name &&
+				data.first_name,
+			middle_name:
+				data.middle_name !== record.visitor_details.name.middle_name &&
+				data.middle_name,
+			last_name:
+				data.last_name !== record.visitor_details.name.last_name &&
+				data.last_name,
+			phone: data.mobile !== record.visitor_details.phone && data.mobile,
+			email: data.email !== record.visitor_details.email && data.email,
+			house_no:
+				data.house !== record.visitor_details.address.house_no && data.house,
+			street:
+				data.street !== record.visitor_details.address.street && data.street,
+			brgy:
+				data.barangay !== record.visitor_details.address.brgy && data.barangay,
+			city: data.city !== record.visitor_details.address.city && data.city,
+			province:
+				data.province !== record.visitor_details.address.province &&
+				data.province,
+			country:
+				data.country !== record.visitor_details.address.country && data.country,
+			time_in:
+				data.check_in_out[0] !== record.visitor_details.time_in &&
+				data.check_in_out[0],
+			time_out:
+				data.check_in_out[1] !== record.visitor_details.time_out &&
+				data.check_in_out[1],
+			plate_num: data.plate_num !== record.plate_num && data.plate_num,
+			status: data.status !== record.status && data.status,
+			visitor_type:
+				data.visitor_type !== record.visitor_type && data.visitor_type,
 		})
 			.then((res) => {
 				setStatus(true);
-				setAlertMsg(res.data.success);
+				setAlertMsg(res.data.message);
 				setAlertOpen(!alertOpen);
 				setDisabledInputs(!disabledInputs);
 			})
@@ -352,7 +362,7 @@ export default function VisitorDetails({
 	};
 
 	const onSubmit = handleSubmit((data) => {
-		saveAction(record._id, record.visitor_details.visitor_id, data);
+		saveAction(record._id, data);
 	});
 
 	return (
@@ -397,7 +407,7 @@ export default function VisitorDetails({
 									</Label>
 									<Input
 										className="vm-placeholder h-[38px] w-[650px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-										placeholder={record.visitor_details.visitor_id}
+										placeholder={record._id}
 										disabled
 									/>
 								</div>
@@ -541,7 +551,7 @@ export default function VisitorDetails({
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.house_no}
+												placeholder={record.visitor_details.address.house_no}
 												{...register("house")}
 												onChange={(e) => updateInput(e.target.value, "house")}
 												disabled={disabledInputs}
@@ -564,7 +574,7 @@ export default function VisitorDetails({
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.city}
+												placeholder={record.visitor_details.address.city}
 												{...register("city")}
 												onChange={(e) => updateInput(e.target.value, "city")}
 												disabled={disabledInputs}
@@ -589,7 +599,7 @@ export default function VisitorDetails({
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.street}
+												placeholder={record.visitor_details.address.street}
 												{...register("street")}
 												onChange={(e) => updateInput(e.target.value, "street")}
 												disabled={disabledInputs}
@@ -612,7 +622,7 @@ export default function VisitorDetails({
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.province}
+												placeholder={record.visitor_details.address.province}
 												{...register("province")}
 												onChange={(e) =>
 													updateInput(e.target.value, "province")
@@ -639,7 +649,7 @@ export default function VisitorDetails({
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.brgy}
+												placeholder={record.visitor_details.address.brgy}
 												{...register("barangay")}
 												onChange={(e) =>
 													updateInput(e.target.value, "barangay")
@@ -664,7 +674,7 @@ export default function VisitorDetails({
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.country}
+												placeholder={record.visitor_details.address.country}
 												{...register("country")}
 												onChange={(e) => updateInput(e.target.value, "country")}
 												disabled={disabledInputs}
@@ -1083,7 +1093,6 @@ export default function VisitorDetails({
 										onClick={() =>
 											showDeleteConfirm(
 												record._id,
-												record.visitor_details.visitor_id,
 												newTabIndex,
 												items,
 												setItems,

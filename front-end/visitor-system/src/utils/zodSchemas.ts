@@ -2,9 +2,12 @@ import { ZodType, z } from "zod";
 
 export type StepOneData = {
 	visitorNo: number;
-	poi: string;
 	checkInOut: [string, string];
-	purpose: string;
+	// purpose: string;
+	what?: string[];
+	when?: string;
+	where?: string[];
+	who?: string[];
 	termsConditions: boolean;
 };
 
@@ -28,15 +31,43 @@ export const StepOneZod: ZodType<StepOneData> = z.object({
 			required_error: "Visitor must be at least 1.",
 		})
 		.min(1, { message: "Must be 1 or more visitor" }),
-	poi: z.string(), // Person of Interest
 	checkInOut: z.custom<[string, string]>().refine((val) => val[0] < val[1], {
 		message: "Check in must be before the Check out date.",
 	}),
-	purpose: z
+	// purpose: z
+	// 	.string({
+	// 		required_error: "Purpose is required.",
+	// 	})
+	// 	.min(1, { message: "You must have a purpose." }),
+	what: z
 		.string({
-			required_error: "Purpose is required.",
+			required_error: '"What" is required.',
 		})
-		.min(1, { message: "You must have a purpose." }),
+		.array()
+		.nonempty({
+			message: '"What" is required.',
+		}),
+	when: z
+		.string({
+			required_error: '"When" is required.',
+		})
+		.min(1, '"When" is required.'),
+	where: z
+		.string({
+			required_error: '"Where" is required.',
+		})
+		.array()
+		.nonempty({
+			message: '"Where" is required.',
+		}),
+	who: z
+		.string({
+			required_error: '"Who" is required.',
+		})
+		.array()
+		.nonempty({
+			message: '"Who" is required.',
+		}),
 	termsConditions: z.literal(true, {
 		errorMap: (issue, _ctx) => {
 			switch (issue.code) {

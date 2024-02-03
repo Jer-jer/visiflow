@@ -20,7 +20,7 @@ export interface FullNameProps {
 export interface AddressProps {
 	house_no?: string;
 	street?: string;
-	barangay: string;
+	brgy: string;
 	city: string;
 	province: string;
 	country: string;
@@ -33,23 +33,12 @@ export interface CompanionListProps {
 }
 
 export interface VisitorDetailsProps {
-	visitor_id: string;
 	name: FullNameProps;
 	phone: string;
 	email: string;
-	house_no?: string;
-	city: string;
-	street?: string;
-	province: string;
-	brgy: string;
-	country?: string;
+	address: AddressProps;
 	time_in: string;
 	time_out: string;
-}
-
-export interface CompanionDetailsProps {
-	companion_id: string;
-	companion_details: VisitorDetailsProps;
 }
 
 export interface PurposeProps {
@@ -65,7 +54,7 @@ export interface VisitorDataType {
 	key: number;
 	_id: string;
 	visitor_details: VisitorDetailsProps;
-	companions_details?: CompanionDetailsProps[];
+	companions_details?: VisitorDetailsProps[];
 	date: string;
 	purpose: PurposeProps;
 	plate_num: string;
@@ -79,20 +68,6 @@ export interface IDPictureProps {
 	back: string;
 	selfie: string;
 }
-
-// export interface VisitorDataType {
-// 	visitor_id: string;
-// 	name: FullNameProps;
-// 	address: AddressProps;
-// 	email: string;
-// 	mobile: string;
-// 	plate_num?: string;
-// 	visitor_type: VisitorType;
-// 	status: string;
-// 	id_picture?: IDPictureProps;
-// 	companions?: string[];
-// 	status: string
-// }
 
 export interface UserActionLogs {
 	logId: string;
@@ -108,7 +83,7 @@ export enum UserRole {
 }
 
 export interface UserDataType {
-	user_id: string;
+	_id: string;
 	name: FullNameProps;
 	username: string;
 	email: string;
