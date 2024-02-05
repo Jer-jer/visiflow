@@ -2,6 +2,8 @@
 	?	GENERALLY USED TO HANDLE DATA SENT FROM THE DATABASE AND SEND DATA TO THE DATABASE
 */
 
+import { VisitorStatus, VisitorType } from "./enums";
+
 export interface VisitorLogDetails {
 	key: string;
 	purpose: string;
@@ -18,7 +20,7 @@ export interface FullNameProps {
 export interface AddressProps {
 	house_no?: string;
 	street?: string;
-	barangay: string;
+	brgy: string;
 	city: string;
 	province: string;
 	country: string;
@@ -30,44 +32,32 @@ export interface CompanionListProps {
 	email: string;
 }
 
-export enum VisitorStatus {
-	Approved = "Approved",
-	InProgress = "In progress",
-	Declined = "Declined",
-}
-
-export enum VisitorType {
-	PreRegistered = "Pre-Registered",
-	WalkIn = "Walk-In",
-}
-
 export interface VisitorDetailsProps {
-	fullName: FullNameProps;
-	mobile: string;
+	name: FullNameProps;
+	phone: string;
 	email: string;
-	houseNo?: string;
-	city: string;
-	street?: string;
-	province: string;
-	brgy: string;
-	country?: string;
-	timeIn: string;
-	timeOut: string;
+	address: AddressProps;
+	time_in: string;
+	time_out: string;
 }
 
-export interface CompanionDetailsProps {
-	companion_id: string;
-	companion_details: VisitorDetailsProps;
+export interface PurposeProps {
+	what: string;
+	when: string;
+	where: string;
+	who?: string;
+	why?: string;
 }
 
-//TODO Lacking Plate Number and ID Picture
+//TODO Lacking ID Picture
 export interface VisitorDataType {
 	key: number;
-	id: string;
+	_id: string;
 	visitor_details: VisitorDetailsProps;
-	companions_details?: CompanionDetailsProps[];
+	companions_details?: VisitorDetailsProps[];
 	date: string;
-	purpose: string;
+	purpose: PurposeProps;
+	plate_num: string;
 	status: VisitorStatus;
 	visitor_type: VisitorType;
 }
@@ -78,20 +68,6 @@ export interface IDPictureProps {
 	back: string;
 	selfie: string;
 }
-
-// export interface VisitorDataType {
-// 	visitor_id: string;
-// 	name: FullNameProps;
-// 	address: AddressProps;
-// 	email: string;
-// 	mobile: string;
-// 	plate_num?: string;
-// 	visitor_type: VisitorType;
-// 	status: string;
-// 	id_picture?: IDPictureProps;
-// 	companions?: string[];
-// 	status: string
-// }
 
 export interface UserActionLogs {
 	logId: string;
@@ -107,7 +83,7 @@ export enum UserRole {
 }
 
 export interface UserDataType {
-	user_id: string;
+	_id: string;
 	name: FullNameProps;
 	username: string;
 	email: string;

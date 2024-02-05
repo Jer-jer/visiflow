@@ -1,27 +1,29 @@
-$placeholder: (
+$vm_placeholder: (
     '.vm-placeholder input::-webkit-input-placeholder',
     '.vm-placeholder input:-moz-placeholder',
     '.vm-placeholder input::-moz-placeholder',
     '.vm-placeholder input:-ms-input-placeholder',
     '.vm-placeholder input::input-placeholder',
-    '.vm-placeholder input::placeholder'
+    '.vm-placeholder input::placeholder',
+);
+
+@each $selector in $vm_placeholder {
+    #{$selector} {
+        color: #0C0D0D;
+        font-weight: 600;
+    }
+}
+
+$placeholder: (
+    '.ant-picker-input input::placeholder'
 );
 
 @each $selector in $placeholder {
     #{$selector} {
         color: #0C0D0D !important;
-        font-weight: 600;
     }
 }
 
-.ant-select-selector {
-    background: #DFEAEF !important;
-    border: none !important;
-
-    .ant-select-selection-item {
-        padding-left: 10px !important;
-    }
-}
 
 .ant-input {
     background: #DFEAEF !important;
@@ -58,4 +60,22 @@ $placeholder: (
 .ant-input-number-input:focus {
     --tw-ring-color: transparent !important;
     --tw-ring-shadow: transparent !important;
+}
+
+.ant-select {
+    .ant-select-selector {
+        background: #DFEAEF !important;
+        border: none !important;
+    }
+
+    .ant-select-selector {
+        padding: 12px !important;
+    }
+
+    .ant-select-selection-search-input:focus {
+        outline: none !important;
+        border-color: transparent !important;
+        --tw-ring-color: transparent !important;
+        --tw-ring-shadow: transparent !important;
+    }
 }

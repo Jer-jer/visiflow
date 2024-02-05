@@ -8,7 +8,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
 const createSession = require('./api/utils/sessionHelper');
 
-const connectDB = require('./api/config/db');
+const connectDB = require("./api/config/db");
 
 const app = express();
 
@@ -41,5 +41,5 @@ app.use('/visitor/companion/logs', require('./api/routes/visitorLogsRouter'));
 app.use('/events',require('./api/routes/eventsRouter'));
 
 app.listen(PORT, () => {
-    console.log(`Server started on port ${PORT}`);
-})
+  console.log(`Server started on port ${PORT}`);
+});

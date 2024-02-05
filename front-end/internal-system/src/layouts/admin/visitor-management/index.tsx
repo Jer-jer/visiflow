@@ -1,10 +1,11 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 
 //Interfaces
 import {
 	VisitorDataType,
 	VisitorDetailsProps,
 } from "../../../utils/interfaces";
+import AxiosInstace from "../../../lib/axios";
 
 //Components
 import { Tabs, Button, Input } from "antd";
@@ -22,16 +23,17 @@ import { ExcelDownload, Search, TabClose } from "../../../assets/svg";
 type TargetKey = React.MouseEvent | React.KeyboardEvent | string | number;
 
 interface VisitorProps {
+	visitors: VisitorDataType[];
 	addTab: () => void;
 }
 
-interface TabItems {
+export interface TabItems {
 	key: TargetKey;
 	visitorData: VisitorDataType;
 	// companionsDetails?: VisitorDetailsProps[];
 }
 
-const VisitorList = ({ addTab }: VisitorProps) => {
+const VisitorList = ({ visitors, addTab }: VisitorProps) => {
 	return (
 		<div className="ml-[45px] mt-[30px] flex flex-col gap-[50px]">
 			<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
@@ -50,7 +52,7 @@ const VisitorList = ({ addTab }: VisitorProps) => {
 				</div>
 			</div>
 			<div className="mr-[50px]">
-				<VisitorListTable addTab={addTab} />
+				<VisitorListTable visitors={visitors} addTab={addTab} />
 			</div>
 		</div>
 	);
@@ -58,9 +60,19 @@ const VisitorList = ({ addTab }: VisitorProps) => {
 
 export default function VisitorManagementLayout() {
 	const [items, setItems] = useState<TabItems[]>([]);
-	// const [visitors, setVisitors] = useState<UserDataType[]>([]);
+	const [visitors, setVisitors] = useState<VisitorDataType[]>([]);
 	const [activeKey, setActiveKey]: any = useState(1);
 	const newTabIndex = useRef(1);
+
+	useEffect(() => {
+		AxiosInstace.get("/visitor")
+			.then((res) => {
+				setVisitors(res.data.visitors);
+			})
+			.catch((err) => {
+				console.error(err);
+			});
+	}, [items]);
 
 	const onChange = (newActiveKey: string) => {
 		setActiveKey(newActiveKey);
@@ -120,20 +132,21 @@ export default function VisitorManagementLayout() {
 				activeKey={activeKey.toString()}
 				onEdit={onEdit}
 			>
-				<Tabs.TabPane closable={false} tab="" key="1">
-					<VisitorList addTab={add} />
+				<Tabs.TabPane closable={false} tab="Visitor List" key="1">
+					<VisitorList visitors={visitors} addTab={add} />
 				</Tabs.TabPane>
-				{items.map((items, key) => (
+				{items.map((item, key) => (
 					<Tabs.TabPane
 						tab="Visitor Details"
-						key={items.key.toString()}
+						key={item.key.toString()}
 						closeIcon={<TabClose />}
 					>
 						<VisitorDetails
-							// record={items.visitorData}
-							record={items.visitorData}
-							// status={items.}
-							// companionRecords={items.companionsDetails}
+							record={item.visitorData}
+							items={items}
+							setItems={setItems}
+							setActiveKey={setActiveKey}
+							newTabIndex={newTabIndex}
 						/>
 					</Tabs.TabPane>
 				))}
