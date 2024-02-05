@@ -1,11 +1,12 @@
 const express = require("express");//for import of express package
 const bodyParser = require("body-parser");
 const EventsModel = require('../models/events');
+const { validateData, handleValidationErrors, validationResult } = require('../middleware/eventsValidation');
+//const { filterData} = require('../middleware/filterVisitorData');
 //const { checkout } = require("../routes/visitorCompRouter");
 
 const router = express.Router();
 
-//
 router.use(bodyParser.json());
 
 //For Get All Events
@@ -20,6 +21,7 @@ exports.getEvents = async (req, res) => {
 
 //Get event by ID
 exports.getEventsbyID = async (req, res) => {
+    
     try {
         const {_id} = req.body;
         const searchedEvents = await EventsModel.findById(_id);
@@ -36,49 +38,33 @@ exports.getEventsbyID = async (req, res) => {
 
 //Create
 exports.addEvents = async (req, res) => {
+    
+    await Promise.all(validateData.map(validation => validation.run(req)));
+
+    const errors = validationResult(req);
+    if(!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array()[0].msg });
+    }
+
     try {
 
         const {
             name,
             date,
-            time,
+            enddate,
             locationId,
             userId,
         } = req.body;
 
-            //checks if event already exists        
-            // const existingevent = await EventsModel.find({ name,date,time,locationId,userId});
-            // if (existingevent) {
-            //     return res.status(400).json({ error: 'This event already exists' });
-            // }
-
         const newEvent = new EventsModel({
             name: name,
             date: date,
-            time: time,
+            enddate: enddate,
             locationId: locationId,
             userId: userId
         })
 
         const createdEvents = await EventsModel.create(newEvent);
-    
-        // const newVisitorCompanion = new VisitorCompanion({
-        //     companion_id: companionId,
-        //     visitor_id: visitorId,
-        //     name: { first_name: firstName, last_name: lastName },
-        //     email: email,
-        //     phone: phone,
-        //     address: {
-        //         house_no: houseNo,
-        //         street : street,
-        //         barangay: barangay,
-        //         city: city,
-        //         province: province,
-        //         country: country
-        //     },
-        //     id_picture: { type: idType },
-        // });
-        // const createdVisitorCompanion = await VisitorCompanion.create(newEvent);
 
         if (createdEvents instanceof EventsModel) {
         return res
@@ -112,7 +98,7 @@ exports.updateEvents = async (req, res) => {
     try {
         
 
-        const { _id, name, date, time, locationId, userId} = req.body;
+        const { _id, name, date, enddate, locationId, userId} = req.body;
 
         const event = await EventsModel.findById(_id);
 
@@ -124,7 +110,7 @@ exports.updateEvents = async (req, res) => {
         const updateFields = {
             name: name !== undefined ? name : event.name,
             date: date !== undefined ? date : event.date,
-            time: time !== undefined ? time : event.time,
+            enddate: enddate !== undefined ? enddate : event.enddate,
             locationId: locationId !== undefined ? locationId : event.locationId,
             userId: userId !== undefined ? userId : event.userId
         }

@@ -8,7 +8,7 @@ router.use(bodyParser.json());
 
 router.get('/', buildingLocController.getAllBldgLoc);
 
-router.post('/', buildingLocController.createNewBldgLoc);
+router.post("/new", buildingLocController.createNewBldgLoc);
 
 router.post('/search', buildingLocController.getBldgLocByID);
 
