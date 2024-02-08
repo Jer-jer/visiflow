@@ -1,4 +1,4 @@
-function filterData(user) {
+function filterUserData(user) {
     return {
         name: user.name,
         username: user.username,
@@ -10,4 +10,4 @@ function filterData(user) {
     };
 }
 
-module.exports = { filterData };
+module.exports = { filterUserData };

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/userController");
 
+//School staff routes
 router.use((req, res, next) => {
     if(req.user) next();
     else res.send(401);

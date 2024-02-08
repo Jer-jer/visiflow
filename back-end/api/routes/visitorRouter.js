@@ -8,8 +8,8 @@ router.post('/new', visitorController.createNewVisitor);
 
 router.post('/search', visitorController.getVisitorById);
 
-router.post('/update', visitorController.updateVisitor);
+router.put('/update', visitorController.updateVisitor);
 
-router.post('/delete', visitorController.deleteVisitor);
+router.delete('/delete', visitorController.deleteVisitor);
 
 module.exports = router;

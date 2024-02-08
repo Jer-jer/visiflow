@@ -1,9 +1,11 @@
 const Visitor = require('../models/visitor');
 const { validateData, handleValidationErrors, validationResult } = require('../middleware/visitorValidation');
-const { filterData} = require('../middleware/filterVisitorData');
 
 //Get list of all visitors
-exports.getAllVisitors = async (req, res) => {
+exports.getAllVisitors = async (req, res, next) => {
+    //Faculty route
+    if(!req.user) return res.send(401);
+
     try {
         const visitors = await Visitor.find();
         return res.json({ visitors });
@@ -48,7 +50,7 @@ exports.createNewVisitor = async (req, res) => {
                     country
                 }
             });
-            res.status(201).json({ newVisitor: filterData(newVisitor)});
+            res.status(201).json({ newVisitor: newVisitor});
         }
     } catch (error) {
         return res.status(500).json({ error: 'Internal Server Error' });
@@ -62,7 +64,7 @@ exports.getVisitorById = async (req, res) => {
         const searchedVisitor = await Visitor.findById(_id);
         
         if(searchedVisitor) {
-            return res.status(201).json({ visitor: searchedVisitor });
+            return res.status(201).json({ visitor: searchedVisitor});
         } else {
             return res.status(404).json({ error: 'visitor not found'});
         }
@@ -107,6 +109,7 @@ exports.updateVisitor = async (req, res) => {
 
 //Delete a visitor by ID
 exports.deleteVisitor = async (req, res) => {
+    if(!req.user) return res.send(401);
     try {
         const { _id } = req.body;
         const deletedVisitor = await Visitor.findByIdAndDelete(_id);

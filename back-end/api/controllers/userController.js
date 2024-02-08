@@ -1,9 +1,7 @@
 const User = require('../models/user');
-const bcrypt = require('bcrypt');
 const { hashPassword, comparePassword } = require('../utils/helper');
 const { validateData, handleValidationErrors, validationResult } = require('../middleware/userValidation');
-const { filterData } = require('../middleware/filterData');
-
+const { filterUserData } = require('../middleware/filterData');
 
 //Get list of all users
 exports.getAllUsers = async (req, res) => {
@@ -16,7 +14,7 @@ exports.getAllUsers = async (req, res) => {
 };
 
 //Create a new user
-exports.createNewUser = async (req, res) => {
+exports.createNewUser = async (req, res, next) => {
     const { first_name, middle_name, last_name, username, email, password, phone, role } = req.body;
     
     await Promise.all(validateData.map(validation => validation.run(req)));
@@ -44,7 +42,7 @@ exports.createNewUser = async (req, res) => {
                 phone,
                 role
             });
-            res.status(201).json({newUser: filterData(newUser)});
+            res.status(201).json({newUser: filterUserData(newUser)});
         }
     } catch (error) {
         return res.status(500).json({ error: 'Internal Server Error' });
@@ -79,6 +77,7 @@ exports.updateUser = async (req, res) => {
             user.name.last_name = req.body.last_name || user.name.last_name;
             user.username = req.body.username || user.username;
             user.email = req.body.email || user.email;
+            // need to create separate update password for user
             user.password = req.body.password || user.password;
             user.phone = req.body.phone || user.phone;
             user.role = req.body.role || user.role;
@@ -86,7 +85,7 @@ exports.updateUser = async (req, res) => {
 
             await user.save();
 
-            res.json({ message: 'User updated successfully', updatedUser: user });
+            res.json({ message: 'User updated successfully', updatedUser: filterUserData(user) });
         } else {
             return res.status(404).json({ error: 'user not found'});
         }
