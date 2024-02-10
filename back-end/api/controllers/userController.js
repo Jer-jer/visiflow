@@ -1,13 +1,9 @@
+//DONE CHECKING
 const User = require("../models/user");
-const bcrypt = require("bcrypt");
-const {
-  validateData,
-  handleValidationErrors,
-  validationResult,
-} = require("../middleware/userValidation");
+const { hashPassword, comparePassword } = require('../utils/helper');
+const { validateData, handleValidationErrors, validationResult } = require("../middleware/dataValidation");
 const { filterData } = require("../middleware/filterData");
 const mongoose = require("mongoose");
-
 
 //Get list of all users
 exports.getAllUsers = async (req, res) => {
@@ -21,16 +17,7 @@ exports.getAllUsers = async (req, res) => {
 
 //Create a new user
 exports.createNewUser = async (req, res) => {
-  const {
-    first_name,
-    middle_name,
-    last_name,
-    username,
-    email,
-    password,
-    phone,
-    role,
-  } = req.body;
+  const { first_name, middle_name, last_name, username, email, password, phone, role } = req.body;
 
   await Promise.all(validateData.map((validation) => validation.run(req)));
 
@@ -40,12 +27,12 @@ exports.createNewUser = async (req, res) => {
   }
 
   try {
-    const userDB = await User.findOne({ username });
+    const userDB = await User.findOne({ email });
+    console.log(userDB);
     if (userDB) {
       res.status(401).json({ error: "User already exists" });
     } else {
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      const hashedPassword = hashPassword(password);
       const _id = new mongoose.Types.ObjectId();
 
       const newUser = await User.create({
@@ -95,6 +82,7 @@ exports.updateUser = async (req, res) => {
             user.name.middle_name = req.body.middle_name || user.name.middle_name;
             user.name.last_name = req.body.last_name || user.name.last_name;
             user.username = req.body.username || user.username;
+            //need to create validation for change of email
             user.email = req.body.email || user.email;
             // need to create separate update password for user
             user.password = req.body.password || user.password;
@@ -116,9 +104,9 @@ exports.updateUser = async (req, res) => {
 //Delete a user by ID
 exports.deleteUser = async (req, res) => {
   try {
-    const { _id, user_id } = req.body;
+    const { _id } = req.body;
 
-    const deletedUser = await User.findOneAndDelete({ user_id } | { _id });
+    const deletedUser = await User.findOneAndDelete({ _id });
 
     if (deletedUser) {
       return res.status(201).json({ message: "User deleted sucessfully" });
