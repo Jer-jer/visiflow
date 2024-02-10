@@ -18,10 +18,6 @@ interface UserListTableProps {
 export default function UserListTable({ users, addTab }: UserListTableProps) {
 	const columns: ColumnsType<UserDataType> = [
 		{
-			title: "ID",
-			dataIndex: "user_id",
-		},
-		{
 			title: "Name",
 			dataIndex: "name",
 			sorter: (a, b) => a.name.last_name.localeCompare(b.name.last_name),

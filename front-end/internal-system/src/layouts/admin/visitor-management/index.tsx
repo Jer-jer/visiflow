@@ -70,7 +70,7 @@ export default function VisitorManagementLayout() {
 
 	useEffect(() => {
 		dispatch(fetchVisitors());
-	}, []);
+	}, [items]);
 
 	const onChange = (newActiveKey: string) => {
 		setActiveKey(newActiveKey);

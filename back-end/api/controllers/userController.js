@@ -86,30 +86,25 @@ exports.getUserById = async (req, res) => {
 
 //Update a user by ID
 exports.updateUser = async (req, res) => {
-  const { _id } = req.body;
-  try {
-    const user = await User.findById(_id);
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(
-      req.body.password || user.password,
-      saltRounds
-    );
+    const { _id } = req.body;
+    try {
+        const user = await User.findById(_id);
+        if(user) {
+            //need to add validation for data here
+            user.name.first_name = req.body.first_name || user.name.first_name;
+            user.name.middle_name = req.body.middle_name || user.name.middle_name;
+            user.name.last_name = req.body.last_name || user.name.last_name;
+            user.username = req.body.username || user.username;
+            user.email = req.body.email || user.email;
+            // need to create separate update password for user
+            user.password = req.body.password || user.password;
+            user.phone = req.body.phone || user.phone;
+            user.role = req.body.role || user.role;
+            user.updatedAt = Date.now();
 
-    if (user) {
-      //need to add validation for data here
-      user.name.first_name = req.body.first_name || user.name.first_name;
-      user.name.middle_name = req.body.middle_name || user.name.middle_name;
-      user.name.last_name = req.body.last_name || user.name.last_name;
-      user.username = req.body.username || user.username;
-      user.email = req.body.email || user.email;
-      user.password = hashedPassword;
-      user.phone = req.body.phone || user.phone;
-      user.role = req.body.role || user.role;
-      user.updatedAt = Date.now();
+            await user.save();
 
-      await user.save();
-
-      res.json({ message: "User updated successfully", updatedUser: user });
+            res.json({ message: "User updated successfully", updatedUser: user });
     } else {
       return res.status(404).json({ error: "user not found" });
     }

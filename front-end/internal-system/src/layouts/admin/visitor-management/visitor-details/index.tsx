@@ -368,19 +368,6 @@ export default function VisitorDetails({
 					<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
 						<div className="flex">
 							<div className="flex flex-col gap-[20px]">
-								<div className="flex w-full gap-[33px]">
-									<Label
-										spanStyling="text-black font-medium text-[16px]"
-										labelStyling="w-[13.8%]"
-									>
-										Visitor ID
-									</Label>
-									<Input
-										className="vm-placeholder h-[38px] w-[650px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-										placeholder={record._id}
-										disabled
-									/>
-								</div>
 								<div className="flex gap-[60px]">
 									<div
 										className={`flex w-[360px] ${

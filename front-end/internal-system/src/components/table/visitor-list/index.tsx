@@ -26,11 +26,6 @@ export default function VisitorListTable({ addTab }: AdminTableProps) {
 
 	const columns: ColumnsType<VisitorDataType> = [
 		{
-			title: "ID",
-			dataIndex: "_id",
-			key: "_id",
-		},
-		{
 			title: "Name",
 			dataIndex: "visitor_details",
 			sorter: (a, b) =>
