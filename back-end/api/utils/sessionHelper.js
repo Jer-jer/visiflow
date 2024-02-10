@@ -1,8 +1,8 @@
-require('dotenv').config();
+require("dotenv").config();
 
-const session = require('express-session');
-const crypto = require('crypto');
-const MongoStore = require('connect-mongo');
+const session = require("express-session");
+const crypto = require("crypto");
+const MongoStore = require("connect-mongo");
 
 // const sessionSecret = crypto.randomBytes(32).toString('hex');
 

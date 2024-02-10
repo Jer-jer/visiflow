@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 
 // Interface
-import { VisitorDetailsProps } from "../../../../utils";
+import { VisitorDetailsProps } from "../../../../utils/interfaceTest";
 import { WidthContext } from "../../../logged-in";
 
 // Layouts
@@ -269,7 +269,7 @@ export default function CompanionForms({
 					</div>
 				</div>
 				{/* Time in and out */}
-				<div className="flex w-[780px] mt-[25px] justify-between">
+				<div className="mt-[25px] flex w-[780px] justify-between">
 					<Label
 						spanStyling="text-black font-medium text-[16px]"
 						labelStyling="w-[22.5%]"

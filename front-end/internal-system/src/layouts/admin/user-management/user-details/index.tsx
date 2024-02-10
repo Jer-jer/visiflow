@@ -265,16 +265,6 @@ export default function UserDetails({
 					<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
 						<div className="flex justify-between">
 							<div className="flex w-[782px] flex-col gap-[20px]">
-								<div className="flex w-full justify-between">
-									<Label spanStyling="text-black font-medium text-[16px]">
-										User ID
-									</Label>
-									<Input
-										className="vm-placeholder h-[38px] w-[650px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-										placeholder={record?._id}
-										disabled
-									/>
-								</div>
 								<div className="flex gap-[60px]">
 									<div
 										className={`flex w-[360px] ${

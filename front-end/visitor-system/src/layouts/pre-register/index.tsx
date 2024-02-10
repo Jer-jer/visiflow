@@ -49,7 +49,7 @@ export default function PreRegister() {
 			email: "",
 			phone: "",
 			address: {
-				house_no: "",
+				house: "",
 				street: "",
 				brgy: "",
 				city: "",

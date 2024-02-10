@@ -32,7 +32,7 @@ export interface FullNameProps {
 }
 
 export interface AddressProps {
-	house_no?: string;
+	house?: string;
 	street?: string;
 	brgy: string;
 	city: string;
