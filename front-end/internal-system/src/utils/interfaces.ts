@@ -18,7 +18,7 @@ export interface FullNameProps {
 }
 
 export interface AddressProps {
-	house_no?: string;
+	house?: string;
 	street?: string;
 	brgy: string;
 	city: string;
@@ -33,6 +33,7 @@ export interface CompanionListProps {
 }
 
 export interface VisitorDetailsProps {
+	_id?: string;
 	name: FullNameProps;
 	phone: string;
 	email: string;
@@ -42,24 +43,25 @@ export interface VisitorDetailsProps {
 }
 
 export interface PurposeProps {
-	what: string;
+	what: string[];
 	when: string;
-	where: string;
-	who?: string;
-	why?: string;
+	where: string[];
+	who: string[];
+	// why?: string;
 }
 
 //TODO Lacking ID Picture
 export interface VisitorDataType {
-	key: number;
+	// key: number;
 	_id: string;
 	visitor_details: VisitorDetailsProps;
-	companions_details?: VisitorDetailsProps[];
+	companion_details?: VisitorDetailsProps[];
 	date: string;
 	purpose: PurposeProps;
 	plate_num: string;
 	status: VisitorStatus;
 	visitor_type: VisitorType;
+	created_at?: Date;
 }
 
 export interface IDPictureProps {

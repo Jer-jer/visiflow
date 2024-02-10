@@ -1,11 +1,8 @@
 import React, { useState, useContext, createContext } from "react";
 
 //Interfaces
-import { VisitorCompanionsContext } from "../../../layouts/admin/visitor-management/visitor-details";
-import {
-	VisitorDetailsProps,
-	CompanionDetailsProps,
-} from "../../../utils/interfaces";
+import { VisitorRecordContext } from "../../../layouts/admin/visitor-management/visitor-details";
+import { VisitorDetailsProps } from "../../../utils/interfaces";
 
 //Layouts
 import VisitorCompanionsModal from "../../../layouts/admin/visitor-management/companion-details";
@@ -19,51 +16,47 @@ import type { ColumnsType } from "antd/es/table";
 import "../../../utils/variables.scss";
 import "./styles.scss";
 
-export const CompanionRecord = createContext<CompanionDetailsProps | undefined>(
+export const CompanionRecord = createContext<VisitorDetailsProps | undefined>(
 	undefined,
 );
 
 export default function VisitorCompanionsList() {
 	const [openDetails, setOpenDetails] = useState(false);
 	const [openLogs, setOpenLogs] = useState(false);
-	const [companionRecord, setCompanionRecord] =
-		useState<CompanionDetailsProps>();
-	const companionsContext = useContext(VisitorCompanionsContext);
+	const [companionRecord, setCompanionRecord] = useState<VisitorDetailsProps>();
+
+	const recordContext = useContext(VisitorRecordContext);
 
 	const viewLogs = () => {
 		setOpenLogs(!openLogs);
 	};
 
-	const viewDetails = (record: CompanionDetailsProps) => {
-		setOpenDetails(!openDetails);
+	const viewDetails = (record: VisitorDetailsProps) => {
 		setCompanionRecord(record);
+		setOpenDetails(!openDetails);
 	};
 
-	const columns: ColumnsType<CompanionDetailsProps> = [
+	const columns: ColumnsType<VisitorDetailsProps> = [
 		{
 			title: "ID",
-			dataIndex: "id",
-			key: "id",
+			dataIndex: "_id",
+			key: "_id",
 			className: "hidden",
 		},
 		{
 			title: "Name",
-			dataIndex: "companion_details",
 			key: "name",
-			render: (_, { companion_details }) => {
-				return `${companion_details.name.last_name}, ${companion_details.name.first_name} ${companion_details.name.middle_name}`;
+			render: (_, { name }) => {
+				return `${name.last_name}, ${name.first_name} ${name.middle_name}`;
 			},
-			sorter: (a, b) =>
-				a.companion_details.name.last_name.localeCompare(
-					b.companion_details.name.last_name,
-				),
+			sorter: (a, b) => a.name.last_name.localeCompare(b.name.last_name),
 		},
 		{
 			title: "Email",
 			dataIndex: "companion_details",
 			key: "email",
-			render: (_, { companion_details }) => {
-				return companion_details.email;
+			render: (_, { email }) => {
+				return email;
 			},
 		},
 		{
@@ -82,11 +75,15 @@ export default function VisitorCompanionsList() {
 		<>
 			<Table
 				columns={columns}
-				dataSource={companionsContext}
+				dataSource={recordContext!.companion_details}
 				pagination={{ pageSize: 5 }}
 			/>
 			<CompanionRecord.Provider value={companionRecord}>
-				<VisitorCompanionsModal open={openDetails} setOpen={setOpenDetails} />
+				<VisitorCompanionsModal
+					mainVisitorId={recordContext!._id}
+					open={openDetails}
+					setOpen={setOpenDetails}
+				/>
 				<CompanionLogs open={openLogs} setOpen={setOpenLogs} />
 			</CompanionRecord.Provider>
 		</>

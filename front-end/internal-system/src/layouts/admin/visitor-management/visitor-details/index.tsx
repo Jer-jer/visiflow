@@ -13,6 +13,7 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
+import { useDispatch } from "react-redux";
 
 //Interfaces
 import {
@@ -28,6 +29,12 @@ import { WidthContext } from "../../../logged-in";
 import { TabItems } from "..";
 import type { Dayjs } from "dayjs";
 import type { DatePickerProps } from "antd";
+
+// Utils
+import { formatDate } from "../../../../utils";
+
+// Actions
+import { update, deleteVisitor } from "../../../../states/visitors";
 
 //Layouts
 import VisitorLogs from "../visitor-logs";
@@ -97,59 +104,9 @@ const exportOptions: MenuProps["items"] = [
 
 const { confirm } = Modal;
 
-const closeTab = (
-	_id: string | undefined,
-	newTabIndex: MutableRefObject<number>,
-	items: TabItems[],
-	setItems: Dispatch<React.SetStateAction<TabItems[]>>,
-	setActiveKey: Dispatch<SetStateAction<number>>,
-) => {
-	const newActiveKey = --newTabIndex.current;
-	const newItems = [...items];
-	const index = newItems.map((e) => e.visitorData._id).indexOf(_id!);
-	if (index !== -1) {
-		newItems.splice(index, 1);
-		setItems(newItems);
-	}
-	setActiveKey(newActiveKey);
-};
-
-const showDeleteConfirm = (
-	_id: string,
-	newTabIndex: MutableRefObject<number>,
-	items: TabItems[],
-	setItems: Dispatch<React.SetStateAction<TabItems[]>>,
-	setActiveKey: Dispatch<SetStateAction<number>>,
-) => {
-	confirm({
-		title: "Are you sure you want to delete this visitor?",
-		className: "confirm-buttons",
-		icon: <ExclamationCircleFilled className="!text-error-500" />,
-		okText: "Yes",
-		okType: "danger",
-		cancelText: "No",
-		onOk() {
-			AxiosInstace.delete("/visitor/delete", {
-				data: {
-					_id,
-				},
-			})
-				.then((res) => {
-					closeTab(_id, newTabIndex, items, setItems, setActiveKey);
-				})
-				.catch((err) => {
-					console.error(err.response.data.error || err.response.data.errors);
-				});
-		},
-		onCancel() {
-			console.log("Cancel");
-		},
-	});
-};
-
-export const VisitorCompanionsContext = createContext<
-	VisitorDetailsProps[] | undefined
->(undefined);
+export const VisitorRecordContext = createContext<VisitorDataType | undefined>(
+	undefined,
+);
 
 export default function VisitorDetails({
 	newTabIndex,
@@ -173,6 +130,8 @@ export default function VisitorDetails({
 
 	const width = useContext(WidthContext);
 
+	const dispatch = useDispatch();
+
 	const {
 		register,
 		handleSubmit,
@@ -185,11 +144,11 @@ export default function VisitorDetails({
 			first_name: record.visitor_details.name.first_name,
 			middle_name: record.visitor_details.name.middle_name,
 			last_name: record.visitor_details.name.last_name,
-			mobile: record.visitor_details.phone,
+			phone: record.visitor_details.phone,
 			email: record.visitor_details.email,
-			house: record.visitor_details.address.house_no,
+			house: record.visitor_details.address.house,
 			street: record.visitor_details.address.street,
-			barangay: record.visitor_details.address.brgy,
+			brgy: record.visitor_details.address.brgy,
 			city: record.visitor_details.address.city,
 			province: record.visitor_details.address.province,
 			country: record.visitor_details.address.country,
@@ -204,12 +163,11 @@ export default function VisitorDetails({
 			when: record.purpose.when,
 			where: record.purpose.where,
 			who: record.purpose.who,
-			// why: record.purpose.why,
 		},
 	});
 
 	const updateInput = (
-		value: string | [string, string] | any,
+		value: string | [string, string] | string[] | any,
 		property: string,
 	) => {
 		switch (property) {
@@ -222,7 +180,7 @@ export default function VisitorDetails({
 			case "last_name":
 				setValue(property, value as string);
 				break;
-			case "mobile":
+			case "phone":
 				setValue(property, value as string);
 				break;
 			case "email":
@@ -231,7 +189,7 @@ export default function VisitorDetails({
 			case "street":
 				setValue(property, value as string);
 				break;
-			case "barangay":
+			case "brgy":
 				setValue(property, value as string);
 				break;
 			case "city":
@@ -256,20 +214,17 @@ export default function VisitorDetails({
 				setValue(property, value);
 				break;
 			case "what":
-				setValue(property, value as string);
+				setValue(property, value as string[]);
 				break;
 			case "when":
 				setValue(property, value as string);
 				break;
 			case "where":
-				setValue(property, value as string);
+				setValue(property, value as string[]);
 				break;
 			case "who":
-				setValue(property, value as string);
+				setValue(property, value as string[]);
 				break;
-			// case "why":
-			// 	setValue(property, value as string);
-			// 	break;
 		}
 	};
 
@@ -288,16 +243,7 @@ export default function VisitorDetails({
 		console.log(date, dateString);
 	};
 
-	const filterOption = (
-		input: string,
-		option?: { label: string; value: string },
-	) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
-
-	const onSearch = (value: string) => {
-		console.log("search:", value);
-	};
-
-	const handleChange = (property: string, value: string) => {
+	const handleChange = (property: string, value: string | string[]) => {
 		console.log(value);
 
 		updateInput(value, property);
@@ -308,48 +254,33 @@ export default function VisitorDetails({
 		clearErrors();
 	};
 
-	const saveAction = (_id: string, data: VisitorDetailsInterfaceZod) => {
-		//This needs to be customized to whatever the DB returns
+	const saveAction = (zodData: VisitorDetailsInterfaceZod) => {
 		setAlertOpen(!alertOpen);
 		setDisabledInputs(!disabledInputs);
 
 		AxiosInstace.put("/visitor/update", {
-			_id,
-			first_name:
-				data.first_name !== record.visitor_details.name.first_name &&
-				data.first_name,
-			middle_name:
-				data.middle_name !== record.visitor_details.name.middle_name &&
-				data.middle_name,
-			last_name:
-				data.last_name !== record.visitor_details.name.last_name &&
-				data.last_name,
-			phone: data.mobile !== record.visitor_details.phone && data.mobile,
-			email: data.email !== record.visitor_details.email && data.email,
-			house_no:
-				data.house !== record.visitor_details.address.house_no && data.house,
-			street:
-				data.street !== record.visitor_details.address.street && data.street,
-			brgy:
-				data.barangay !== record.visitor_details.address.brgy && data.barangay,
-			city: data.city !== record.visitor_details.address.city && data.city,
-			province:
-				data.province !== record.visitor_details.address.province &&
-				data.province,
-			country:
-				data.country !== record.visitor_details.address.country && data.country,
-			time_in:
-				data.check_in_out[0] !== record.visitor_details.time_in &&
-				data.check_in_out[0],
-			time_out:
-				data.check_in_out[1] !== record.visitor_details.time_out &&
-				data.check_in_out[1],
-			plate_num: data.plate_num !== record.plate_num && data.plate_num,
-			status: data.status !== record.status && data.status,
-			visitor_type:
-				data.visitor_type !== record.visitor_type && data.visitor_type,
+			_id: record._id,
+			first_name: zodData.first_name,
+			middle_name: zodData.middle_name,
+			last_name: zodData.last_name,
+			phone: zodData.phone,
+			email: zodData.email,
+			house_no: zodData.house,
+			street: zodData.street,
+			brgy: zodData.brgy,
+			city: zodData.city,
+			province: zodData.province,
+			country: zodData.country,
+			time_in: zodData.check_in_out[0],
+			time_out: zodData.check_in_out[1],
+			plate_num: zodData.plate_num,
+			status: zodData.status,
+			visitor_type: zodData.visitor_type,
 		})
 			.then((res) => {
+				console.log(res.data.updatedVisitor);
+				dispatch(update(res.data.updatedVisitor));
+
 				setStatus(true);
 				setAlertMsg(res.data.message);
 				setAlertOpen(!alertOpen);
@@ -362,8 +293,47 @@ export default function VisitorDetails({
 	};
 
 	const onSubmit = handleSubmit((data) => {
-		saveAction(record._id, data);
+		saveAction(data);
 	});
+
+	const closeTab = (_id: string | undefined) => {
+		const newActiveKey = --newTabIndex.current;
+		const newItems = [...items];
+		const index = newItems.map((e) => e.visitorData._id).indexOf(_id!);
+		if (index !== -1) {
+			newItems.splice(index, 1);
+			setItems(newItems);
+		}
+		setActiveKey(newActiveKey);
+	};
+
+	const showDeleteConfirm = (_id: string) => {
+		confirm({
+			title: "Are you sure you want to delete this visitor?",
+			className: "confirm-buttons",
+			icon: <ExclamationCircleFilled className="!text-error-500" />,
+			okText: "Yes",
+			okType: "danger",
+			cancelText: "No",
+			onOk() {
+				AxiosInstace.delete("/visitor/delete", {
+					data: {
+						_id,
+					},
+				})
+					.then((res) => {
+						dispatch(deleteVisitor(_id));
+						closeTab(_id);
+					})
+					.catch((err) => {
+						console.error(err.response.data.error || err.response.data.errors);
+					});
+			},
+			onCancel() {
+				console.log("Cancel");
+			},
+		});
+	};
 
 	return (
 		<div className="visitor-details">
@@ -501,13 +471,13 @@ export default function VisitorDetails({
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
 												placeholder={record.visitor_details.phone}
-												{...register("mobile")}
-												onChange={(e) => updateInput(e.target.value, "mobile")}
+												{...register("phone")}
+												onChange={(e) => updateInput(e.target.value, "phone")}
 												disabled={disabledInputs}
 											/>
-											{errors?.mobile && (
+											{errors?.phone && (
 												<p className="mt-1 text-sm text-red-500">
-													{errors.mobile.message}
+													{errors.phone.message}
 												</p>
 											)}
 										</div>
@@ -551,7 +521,7 @@ export default function VisitorDetails({
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.address.house_no}
+												placeholder={record.visitor_details.address.house}
 												{...register("house")}
 												onChange={(e) => updateInput(e.target.value, "house")}
 												disabled={disabledInputs}
@@ -650,15 +620,13 @@ export default function VisitorDetails({
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
 												placeholder={record.visitor_details.address.brgy}
-												{...register("barangay")}
-												onChange={(e) =>
-													updateInput(e.target.value, "barangay")
-												}
+												{...register("brgy")}
+												onChange={(e) => updateInput(e.target.value, "brgy")}
 												disabled={disabledInputs}
 											/>
-											{errors?.barangay && (
+											{errors?.brgy && (
 												<p className="mt-1 text-sm text-red-500">
-													{errors.barangay.message}
+													{errors.brgy.message}
 												</p>
 											)}
 										</div>
@@ -701,15 +669,15 @@ export default function VisitorDetails({
 									<div className="flex w-full flex-col">
 										<DateTimePicker
 											globalStyling="w-full"
-											rangePickerStyling="bg-[#e0ebf0] border-none w-[inherit]"
+											rangePickerStyling="bg-[#e0ebf0] hover:!bg-[#e0ebf0] border-none w-[inherit] focus-within:!bg-[#e0ebf0] focus:!bg-[#e0ebf0]"
 											size="large"
 											defaultVal={{
 												from:
 													record.visitor_details.time_in ||
-													"9999-99-99 99:99 PM",
+													formatDate(new Date()),
 												to:
 													record.visitor_details.time_out ||
-													"9999-99-99 99:99 PM",
+													formatDate(new Date()),
 											}}
 											onRangeChange={onRangeChange}
 											visitorMngmnt
@@ -729,28 +697,23 @@ export default function VisitorDetails({
 								>
 									<Label
 										spanStyling="text-black font-medium text-[16px]"
-										labelStyling="w-[18.5%]"
+										labelStyling="w-[21.5%]"
 									>
 										Purpose
 									</Label>
-									<div className="flex flex-col gap-[10px]">
+									<div className="flex w-full flex-col gap-[10px]">
 										<div className="flex gap-[20px]">
-											<div className="flex flex-col">
+											<div className="flex w-full flex-col">
 												<Select
 													className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
 													showSearch
+													mode="multiple"
 													allowClear
 													placeholder="What"
-													optionFilterProp="children"
-													onSearch={onSearch}
-													filterOption={filterOption}
 													disabled={disabledInputs}
-													defaultValue={
-														record.purpose.what === ""
-															? undefined
-															: record.purpose.what
-													}
-													onChange={(value: string) =>
+													listHeight={128}
+													defaultValue={record.purpose.what}
+													onChange={(value: string[]) =>
 														handleChange("what", value)
 													}
 													options={[
@@ -774,10 +737,10 @@ export default function VisitorDetails({
 													</p>
 												)}
 											</div>
-											<div className="flex flex-col">
+											<div className="flex w-full flex-col">
 												<DatePicker
 													showTime
-													className={`w-[inherit] border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500 focus:!border-primary-500 ${
+													className={`w-[inherit] border-none !border-[#d9d9d9] bg-[#e0ebf0] focus-within:!bg-[#e0ebf0] hover:!border-primary-500 hover:!bg-[#e0ebf0] focus:!border-primary-500 focus:!bg-[#e0ebf0] ${
 														disabledInputs && "picker-disabled"
 													} vm-placeholder`}
 													defaultValue={dayjs(
@@ -793,32 +756,34 @@ export default function VisitorDetails({
 													</p>
 												)}
 											</div>
-											<div className="flex flex-col">
+											<div className="flex w-full flex-col">
 												<Select
 													className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
 													showSearch
+													mode="multiple"
 													allowClear
 													placeholder="Where"
-													optionFilterProp="children"
-													onSearch={onSearch}
-													filterOption={filterOption}
 													disabled={disabledInputs}
-													defaultValue={
-														record.purpose.where === ""
-															? undefined
-															: record.purpose.where
-													}
-													onChange={(value: string) =>
+													defaultValue={record.purpose.where}
+													onChange={(value: string[]) =>
 														handleChange("where", value)
 													}
 													options={[
 														{
-															value: "conferenceHall",
-															label: "Conference Hall",
+															value: "gym",
+															label: "Gymnasium",
 														},
 														{
-															value: "gym",
-															label: "Gym",
+															value: "office_of_the_president",
+															label: "Office of the President",
+														},
+														{
+															value: "guard_house",
+															label: "Guard House",
+														},
+														{
+															value: "conference_hall",
+															label: "Conference Hall",
 														},
 														{
 															value: "classroom",
@@ -834,36 +799,26 @@ export default function VisitorDetails({
 											</div>
 										</div>
 										<div className="flex gap-[20px]">
-											<div className="flex flex-col">
+											<div className="flex w-full flex-col">
 												<Select
 													className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
 													showSearch
+													mode="multiple"
 													allowClear
 													placeholder="Who"
-													optionFilterProp="children"
-													onSearch={onSearch}
-													filterOption={filterOption}
 													disabled={disabledInputs}
-													defaultValue={
-														record.purpose.who === ""
-															? undefined
-															: record.purpose.who
-													}
-													onChange={(value: string) =>
+													defaultValue={record.purpose.who}
+													onChange={(value: string[]) =>
 														handleChange("who", value)
 													}
 													options={[
 														{
-															value: "linda_rogers",
-															label: "Dr. Linda Rogers",
+															value: "john_doe",
+															label: "Dr. John Doe",
 														},
 														{
-															value: "barry_allen",
-															label: "Barry Allen",
-														},
-														{
-															value: "lucy_tang",
-															label: "Dr. Lucy Tang",
+															value: "lucy_grimm",
+															label: "Lucy Grimm",
 														},
 													]}
 												/>
@@ -873,35 +828,6 @@ export default function VisitorDetails({
 													</p>
 												)}
 											</div>
-											{/* <div className="flex flex-col">
-												<Select
-													className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
-													showSearch
-													placeholder="Why"
-													optionFilterProp="children"
-													onSearch={onSearch}
-													filterOption={filterOption}
-													disabled={disabledInputs}
-													defaultValue={
-														record.purpose.why === ""
-															? undefined
-															: record.purpose.why
-													}
-													// onChange={(value: string) => handleChange('why', value)}
-													// options={[
-													// 	{ value: VisitorType.WalkIn, label: "Walk-In" },
-													// 	{
-													// 		value: VisitorType.PreRegistered,
-													// 		label: "Pre-Registered",
-													// 	},
-													// ]}
-												/>
-												{errors?.why && (
-													<p className="mt-1 text-sm text-red-500">
-														{errors.why.message}
-													</p>
-												)}
-											</div> */}
 										</div>
 									</div>
 								</div>
@@ -968,19 +894,22 @@ export default function VisitorDetails({
 											{errors.visitor_type.message}
 										</p>
 									)}
-									{disabledInputs ? (
-										<span className="mt-2 rounded border border-black px-3 py-1 text-[20px] font-bold shadow-md">
-											{record.plate_num}
-										</span>
-									) : (
-										<Input
-											className="vm-placeholder h-[38px] w-fit rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-											placeholder={record.plate_num}
-											{...register("plate_num")}
-											onChange={(e) => updateInput(e.target.value, "plate_num")}
-											disabled={disabledInputs}
-										/>
-									)}
+									{record.plate_num &&
+										(disabledInputs ? (
+											<span className="mt-2 rounded border border-black px-3 py-1 text-[20px] font-bold shadow-md">
+												{record.plate_num}
+											</span>
+										) : (
+											<Input
+												className="vm-placeholder h-[38px] w-fit rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
+												placeholder={record.plate_num}
+												{...register("plate_num")}
+												onChange={(e) =>
+													updateInput(e.target.value, "plate_num")
+												}
+												disabled={disabledInputs}
+											/>
+										))}
 									{errors?.plate_num && (
 										<p className="mt-1 text-sm text-red-500">
 											{errors.plate_num.message}
@@ -1047,7 +976,7 @@ export default function VisitorDetails({
 										setOpen={setVisitLogsOpen}
 									/>
 									{/* Optional only for visitors with companions */}
-									{record.companions_details && (
+									{record.companion_details!.length > 0 && (
 										<>
 											<Button
 												type="primary"
@@ -1059,14 +988,12 @@ export default function VisitorDetails({
 											>
 												View Companions
 											</Button>
-											<VisitorCompanionsContext.Provider
-												value={record.companions_details}
-											>
+											<VisitorRecordContext.Provider value={record}>
 												<VisitorCompanions
 													open={vistorCompanionsOpen}
 													setOpen={setVisitorCompanionsOpen}
 												/>
-											</VisitorCompanionsContext.Provider>
+											</VisitorRecordContext.Provider>
 										</>
 									)}
 
@@ -1080,7 +1007,7 @@ export default function VisitorDetails({
 									</Button>
 									<NotifyPOI
 										emailInput={record.visitor_details.email}
-										companionRecords={record.companions_details}
+										companionRecords={record.companion_details}
 										open={notifyOpen}
 										setOpen={setNotifyOpen}
 									/>
@@ -1090,15 +1017,7 @@ export default function VisitorDetails({
 							{!disabledInputs && (
 								<>
 									<Button
-										onClick={() =>
-											showDeleteConfirm(
-												record._id,
-												newTabIndex,
-												items,
-												setItems,
-												setActiveKey,
-											)
-										}
+										onClick={() => showDeleteConfirm(record._id)}
 										type="primary"
 										size="large"
 										className="search-button !rounded-[18px] !bg-error-500"

@@ -48,9 +48,9 @@ export default function StepTwoForm({
 				setValue("lastName", mainVisitor.name.last_name);
 				setValue("email", mainVisitor.email);
 				setValue("mobile", mainVisitor.phone);
-				setValue("house", mainVisitor.address.house_no);
+				setValue("house", mainVisitor.address.house);
 				setValue("street", mainVisitor.address.street);
-				setValue("barangay", mainVisitor.address.brgy);
+				setValue("brgy", mainVisitor.address.brgy);
 				setValue("city", mainVisitor.address.city);
 				setValue("province", mainVisitor.address.province);
 				setValue("country", mainVisitor.address.country);
@@ -62,9 +62,9 @@ export default function StepTwoForm({
 				setValue("lastName", companions[increment - 1].name.last_name);
 				setValue("email", companions[increment - 1].email);
 				setValue("mobile", companions[increment - 1].phone);
-				setValue("house", companions[increment - 1].address.house_no);
+				setValue("house", companions[increment - 1].address.house);
 				setValue("street", companions[increment - 1].address.street);
-				setValue("barangay", companions[increment - 1].address.brgy);
+				setValue("brgy", companions[increment - 1].address.brgy);
 				setValue("city", companions[increment - 1].address.city);
 				setValue("province", companions[increment - 1].address.province);
 				setValue("country", companions[increment - 1].address.country);
@@ -103,13 +103,13 @@ export default function StepTwoForm({
 				break;
 			case "house":
 				setValue(property, value);
-				updatedVisitors.address.house_no = value;
+				updatedVisitors.address.house = value;
 				break;
 			case "street":
 				setValue(property, value);
 				updatedVisitors.address.street = value;
 				break;
-			case "barangay":
+			case "brgy":
 				setValue(property, value);
 				updatedVisitors.address.brgy = value;
 				break;
@@ -342,7 +342,7 @@ export default function StepTwoForm({
 								// value={visitor.house}
 								value={
 									mainOrCompanion(increment, mainVisitor, companions).address
-										.house_no
+										.house
 								}
 								onChange={(event: any) =>
 									updateData(event.target.value, "house")
@@ -394,12 +394,12 @@ export default function StepTwoForm({
 				<Form.Item>
 					<div
 						className={`flex ${
-							errors?.barangay ? "items-start" : "items-center"
+							errors?.brgy ? "items-start" : "items-center"
 						} justify-between gap-[5%]`}
 					>
 						<span
 							className={`w-[120px] ${
-								errors?.barangay && "mt-[6px]"
+								errors?.brgy && "mt-[6px]"
 							} text-[16px] font-[400] text-[#0000004d]`}
 						>
 							Barangay
@@ -408,19 +408,19 @@ export default function StepTwoForm({
 							<Input
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
-								{...register("barangay")}
+								{...register("brgy")}
 								// value={visitor.barangay}
 								value={
 									mainOrCompanion(increment, mainVisitor, companions).address
 										.brgy
 								}
 								onChange={(event: any) =>
-									updateData(event.target.value, "barangay")
+									updateData(event.target.value, "brgy")
 								}
 							/>
-							{errors?.barangay && (
+							{errors?.brgy && (
 								<p className="mt-1 text-sm text-red-500">
-									{errors.barangay.message}
+									{errors.brgy.message}
 								</p>
 							)}
 						</div>

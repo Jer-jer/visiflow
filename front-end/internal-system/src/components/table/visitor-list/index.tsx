@@ -1,32 +1,34 @@
 /* Built using Ant Design */
 import React from "react";
+import { useSelector } from "react-redux";
+
+// Components
 import { Table, Tag, Button } from "antd";
-import type { ColumnsType } from "antd/es/table";
 
 //Interfaces
 import { VisitorDataType } from "../../../utils/interfaces";
 import { VisitorStatus, VisitorType } from "../../../utils/enums";
+import type { ColumnsType } from "antd/es/table";
+
+// Utils
+import { formatDate } from "../../../utils";
 
 //Styles
 import "../../../utils/variables.scss";
 import "./styles.scss";
 
 interface AdminTableProps {
-	visitors: VisitorDataType[];
 	addTab: (record: VisitorDataType) => void;
 }
 
-export default function VisitorListTable({
-	visitors,
-	addTab,
-}: AdminTableProps) {
+export default function VisitorListTable({ addTab }: AdminTableProps) {
+	const { data } = useSelector((state: any) => state.visitors);
+
 	const columns: ColumnsType<VisitorDataType> = [
 		{
 			title: "ID",
-			dataIndex: "visitor_id",
-			render: (_, { visitor_details }) => {
-				return visitor_details.visitor_id;
-			},
+			dataIndex: "_id",
+			key: "_id",
 		},
 		{
 			title: "Name",
@@ -73,9 +75,45 @@ export default function VisitorListTable({
 				record.visitor_type.indexOf(value) === 0,
 		},
 		{
+			title: "Status",
+			dataIndex: "status",
+			filters: [
+				{
+					text: "Approved",
+					value: "Approved",
+				},
+				{
+					text: "In Progress",
+					value: "In Progress",
+				},
+				{
+					text: "Declined",
+					value: "Declined",
+				},
+			],
+			render: (_, { status }) => {
+				let color;
+				if (status === VisitorStatus.InProgress) color = "#D0D2CC";
+				else if (status === VisitorStatus.Approved) color = "#0db284";
+				else if (status === VisitorStatus.Declined) color = "#FD4A4A";
+				return (
+					<Tag color={color} key={status}>
+						{status.toUpperCase()}
+					</Tag>
+				);
+			},
+			onFilter: (value: any, record) =>
+				record.visitor_type.indexOf(value) === 0,
+		},
+		{
 			title: "Date Created",
-			dataIndex: "date",
-			sorter: (a, b) => a.date.localeCompare(b.date),
+			dataIndex: "created_at",
+			key: "created_at",
+			sorter: (a, b) =>
+				formatDate(a.created_at!).localeCompare(formatDate(b.created_at!)),
+			render: (_, { created_at }) => {
+				return formatDate(created_at!);
+			},
 		},
 		{
 			title: "Action",
@@ -87,10 +125,6 @@ export default function VisitorListTable({
 	];
 
 	return (
-		<Table
-			columns={columns}
-			dataSource={visitors}
-			pagination={{ pageSize: 8 }}
-		/>
+		<Table columns={columns} dataSource={data} pagination={{ pageSize: 8 }} />
 	);
 }
