@@ -1,10 +1,4 @@
-import React, {
-	useRef,
-	useState,
-	useEffect,
-	SetStateAction,
-	Dispatch,
-} from "react";
+import React, { useRef, useState, useEffect } from "react";
 import AxiosInstace from "../../../lib/axios";
 
 //Interfaces
@@ -68,10 +62,6 @@ const UserList = ({ users, addTab, createUser }: UserListProps) => {
 	);
 };
 
-const generateUserId = (userLength: number) => {
-	return ("UVGU000" + (userLength + 1)).slice(-9);
-};
-
 export default function UserManagementLayout() {
 	const [items, setItems] = useState<TabItems[]>([]);
 	const [users, setUsers] = useState<UserDataType[]>([]);
@@ -99,7 +89,6 @@ export default function UserManagementLayout() {
 
 	const createUser = () => {
 		AxiosInstace.post("/user/new", {
-			user_id: generateUserId(users.length),
 			first_name: " ",
 			middle_name: " ",
 			last_name: " ",
@@ -116,7 +105,7 @@ export default function UserManagementLayout() {
 					{
 						key: newActiveKey,
 						tabName: "New User",
-						userData: res.data.user,
+						userData: res.data.newUser,
 					},
 				]);
 

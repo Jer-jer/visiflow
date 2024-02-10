@@ -1,7 +1,18 @@
-import React, { useState, useContext, createContext } from "react";
+import React, {
+	useState,
+	useContext,
+	createContext,
+	MutableRefObject,
+	Dispatch,
+	SetStateAction,
+} from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import weekday from "dayjs/plugin/weekday";
+import localeData from "dayjs/plugin/localeData";
 
 //Interfaces
 import {
@@ -10,12 +21,13 @@ import {
 } from "../../../../utils/zodSchemas";
 import {
 	VisitorDataType,
-	VisitorStatus,
-	VisitorType,
-	CompanionDetailsProps,
+	VisitorDetailsProps,
 } from "../../../../utils/interfaces";
+import { VisitorStatus, VisitorType } from "../../../../utils/enums";
 import { WidthContext } from "../../../logged-in";
+import { TabItems } from "..";
 import type { Dayjs } from "dayjs";
+import type { DatePickerProps } from "antd";
 
 //Layouts
 import VisitorLogs from "../visitor-logs";
@@ -25,19 +37,41 @@ import Identification from "../identification";
 
 //Components
 import type { MenuProps } from "antd";
-import { Button, Avatar, Dropdown, Select, Input, Form, Tag } from "antd";
+import {
+	Button,
+	Avatar,
+	Dropdown,
+	Select,
+	Input,
+	Form,
+	Tag,
+	DatePicker,
+	Modal,
+} from "antd";
 import DateTimePicker from "../../../../components/datetime-picker";
 import Label from "../../../../components/fields/input/label";
 import Alert from "../../../../components/alert";
 
 //Assets
 import { ExcelDownload } from "../../../../assets/svg";
+import { ExclamationCircleFilled } from "@ant-design/icons";
 
 //Styles
 import "./styles.scss";
 
+// Libraries
+import AxiosInstace from "../../../../lib/axios";
+
+dayjs.extend(weekday);
+dayjs.extend(localeData);
+dayjs.extend(customParseFormat);
+
 interface VisitorDeetsProps {
+	newTabIndex: MutableRefObject<number>;
 	record: VisitorDataType;
+	items: TabItems[];
+	setItems: Dispatch<SetStateAction<TabItems[]>>;
+	setActiveKey: Dispatch<SetStateAction<number>>;
 }
 
 type VisitorDetailTypeZod = z.infer<typeof VisitorDetailZod>;
@@ -61,15 +95,73 @@ const exportOptions: MenuProps["items"] = [
 	},
 ];
 
-const { TextArea } = Input;
+const { confirm } = Modal;
+
+const closeTab = (
+	_id: string | undefined,
+	newTabIndex: MutableRefObject<number>,
+	items: TabItems[],
+	setItems: Dispatch<React.SetStateAction<TabItems[]>>,
+	setActiveKey: Dispatch<SetStateAction<number>>,
+) => {
+	const newActiveKey = --newTabIndex.current;
+	const newItems = [...items];
+	const index = newItems.map((e) => e.visitorData._id).indexOf(_id!);
+	if (index !== -1) {
+		newItems.splice(index, 1);
+		setItems(newItems);
+	}
+	setActiveKey(newActiveKey);
+};
+
+const showDeleteConfirm = (
+	_id: string,
+	newTabIndex: MutableRefObject<number>,
+	items: TabItems[],
+	setItems: Dispatch<React.SetStateAction<TabItems[]>>,
+	setActiveKey: Dispatch<SetStateAction<number>>,
+) => {
+	confirm({
+		title: "Are you sure you want to delete this visitor?",
+		className: "confirm-buttons",
+		icon: <ExclamationCircleFilled className="!text-error-500" />,
+		okText: "Yes",
+		okType: "danger",
+		cancelText: "No",
+		onOk() {
+			AxiosInstace.delete("/visitor/delete", {
+				data: {
+					_id,
+				},
+			})
+				.then((res) => {
+					closeTab(_id, newTabIndex, items, setItems, setActiveKey);
+				})
+				.catch((err) => {
+					console.error(err.response.data.error || err.response.data.errors);
+				});
+		},
+		onCancel() {
+			console.log("Cancel");
+		},
+	});
+};
 
 export const VisitorCompanionsContext = createContext<
-	CompanionDetailsProps[] | undefined
+	VisitorDetailsProps[] | undefined
 >(undefined);
 
-export default function VisitorDetails({ record }: VisitorDeetsProps) {
+export default function VisitorDetails({
+	newTabIndex,
+	record,
+	items,
+	setItems,
+	setActiveKey,
+}: VisitorDeetsProps) {
 	//Alert State
+	const [status, setStatus] = useState(false);
 	const [alertOpen, setAlertOpen] = useState(false);
+	const [alertMsg, setAlertMsg] = useState("");
 
 	//Modal States
 	const [visitLogsOpen, setVisitLogsOpen] = useState(false);
@@ -90,28 +182,36 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 	} = useForm<VisitorDetailTypeZod>({
 		resolver: zodResolver(VisitorDetailZod),
 		defaultValues: {
-			first_name: record.visitor_details.fullName.first_name,
-			middle_name: record.visitor_details.fullName.middle_name,
-			last_name: record.visitor_details.fullName.last_name,
-			mobile: record.visitor_details.mobile,
+			first_name: record.visitor_details.name.first_name,
+			middle_name: record.visitor_details.name.middle_name,
+			last_name: record.visitor_details.name.last_name,
+			mobile: record.visitor_details.phone,
 			email: record.visitor_details.email,
-			house: record.visitor_details.houseNo,
-			street: record.visitor_details.street,
-			barangay: record.visitor_details.brgy,
-			city: record.visitor_details.city,
-			province: record.visitor_details.province,
-			country: record.visitor_details.country,
+			house: record.visitor_details.address.house_no,
+			street: record.visitor_details.address.street,
+			barangay: record.visitor_details.address.brgy,
+			city: record.visitor_details.address.city,
+			province: record.visitor_details.address.province,
+			country: record.visitor_details.address.country,
 			check_in_out: [
-				record.visitor_details.timeIn,
-				record.visitor_details.timeOut,
+				record.visitor_details.time_in,
+				record.visitor_details.time_out,
 			],
+			plate_num: record.plate_num,
 			status: record.status,
 			visitor_type: record.visitor_type,
-			purpose: record.purpose,
+			what: record.purpose.what,
+			when: record.purpose.when,
+			where: record.purpose.where,
+			who: record.purpose.who,
+			// why: record.purpose.why,
 		},
 	});
 
-	const updateInput = (value: string | [string, string], property: string) => {
+	const updateInput = (
+		value: string | [string, string] | any,
+		property: string,
+	) => {
 		switch (property) {
 			case "first_name":
 				setValue(property, value as string);
@@ -123,10 +223,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 				setValue(property, value as string);
 				break;
 			case "mobile":
-				const reg = /^[0-9\-+\b]*$/;
-				if (reg.test(value as string)) {
-					setValue(property, value as string);
-				}
+				setValue(property, value as string);
 				break;
 			case "email":
 				setValue(property, value as string);
@@ -149,15 +246,30 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 			case "check_in_out":
 				setValue(property, value as [string, string]);
 				break;
-			case "visitor_type":
+			case "plate_num":
 				setValue(property, value as string);
+				break;
+			case "visitor_type":
+				setValue(property, value);
 				break;
 			case "status":
+				setValue(property, value);
+				break;
+			case "what":
 				setValue(property, value as string);
 				break;
-			case "purpose":
+			case "when":
 				setValue(property, value as string);
 				break;
+			case "where":
+				setValue(property, value as string);
+				break;
+			case "who":
+				setValue(property, value as string);
+				break;
+			// case "why":
+			// 	setValue(property, value as string);
+			// 	break;
 		}
 	};
 
@@ -172,21 +284,85 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 		}
 	};
 
-	const handleChange = (value: string) => updateInput(value, "status");
+	const onChange: DatePickerProps["onChange"] = (date, dateString) => {
+		console.log(date, dateString);
+	};
+
+	const filterOption = (
+		input: string,
+		option?: { label: string; value: string },
+	) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
+
+	const onSearch = (value: string) => {
+		console.log("search:", value);
+	};
+
+	const handleChange = (property: string, value: string) => {
+		console.log(value);
+
+		updateInput(value, property);
+	};
 
 	const editOrCancel = () => {
 		setDisabledInputs(!disabledInputs);
 		clearErrors();
 	};
 
-	const saveAction = (visitorId: string, data: VisitorDetailsInterfaceZod) => {
+	const saveAction = (_id: string, data: VisitorDetailsInterfaceZod) => {
 		//This needs to be customized to whatever the DB returns
 		setAlertOpen(!alertOpen);
 		setDisabledInputs(!disabledInputs);
+
+		AxiosInstace.put("/visitor/update", {
+			_id,
+			first_name:
+				data.first_name !== record.visitor_details.name.first_name &&
+				data.first_name,
+			middle_name:
+				data.middle_name !== record.visitor_details.name.middle_name &&
+				data.middle_name,
+			last_name:
+				data.last_name !== record.visitor_details.name.last_name &&
+				data.last_name,
+			phone: data.mobile !== record.visitor_details.phone && data.mobile,
+			email: data.email !== record.visitor_details.email && data.email,
+			house_no:
+				data.house !== record.visitor_details.address.house_no && data.house,
+			street:
+				data.street !== record.visitor_details.address.street && data.street,
+			brgy:
+				data.barangay !== record.visitor_details.address.brgy && data.barangay,
+			city: data.city !== record.visitor_details.address.city && data.city,
+			province:
+				data.province !== record.visitor_details.address.province &&
+				data.province,
+			country:
+				data.country !== record.visitor_details.address.country && data.country,
+			time_in:
+				data.check_in_out[0] !== record.visitor_details.time_in &&
+				data.check_in_out[0],
+			time_out:
+				data.check_in_out[1] !== record.visitor_details.time_out &&
+				data.check_in_out[1],
+			plate_num: data.plate_num !== record.plate_num && data.plate_num,
+			status: data.status !== record.status && data.status,
+			visitor_type:
+				data.visitor_type !== record.visitor_type && data.visitor_type,
+		})
+			.then((res) => {
+				setStatus(true);
+				setAlertMsg(res.data.message);
+				setAlertOpen(!alertOpen);
+				setDisabledInputs(!disabledInputs);
+			})
+			.catch((err) => {
+				setStatus(false);
+				setAlertMsg(err.response.data.error || err.response.data.errors);
+			});
 	};
 
 	const onSubmit = handleSubmit((data) => {
-		saveAction(record.id, data);
+		saveAction(record._id, data);
 	});
 
 	return (
@@ -196,23 +372,22 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 					alertOpen && "scale-y-100"
 				}`}
 			>
-				{/* // Needs to be customized to whatever the DB returns */}
 				<Alert
 					globalCustomStyling={`flex w-full overflow-hidden rounded-lg rounded-tl-none bg-white shadow-md`}
 					statusStyling="flex w-12 items-center justify-center"
-					statusColor="bg-primary-500"
+					statusColor={status ? "bg-primary-500" : "bg-error-500"}
 					spanStyling="font-semibold"
-					statusTextHeaderColor="text-primary-500"
+					statusTextHeaderColor={status ? "text-primary-500" : "text-error-500"}
 					descStyling="text-sm text-gray-600"
 					header="Information Box"
-					desc="Message successfully sent to Visitor via Email"
+					desc={alertMsg}
 					open={alertOpen}
 					setOpen={setAlertOpen}
 				/>
 			</div>
 
 			<Form name="Visitor Details" onFinish={onSubmit} autoComplete="off">
-				<div className="mr-[135px] flex flex-col gap-[35px] pt-[30px]">
+				<div className="mr-[130px] flex flex-col gap-[35px] pt-[30px]">
 					<div className="flex justify-end">
 						<Dropdown menu={{ items: exportOptions }} trigger={["click"]}>
 							<a title="Download" onClick={(e) => e.preventDefault()} href="/">
@@ -222,7 +397,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 					</div>
 					<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
 						<div className="flex">
-							<div className="flex w-[782px] flex-col gap-[20px]">
+							<div className="flex flex-col gap-[20px]">
 								<div className="flex w-full gap-[33px]">
 									<Label
 										spanStyling="text-black font-medium text-[16px]"
@@ -232,7 +407,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 									</Label>
 									<Input
 										className="vm-placeholder h-[38px] w-[650px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-										placeholder={record.id}
+										placeholder={record._id}
 										disabled
 									/>
 								</div>
@@ -248,7 +423,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.fullName.first_name}
+												placeholder={record.visitor_details.name.first_name}
 												{...register("first_name")}
 												onChange={(e) =>
 													updateInput(e.target.value, "first_name")
@@ -273,9 +448,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={
-													record.visitor_details.fullName.middle_name
-												}
+												placeholder={record.visitor_details.name.middle_name}
 												{...register("middle_name")}
 												onChange={(e) =>
 													updateInput(e.target.value, "middle_name")
@@ -302,7 +475,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.fullName.last_name}
+												placeholder={record.visitor_details.name.last_name}
 												{...register("last_name")}
 												onChange={(e) =>
 													updateInput(e.target.value, "last_name")
@@ -327,7 +500,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.mobile}
+												placeholder={record.visitor_details.phone}
 												{...register("mobile")}
 												onChange={(e) => updateInput(e.target.value, "mobile")}
 												disabled={disabledInputs}
@@ -378,7 +551,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.houseNo}
+												placeholder={record.visitor_details.address.house_no}
 												{...register("house")}
 												onChange={(e) => updateInput(e.target.value, "house")}
 												disabled={disabledInputs}
@@ -401,7 +574,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.city}
+												placeholder={record.visitor_details.address.city}
 												{...register("city")}
 												onChange={(e) => updateInput(e.target.value, "city")}
 												disabled={disabledInputs}
@@ -426,7 +599,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.city}
+												placeholder={record.visitor_details.address.street}
 												{...register("street")}
 												onChange={(e) => updateInput(e.target.value, "street")}
 												disabled={disabledInputs}
@@ -449,7 +622,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.province}
+												placeholder={record.visitor_details.address.province}
 												{...register("province")}
 												onChange={(e) =>
 													updateInput(e.target.value, "province")
@@ -476,7 +649,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.brgy}
+												placeholder={record.visitor_details.address.brgy}
 												{...register("barangay")}
 												onChange={(e) =>
 													updateInput(e.target.value, "barangay")
@@ -501,7 +674,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.country}
+												placeholder={record.visitor_details.address.country}
 												{...register("country")}
 												onChange={(e) => updateInput(e.target.value, "country")}
 												disabled={disabledInputs}
@@ -532,10 +705,10 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 											size="large"
 											defaultVal={{
 												from:
-													record.visitor_details.timeIn ||
+													record.visitor_details.time_in ||
 													"9999-99-99 99:99 PM",
 												to:
-													record.visitor_details.timeOut ||
+													record.visitor_details.time_out ||
 													"9999-99-99 99:99 PM",
 											}}
 											onRangeChange={onRangeChange}
@@ -550,30 +723,186 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 									</div>
 								</div>
 								<div
-									className={`flex w-[782px] ${
+									className={`flex w-full ${
 										errors && "items-start"
-									} justify-between`}
+									} justify-start`}
 								>
 									<Label
 										spanStyling="text-black font-medium text-[16px]"
-										labelStyling="w-[13.8%]"
+										labelStyling="w-[18.5%]"
 									>
 										Purpose
 									</Label>
-									<div className="flex flex-col">
-										<TextArea
-											className="vm-placeholder h-[38px] w-[640px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-											rows={3}
-											placeholder={record.purpose}
-											{...register("purpose")}
-											onChange={(e) => updateInput(e.target.value, "purpose")}
-											disabled={disabledInputs}
-										/>
-										{errors?.purpose && (
-											<p className="mt-1 text-sm text-red-500">
-												{errors.purpose.message}
-											</p>
-										)}
+									<div className="flex flex-col gap-[10px]">
+										<div className="flex gap-[20px]">
+											<div className="flex flex-col">
+												<Select
+													className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
+													showSearch
+													allowClear
+													placeholder="What"
+													optionFilterProp="children"
+													onSearch={onSearch}
+													filterOption={filterOption}
+													disabled={disabledInputs}
+													defaultValue={
+														record.purpose.what === ""
+															? undefined
+															: record.purpose.what
+													}
+													onChange={(value: string) =>
+														handleChange("what", value)
+													}
+													options={[
+														{
+															value: "meeting",
+															label: "Meeting",
+														},
+														{
+															value: "intramurals",
+															label: "Intramurals",
+														},
+														{
+															value: "conference",
+															label: "Conference",
+														},
+													]}
+												/>
+												{errors?.what && (
+													<p className="mt-1 text-sm text-red-500">
+														{errors.what.message}
+													</p>
+												)}
+											</div>
+											<div className="flex flex-col">
+												<DatePicker
+													showTime
+													className={`w-[inherit] border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500 focus:!border-primary-500 ${
+														disabledInputs && "picker-disabled"
+													} vm-placeholder`}
+													defaultValue={dayjs(
+														record.purpose.when,
+														"YYYY-MM-DD hh:mm A",
+													)}
+													onChange={onChange}
+													disabled={disabledInputs}
+												/>
+												{errors?.when && (
+													<p className="mt-1 text-sm text-red-500">
+														{errors.when.message}
+													</p>
+												)}
+											</div>
+											<div className="flex flex-col">
+												<Select
+													className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
+													showSearch
+													allowClear
+													placeholder="Where"
+													optionFilterProp="children"
+													onSearch={onSearch}
+													filterOption={filterOption}
+													disabled={disabledInputs}
+													defaultValue={
+														record.purpose.where === ""
+															? undefined
+															: record.purpose.where
+													}
+													onChange={(value: string) =>
+														handleChange("where", value)
+													}
+													options={[
+														{
+															value: "conferenceHall",
+															label: "Conference Hall",
+														},
+														{
+															value: "gym",
+															label: "Gym",
+														},
+														{
+															value: "classroom",
+															label: "Classroom",
+														},
+													]}
+												/>
+												{errors?.where && (
+													<p className="mt-1 text-sm text-red-500">
+														{errors.where.message}
+													</p>
+												)}
+											</div>
+										</div>
+										<div className="flex gap-[20px]">
+											<div className="flex flex-col">
+												<Select
+													className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
+													showSearch
+													allowClear
+													placeholder="Who"
+													optionFilterProp="children"
+													onSearch={onSearch}
+													filterOption={filterOption}
+													disabled={disabledInputs}
+													defaultValue={
+														record.purpose.who === ""
+															? undefined
+															: record.purpose.who
+													}
+													onChange={(value: string) =>
+														handleChange("who", value)
+													}
+													options={[
+														{
+															value: "linda_rogers",
+															label: "Dr. Linda Rogers",
+														},
+														{
+															value: "barry_allen",
+															label: "Barry Allen",
+														},
+														{
+															value: "lucy_tang",
+															label: "Dr. Lucy Tang",
+														},
+													]}
+												/>
+												{errors?.who && (
+													<p className="mt-1 text-sm text-red-500">
+														{errors.who.message}
+													</p>
+												)}
+											</div>
+											{/* <div className="flex flex-col">
+												<Select
+													className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
+													showSearch
+													placeholder="Why"
+													optionFilterProp="children"
+													onSearch={onSearch}
+													filterOption={filterOption}
+													disabled={disabledInputs}
+													defaultValue={
+														record.purpose.why === ""
+															? undefined
+															: record.purpose.why
+													}
+													// onChange={(value: string) => handleChange('why', value)}
+													// options={[
+													// 	{ value: VisitorType.WalkIn, label: "Walk-In" },
+													// 	{
+													// 		value: VisitorType.PreRegistered,
+													// 		label: "Pre-Registered",
+													// 	},
+													// ]}
+												/>
+												{errors?.why && (
+													<p className="mt-1 text-sm text-red-500">
+														{errors.why.message}
+													</p>
+												)}
+											</div> */}
+										</div>
 									</div>
 								</div>
 							</div>
@@ -622,7 +951,9 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 													? "Walk-In"
 													: "Pre-Registered"
 											}
-											onChange={handleChange}
+											onChange={(value: string) =>
+												handleChange("visitor_type", value)
+											}
 											options={[
 												{ value: VisitorType.WalkIn, label: "Walk-In" },
 												{
@@ -635,6 +966,24 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 									{errors?.visitor_type && (
 										<p className="mt-1 text-sm text-red-500">
 											{errors.visitor_type.message}
+										</p>
+									)}
+									{disabledInputs ? (
+										<span className="mt-2 rounded border border-black px-3 py-1 text-[20px] font-bold shadow-md">
+											{record.plate_num}
+										</span>
+									) : (
+										<Input
+											className="vm-placeholder h-[38px] w-fit rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
+											placeholder={record.plate_num}
+											{...register("plate_num")}
+											onChange={(e) => updateInput(e.target.value, "plate_num")}
+											disabled={disabledInputs}
+										/>
+									)}
+									{errors?.plate_num && (
+										<p className="mt-1 text-sm text-red-500">
+											{errors.plate_num.message}
 										</p>
 									)}
 									{disabledInputs ? (
@@ -660,7 +1009,9 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 													? "In Progress"
 													: "Declined"
 											}
-											onChange={handleChange}
+											onChange={(value: string) =>
+												handleChange("status", value)
+											}
 											options={[
 												{ value: VisitorStatus.Approved, label: "Approved" },
 												{
@@ -737,15 +1088,33 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 							)}
 
 							{!disabledInputs && (
-								<Button
-									// onClick={saveAction}
-									type="primary"
-									size="large"
-									className="search-button !rounded-[18px] !bg-primary-500"
-									htmlType="submit"
-								>
-									Save
-								</Button>
+								<>
+									<Button
+										onClick={() =>
+											showDeleteConfirm(
+												record._id,
+												newTabIndex,
+												items,
+												setItems,
+												setActiveKey,
+											)
+										}
+										type="primary"
+										size="large"
+										className="search-button !rounded-[18px] !bg-error-500"
+									>
+										Delete
+									</Button>
+									<Button
+										// onClick={saveAction}
+										type="primary"
+										size="large"
+										className="search-button !rounded-[18px] !bg-primary-500"
+										htmlType="submit"
+									>
+										Save
+									</Button>
+								</>
 							)}
 							<Button
 								onClick={editOrCancel}

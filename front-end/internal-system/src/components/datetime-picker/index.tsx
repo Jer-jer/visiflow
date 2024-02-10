@@ -6,9 +6,6 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 
-// Interface
-import type { Dayjs } from "dayjs";
-
 // Components
 import { DatePicker } from "antd";
 import { SizeType } from "antd/es/config-provider/SizeContext";

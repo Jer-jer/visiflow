@@ -63,7 +63,7 @@ const exportOptions: MenuProps["items"] = [
 const { confirm } = Modal;
 
 const closeTab = (
-	userId: string | undefined,
+	_id: string | undefined,
 	newTabIndex: MutableRefObject<number>,
 	items: TabItems[],
 	setItems: Dispatch<React.SetStateAction<TabItems[]>>,
@@ -71,7 +71,7 @@ const closeTab = (
 ) => {
 	const newActiveKey = --newTabIndex.current;
 	const newItems = [...items];
-	const index = newItems.map((e) => e.userData!.user_id).indexOf(userId!);
+	const index = newItems.map((e) => e.userData!._id).indexOf(_id!);
 	if (index !== -1) {
 		newItems.splice(index, 1);
 		setItems(newItems);
@@ -80,7 +80,7 @@ const closeTab = (
 };
 
 const showDeleteConfirm = (
-	userId: string | undefined,
+	_id: string | undefined,
 	newTabIndex: MutableRefObject<number>,
 	items: TabItems[],
 	setItems: Dispatch<React.SetStateAction<TabItems[]>>,
@@ -96,11 +96,11 @@ const showDeleteConfirm = (
 		onOk() {
 			AxiosInstace.delete("/user/delete", {
 				data: {
-					user_id: userId,
+					_id: !_id && _id,
 				},
 			})
 				.then((res) => {
-					closeTab(userId, newTabIndex, items, setItems, setActiveKey);
+					closeTab(_id, newTabIndex, items, setItems, setActiveKey);
 				})
 				.catch((err) => {
 					console.error(err.response.data.error || err.response.data.errors);
@@ -140,14 +140,14 @@ export default function UserDetails({
 	} = useForm<UserDetailsTypeZod>({
 		resolver: zodResolver(UserDetailsZod),
 		defaultValues: {
-			first_name: record!.name.first_name,
-			middle_name: record!.name.middle_name,
-			last_name: record!.name.last_name,
-			username: record!.username,
-			password: record!.password,
-			email: record!.email,
-			phone: record!.phone,
-			role: record!.role,
+			first_name: record?.name.first_name,
+			middle_name: record?.name.middle_name,
+			last_name: record?.name.last_name,
+			username: record?.username,
+			password: record?.password,
+			email: record?.email,
+			phone: record?.phone,
+			role: record?.role,
 		},
 	});
 
@@ -163,10 +163,7 @@ export default function UserDetails({
 				setValue(property, value);
 				break;
 			case "phone":
-				const reg = /^[0-9\-+\b]*$/;
-				if (reg.test(value)) {
-					setValue(property, value);
-				}
+				setValue(property, value);
 				break;
 			case "username":
 				setValue(property, value);
@@ -190,7 +187,10 @@ export default function UserDetails({
 		clearErrors();
 	};
 
-	const saveAction = (userId: string, data: UserDetailsInterfaceZod) => {
+	const saveAction = (
+		_id: string | undefined,
+		data: UserDetailsInterfaceZod,
+	) => {
 		//This needs to be customized to whatever the DB returns
 
 		setAlertOpen(!alertOpen);
@@ -198,7 +198,7 @@ export default function UserDetails({
 		setDisabledInputs(!disabledInputs);
 
 		AxiosInstace.put("/user/update", {
-			user_id: userId,
+			_id,
 			first_name: data.first_name,
 			middle_name: data.middle_name,
 			last_name: data.last_name,
@@ -210,7 +210,7 @@ export default function UserDetails({
 		})
 			.then((res) => {
 				setStatus(true);
-				setAlertMsg(res.data.success);
+				setAlertMsg(res.data.message);
 				setAlertOpen(!alertOpen);
 				setDisabledInputs(!disabledInputs);
 			})
@@ -221,7 +221,7 @@ export default function UserDetails({
 	};
 
 	const onSubmit = handleSubmit((data) => {
-		saveAction(record!.user_id, data);
+		saveAction(record?._id, data);
 	});
 
 	return (
@@ -271,7 +271,7 @@ export default function UserDetails({
 									</Label>
 									<Input
 										className="vm-placeholder h-[38px] w-[650px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-										placeholder={record?.user_id}
+										placeholder={record?._id}
 										disabled
 									/>
 								</div>
@@ -519,7 +519,7 @@ export default function UserDetails({
 									<Button
 										onClick={() =>
 											showDeleteConfirm(
-												record?.user_id,
+												record!._id,
 												newTabIndex,
 												items,
 												setItems,

@@ -9,7 +9,7 @@ import StepOneForm from "./form";
 
 // Interfaces
 import type { StepOneData } from "../../../utils/zodSchemas";
-import { VisitorData } from "../../../utils/interfaces";
+import { VisitorDataType } from "../../../utils/interfaces";
 import { StepOneZod } from "../../../utils/zodSchemas";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
@@ -20,10 +20,10 @@ import "./styles.scss";
 
 interface StepOneProps {
 	visitorNo: number;
-	visitors: VisitorData;
+	visitors: VisitorDataType;
 	setProgress: Dispatch<SetStateAction<number>>;
 	setVisitorNo: Dispatch<SetStateAction<number>>;
-	setVisitors: Dispatch<SetStateAction<VisitorData>>;
+	setVisitors: Dispatch<SetStateAction<VisitorDataType>>;
 }
 
 dayjs.extend(weekday);
@@ -48,10 +48,12 @@ export default function StepOne({
 		resolver: zodResolver(StepOneZod),
 		defaultValues: {
 			visitorNo: visitorNo,
-			poi: visitors.poi!,
-			checkInOut: [visitors.timeIn!, visitors.timeOut!],
-			purpose: visitors.purpose!,
-			termsConditions: visitors.termsConditions!,
+			checkInOut: [visitors.expected_time_in, visitors.expected_time_out],
+			what: visitors.purpose.what,
+			when: visitors.purpose.when,
+			where: visitors.purpose.where,
+			who: visitors.purpose.who,
+			termsConditions: visitors.termsConditions,
 		},
 	});
 

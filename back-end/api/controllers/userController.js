@@ -1,68 +1,87 @@
-const User = require('../models/user');
-const { hashPassword, comparePassword } = require('../utils/helper');
-const { validateData, handleValidationErrors, validationResult } = require('../middleware/userValidation');
-const { filterUserData } = require('../middleware/filterData');
+const User = require("../models/user");
+const bcrypt = require("bcrypt");
+const {
+  validateData,
+  handleValidationErrors,
+  validationResult,
+} = require("../middleware/userValidation");
+const { filterData } = require("../middleware/filterData");
+const mongoose = require("mongoose");
+
 
 //Get list of all users
 exports.getAllUsers = async (req, res) => {
-    try {
-        const users = await User.find({}, '-password');
-        return res.json({ users });
-    } catch (error) {
-        return res.status(500).json({ error: 'Internal Server Error '});
-    }
+  try {
+    const users = await User.find({}, "-password");
+    return res.json({ users });
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error " });
+  }
 };
 
 //Create a new user
-exports.createNewUser = async (req, res, next) => {
-    const { first_name, middle_name, last_name, username, email, password, phone, role } = req.body;
-    
-    await Promise.all(validateData.map(validation => validation.run(req)));
+exports.createNewUser = async (req, res) => {
+  const {
+    first_name,
+    middle_name,
+    last_name,
+    username,
+    email,
+    password,
+    phone,
+    role,
+  } = req.body;
 
-    const errors = validationResult(req);
-    if(!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array()[0].msg });
+  await Promise.all(validateData.map((validation) => validation.run(req)));
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array()[0].msg });
+  }
+
+  try {
+    const userDB = await User.findOne({ username });
+    if (userDB) {
+      res.status(401).json({ error: "User already exists" });
+    } else {
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      const _id = new mongoose.Types.ObjectId();
+
+      const newUser = await User.create({
+        _id: _id,
+        name: {
+          first_name,
+          middle_name,
+          last_name,
+        },
+        username: username || (first_name + last_name).toLowerCase(),
+        email,
+        password: hashedPassword,
+        phone,
+        role,
+      });
+      res.status(201).json({ newUser: filterData(newUser), id: _id });
     }
-    
-    try {
-        const userDB = await User.findOne({email});
-        if(userDB) {
-            res.status(401).json({error: 'User already exists'});
-        } else {
-            const hashedPassword = hashPassword(password);
-            const newUser = await User.create({
-                name: {
-                    first_name,
-                    middle_name,
-                    last_name
-                },
-                username: username || (first_name + last_name).toLowerCase(),
-                email,
-                password: hashedPassword,
-                phone,
-                role
-            });
-            res.status(201).json({newUser: filterUserData(newUser)});
-        }
-    } catch (error) {
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 //Get user by ID
 exports.getUserById = async (req, res) => {
-    try {
-        const { _id } = req.body;
-        const searchedUser = await User.findById(_id, '-password');
-        
-        if(searchedUser) {
-            return res.status(201).json({ user: searchedUser });
-        } else {
-            return res.status(404).json({ error: 'user not found'});
-        }
-    } catch (error) {
-        return res.status(500).json({ error: 'Internal Server Error' });
+  try {
+    const { _id } = req.body;
+    const searchedUser = await User.findById(_id, "-password");
+
+    if (searchedUser) {
+      return res.status(201).json({ user: searchedUser });
+    } else {
+      return res.status(404).json({ error: "User not found" });
     }
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 //Update a user by ID
@@ -85,29 +104,30 @@ exports.updateUser = async (req, res) => {
 
             await user.save();
 
-            res.json({ message: 'User updated successfully', updatedUser: filterUserData(user) });
-        } else {
-            return res.status(404).json({ error: 'user not found'});
-        }
-    } catch (error) {
-        return res.status(500).json({ error: 'Internal Server Error' });
+            res.json({ message: "User updated successfully", updatedUser: user });
+    } else {
+      return res.status(404).json({ error: "user not found" });
     }
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 //Delete a user by ID
 exports.deleteUser = async (req, res) => {
-    try {
-        const { _id } = req.body;
-        const deletedUser = await User.findOneAndDelete({ _id });
-      
-        if (deletedUser) {
-            return res.status(201).json({ message: 'User deleted sucessfully' });
-        } else {
-            return res.status(404).json({ error: 'User not found' });
-        }
-    } catch (error) {
-        return res.status(500).json({ error: 'Internal Server Error' });
+  try {
+    const { _id, user_id } = req.body;
+
+    const deletedUser = await User.findOneAndDelete({ user_id } | { _id });
+
+    if (deletedUser) {
+      return res.status(201).json({ message: "User deleted sucessfully" });
+    } else {
+      return res.status(404).json({ error: "User not found" });
     }
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 //RESPONSE CODE LIST

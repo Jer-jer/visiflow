@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const User = require('../models/user');
 const { hashPassword, comparePassword } = require('../utils/helper');
-const { filterUserData } = require('../middleware/filterData');
+const { filterData } = require('../middleware/filterData');
 
 exports.login = async (req, res) => {
     console.log('logged-in');
@@ -38,7 +38,7 @@ exports.register = async (req, res) => {
             phone,
             role
         });
-        res.status(201).json({newUser: filterUserData(newUser)});
+        res.status(201).json({newUser: filterData(newUser)});
     }
 };
 
