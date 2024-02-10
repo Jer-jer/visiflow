@@ -32,7 +32,7 @@ app.use('/auth', require('./api/routes/authRouter'));
 //app.use('/visitor', require('./api/routes/visitorRouter'));
 app.use('/bldgLoc', require('./api/routes/buildingLocRouter'));
 
-//? Visitor Related Links
+// Visitor Related Links
 app.use('/visitor', require('./api/routes/visitorRouter'));
 app.use('/visitor/companion', require('./api/routes/visitorCompRouter'));
 app.use('/visitor/logs', require('./api/routes/visitorLogsRouter'));
