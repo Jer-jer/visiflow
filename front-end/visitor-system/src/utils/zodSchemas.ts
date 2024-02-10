@@ -4,10 +4,10 @@ export type StepOneData = {
 	visitorNo: number;
 	checkInOut: [string, string];
 	// purpose: string;
-	what?: string[];
-	when?: string;
-	where?: string[];
-	who?: string[];
+	what: string[];
+	when: string;
+	where: string[];
+	who: string[];
 	termsConditions: boolean;
 };
 
@@ -19,7 +19,7 @@ export type StepTwoData = {
 	mobile: string;
 	house?: string;
 	street?: string;
-	barangay: string;
+	brgy: string;
 	city: string;
 	province: string;
 	country: string;
@@ -34,11 +34,6 @@ export const StepOneZod: ZodType<StepOneData> = z.object({
 	checkInOut: z.custom<[string, string]>().refine((val) => val[0] < val[1], {
 		message: "Check in must be before the Check out date.",
 	}),
-	// purpose: z
-	// 	.string({
-	// 		required_error: "Purpose is required.",
-	// 	})
-	// 	.min(1, { message: "You must have a purpose." }),
 	what: z
 		.string({
 			required_error: '"What" is required.',
@@ -118,7 +113,7 @@ export const StepTwoZod: ZodType<StepTwoData> = z.object({
 
 	house: z.string().optional(),
 	street: z.string().optional(),
-	barangay: z
+	brgy: z
 		.string({
 			required_error: "Barangay is required.",
 			invalid_type_error: "Barangay must not have a number.",

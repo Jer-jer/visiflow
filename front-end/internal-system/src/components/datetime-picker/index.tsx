@@ -49,9 +49,11 @@ function DateTimePicker({
 	return (
 		<div className={`${globalStyling}`}>
 			<RangePicker
-				className={`!border-[#d9d9d9] hover:!border-primary-500 focus:!border-primary-500 ${rangePickerStyling} ${
-					disabled && "picker-disabled"
-				} ${visitorMngmnt && "vm-placeholder"}`}
+				className={`!border-[#d9d9d9] hover:!border-primary-500 focus:!border-primary-500 ${
+					rangePickerStyling && rangePickerStyling
+				} ${disabled && "picker-disabled"} ${
+					visitorMngmnt && "vm-placeholder"
+				}`}
 				size={size}
 				defaultValue={
 					defaultVal === undefined

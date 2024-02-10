@@ -66,9 +66,7 @@ function StepOneForm({
 	const addVisitor = (value: any) => {
 		setVisitorNo(value);
 		setValue("visitorNo", visitorNo);
-		console.log("companion detailsss", visitors.companions_details!);
 		if (value > visitors.companions_details!.length) {
-			console.log("addddd", visitors.companions_details!.length);
 			setVisitors((prevVisitors) => ({
 				...prevVisitors,
 				companions_details: [
@@ -82,7 +80,7 @@ function StepOneForm({
 						email: "",
 						phone: "",
 						address: {
-							house_no: "",
+							house: "",
 							street: "",
 							brgy: "",
 							city: "",
@@ -96,7 +94,6 @@ function StepOneForm({
 			}));
 		} else if (value < visitors.companions_details!.length) {
 			const indexToRemove = visitors.companions_details!.length - 1;
-			console.log("decresssseeeeeee", visitors.companions_details!.length);
 			setVisitors((prevVisitors) => ({
 				...prevVisitors,
 				companions_details: prevVisitors.companions_details!.filter(

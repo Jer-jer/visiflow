@@ -58,7 +58,6 @@ export default function StepTwo({
 	};
 
 	const onSubmit = handleSubmit((data) => {
-		console.log(data);
 		nextStep();
 	});
 

@@ -1,7 +1,7 @@
 /* Components designed using Ant Design */
 import React, { useRef, useState } from "react";
 
-import { VisitorDataType } from "../../../utils";
+import { VisitorDataType } from "../../../utils/interfaceTest";
 
 //Components
 import { Tabs, Button, Input } from "antd";
@@ -23,7 +23,7 @@ interface ScheduleProps {
 
 interface TabItems {
 	key: TargetKey;
-	visitorData?:VisitorDataType;
+	visitorData?: VisitorDataType;
 }
 
 //Functions
@@ -62,7 +62,7 @@ const SchedulesList = ({ addTab, createSched }: ScheduleProps) => {
 			</Tabs>
 		</div>
 	);
-}
+};
 
 export default function ScheduleManagement() {
 	const [items, setItems] = useState<TabItems[]>([]);
@@ -71,7 +71,7 @@ export default function ScheduleManagement() {
 
 	const createSched = () => {
 		const newActiveKey = ++newTabIndex.current;
-	
+
 		setItems([
 			...items,
 			{
@@ -102,10 +102,10 @@ export default function ScheduleManagement() {
 					personOfInterest: "",
 					purpose: "",
 					date: "",
-				}
+				},
 			},
 		]);
-	
+
 		setActiveKey(newActiveKey);
 	};
 
@@ -113,9 +113,7 @@ export default function ScheduleManagement() {
 		setActiveKey(newActiveKey);
 	};
 
-	const add = (
-		record?: VisitorDataType,
-	) => {
+	const add = (record?: VisitorDataType) => {
 		const newActiveKey = ++newTabIndex.current;
 
 		setItems([
@@ -166,7 +164,7 @@ export default function ScheduleManagement() {
 				onEdit={onEdit}
 			>
 				<Tabs.TabPane closable={false} tab="" key="1">
-					<SchedulesList addTab={add} createSched={createSched}/>
+					<SchedulesList addTab={add} createSched={createSched} />
 				</Tabs.TabPane>
 				{items.map((items, key) => (
 					<Tabs.TabPane
@@ -183,6 +181,4 @@ export default function ScheduleManagement() {
 			</Tabs>
 		</div>
 	);
-};
-
-
+}

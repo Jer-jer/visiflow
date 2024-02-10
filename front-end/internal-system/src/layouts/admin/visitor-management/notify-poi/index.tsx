@@ -5,7 +5,6 @@ import React, { useState, Dispatch, SetStateAction } from "react";
 //Interfaces
 import {
 	VisitorDetailsProps,
-	CompanionDetailsProps,
 } from "../../../../utils/interfaces";
 
 //Layouts
@@ -26,7 +25,7 @@ interface VisitorCompanionsProps {
 	open: boolean;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 	emailInput?: string;
-	companionRecords?: CompanionDetailsProps[];
+	companionRecords?: VisitorDetailsProps[];
 }
 
 export default function NotifyPOI({
@@ -37,7 +36,7 @@ export default function NotifyPOI({
 }: VisitorCompanionsProps) {
 	let emailArray: any = [];
 	companionRecords?.map((item) =>
-		emailArray.push(item.companion_details.email),
+		emailArray.push(item.email),
 	);
 	const combinedEmail = emailArray.join(",");
 

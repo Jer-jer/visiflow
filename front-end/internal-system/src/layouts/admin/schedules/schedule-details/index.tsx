@@ -1,7 +1,10 @@
 import React, { useState, useContext, createContext, useEffect } from "react";
 
 //Interfaces
-import { VisitorDetailsProps, VisitorDataType } from "../../../../utils";
+import {
+	VisitorDetailsProps,
+	VisitorDataType,
+} from "../../../../utils/interfaceTest";
 import { WidthContext } from "../../../logged-in";
 
 //Layouts
@@ -80,14 +83,11 @@ export default function ScheduleDetails({
 	const [provinceInput, setProvinceInput] = useState("");
 	const [brgyInput, setBrgyInput] = useState("");
 	const [countryInput, setCountryInput] = useState("");
-  const [companions, setCompanions] = useState(companionRecords || []);
-  const [tempCompanions, setTempCompanions] = useState([]);
-	const [numVisitorsInput, setNumVisitorsInput] = useState(
-		companions?.length,
-	);
+	const [companions, setCompanions] = useState(companionRecords || []);
+	const [tempCompanions, setTempCompanions] = useState([]);
+	const [numVisitorsInput, setNumVisitorsInput] = useState(companions?.length);
 	const [purposeInput, setPurposeInput] = useState("");
 	const [poiInput, setPoiInput] = useState("");
-  
 
 	//Alert State
 	const [alertOpen, setAlertOpen] = useState(false);
@@ -137,54 +137,52 @@ export default function ScheduleDetails({
 	];
 
 	const handleCompanionClick: MenuProps["onClick"] = ({ key }) => {
-    const newCompanions = [];
-    console.log("before diff:", companions);
-    if(typeof key === 'number'){
-      //here
-    } else {
-      if(companions){
-        const difference = companions.length - parseInt(key);
-        console.log("key", key, "difference:", difference);
-        if(parseInt(key) < companions.length){
-          setNumVisitorsInput(parseInt(key));
-          companions?.splice(companions.length-difference,difference);
-          setCompanions(companions);
-          console.log("difference:", companions);
-        } else {
-          const val = parseInt(key) - companions.length;
-        
-          for(let x = 0; x < val; x++){
-            console.log("round:", x);
-            const date = new Date();
-            const newCompanion = {
-              brgy: "",
-              city: "",
-              country: "",
-              email: "",
-              fullName: {
-                firstName: "",
-                middleName: "",
-                lastName: "",
-              },
-              houseNo: "",
-              mobile: "",
-              province: "",
-              status: "in-progress",
-              street: "",
-              timeIn: JSON.stringify(date),
-              timeOut: JSON.stringify(date),
-            };
+		const newCompanions = [];
+		console.log("before diff:", companions);
+		if (typeof key === "number") {
+			//here
+		} else {
+			if (companions) {
+				const difference = companions.length - parseInt(key);
+				console.log("key", key, "difference:", difference);
+				if (parseInt(key) < companions.length) {
+					setNumVisitorsInput(parseInt(key));
+					companions?.splice(companions.length - difference, difference);
+					setCompanions(companions);
+					console.log("difference:", companions);
+				} else {
+					const val = parseInt(key) - companions.length;
 
-            newCompanions.push(newCompanion);            
-          }
-          setCompanions([...companions, ...newCompanions]);
-          setNumVisitorsInput(parseInt(key));
-          console.log("new!", companions);
-        }
-        
-      }
-    }
-		
+					for (let x = 0; x < val; x++) {
+						console.log("round:", x);
+						const date = new Date();
+						const newCompanion = {
+							brgy: "",
+							city: "",
+							country: "",
+							email: "",
+							fullName: {
+								firstName: "",
+								middleName: "",
+								lastName: "",
+							},
+							houseNo: "",
+							mobile: "",
+							province: "",
+							status: "in-progress",
+							street: "",
+							timeIn: JSON.stringify(date),
+							timeOut: JSON.stringify(date),
+						};
+
+						newCompanions.push(newCompanion);
+					}
+					setCompanions([...companions, ...newCompanions]);
+					setNumVisitorsInput(parseInt(key));
+					console.log("new!", companions);
+				}
+			}
+		}
 	};
 
 	console.log("CONSOLE", record);
@@ -305,7 +303,9 @@ export default function ScheduleDetails({
 								<Label
 									spanStyling="text-black font-medium text-[16px]"
 									labelStyling="w-[14.5%]"
-								>Email Address</Label>
+								>
+									Email Address
+								</Label>
 								<Input
 									inputType="text"
 									inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500 basis-[82%]"
@@ -534,15 +534,18 @@ export default function ScheduleDetails({
 					</div>
 					{/* Companions Form Part */}
 					<div className="flex w-full flex-col">
-						{!disabledInputs && numVisitorsInput && numVisitorsInput > 0 && companions && (
-							<>
-								{companions?.map((item, index) => {
-									return (                    
-                    <CompanionForms companionForm={item} index={index} />
-									);
-								})}
-							</>
-						)}
+						{!disabledInputs &&
+							numVisitorsInput &&
+							numVisitorsInput > 0 &&
+							companions && (
+								<>
+									{companions?.map((item, index) => {
+										return (
+											<CompanionForms companionForm={item} index={index} />
+										);
+									})}
+								</>
+							)}
 					</div>
 					{/* Buttons */}
 					<div className="flex justify-end gap-[15px]">

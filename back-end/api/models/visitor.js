@@ -16,7 +16,7 @@ const Name = new Schema({
 const Address = new Schema({
   street: { type: String },
   house: { type: String },
-  barangay: { type: String, require: true },
+  brgy: { type: String, require: true },
   city: { type: String, require: true },
   province: { type: String, require: true },
   country: { type: String },
@@ -36,7 +36,7 @@ const IdPhoto = new Schema({
 const VisitorDetails = new Schema({
   name: { type: Name, required: true },
   address: { type: Address, required: true },
-  email: { type: String, require: true, unique: true },
+  email: { type: String, require: true },
   phone: { type: String, require: true },
   time_in: { type: String, require: true, default: "" },
   time_out: { type: String, require: true, default: "" },
