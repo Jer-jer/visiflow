@@ -32,7 +32,6 @@ interface VisitorProps {
 export interface TabItems {
 	key: TargetKey;
 	visitorData: VisitorDataType;
-	// companionsDetails?: VisitorDetailsProps[];
 }
 
 const VisitorList = ({ addTab }: VisitorProps) => {
