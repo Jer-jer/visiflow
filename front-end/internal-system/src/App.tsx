@@ -12,7 +12,7 @@ import Statistics from "./pages/admin/statistics";
 import VisitorManagement from "./pages/admin/visitor-management";
 import UserManagement from "./pages/admin/user-management";
 import HomeEditor from "./pages/admin/home-editor";
-import Schedules from './pages/admin/schedules';
+import Schedules from "./pages/admin/schedules";
 
 //Guard
 
@@ -23,9 +23,9 @@ function App() {
 	return (
 		<div className="min-h-screen">
 			{/* Either <Login /> or <LoggedIn></LoggedIn> depending if the user is logged in or not */}
-			{/* <Login /> */}
-			<LoggedIn>
-				{/* Add Routes here */}
+			<Login />
+			{/* <LoggedIn>
+				Add Routes here
 				<Routes>
 					<Route path="/" element={<Dashboard />} />
 					<Route path="/statistics" element={<Statistics />} />
@@ -34,7 +34,7 @@ function App() {
 					<Route path="/home-editor" element={<HomeEditor />} />
 					<Route path="/schedules" element={<Schedules />} />
 				</Routes>
-			</LoggedIn>
+			</LoggedIn> */}
 		</div>
 	);
 }
