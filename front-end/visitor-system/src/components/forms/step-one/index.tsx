@@ -74,7 +74,6 @@ export default function StepOne({
 	};
 
 	const onSubmit = handleSubmit((data) => {
-		console.log(data);
 		nextStep();
 	});
 
