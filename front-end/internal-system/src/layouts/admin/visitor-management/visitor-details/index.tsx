@@ -20,10 +20,7 @@ import {
 	VisitorDetailZod,
 	VisitorDetailsInterfaceZod,
 } from "../../../../utils/zodSchemas";
-import {
-	VisitorDataType,
-	VisitorDetailsProps,
-} from "../../../../utils/interfaces";
+import { VisitorDataType } from "../../../../utils/interfaces";
 import { VisitorStatus, VisitorType } from "../../../../utils/enums";
 import { WidthContext } from "../../../logged-in";
 import { TabItems } from "..";
@@ -130,8 +127,10 @@ export default function VisitorDetails({
 
 	const width = useContext(WidthContext);
 
+	// Store Related variables
 	const dispatch = useDispatch();
 
+	// Client-side Validation related data
 	const {
 		register,
 		handleSubmit,
@@ -239,15 +238,10 @@ export default function VisitorDetails({
 		}
 	};
 
-	const onChange: DatePickerProps["onChange"] = (date, dateString) => {
-		console.log(date, dateString);
-	};
+	const onChange: DatePickerProps["onChange"] = (date, dateString) => {};
 
-	const handleChange = (property: string, value: string | string[]) => {
-		console.log(value);
-
+	const handleChange = (property: string, value: string | string[]) =>
 		updateInput(value, property);
-	};
 
 	const editOrCancel = () => {
 		setDisabledInputs(!disabledInputs);
@@ -255,9 +249,6 @@ export default function VisitorDetails({
 	};
 
 	const saveAction = (zodData: VisitorDetailsInterfaceZod) => {
-		setAlertOpen(!alertOpen);
-		setDisabledInputs(!disabledInputs);
-
 		AxiosInstace.put("/visitor/update", {
 			_id: record._id,
 			first_name: zodData.first_name,
@@ -278,13 +269,21 @@ export default function VisitorDetails({
 			visitor_type: zodData.visitor_type,
 		})
 			.then((res) => {
-				console.log(res.data.updatedVisitor);
 				dispatch(update(res.data.updatedVisitor));
 
 				setStatus(true);
 				setAlertMsg(res.data.message);
 				setAlertOpen(!alertOpen);
 				setDisabledInputs(!disabledInputs);
+
+				setItems((prev) =>
+					prev.map((item) => {
+						if (item.key === newTabIndex.current)
+							item.visitorData = res.data.updatedVisitor;
+
+						return item;
+					}),
+				);
 			})
 			.catch((err) => {
 				setStatus(false);
@@ -824,19 +823,12 @@ export default function VisitorDetails({
 									className="cursor-pointer"
 									onClick={() => setIdentificationOpen(!identificationOpen)}
 									size={width === 1210 ? 150 : 220}
-									src="https://www.sars.gov.za/wp-content/uploads/images/Verify-banking-details.jpg"
+									src={record.id_picture.selfie}
 								/>
 								<Identification
 									open={identificationOpen}
 									setOpen={setIdentificationOpen}
-									image={{
-										frontId:
-											"https://media.philstar.com/photos/2021/07/23/10_2021-07-23_18-27-24.jpg",
-										backId:
-											"https://s3-alpha-sig.figma.com/img/6541/e76f/4938b0155718de8af5610a0f82b07fc5?Expires=1696809600&Signature=g9ee7Y9K6izTlUfPBSWDgv2t9CilaBU3wsYb~xTBNwzFqBIgD~qDFl1WJms9oyFfyQXVxeFC5zydUUKHzBz-JaG~jZ31ambhXu9Gqte1D5vDh9x6WnZF8Kszq9IisRwRC1ytG02cYqFmIFpwLjb-hZ-JFXIWPbB~g-EA-pVFCSsElqjTHikVTTSSmEQiViHAXOSZo0OF3spgfGhfQhtobuWeryxKXlrr3Wu6CnxlIN0VGWKrCMzNH3qp6o99M8KZ4tkEsA8oFrhz~ijLF2GntP1DSBpZNm07wWoLJ2T1l7zSdqRJ5OOl4wiRucamxNbR8wnqPxjrKxrRGE7nJhAQ6w__&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4",
-										selfieId:
-											"https://www.sars.gov.za/wp-content/uploads/images/Verify-banking-details.jpg",
-									}}
+									image={record.id_picture}
 								/>
 								<div
 									className={`flex flex-col items-center ${

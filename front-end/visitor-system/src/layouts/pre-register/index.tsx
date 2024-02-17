@@ -67,10 +67,14 @@ export default function PreRegister() {
 			when: now(),
 			where: [],
 			who: [],
-			// why: "",
 		},
 		termsConditions: false,
-		plate_num: "",
+		plate_num: null,
+		id_picture: {
+			front: "",
+			back: "",
+			selfie: "",
+		},
 		status: VisitorStatus.InProgress,
 		visitor_type: VisitorType.PreRegistered,
 	});
@@ -79,7 +83,7 @@ export default function PreRegister() {
 		<div className="flex w-full flex-col pb-[32px]">
 			<Stepper progress={progress} setProgress={setProgress} />
 			<div className="flex-start ml-[20px] mt-[25px] flex flex-col gap-[10px] md:ml-[30px] lg:ml-[182px]">
-				<h1 className="font-700 mb-[10px] text-[38px] text-[#1B3B22]">
+				<h1 className="font-700 header mb-[10px] text-[38px] text-[#1B3B22]">
 					Pre-Registration Form
 				</h1>
 				{progress === 1 ? (

@@ -37,13 +37,14 @@ exports.createNewVisitor = async (req, res) => {
         req.body.visitor_data.visitor_details.name.last_name,
     });
     if (visitorDB) {
-      res.status(401).json({ error: "Visitor already exists" });
+      res.status(400).json({ error: "Visitor already exists" });
     } else {
       const newVisitor = await Visitor.create({
         visitor_details: req.body.visitor_data.visitor_details,
         companion_details: req.body.visitor_data.companion_details,
         plate_num: req.body.visitor_data.plate_num,
         purpose: req.body.visitor_data.purpose,
+        id_picture: req.body.visitor_data.id_picture,
         visitor_type: req.body.visitor_data.visitor_type,
         status: req.body.visitor_data.status,
       });

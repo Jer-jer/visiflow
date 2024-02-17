@@ -54,10 +54,14 @@ export interface PurposeProps {
 	when: string;
 	where: string[];
 	who: string[];
-	// why?: string;
 }
 
-//TODO Lacking ID Picture
+export interface IDPictureProps {
+	front: string;
+	back: string;
+	selfie: string;
+}
+
 export interface VisitorDataType {
 	visitor_details: VisitorDetailsProps;
 	companions_details: VisitorDetailsProps[] | null;
@@ -68,4 +72,5 @@ export interface VisitorDataType {
 	status: VisitorStatus;
 	visitor_type: VisitorType;
 	termsConditions: boolean;
+	id_picture: IDPictureProps;
 }

@@ -165,7 +165,6 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("firstName")}
-								// value={visitor.firstName}
 								value={
 									mainOrCompanion(increment, mainVisitor, companions).name
 										.first_name
@@ -200,7 +199,6 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("middleName")}
-								// value={visitor.middleName}
 								value={
 									mainOrCompanion(increment, mainVisitor, companions).name
 										.middle_name
@@ -235,7 +233,6 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("lastName")}
-								// value={visitor.lastName}
 								value={
 									mainOrCompanion(increment, mainVisitor, companions).name
 										.last_name
@@ -254,7 +251,7 @@ export default function StepTwoForm({
 				</Form.Item>
 				<Form.Item>
 					<div
-						className={`flex w-[500px] ${
+						className={`flex md:w-[500px] ${
 							errors?.email ? "items-start" : "items-center"
 						} gap-[5%]`}
 					>
@@ -270,7 +267,6 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("email")}
-								// value={visitor.email}
 								value={
 									mainOrCompanion(increment, mainVisitor, companions).email
 								}
@@ -288,7 +284,7 @@ export default function StepTwoForm({
 				</Form.Item>
 				<Form.Item>
 					<div
-						className={`flex w-[500px] ${
+						className={`flex md:w-[500px] ${
 							errors?.mobile ? "items-start" : "items-center"
 						} gap-[5%]`}
 					>
@@ -304,7 +300,6 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("mobile")}
-								// value={visitor.mobile}
 								value={
 									mainOrCompanion(increment, mainVisitor, companions).phone
 								}
@@ -339,7 +334,6 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("house")}
-								// value={visitor.house}
 								value={
 									mainOrCompanion(increment, mainVisitor, companions).address
 										.house
@@ -374,7 +368,6 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("street")}
-								// value={visitor.street}
 								value={
 									mainOrCompanion(increment, mainVisitor, companions).address
 										.street
@@ -409,7 +402,6 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("brgy")}
-								// value={visitor.barangay}
 								value={
 									mainOrCompanion(increment, mainVisitor, companions).address
 										.brgy
@@ -444,7 +436,6 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("city")}
-								// value={visitor.city}
 								value={
 									mainOrCompanion(increment, mainVisitor, companions).address
 										.city
@@ -479,7 +470,6 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("province")}
-								// value={visitor.province}
 								value={
 									mainOrCompanion(increment, mainVisitor, companions).address
 										.province
@@ -514,7 +504,6 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("country")}
-								// value={visitor.country}
 								value={
 									mainOrCompanion(increment, mainVisitor, companions).address
 										.country

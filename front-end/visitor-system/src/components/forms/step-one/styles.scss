@@ -24,6 +24,10 @@ $placeholder: (
     }
 }
 
+.ant-input-number:focus {
+    background: #DFEAEF;
+}
+
 
 .ant-input {
     background: #DFEAEF !important;
@@ -45,6 +49,10 @@ $placeholder: (
 .ant-picker-range {
     background: #DFEAEF !important;
     border: none;
+}
+
+.ant-picker {
+    background: #DFEAEF !important;
 }
 
 .ant-modal-footer {
@@ -77,5 +85,33 @@ $placeholder: (
         border-color: transparent !important;
         --tw-ring-color: transparent !important;
         --tw-ring-shadow: transparent !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .ant-picker-dropdown {
+        left: 20px !important;
+    }
+
+    .ant-picker-datetime-panel {
+        flex-direction: column
+    }
+}
+
+@media (max-width: 330px) {
+    .plate-num {
+        width: 38% !important;
+    }
+
+    .logo-img {
+        height: 42px !important;
+    }
+
+    .ant-picker-dropdown {
+        left: 0px !important;
+    }
+
+    .ant-picker-datetime-panel {
+        flex-direction: column
     }
 }

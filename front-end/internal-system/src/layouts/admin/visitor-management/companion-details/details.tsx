@@ -11,7 +11,6 @@ import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 
 //Interfaces
-import { WidthContext } from "../../../logged-in";
 import { CompanionRecord } from "../../../../components/table/companion-list";
 import {
 	CompanionDetailZod,
@@ -20,19 +19,13 @@ import {
 import type { Dayjs } from "dayjs";
 
 //Store
-import {
-	update,
-	deleteVisitor,
-	deleteCompanion,
-} from "../../../../states/visitors";
+import { update, deleteCompanion } from "../../../../states/visitors";
 
 //Components
-import { Button, Avatar, Form, Input, Modal } from "antd";
+import { Button, Form, Input, Modal } from "antd";
 import DateTimePicker from "../../../../components/datetime-picker";
-// import Input from "../../../../components/fields/input/input";
 import Label from "../../../../components/fields/input/label";
 import Alert from "../../../../components/alert";
-import Identification from "../identification";
 
 //Lib
 import AxiosInstace from "../../../../lib/axios";
@@ -67,14 +60,10 @@ export default function CompanionDetails({
 	const [status, setStatus] = useState(false);
 	const [alertMsg, setAlertMsg] = useState("");
 
-	const [identificationOpen, setIdentificationOpen] = useState(false);
-
 	const [disabledInputs, setDisabledInputs] = useState<boolean>(true);
 
 	//Delete?
 	const [deleteComp, setDeleteComp] = useState(false);
-
-	const width = useContext(WidthContext);
 
 	const dispatch = useDispatch();
 
@@ -608,27 +597,6 @@ export default function CompanionDetails({
 									</div>
 								</div>
 							</div>
-							<div className="flex w-full flex-col items-center gap-[30px]">
-								{/* <Avatar size={width === 1210 ? 150 : 220} src={RyanReynolds} /> */}
-								<Avatar
-									className="cursor-pointer"
-									onClick={() => setIdentificationOpen(!identificationOpen)}
-									size={width === 1210 ? 150 : 220}
-									src="https://www.sars.gov.za/wp-content/uploads/images/Verify-banking-details.jpg"
-								/>
-								<Identification
-									open={identificationOpen}
-									setOpen={setIdentificationOpen}
-									image={{
-										frontId:
-											"https://media.philstar.com/photos/2021/07/23/10_2021-07-23_18-27-24.jpg",
-										backId:
-											"https://s3-alpha-sig.figma.com/img/6541/e76f/4938b0155718de8af5610a0f82b07fc5?Expires=1696809600&Signature=g9ee7Y9K6izTlUfPBSWDgv2t9CilaBU3wsYb~xTBNwzFqBIgD~qDFl1WJms9oyFfyQXVxeFC5zydUUKHzBz-JaG~jZ31ambhXu9Gqte1D5vDh9x6WnZF8Kszq9IisRwRC1ytG02cYqFmIFpwLjb-hZ-JFXIWPbB~g-EA-pVFCSsElqjTHikVTTSSmEQiViHAXOSZo0OF3spgfGhfQhtobuWeryxKXlrr3Wu6CnxlIN0VGWKrCMzNH3qp6o99M8KZ4tkEsA8oFrhz~ijLF2GntP1DSBpZNm07wWoLJ2T1l7zSdqRJ5OOl4wiRucamxNbR8wnqPxjrKxrRGE7nJhAQ6w__&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4",
-										selfieId:
-											"https://www.sars.gov.za/wp-content/uploads/images/Verify-banking-details.jpg",
-									}}
-								/>
-							</div>
 						</div>
 						{/* <div className="divider" /> */}
 						<div className="flex justify-end gap-[15px]">
@@ -643,7 +611,6 @@ export default function CompanionDetails({
 										Delete
 									</Button>
 									<Button
-										// onClick={saveAction}
 										type="primary"
 										size="large"
 										className="search-button !rounded-[18px] !bg-primary-500"

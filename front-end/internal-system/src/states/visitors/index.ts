@@ -10,13 +10,11 @@ import { VisitorDataType } from "../../utils/interfaces";
 export interface VisitorStoreState {
 	data: VisitorDataType[];
 	loading: boolean;
-	error?: string;
 }
 
 const initialState: VisitorStoreState = {
 	data: [],
 	loading: false,
-	error: undefined,
 };
 
 export const fetchVisitors = createAsyncThunk(
@@ -64,11 +62,9 @@ export const visitorSlice = createSlice({
 			.addCase(fetchVisitors.fulfilled, (state, action) => {
 				state.data = action.payload.visitors;
 				state.loading = false;
-				state.error = undefined;
 			})
 			.addCase(fetchVisitors.rejected, (state, action) => {
 				state.loading = false;
-				state.error = action.error.message;
 			});
 	},
 });
