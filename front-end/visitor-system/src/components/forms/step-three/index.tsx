@@ -46,6 +46,7 @@ export default function StepThree({
 			expected_time_out: visitors.expected_time_out,
 			purpose: visitors.purpose,
 			plate_num: null,
+			id_picture: visitors.id_picture,
 			status: VisitorStatus.InProgress,
 			visitor_type: VisitorType.PreRegistered,
 		},
@@ -63,7 +64,7 @@ export default function StepThree({
 						successMessage(res.data.message);
 					})
 					.catch((err: any) => {
-						error(err.response.data.error);
+						error(err.response.data.error || err.response.data.errors);
 					});
 			},
 		});

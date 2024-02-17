@@ -21,11 +21,11 @@ exports.getAllVisitors = async (req, res) => {
 //Create a new visitor
 exports.createNewVisitor = async (req, res) => {
   //TODO Needs to be updated
-  // await Promise.all(validateData.map((validation) => validation.run(req)));
-  // const errors = validationResult(req);
-  // if (!errors.isEmpty()) {
-  //   return res.status(400).json({ errors: errors.array()[0].msg });
-  // }
+  await Promise.all(validateData.map((validation) => validation.run(req)));
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array()[0].msg});
+  }
 
   try {
     const visitorDB = await Visitor.findOne({
@@ -37,13 +37,14 @@ exports.createNewVisitor = async (req, res) => {
         req.body.visitor_data.visitor_details.name.last_name,
     });
     if (visitorDB) {
-      res.status(401).json({ error: "Visitor already exists" });
+      res.status(400).json({ error: "Visitor already exists" });
     } else {
       const newVisitor = await Visitor.create({
         visitor_details: req.body.visitor_data.visitor_details,
         companion_details: req.body.visitor_data.companion_details,
         plate_num: req.body.visitor_data.plate_num,
         purpose: req.body.visitor_data.purpose,
+        id_picture: req.body.visitor_data.id_picture,
         visitor_type: req.body.visitor_data.visitor_type,
         status: req.body.visitor_data.status,
       });
