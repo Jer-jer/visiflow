@@ -2,7 +2,7 @@
 	?	GENERALLY USED TO HANDLE DATA SENT FROM THE DATABASE AND SEND DATA TO THE DATABASE
 */
 
-import { VisitorStatus, VisitorType } from "./enums";
+import { VisitorStatus, VisitorType, UserRole } from "./enums";
 
 export interface VisitorLogDetails {
 	key: string;
@@ -50,9 +50,12 @@ export interface PurposeProps {
 	// why?: string;
 }
 
-//TODO Lacking ID Picture
+export interface IDPictureProps {
+	front: string;
+	back: string;
+	selfie: string;
+}
 export interface VisitorDataType {
-	// key: number;
 	_id: string;
 	visitor_details: VisitorDetailsProps;
 	companion_details?: VisitorDetailsProps[];
@@ -61,6 +64,7 @@ export interface VisitorDataType {
 	plate_num: string;
 	status: VisitorStatus;
 	visitor_type: VisitorType;
+	id_picture: IDPictureProps;
 	created_at?: Date;
 }
 
@@ -77,11 +81,6 @@ export interface UserActionLogs {
 	action: string;
 	logDate: string;
 	system: string;
-}
-
-export enum UserRole {
-	Admin = "admin",
-	Security = "security",
 }
 
 export interface UserDataType {

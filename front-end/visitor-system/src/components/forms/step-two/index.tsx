@@ -1,9 +1,17 @@
-import React, { useState, SetStateAction, Dispatch } from "react";
+import React, {
+	useState,
+	SetStateAction,
+	Dispatch,
+	useRef,
+	useCallback,
+} from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import Webcam from "react-webcam";
+import { isMobile } from "react-device-detect";
 
 // Components
-import { Form } from "antd";
+import { Form, Tabs, Image, Button, Modal } from "antd";
 
 // Interfaces
 import { VisitorDataType } from "../../../utils/interfaces";
@@ -11,7 +19,11 @@ import { StepTwoData, StepTwoZod } from "../../../utils/zodSchemas";
 
 // Components
 import StepForm from "./form";
-import { Tabs, Image, Button, Modal } from "antd";
+
+// Assets
+
+// Styles
+import "./styles.scss";
 
 interface StepTwoProps {
 	setProgress: Dispatch<SetStateAction<number>>;
@@ -37,6 +49,54 @@ export default function StepTwo({
 		resolver: zodResolver(StepTwoZod),
 	});
 
+	// Image Data Stuff
+	const webcamRef = useRef<Webcam>(null);
+	const [takeFrontImage, setTakeFrontImage] = useState(false);
+	const [takeBackImage, setTakeBackImage] = useState(false);
+	const [takeSelfieImage, setTakeSelfieImage] = useState(false);
+
+	const selfieMode = {
+		facingMode: "user",
+	};
+
+	const outMode = {
+		facingMode: { exact: "environment" },
+	};
+
+	const capture = useCallback(
+		(property: string) => {
+			const imageSrc = webcamRef.current!.getScreenshot();
+
+			switch (property) {
+				case "front":
+					// setFrontImage(imageSrc);
+					setVisitors((prev) => ({
+						...prev,
+						id_picture: { ...prev.id_picture, front: imageSrc as string },
+					}));
+					setValue("front", imageSrc as string);
+					break;
+				case "back":
+					// setBackImage(imageSrc);
+					setVisitors((prev) => ({
+						...prev,
+						id_picture: { ...prev.id_picture, back: imageSrc as string },
+					}));
+					setValue("back", imageSrc as string);
+					break;
+				case "selfie":
+					// setSelfieImage(imageSrc);
+					setVisitors((prev) => ({
+						...prev,
+						id_picture: { ...prev.id_picture, selfie: imageSrc as string },
+					}));
+					setValue("selfie", imageSrc as string);
+					break;
+			}
+		},
+		[webcamRef],
+	);
+
 	const handleOkPhoto = () => {
 		setIsPhotoOpen(false);
 	};
@@ -58,6 +118,7 @@ export default function StepTwo({
 	};
 
 	const onSubmit = handleSubmit((data) => {
+		// console.log(data);
 		nextStep();
 	});
 
@@ -89,7 +150,9 @@ export default function StepTwo({
 			<div className="mr-[30px] flex items-center justify-center gap-2 lg:mr-0 lg:w-[80%] lg:justify-end">
 				<div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row">
 					<Button
-						className="w-[inherit] bg-primary-500"
+						className={`w-[inherit] ${
+							errors?.selfie ? "!bg-error" : "!bg-primary-500"
+						}`}
 						type="primary"
 						onClick={showModalPhoto}
 					>
@@ -107,7 +170,7 @@ export default function StepTwo({
 								</span>
 							</>
 						}
-						width={1000}
+						width={1250}
 						open={isPhotoOpen}
 						onOk={handleOkPhoto}
 						onCancel={handleCancelPhoto}
@@ -115,39 +178,296 @@ export default function StepTwo({
 						<Image.PreviewGroup>
 							<div className="flex flex-col items-center justify-center gap-[65px]">
 								<div className="flex flex-col gap-[65px] md:flex-row">
-									<div className="flex flex-col items-center">
-										<label className="label">
-											<span className="label-text text-[16px] font-medium text-black">
-												Front of ID
-											</span>
-										</label>
-										<Image
-											width={300}
-											src="https://media.philstar.com/photos/2021/07/23/10_2021-07-23_18-27-24.jpg"
-										/>
-									</div>
-									<div className="flex flex-col items-center">
-										<label className="label">
-											<span className="label-text text-[16px] font-medium text-black">
-												Back of ID
-											</span>
-										</label>
-										<Image
-											width={300}
-											src="https://s3-alpha-sig.figma.com/img/6541/e76f/4938b0155718de8af5610a0f82b07fc5?Expires=1696809600&Signature=g9ee7Y9K6izTlUfPBSWDgv2t9CilaBU3wsYb~xTBNwzFqBIgD~qDFl1WJms9oyFfyQXVxeFC5zydUUKHzBz-JaG~jZ31ambhXu9Gqte1D5vDh9x6WnZF8Kszq9IisRwRC1ytG02cYqFmIFpwLjb-hZ-JFXIWPbB~g-EA-pVFCSsElqjTHikVTTSSmEQiViHAXOSZo0OF3spgfGhfQhtobuWeryxKXlrr3Wu6CnxlIN0VGWKrCMzNH3qp6o99M8KZ4tkEsA8oFrhz~ijLF2GntP1DSBpZNm07wWoLJ2T1l7zSdqRJ5OOl4wiRucamxNbR8wnqPxjrKxrRGE7nJhAQ6w__&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4"
-										/>
-									</div>
-								</div>
-								<div className="flex flex-col items-center">
-									<label className="label">
-										<span className="label-text text-[16px] font-medium text-black">
-											Selfie with your ID
-										</span>
-									</label>
-									<Image
-										width={300}
-										src="https://www.sars.gov.za/wp-content/uploads/images/Verify-banking-details.jpg"
-									/>
+									{!takeBackImage && !takeSelfieImage && (
+										<div className="flex flex-col items-center">
+											<label className="label">
+												<span className="label-text text-[16px] font-medium text-black">
+													Front of ID
+												</span>
+											</label>
+											<div className="mx-auto max-w-xs">
+												{takeFrontImage ? (
+													<>
+														{visitors.id_picture.front !== "" ? (
+															<>
+																<Image
+																	width={300}
+																	src={visitors.id_picture.front}
+																/>
+																<div className="flex justify-between">
+																	<Button
+																		className="w-[inherit] bg-primary-500"
+																		type="primary"
+																		onClick={() => {
+																			setTakeFrontImage(true);
+																			setVisitors((prev) => ({
+																				...prev,
+																				id_picture: {
+																					...prev.id_picture,
+																					front: "",
+																				},
+																			}));
+																		}}
+																	>
+																		Retake Photo
+																	</Button>
+																	<Button
+																		className="w-[inherit] bg-primary-500"
+																		type="primary"
+																		onClick={() => setTakeFrontImage(false)}
+																	>
+																		Ok
+																	</Button>
+																</div>
+															</>
+														) : (
+															<>
+																<Webcam
+																	height={300}
+																	width={300}
+																	ref={webcamRef}
+																	screenshotFormat="image/jpeg"
+																	videoConstraints={
+																		isMobile ? outMode : selfieMode
+																	}
+																/>
+																<div className="flex justify-between">
+																	<Button
+																		className="w-[inherit] bg-primary-500"
+																		type="primary"
+																		onClick={() => capture("front")}
+																	>
+																		Capture photo
+																	</Button>
+																	<Button
+																		className="w-[inherit] bg-error"
+																		type="primary"
+																		onClick={() => setTakeFrontImage(false)}
+																	>
+																		Cancel
+																	</Button>
+																</div>
+															</>
+														)}
+													</>
+												) : (
+													<>
+														{visitors.id_picture.front && (
+															<Image
+																width={300}
+																src={visitors.id_picture.front}
+															/>
+														)}
+														<Button
+															className="w-[inherit] bg-primary-500"
+															type="primary"
+															onClick={() => setTakeFrontImage(true)}
+														>
+															Take Photo
+														</Button>
+													</>
+												)}
+
+												{errors?.front && (
+													<p className="mt-1 text-sm text-red-500">
+														{errors.front?.message}
+													</p>
+												)}
+											</div>
+										</div>
+									)}
+									{!takeFrontImage && !takeSelfieImage && (
+										<div className="flex flex-col items-center">
+											<label className="label">
+												<span className="label-text text-[16px] font-medium text-black">
+													Back of ID
+												</span>
+											</label>
+											<div className="mx-auto max-w-xs">
+												{takeBackImage ? (
+													<>
+														{visitors.id_picture.back !== "" ? (
+															<>
+																<Image
+																	width={300}
+																	src={visitors.id_picture.back}
+																/>
+																<div className="flex justify-between">
+																	<Button
+																		className="w-[inherit] bg-primary-500"
+																		type="primary"
+																		onClick={() => {
+																			setTakeBackImage(true);
+																			setVisitors((prev) => ({
+																				...prev,
+																				id_picture: {
+																					...prev.id_picture,
+																					back: "",
+																				},
+																			}));
+																		}}
+																	>
+																		Retake Photo
+																	</Button>
+																	<Button
+																		className="w-[inherit] bg-primary-500"
+																		type="primary"
+																		onClick={() => setTakeBackImage(false)}
+																	>
+																		Ok
+																	</Button>
+																</div>
+															</>
+														) : (
+															<>
+																<Webcam
+																	height={300}
+																	width={300}
+																	ref={webcamRef}
+																	screenshotFormat="image/jpeg"
+																	videoConstraints={
+																		isMobile ? outMode : selfieMode
+																	}
+																/>
+																<div className="flex justify-between">
+																	<Button
+																		className="w-[inherit] bg-primary-500"
+																		type="primary"
+																		onClick={() => capture("back")}
+																	>
+																		Capture photo
+																	</Button>
+																	<Button
+																		className="w-[inherit] bg-error"
+																		type="primary"
+																		onClick={() => setTakeBackImage(false)}
+																	>
+																		Cancel
+																	</Button>
+																</div>
+															</>
+														)}
+													</>
+												) : (
+													<>
+														{visitors.id_picture.back && (
+															<Image
+																width={300}
+																src={visitors.id_picture.back}
+															/>
+														)}
+														<Button
+															className="w-[inherit] bg-primary-500"
+															type="primary"
+															onClick={() => setTakeBackImage(true)}
+														>
+															Take Photo
+														</Button>
+													</>
+												)}
+												{errors?.back && (
+													<p className="mt-1 text-sm text-red-500">
+														{errors.back?.message}
+													</p>
+												)}
+											</div>
+										</div>
+									)}
+									{!takeFrontImage && !takeBackImage && (
+										<div className="flex flex-col items-center">
+											<label className="label">
+												<span className="label-text text-[16px] font-medium text-black">
+													Selfie with your ID
+												</span>
+											</label>
+											<div className="mx-auto max-w-xs">
+												{takeSelfieImage ? (
+													<>
+														{visitors.id_picture.selfie !== "" ? (
+															<>
+																<Image
+																	width={300}
+																	src={visitors.id_picture.selfie}
+																/>
+																<div className="flex justify-between">
+																	<Button
+																		className="w-[inherit] bg-primary-500"
+																		type="primary"
+																		onClick={() => {
+																			setTakeSelfieImage(true);
+																			setVisitors((prev) => ({
+																				...prev,
+																				id_picture: {
+																					...prev.id_picture,
+																					selfie: "",
+																				}
+																			}));
+																		}}
+																	>
+																		Retake Photo
+																	</Button>
+																	<Button
+																		className="w-[inherit] bg-primary-500"
+																		type="primary"
+																		onClick={() => setTakeSelfieImage(false)}
+																	>
+																		Ok
+																	</Button>
+																</div>
+															</>
+														) : (
+															<>
+																<Webcam
+																	height={300}
+																	width={300}
+																	ref={webcamRef}
+																	screenshotFormat="image/jpeg"
+																	videoConstraints={selfieMode}
+																/>
+																<div className="flex justify-between">
+																	<Button
+																		className="w-[inherit] bg-primary-500"
+																		type="primary"
+																		onClick={() => capture("selfie")}
+																	>
+																		Capture photo
+																	</Button>
+																	<Button
+																		className="w-[inherit] bg-error"
+																		type="primary"
+																		onClick={() => setTakeSelfieImage(false)}
+																	>
+																		Cancel
+																	</Button>
+																</div>
+															</>
+														)}
+													</>
+												) : (
+													<>
+														{visitors.id_picture.selfie && (
+															<Image
+																width={300}
+																src={visitors.id_picture.selfie}
+															/>
+														)}
+														<Button
+															className="w-[inherit] bg-primary-500"
+															type="primary"
+															onClick={() => setTakeSelfieImage(true)}
+														>
+															Take Photo
+														</Button>
+													</>
+												)}
+												{errors?.selfie && (
+													<p className="mt-1 text-sm text-red-500">
+														{errors.selfie?.message}
+													</p>
+												)}
+											</div>
+										</div>
+									)}
 								</div>
 							</div>
 						</Image.PreviewGroup>

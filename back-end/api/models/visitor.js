@@ -22,15 +22,10 @@ const Address = new Schema({
   country: { type: String },
 });
 
-const Photo = new Schema({
-  name: { type: String },
-  image: { type: String },
-});
-
 const IdPhoto = new Schema({
-  front: Photo,
-  back: Photo,
-  selfie: Photo,
+  front: { type: String, require: true },
+  back: { type: String, require: true },
+  selfie: { type: String, require: true },
 });
 
 const VisitorDetails = new Schema({
@@ -78,7 +73,10 @@ const VisitorSchema = new Schema({
       required: true,
     },
   ],
-  plate_num: String,
+  plate_num: {
+    type: String,
+    required: false,
+  },
   purpose: {
     type: Purpose,
     required: true,
@@ -94,7 +92,10 @@ const VisitorSchema = new Schema({
     default: "In Progress",
     required: true,
   },
-  //   id_picture: IdPhoto, //? Will uncomment later
+  id_picture: {
+    type: IdPhoto,
+    required: true,
+  },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
 });
