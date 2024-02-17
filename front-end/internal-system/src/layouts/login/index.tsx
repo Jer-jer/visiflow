@@ -59,7 +59,7 @@ function LoginLayout() {
 						<div className="absolute right-[340px] hidden md:right-[230px] md:block lg:right-[210px]">
 							<LoginPhoto />
 						</div>
-						<div className="absolute flex w-[350px] flex-col md:left-[410px] md:w-[350px] lg:left-[440px] lg:top-[100px]">
+						<div className="absolute flex w-[350px] form-container flex-col md:left-[410px] md:w-[350px] lg:left-[440px] lg:top-[100px]">
 							<div className=" mb-6">
 								<span className="login-header text-[32px] font-[700] tracking-[1.6px] text-accent">
 									Gullas Visitor Management System

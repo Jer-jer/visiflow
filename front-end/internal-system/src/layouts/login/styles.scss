@@ -49,3 +49,13 @@
         }
     }
 }
+
+@media (max-width: 330px) {
+    .form-container {
+        width: 230px!important;
+    }
+
+    .login-header {
+        font-size: 26px;
+    }
+}
