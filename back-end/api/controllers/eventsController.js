@@ -1,7 +1,7 @@
 const express = require("express");//for import of express package
 const bodyParser = require("body-parser");
 const EventsModel = require('../models/events');
-const { validateData, handleValidationErrors, validationResult } = require('../middleware/eventsValidation');
+const { validateEvents, handleValidationErrors, validationResult } = require('../middleware/dataValidation');
 //const { filterData} = require('../middleware/filterVisitorData');
 //const { checkout } = require("../routes/visitorCompRouter");
 
@@ -39,7 +39,7 @@ exports.getEventsbyID = async (req, res) => {
 //Create
 exports.addEvents = async (req, res) => {
     
-    await Promise.all(validateData.map(validation => validation.run(req)));
+    await Promise.all(validateEvents.map(validation => validation.run(req)));
 
     const errors = validationResult(req);
     if(!errors.isEmpty()) {
