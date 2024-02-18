@@ -16,27 +16,22 @@ const Name = new Schema({
 const Address = new Schema({
   street: { type: String },
   house: { type: String },
-  barangay: { type: String, require: true },
+  brgy: { type: String, require: true },
   city: { type: String, require: true },
   province: { type: String, require: true },
   country: { type: String },
 });
 
-const Photo = new Schema({
-  name: { type: String },
-  image: { type: String },
-});
-
 const IdPhoto = new Schema({
-  front: Photo,
-  back: Photo,
-  selfie: Photo,
+  front: { type: String, require: true },
+  back: { type: String, require: true },
+  selfie: { type: String, require: true },
 });
 
 const VisitorDetails = new Schema({
   name: { type: Name, required: true },
   address: { type: Address, required: true },
-  email: { type: String, require: true, unique: true },
+  email: { type: String, require: true },
   phone: { type: String, require: true },
   time_in: { type: String, require: true, default: "" },
   time_out: { type: String, require: true, default: "" },
@@ -78,7 +73,10 @@ const VisitorSchema = new Schema({
       required: true,
     },
   ],
-  plate_num: String,
+  plate_num: {
+    type: String,
+    required: false,
+  },
   purpose: {
     type: Purpose,
     required: true,
@@ -94,7 +92,10 @@ const VisitorSchema = new Schema({
     default: "In Progress",
     required: true,
   },
-  //   id_picture: IdPhoto, //? Will uncomment later
+  id_picture: {
+    type: IdPhoto,
+    required: true,
+  },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
 });

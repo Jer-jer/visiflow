@@ -36,7 +36,7 @@ export interface VisitorDataType {
 	key: number;
 	id: string;
 	visitorDetails: VisitorDetailsProps;
-	companionNumber: number,
+	companionNumber: number;
 	companionsDetails?: VisitorDetailsProps[];
 	date: string;
 	visitorType: string;
@@ -91,14 +91,6 @@ export interface EventsSchedule {
 	description: string;
 }
 
-// export interface VisitorDataType {
-// 	key: number;
-// 	id: string;
-// 	scheduleDetails: ScheduleDetailsProps;
-// 	companionsDetails?: ScheduleDetailsProps[];
-// 	date: string;
-// }
-
 // export interface ScheduleDetailsProps {
 // 	id: string,
 // 	fullName: FullNameProps;
@@ -116,4 +108,12 @@ export interface EventsSchedule {
 // 	noOfVisitors: string,
 // 	purpose: string,
 // 	personOfInterest: string,
+// }
+
+// export interface VisitorDataType {
+// 	key: number;
+// 	id: string;
+// 	scheduleDetails: ScheduleDetailsProps;
+// 	companionsDetails?: ScheduleDetailsProps[];
+// 	date: string;
 // }

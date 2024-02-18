@@ -10,6 +10,7 @@ import {
 	Modal,
 	Form,
 	DatePicker,
+	Input,
 } from "antd";
 
 // Interfaces
@@ -26,6 +27,9 @@ import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 import type { DatePickerProps } from "antd";
+
+// Styles
+import "./styles.scss";
 
 interface FormProps {
 	visitorNo: number;
@@ -66,9 +70,7 @@ function StepOneForm({
 	const addVisitor = (value: any) => {
 		setVisitorNo(value);
 		setValue("visitorNo", visitorNo);
-		console.log("companion detailsss", visitors.companions_details!);
 		if (value > visitors.companions_details!.length) {
-			console.log("addddd", visitors.companions_details!.length);
 			setVisitors((prevVisitors) => ({
 				...prevVisitors,
 				companions_details: [
@@ -82,7 +84,7 @@ function StepOneForm({
 						email: "",
 						phone: "",
 						address: {
-							house_no: "",
+							house: "",
 							street: "",
 							brgy: "",
 							city: "",
@@ -96,7 +98,6 @@ function StepOneForm({
 			}));
 		} else if (value < visitors.companions_details!.length) {
 			const indexToRemove = visitors.companions_details!.length - 1;
-			console.log("decresssseeeeeee", visitors.companions_details!.length);
 			setVisitors((prevVisitors) => ({
 				...prevVisitors,
 				companions_details: prevVisitors.companions_details!.filter(
@@ -105,12 +106,6 @@ function StepOneForm({
 			}));
 		}
 	};
-
-	// const handleChangePoi = (value: string) => {
-	// 	setVisitors({ ...visitors, poi: value });
-
-	// 	setValue("poi", visitors.poi!);
-	// };
 
 	const onChangeRange = (
 		value: RangePickerProps["value"],
@@ -189,7 +184,7 @@ function StepOneForm({
 					</span>
 
 					<InputNumber
-						className="rounded-[5px] border-none bg-[#DFEAEF] focus:border-primary-500 focus:outline-0 focus:!ring-transparent"
+						className="rounded-[5px] border-none bg-[#DFEAEF] focus-within:!bg-[#DFEAEF] hover:bg-[#DFEAEF] focus:border-primary-500 focus:!bg-[#DFEAEF] focus:outline-0 focus:!ring-transparent"
 						{...register("visitorNo", { valueAsNumber: true })}
 						style={{ width: 80, height: 35 }}
 						min={1}
@@ -201,6 +196,30 @@ function StepOneForm({
 					<p className="mt-1 text-sm text-red-500">
 						{errors.visitorNo.message}
 					</p>
+				)}
+			</Form.Item>
+
+			<Form.Item>
+				<div className="mb-[5px] flex items-center gap-8 lg:w-[20%]">
+					<span className="plate-num w-[24%] text-[16px] font-[400] text-[#0000004d] md:w-[14%] lg:w-[100%]">
+						Plate Number
+					</span>
+
+					<Input
+						className="w-[100px] rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent lg:w-full"
+						{...register("plateNum")}
+						value={visitors.plate_num === null ? "" : visitors.plate_num}
+						onChange={(event: any) => {
+							setVisitors((prevVisitors) => ({
+								...prevVisitors,
+								plate_num: event.target.value,
+							}));
+							setValue("plateNum", event.target.value);
+						}}
+					/>
+				</div>
+				{errors?.plateNum && (
+					<p className="mt-1 text-sm text-red-500">{errors.plateNum.message}</p>
 				)}
 			</Form.Item>
 
@@ -314,7 +333,7 @@ function StepOneForm({
 					<div className="flex w-full flex-col">
 						<DatePicker
 							showTime
-							className="focus:!border-primary-500vm-placeholder h-[52px] border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500"
+							className="vm-placeholder hover:bg-[#DFEAEF]!border-[#d9d9d9] h-[52px] border-none bg-[#e0ebf0] hover:!border-primary-500 hover:bg-[#DFEAEF] focus:!border-primary-500"
 							placeholder="When"
 							defaultValue={dayjs(visitors.purpose.when, "YYYY-MM-DD hh:mm A")}
 							onChange={onChangeDate}

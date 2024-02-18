@@ -1,9 +1,7 @@
 const mongoose = require("mongoose");
 
 //! DO NOT REMOVE!! REQUIRED TO CREATE A SEPARATE COLLECTION
-const authConnection = mongoose.createConnection(
-  `${process.env.MONGODB_URI}/auth`
-);
+const authConnection = mongoose.createConnection(`${process.env.MONGODB_AUTH}`);
 
 const Schema = mongoose.Schema;
 const ObjectId = mongoose.Types.ObjectId;
@@ -15,7 +13,7 @@ const Name = new Schema({
 });
 
 const UserSchema = new Schema({
-  _id: ObjectId,
+  _id: { type: ObjectId },
   name: Name,
   username: { type: String, require: true },
   email: { type: String, require: true, unique: true },

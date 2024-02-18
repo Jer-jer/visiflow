@@ -4,15 +4,16 @@ import { Table, Tag, Button } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 //Interfaces
-import { VisitorDataType, VisitorDetailsProps } from "../../../utils";
+import {
+	VisitorDataType,
+	VisitorDetailsProps,
+} from "../../../utils/interfaceTest";
 
 //Styles
 import "../../../utils/variables.scss";
 
 interface ScheduleListTableProps {
-	addTab: (
-		record: VisitorDataType,
-	) => void;
+	addTab: (record: VisitorDataType) => void;
 }
 
 export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
@@ -385,7 +386,10 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 		{
 			title: "Name",
 			dataIndex: "visitorDetails",
-			sorter: (a, b) => a.visitorDetails.fullName.lastName.localeCompare(b.visitorDetails.fullName.lastName),
+			sorter: (a, b) =>
+				a.visitorDetails.fullName.lastName.localeCompare(
+					b.visitorDetails.fullName.lastName,
+				),
 			render: (_, { visitorDetails }) => {
 				return `${visitorDetails.fullName.lastName}, ${visitorDetails.fullName.firstName} ${visitorDetails.fullName.middleName}`;
 			},
@@ -415,15 +419,15 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 				},
 				{
 					text: "Completed",
-					value: "Completed"
-				}
+					value: "Completed",
+				},
 			],
 			render: (_, { visitorDetails }) => {
 				let color;
-				if(visitorDetails.status === "In-Progress") color = "#E88B23";
-				else if(visitorDetails.status === "Approved") color = "#0db284";
-				else if(visitorDetails.status === "Declined") color = "#FF0000";
-				else if(visitorDetails.status === "Completed") color = "#9C9C9C";
+				if (visitorDetails.status === "In-Progress") color = "#E88B23";
+				else if (visitorDetails.status === "Approved") color = "#0db284";
+				else if (visitorDetails.status === "Declined") color = "#FF0000";
+				else if (visitorDetails.status === "Completed") color = "#9C9C9C";
 				return (
 					<Tag color={color} key={visitorDetails.status}>
 						{visitorDetails.status.toUpperCase()}
@@ -431,20 +435,23 @@ export default function ScheduleListTable({ addTab }: ScheduleListTableProps) {
 				);
 			},
 		},
-        {
+		{
 			title: "Action",
 			key: "action",
 			render: (_, record) => (
 				<>
 					<Button>Delete</Button>
-					<Button className="ml-4" onClick={() => {
-						console.log("Clicked edit button");
-						console.log("CONSOLE", record);
-						addTab(record)
-					}}
-					>Edit</Button>
+					<Button
+						className="ml-4"
+						onClick={() => {
+							console.log("Clicked edit button");
+							console.log("CONSOLE", record);
+							addTab(record);
+						}}
+					>
+						Edit
+					</Button>
 				</>
-
 			),
 		},
 	];

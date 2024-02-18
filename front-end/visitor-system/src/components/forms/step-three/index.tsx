@@ -35,6 +35,7 @@ export default function StepThree({
 	visitors,
 	visitorNo,
 }: StepThreeProps) {
+	//TODO Create a validation that would make sure the companions (if there are any) are filled
 	const [modal, contextHolder] = Modal.useModal();
 
 	const { handleSubmit } = useForm({
@@ -45,6 +46,7 @@ export default function StepThree({
 			expected_time_out: visitors.expected_time_out,
 			purpose: visitors.purpose,
 			plate_num: null,
+			id_picture: visitors.id_picture,
 			status: VisitorStatus.InProgress,
 			visitor_type: VisitorType.PreRegistered,
 		},
@@ -62,11 +64,8 @@ export default function StepThree({
 						successMessage(res.data.message);
 					})
 					.catch((err: any) => {
-						error(err.response.data.error);
+						error(err.response.data.error || err.response.data.errors);
 					});
-			},
-			onCancel() {
-				console.log("Cancel");
 			},
 		});
 	};
@@ -76,19 +75,26 @@ export default function StepThree({
 
 		const instance = modal.success({
 			title: message,
-			content: `This modal will close after ${secondsToGo} second.`,
+			content: `Please wait for email confirmation. 
+			This form will close after ${secondsToGo} second.`,
+			onOk() {
+				clearInterval(timer);
+				window.location.reload();
+			},
 		});
 
 		const timer = setInterval(() => {
 			secondsToGo -= 1;
 			instance.update({
-				content: `This modal will close after ${secondsToGo} second.`,
+				content: `Please wait for email confirmation. 
+			This form will close after ${secondsToGo} second.`,
 			});
 		}, 1000);
 
 		setTimeout(() => {
 			clearInterval(timer);
 			instance.destroy();
+			window.location.reload();
 		}, secondsToGo * 1000);
 	};
 
@@ -194,7 +200,7 @@ export default function StepThree({
 									increment,
 									visitors.visitor_details,
 									visitors.companions_details!,
-								).address.house_no
+								).address.house
 							}
 						</span>
 					</div>

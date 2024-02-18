@@ -4,7 +4,8 @@ import { Table, Tag, Button } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 //Interfaces
-import { UserDataType, UserRole } from "../../../utils/interfaces";
+import { UserRole } from "../../../utils/enums";
+import { UserDataType } from "../../../utils/interfaces";
 
 //Styles
 import "../../../utils/variables.scss";
@@ -17,10 +18,6 @@ interface UserListTableProps {
 
 export default function UserListTable({ users, addTab }: UserListTableProps) {
 	const columns: ColumnsType<UserDataType> = [
-		{
-			title: "ID",
-			dataIndex: "user_id",
-		},
 		{
 			title: "Name",
 			dataIndex: "name",
