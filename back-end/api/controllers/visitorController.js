@@ -1,11 +1,11 @@
 const Visitor = require("../models/visitor");
 const { createNewCompanion } = require("./visitorCompController");
 const {
-  validateData,
+  validateVisitor,
   handleValidationErrors,
   validationResult,
-} = require("../middleware/visitorValidation");
-const { filterData } = require("../middleware/filterVisitorData");
+} = require("../middleware/dataValidation");
+const { filterVisitorData } = require("../middleware/filterData");
 const mongoose = require("mongoose");
 
 //Get list of all visitors
@@ -21,10 +21,10 @@ exports.getAllVisitors = async (req, res) => {
 //Create a new visitor
 exports.createNewVisitor = async (req, res) => {
   //TODO Needs to be updated
-  await Promise.all(validateData.map((validation) => validation.run(req)));
+  await Promise.all(validateVisitor.map((validation) => validation.run(req)));
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array()[0].msg});
+    return res.status(400).json({ errors: errors.array()[0].msg });
   }
 
   try {
@@ -50,7 +50,7 @@ exports.createNewVisitor = async (req, res) => {
       });
       res.status(201).json({
         message: "Successfully Pre-registered.",
-        newVisitor: filterData(newVisitor),
+        newVisitor: filterVisitorData(newVisitor),
       });
     }
   } catch (error) {
@@ -76,9 +76,16 @@ exports.getVisitorById = async (req, res) => {
 
 // Update a visitor by ID
 exports.updateVisitor = async (req, res) => {
+  await Promise.all(validateVisitor.map(validation => validation.run(req)));
+
+  const errors = validationResult(req);
+  if(!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array()[0].msg });
+  }
   //TODO Fix companion_details.email_1 dup key error
   const { _id } = req.body;
-  const visitor = await Visitor.findById(_id);
+  try {
+    const visitor = await Visitor.findById(_id);
   if (visitor) {
     //TODO need to add validation for data here
     visitor.visitor_details.name.first_name =
@@ -122,6 +129,9 @@ exports.updateVisitor = async (req, res) => {
     });
   } else {
     return res.status(404).json({ error: "Visitor not found" });
+  }
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
   }
   // try {
   //   const visitor = await Visitor.findById(_id);
