@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
 
 //Interface
 import { LoginZod } from "../../utils/zodSchemas";
@@ -11,7 +13,7 @@ import { Input, Button, Form } from "antd";
 import Label from "../../components/fields/input/label";
 
 //Lib
-import AxiosInstace from "../../lib/axios";
+import { AxiosLoginInstace } from "../../lib/axios";
 
 //Styles
 import "./styles.scss";
@@ -30,6 +32,8 @@ type LoginDetailZod = z.infer<typeof LoginZod>;
 function LoginLayout() {
 	const [isFocused, setIsFocused] = useState(false);
 
+	const navigate = useNavigate();
+
 	// Client-side Validation related data
 	const {
 		register,
@@ -42,9 +46,11 @@ function LoginLayout() {
 
 	const onSubmit = handleSubmit((data) => {
 		console.log(data);
-		AxiosInstace.post("/auth/login", data)
+		AxiosLoginInstace.post("/auth/login", data)
 			.then((res) => {
-				console.log(res);
+				localStorage.setItem("token", res.data.token);
+				// console.log(res.data.token);
+				navigate("/");
 			})
 			.catch((err) => {
 				console.log(err);
@@ -59,7 +65,7 @@ function LoginLayout() {
 						<div className="absolute right-[340px] hidden md:right-[230px] md:block lg:right-[210px]">
 							<LoginPhoto />
 						</div>
-						<div className="absolute flex w-[350px] form-container flex-col md:left-[410px] md:w-[350px] lg:left-[440px] lg:top-[100px]">
+						<div className="form-container absolute flex w-[350px] flex-col md:left-[410px] md:w-[350px] lg:left-[440px] lg:top-[100px]">
 							<div className=" mb-6">
 								<span className="login-header text-[32px] font-[700] tracking-[1.6px] text-accent">
 									Gullas Visitor Management System

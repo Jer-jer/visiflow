@@ -1,13 +1,37 @@
 import React, { useState, createContext, useContext } from "react";
+import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router";
 
 //Assets
 import RyanReynolds from "../../assets/ryan_reynolds.jpg";
 import TheRock from "../../assets/the_rock.jpg";
 
+// Lib
+import AxiosInstace from "../../lib/axios";
+
 //Styles
 import "./styles.scss";
 
 export default function Header() {
+	const token = localStorage.getItem("token");
+	const decoded = token && jwtDecode(token);
+	const navigate = useNavigate();
+
+	const logout = () => {
+		localStorage.removeItem("token");
+		navigate("/");
+		// AxiosInstace.post("/auth/logout", {
+		// 	token,
+		// })
+		// 	.then((res) => {
+		// 		console.log(res.data);
+		// 		localStorage.removeItem("token");
+		// 	})
+		// 	.catch((err) => {
+		// 		console.log(err);
+		// 	});
+	};
+
 	return (
 		<div className="navbar bg-base-100">
 			<div className="flex-1">
@@ -82,7 +106,7 @@ export default function Header() {
 					</ul>
 				</div>
 
-				<div className="dropdown-end dropdown">
+				<div className="dropdown dropdown-end">
 					<label
 						tabIndex={0}
 						className="avatar btn btn-circle btn-ghost hover:bg-transparent"
@@ -96,9 +120,12 @@ export default function Header() {
 						className="menu dropdown-content rounded-box menu-sm z-[1] mt-3 w-52 bg-white p-2 shadow"
 					>
 						<li>
-							<a href="/" className="hover:bg-primary-500 hover:text-white">
+							<button
+								className="hover:bg-primary-500 hover:text-white"
+								onClick={logout}
+							>
 								Logout
-							</a>
+							</button>
 						</li>
 					</ul>
 				</div>

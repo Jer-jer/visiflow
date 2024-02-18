@@ -1,9 +1,10 @@
 //DONE CHECKING
-require("dotenv").config();
+require('dotenv').config();
+const jwt = require('jsonwebtoken');
 
 exports.login = async (req, res) => {
-  console.log("logged-in");
-  res.status(201).json({ msg: "Successfully logged-in" });
+    const token = generateToken(req.user);
+    res.json({ token: token });
 };
 
 exports.logout = async (req, res, next) => {
@@ -15,3 +16,15 @@ exports.logout = async (req, res, next) => {
     });
   }
 };
+
+exports.test = (req, res) => {
+    res.json(req.user);
+}
+
+function generateToken(user) {
+    const jwtPayload = {
+      sub: user._id,
+      role: user.role
+    };
+    return jwt.sign(jwtPayload, 'visiflow', { expiresIn: '1h' }); 
+}

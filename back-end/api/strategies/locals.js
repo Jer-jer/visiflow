@@ -1,5 +1,7 @@
 const passport = require('passport');
-const { Strategy } = require('passport-local');
+const { Strategy } = require('passport-local').Strategy;
+const JwtStrategy = require('passport-jwt').Strategy;
+const { ExtractJwt } = require('passport-jwt');
 const User = require('../models/user');
 const { comparePassword } = require('../utils/helper');
 
@@ -46,3 +48,20 @@ passport.use(
         }
     )
 );
+
+passport.use(new JwtStrategy({
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: 'visiflow'
+}, async (jwtPayload, done) => {
+    try {
+        const user = await User.findById(jwtPayload.sub);
+        if (!user) {
+            return done(null, false);
+        }
+        console.log(jwtPayload.role);
+        return done(null, user);
+    } catch (error) {
+        return done(error, false);
+    }
+}));
+
