@@ -26,43 +26,6 @@ interface TabItems {
 	visitorData?: VisitorDataType;
 }
 
-//Functions
-const SchedulesList = ({ addTab, createSched }: ScheduleProps) => {
-	return (
-		<div className="mb-[35px] ml-2 mr-[25px] mt-3 h-fit">
-			<Tabs hideAdd className="h-full" type="editable-card" size="middle">
-				<Tabs.TabPane closable={false} tab="User List" key="1">
-					<div className="ml-[45px] mt-[30px] flex flex-col gap-[50px]">
-						<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
-							<Input
-								className="w-[366px]"
-								size="large"
-								placeholder="Search"
-								prefix={<Search />}
-							/>
-							<Button type="primary" className="search-button !bg-primary-500">
-								Search
-							</Button>
-							<Button
-								type="primary"
-								onClick={createSched}
-								className="search-button !bg-primary-500"
-							>
-								Add Schedule
-							</Button>
-							<div className="ml-auto">
-								<ExcelDownload />
-							</div>
-						</div>
-						<div className="mr-[50px]">
-							<ScheduleListTable addTab={addTab} />
-						</div>
-					</div>
-				</Tabs.TabPane>
-			</Tabs>
-		</div>
-	);
-};
 
 export default function ScheduleManagement() {
 	const [items, setItems] = useState<TabItems[]>([]);
@@ -163,8 +126,33 @@ export default function ScheduleManagement() {
 				activeKey={activeKey.toString()}
 				onEdit={onEdit}
 			>
-				<Tabs.TabPane closable={false} tab="" key="1">
-					<SchedulesList addTab={add} createSched={createSched} />
+				<Tabs.TabPane closable={false} tab="User List" key="1">
+					<div className="ml-[45px] mt-[30px] flex flex-col gap-[50px]">
+						<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
+							<Input
+								className="w-[366px]"
+								size="large"
+								placeholder="Search"
+								prefix={<Search />}
+							/>
+							<Button type="primary" className="search-button !bg-primary-500">
+								Search
+							</Button>
+							<Button
+								type="primary"
+								onClick={createSched}
+								className="search-button !bg-primary-500"
+							>
+								Add Schedule
+							</Button>
+							<div className="ml-auto">
+								<ExcelDownload />
+							</div>
+						</div>
+						<div className="mr-[50px]">
+							<ScheduleListTable addTab={add} />
+						</div>
+					</div>
 				</Tabs.TabPane>
 				{items.map((items, key) => (
 					<Tabs.TabPane
