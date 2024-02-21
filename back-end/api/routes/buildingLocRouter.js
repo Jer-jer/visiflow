@@ -4,7 +4,7 @@ const buildingLocController = require("../controllers/buildingLocController");
 
 router.use((req, res, next) => {
   if (req.user && req.user.role.includes("admin")) next();
-  else res.send(401);
+  else res.sendStatus(401);
 });
 
 router.get("/", buildingLocController.getAllBldgLoc);
