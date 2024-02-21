@@ -40,6 +40,8 @@ app.use('/visitor/companion/logs', require('./api/routes/visitorLogsRouter'));
 
 //Events Related Links
 app.use('/events',require('./api/routes/eventsRouter'));
+//Homepage Related Links
+app.use('/announcements', require('./api/routes/announcementsRouter'));
 
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);

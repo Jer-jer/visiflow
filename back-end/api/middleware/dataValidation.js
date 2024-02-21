@@ -18,6 +18,11 @@ const validateBldgLoc = [
     body('roomNo').notEmpty().withMessage('Room Number is required').isString().withMessage("Room Number must be a String")
 ];
 
+const validateAnnouncements = [
+    body('title').notEmpty().withMessage('Building Name is required').isString().withMessage("Building name must be a String"),
+    body('message').notEmpty().withMessage('Room Number is required').isString().withMessage("Room Number must be a String")
+];
+
 const validateEvents = [
     body('name').notEmpty().withMessage('Event name is required').isString().withMessage('Event name must be a string'),
     body('locationId').isString().withMessage('Location ID must be a string').notEmpty().withMessage('Location ID is required'),
@@ -52,6 +57,7 @@ module.exports = {
     validateUser,
     validateBldgLoc,
     validateEvents,
+    validateAnnouncements,
     handleValidationErrors, 
     validationResult 
 };
