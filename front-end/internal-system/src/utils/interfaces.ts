@@ -69,7 +69,6 @@ export interface VisitorDataType {
 }
 
 export interface IDPictureProps {
-	type: String;
 	front: string;
 	back: string;
 	selfie: string;

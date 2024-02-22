@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, Dispatch, SetStateAction } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { jwtDecode } from "jwt-decode";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 
 //Interface
 import { LoginZod } from "../../utils/zodSchemas";
@@ -13,7 +13,7 @@ import { Input, Button, Form } from "antd";
 import Label from "../../components/fields/input/label";
 
 //Lib
-import { AxiosLoginInstace } from "../../lib/axios";
+import { AxiosLoginInstance } from "../../lib/axios";
 
 //Styles
 import "./styles.scss";
@@ -29,10 +29,13 @@ import {
 
 type LoginDetailZod = z.infer<typeof LoginZod>;
 
-function LoginLayout() {
-	const [isFocused, setIsFocused] = useState(false);
+interface LoginProps {
+	setIsAdmin: Dispatch<SetStateAction<boolean>>;
+	setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
+}
 
-	const navigate = useNavigate();
+function LoginLayout({ setIsAdmin, setIsLoggedIn }: LoginProps) {
+	const [isFocused, setIsFocused] = useState(false);
 
 	// Client-side Validation related data
 	const {
@@ -45,12 +48,20 @@ function LoginLayout() {
 	});
 
 	const onSubmit = handleSubmit((data) => {
-		console.log(data);
-		AxiosLoginInstace.post("/auth/login", data)
+		AxiosLoginInstance.post("/auth/login", data)
 			.then((res) => {
+				//TODO add a call to the back-end to verify token
 				localStorage.setItem("token", res.data.token);
-				// console.log(res.data.token);
-				navigate("/");
+				const decoded: any = jwtDecode(res.data.token);
+				const role = decoded.role;
+
+				if (role === "admin") {
+					setIsAdmin(true);
+				} else {
+					setIsAdmin(false);
+				}
+
+				setIsLoggedIn(true);
 			})
 			.catch((err) => {
 				console.log(err);

@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 // Utils
-import AxiosInstace from "../../lib/axios";
+import AxiosInstance from "../../lib/axios";
 
 // Types and Interfaces
 import type { PayloadAction } from "@reduxjs/toolkit";
@@ -20,7 +20,7 @@ const initialState: VisitorStoreState = {
 export const fetchVisitors = createAsyncThunk(
 	"visitors/fetchVisitors",
 	async () => {
-		const response = await AxiosInstace.get("/visitor");
+		const response = await AxiosInstance.get("/visitor");
 		return response.data;
 	},
 );

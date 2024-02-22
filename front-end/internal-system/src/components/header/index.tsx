@@ -1,26 +1,24 @@
-import React, { useState, createContext, useContext } from "react";
-import { jwtDecode } from "jwt-decode";
-import { useNavigate } from "react-router";
+import React, { Dispatch, SetStateAction } from "react";
 
 //Assets
 import RyanReynolds from "../../assets/ryan_reynolds.jpg";
 import TheRock from "../../assets/the_rock.jpg";
 
 // Lib
-import AxiosInstace from "../../lib/axios";
+import AxiosInstance from "../../lib/axios";
 
 //Styles
 import "./styles.scss";
 
-export default function Header() {
-	const token = localStorage.getItem("token");
-	const decoded = token && jwtDecode(token);
-	const navigate = useNavigate();
+interface HeaderProps {
+	setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
+}
 
+export default function Header({ setIsLoggedIn }: HeaderProps) {
 	const logout = () => {
 		localStorage.removeItem("token");
-		navigate("/");
-		// AxiosInstace.post("/auth/logout", {
+		setIsLoggedIn(false);
+		// AxiosInstance.post("/auth/logout", {
 		// 	token,
 		// })
 		// 	.then((res) => {

@@ -6,7 +6,9 @@ router.get("/", visitorController.getAllVisitors);
 
 router.post("/new", visitorController.createNewVisitor);
 
-router.post("/search", visitorController.getVisitorById);
+router.get("/search", visitorController.getVisitorById);
+
+router.post("/retrieve-image", visitorController.getVisitorImageById);
 
 router.put("/update", visitorController.updateVisitor);
 

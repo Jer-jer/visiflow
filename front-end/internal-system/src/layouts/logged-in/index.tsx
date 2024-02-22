@@ -24,12 +24,13 @@ import "./styles.scss";
 export const WidthContext = createContext(0);
 
 interface LoggedInProps {
+	setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
 	children: React.ReactNode;
 }
 
 export let expandedWidth: number;
 
-function LoggedIn({ children }: LoggedInProps) {
+function LoggedIn({ setIsLoggedIn, children }: LoggedInProps) {
 	const [expanded, setExpanded] = useState(false);
 	const [width, setWidth] = useState(0);
 	const ref = useRef<HTMLDivElement>(null);
@@ -98,7 +99,7 @@ function LoggedIn({ children }: LoggedInProps) {
 				</Sidebar>
 				<div className="h-fit min-w-0 flex-1">
 					<div>
-						<Header />
+						<Header setIsLoggedIn={setIsLoggedIn} />
 					</div>
 					{/* Main content Here */}
 					<div id="parentDiv" className="children" ref={ref}>

@@ -28,7 +28,7 @@ import Label from "../../../../components/fields/input/label";
 import Alert from "../../../../components/alert";
 
 //Lib
-import AxiosInstace from "../../../../lib/axios";
+import AxiosInstance from "../../../../lib/axios";
 
 //Utils
 import { formatDate } from "../../../../utils";
@@ -156,7 +156,7 @@ export default function CompanionDetails({
 	const mainVisitorIndex = data.findIndex((item) => item._id === mainVisitorId);
 
 	const saveAction = (zodData: CompanionDetailsInterfaceZod) => {
-		AxiosInstace.put("/visitor/update", {
+		AxiosInstance.put("/visitor/update", {
 			_id: mainVisitorId,
 			companion_details: {
 				name: {
@@ -199,7 +199,7 @@ export default function CompanionDetails({
 	});
 
 	const deleteCompanionDB = () => {
-		AxiosInstace.put("/visitor/update", {
+		AxiosInstance.put("/visitor/update", {
 			_id: mainVisitorId,
 			first_name: data[mainVisitorIndex].visitor_details.name.first_name,
 			middle_name: data[mainVisitorIndex].visitor_details.name.middle_name,
