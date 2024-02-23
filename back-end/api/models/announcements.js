@@ -8,6 +8,6 @@ const AnnouncementSchema = new Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
-const BuildingLocModel = mongoose.model('announcements', AnnouncementSchema);
+const AnnouncementModel = mongoose.model('announcements', AnnouncementSchema);
 
-module.exports = BuildingLocModel;
+module.exports = AnnouncementModel;

@@ -16,6 +16,7 @@ import { ExclamationCircleFilled, LeftOutlined } from "@ant-design/icons";
 
 //Styles
 import "./styles.scss";
+import AxiosInstace from "../../../../lib/axios";
 
 interface PageDetailsProps {
 	record?: HomeEditor;
@@ -65,8 +66,27 @@ export default function PageDetails({
 		setDisabledInputs(!disabledInputs);
 	};
 
-	const saveAction = () => {
+	const saveAction = async() => {
 		//This needs to be customized to whatever the DB returns
+
+		// saving new record
+		console.log("hello outside if")
+		if(record === undefined) {
+			try {
+				console.log("hello data", title, body)
+				await AxiosInstace.post('/announcements/new', { 
+					title: title,
+					message: body
+				}); 
+				console.log("hello inside try")
+			} catch (error) {
+			console.error('Error in adding announcement:', error);
+			}
+			console.log("hello inside if")
+		} else { // updating record
+
+		}
+
 		setAlertOpen(!alertOpen);
 
 		setDisabledInputs(!disabledInputs);

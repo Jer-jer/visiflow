@@ -13,8 +13,8 @@ router.post("/new", announcementsController.createNewAnnouncements);
 
 // router.post("/search", announcementsController.getAnnouncementsByID);
 
-router.post("/update", announcementsController.updateAnnouncements);
+router.put("/update", announcementsController.updateAnnouncements);
 
-// router.delete("/delete", announcementsController.deleteAnnouncements);
+router.delete("/delete", announcementsController.deleteAnnouncements);
 
 module.exports = router;

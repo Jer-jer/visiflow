@@ -109,18 +109,18 @@ exports.updateAnnouncements = async (req, res) => {
     }
 };
 
-// exports.deleteBldgLoc = async (req, res) => {
-//       try {
-//         const {_id} = req.body;
+exports.deleteAnnouncements = async (req, res) => {
+      try {
+        const {_id} = req.body;
 
-//         const deletedData = await BuildingLoc.findByIdAndDelete(_id);
+        const deletedData = await Announcements.findByIdAndDelete(_id);
 
-//         if (deletedData) {
-//             return res.status(201).json({ message: 'Data deleted successfully'});
-//         } else {
-//             return res.status(404).json({ error: "Building locations not found"});
-//         }
-//       } catch (error) {
-//         return res.status(500).json({ error: 'Internal Server Error' });
-//       }
-// }
+        if (deletedData) {
+            return res.status(201).json({ message: 'Data deleted successfully'});
+        } else {
+            return res.status(404).json({ error: "Announcement not found"});
+        }
+      } catch (error) {
+        return res.status(500).json({ error: 'Internal Server Error' });
+      }
+}

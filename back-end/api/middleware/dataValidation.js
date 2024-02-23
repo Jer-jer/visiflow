@@ -19,8 +19,8 @@ const validateBldgLoc = [
 ];
 
 const validateAnnouncements = [
-    body('title').notEmpty().withMessage('Building Name is required').isString().withMessage("Building name must be a String"),
-    body('message').notEmpty().withMessage('Room Number is required').isString().withMessage("Room Number must be a String")
+    body('title').notEmpty().withMessage('Title is required').isString().withMessage("Title must be a String"),
+    body('message').notEmpty().withMessage('Message is required').isString().withMessage("Message must be a String")
 ];
 
 const validateEvents = [
