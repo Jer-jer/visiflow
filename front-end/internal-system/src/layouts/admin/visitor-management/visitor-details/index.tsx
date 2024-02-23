@@ -5,6 +5,7 @@ import React, {
 	MutableRefObject,
 	Dispatch,
 	SetStateAction,
+	useEffect,
 } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,7 +21,7 @@ import {
 	VisitorDetailZod,
 	VisitorDetailsInterfaceZod,
 } from "../../../../utils/zodSchemas";
-import { VisitorDataType } from "../../../../utils/interfaces";
+import { VisitorDataType, IDPictureProps } from "../../../../utils/interfaces";
 import { VisitorStatus, VisitorType } from "../../../../utils/enums";
 import { WidthContext } from "../../../logged-in";
 import { TabItems } from "..";
@@ -125,10 +126,28 @@ export default function VisitorDetails({
 
 	const [disabledInputs, setDisabledInputs] = useState<boolean>(true);
 
+	const [idPicture, setIdPicture] = useState<IDPictureProps>({
+		front: "../../../../assets/no-image.svg",
+		back: "../../../../assets/no-image.svg",
+		selfie: "../../../../assets/no-image.svg",
+	});
+
 	const width = useContext(WidthContext);
 
 	// Store Related variables
 	const dispatch = useDispatch();
+
+	useEffect(() => {
+		AxiosInstace.post("/visitor/retrieve-image", {
+			_id: record._id,
+		})
+			.then((res) => {
+				setIdPicture(res.data.id_picture);
+			})
+			.catch((err) => {
+				console.log(err.data.error || err.data.errors);
+			});
+	}, []);
 
 	// Client-side Validation related data
 	const {
@@ -823,12 +842,12 @@ export default function VisitorDetails({
 									className="cursor-pointer"
 									onClick={() => setIdentificationOpen(!identificationOpen)}
 									size={width === 1210 ? 150 : 220}
-									src={record.id_picture.selfie}
+									src={idPicture.selfie}
 								/>
 								<Identification
 									open={identificationOpen}
 									setOpen={setIdentificationOpen}
-									image={record.id_picture}
+									image={idPicture}
 								/>
 								<div
 									className={`flex flex-col items-center ${

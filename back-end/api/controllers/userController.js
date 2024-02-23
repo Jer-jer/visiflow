@@ -1,7 +1,7 @@
 //DONE CHECKING
 const User = require("../models/user");
 const { hashPassword, comparePassword } = require('../utils/helper');
-const { validateData, handleValidationErrors, validationResult } = require("../middleware/dataValidation");
+const { validateUser, handleValidationErrors, validationResult } = require("../middleware/dataValidation");
 const { filterData } = require("../middleware/filterData");
 const mongoose = require("mongoose");
 
@@ -19,7 +19,7 @@ exports.getAllUsers = async (req, res) => {
 exports.createNewUser = async (req, res) => {
   const { first_name, middle_name, last_name, username, email, password, phone, role } = req.body;
 
-  await Promise.all(validateData.map((validation) => validation.run(req)));
+  await Promise.all(validateUser.map((validation) => validation.run(req)));
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
