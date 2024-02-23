@@ -9,6 +9,7 @@ import { VisitorDataType } from "../../utils/interfaces";
 
 export interface VisitorStoreState {
 	data: VisitorDataType[];
+	dashboardVisitor?: VisitorDataType;
 	loading: boolean;
 }
 
@@ -52,6 +53,9 @@ export const visitorSlice = createSlice({
 				return visitor;
 			});
 		},
+		openVisitor: (state, action: PayloadAction<VisitorDataType>) => {
+			state.dashboardVisitor = action.payload;
+		},
 	},
 	extraReducers: (builder) => {
 		// For Fetching Visitors
@@ -69,5 +73,6 @@ export const visitorSlice = createSlice({
 	},
 });
 
-export const { update, deleteVisitor, deleteCompanion } = visitorSlice.actions;
+export const { update, deleteVisitor, deleteCompanion, openVisitor } =
+	visitorSlice.actions;
 export default visitorSlice.reducer;

@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 //Interfaces
 import { VisitorDataType } from "../../../utils/interfaces";
@@ -11,7 +11,7 @@ import VisitorListTable from "../../../components/table/visitor-list";
 import VisitorDetails from "./visitor-details";
 
 // Store
-import { AppDispatch } from "../../../store";
+import { AppDispatch, RootState } from "../../../store";
 
 // Reducers
 import { fetchVisitors } from "../../../states/visitors";
@@ -22,12 +22,11 @@ import "./styles.scss";
 
 //Assets
 import { ExcelDownload, Search, TabClose } from "../../../assets/svg";
-import AxiosInstace from "../../../lib/axios";
 
 type TargetKey = React.MouseEvent | React.KeyboardEvent | string | number;
 
 interface VisitorProps {
-	addTab: () => void;
+	addTab: (record: VisitorDataType) => void;
 }
 
 export interface TabItems {
@@ -66,17 +65,26 @@ export default function VisitorManagementLayout() {
 	const [activeKey, setActiveKey]: any = useState(1);
 	const newTabIndex = useRef(1);
 
+	const { dashboardVisitor } = useSelector(
+		(state: RootState) => state.visitors,
+	);
+
 	const dispatch = useDispatch<AppDispatch>();
 
 	useEffect(() => {
 		dispatch(fetchVisitors());
-	}, [items]);
+
+		if (dashboardVisitor) {
+			add(dashboardVisitor);
+		}
+	}, []);
 
 	const onChange = (newActiveKey: string) => {
 		setActiveKey(newActiveKey);
 	};
 
-	const add = (record?: VisitorDataType) => {
+	const add = (record: VisitorDataType) => {
+		console.log("add");
 		const newActiveKey = ++newTabIndex.current;
 
 		setItems((prevItems) => [
