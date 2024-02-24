@@ -297,7 +297,7 @@ export const Camera = () => {
 	);
 }
 
-export const WalkinQR = () => {
+export const QRScanner = () => {
 	return (
 		<svg 
 			xmlns="http://www.w3.org/2000/svg"
@@ -308,39 +308,47 @@ export const WalkinQR = () => {
 			className="h-5 w-5"
 		>
 			<path 
-				d="M40.5,5.5H7.5a2,2,0,0,0-2,2v33a2,2,0,0,0,2,2h33a2,2,0,0,0,2-2V7.5A2,2,0,0,0,40.5,5.5Z"
+				d="M13.78,5.5H5.5v8.28"
+				strokeLinecap="round"
+				strokeLinejoin="round" 
+			/>
+			<path 
+				d="M42.5,13.78V5.5H34.22"
 				strokeLinecap="round"
 				strokeLinejoin="round"
 			/>
-			<line 
-				x1="10.55" 
-				y1="10.5" 
-				x2="17.27" 
-				y2="37.5"
+			<path 
+				d="M34.22,42.5H42.5V34.22"
 				strokeLinecap="round"
 				strokeLinejoin="round"
 			/>
-			<line 
-				x1="24" 
-				y1="10.5" 
-				x2="17.27" 
-				y2="37.5"
+			<path 
+				d="M10.55,26.41v11h11v-11h-11Zm3.22,3.22h4.6v4.6h-4.6Z"
 				strokeLinecap="round"
 				strokeLinejoin="round"
 			/>
-			<line 
-				x1="24" 
-				y1="10.5" 
-				x2="30.73" 
-				y2="37.5"
+			<path 
+				d="M10.55,10.55v11h11v-11h-11Zm3.22,3.22h4.6v4.6h-4.6Z"
 				strokeLinecap="round"
 				strokeLinejoin="round"
 			/>
-			<line 
-				x1="37.45" 
-				y1="10.5" 
-				x2="30.73" 
-				y2="37.5"
+			<path 
+				d="M26.41,10.55v11h11v-11h-11Zm3.22,3.22h4.6v4.6h-4.6Z"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+			<path 
+				d="M31.93,37.45a5.79,5.79,0,0,0,3.47-2.1,8.37,8.37,0,0,0,2.05-5.72V26.41h-11v3.22h0a8.39,8.39,0,0,0,2.05,5.72A5.79,5.79,0,0,0,31.93,37.45Z"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+			<path 
+				d="M31.93,34.23a5.82,5.82,0,0,1-1.08-.86,5.4,5.4,0,0,1-1.22-3.74h4.6A5.4,5.4,0,0,1,33,33.37a5.82,5.82,0,0,1-1.08.86Z"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+			<path 
+				d="M5.5,34.22V42.5h8.28"
 				strokeLinecap="round"
 				strokeLinejoin="round"
 			/>

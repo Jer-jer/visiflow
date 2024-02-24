@@ -16,7 +16,7 @@ import {
 	Users,
 	Edit,
 	Camera,
-	WalkinQR,
+	QRScanner,
 	PreregisterQR,
 	Form,
 } from "../../assets/svg";
@@ -117,12 +117,21 @@ function LoggedIn({ children }: LoggedInProps) {
 		<WidthContext.Provider value={width}>
 			<div className="flex h-60">
 				<Sidebar expanded={expanded} setExpanded={setExpanded}>
-					<NavLink to="/Capture">
+					{/* <NavLink to="/Capture">
 						{({ isActive }) => (
 							<SidebarItem 
 								icon={<Camera />} 
 								text="Capture" 
 								active={isActive} />
+						)}
+					</NavLink> */}
+					<NavLink to="/qr-scanner">
+						{({ isActive }) => (
+							<SidebarItem
+								icon={<QRScanner />}
+								text="QR Scanner"
+								active={isActive}
+							/>
 						)}
 					</NavLink>
 					<NavLink to="/visitor-form">
@@ -130,15 +139,6 @@ function LoggedIn({ children }: LoggedInProps) {
 							<SidebarItem
 								icon={<Form />}
 								text="Visitor Form"
-								active={isActive}
-							/>
-						)}
-					</NavLink>
-					<NavLink to="/walkin-qr">
-						{({ isActive }) => (
-							<SidebarItem
-								icon={<WalkinQR />}
-								text="Walk-In QR"
 								active={isActive}
 							/>
 						)}

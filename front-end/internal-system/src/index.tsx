@@ -21,31 +21,31 @@ const root = ReactDOM.createRoot(
 );
 
 root.render(
-	<React.StrictMode>
-		<BrowserRouter basename="/">
-			<ConfigProvider
-				theme={{
-					token: {
-						colorPrimary: "#0db284",
-						colorBorder: "#0db284",
+	//<React.StrictMode>
+	<BrowserRouter basename="/">
+		<ConfigProvider
+			theme={{
+				token: {
+					colorPrimary: "#0db284",
+					colorBorder: "#0db284",
+				},
+				components: {
+					Tabs: {
+						cardBg: "#fff",
 					},
-					components: {
-						Tabs: {
-							cardBg: "#fff",
-						},
-						Button: {
-							defaultBorderColor: "#0db284",
-							defaultColor: "#0db284",
-						},
+					Button: {
+						defaultBorderColor: "#0db284",
+						defaultColor: "#0db284",
 					},
-				}}
-			>
-				<Provider store={store}>
-					<App />
-				</Provider>
-			</ConfigProvider>
-		</BrowserRouter>
-	</React.StrictMode>,
+				},
+			}}
+		>
+			<Provider store={store}>
+				<App />
+			</Provider>
+		</ConfigProvider>
+	</BrowserRouter>,
+	//</React.StrictMode>,
 );
 
 // If you want to start measuring performance in your app, pass a function

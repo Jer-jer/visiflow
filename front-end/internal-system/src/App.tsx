@@ -16,7 +16,7 @@ import Schedules from './pages/admin/schedules';
 //Guard
 import Capture from "./pages/guard/capture";
 import VisitorForm from "./pages/guard/visitor-form";
-import WalkinQR from "./pages/guard/walkin-qr";
+import QRScanner from "./pages/guard/qr-scanner";
 import PreregisteredQR from "./pages/guard/preregistered-qr";
 import VisitorStatus from "./pages/guard/visitor-status";
 
@@ -39,7 +39,7 @@ function App() {
 					<Route path="/home-editor" element={<HomeEditor />} />
 					<Route path="/capture" element={<Capture />} />
 					<Route path="/visitor-form" element={<VisitorForm />} />
-					<Route path="/walkin-qr" element={<WalkinQR />} />
+					<Route path="/qr-scanner" element={<QRScanner />} />
 					<Route path="/preregistered-qr" element={<PreregisteredQR />} />
 					<Route path="/visitor-status" element={<VisitorStatus />} />
 				</Routes>
