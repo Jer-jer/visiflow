@@ -65,7 +65,7 @@ import { ExclamationCircleFilled } from "@ant-design/icons";
 import "./styles.scss";
 
 // Libraries
-import AxiosInstace from "../../../../lib/axios";
+import AxiosInstance from "../../../../lib/axios";
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -138,7 +138,7 @@ export default function VisitorDetails({
 	const dispatch = useDispatch();
 
 	useEffect(() => {
-		AxiosInstace.post("/visitor/retrieve-image", {
+		AxiosInstance.post("/visitor/retrieve-image", {
 			_id: record._id,
 		})
 			.then((res) => {
@@ -268,7 +268,7 @@ export default function VisitorDetails({
 	};
 
 	const saveAction = (zodData: VisitorDetailsInterfaceZod) => {
-		AxiosInstace.put("/visitor/update", {
+		AxiosInstance.put("/visitor/update", {
 			_id: record._id,
 			first_name: zodData.first_name,
 			middle_name: zodData.middle_name,
@@ -334,7 +334,7 @@ export default function VisitorDetails({
 			okType: "danger",
 			cancelText: "No",
 			onOk() {
-				AxiosInstace.delete("/visitor/delete", {
+				AxiosInstance.delete("/visitor/delete", {
 					data: {
 						_id,
 					},
