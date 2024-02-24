@@ -56,15 +56,23 @@ function LoginLayout({ setIsAdmin, setIsLoggedIn }: LoginProps) {
 				const decoded: any = jwtDecode(res.data.access_token);
 				const role = decoded.role;
 
-				if (role === "admin") {
-					setIsAdmin(true);
-				} else {
-					setIsAdmin(false);
+				switch (role) {
+					case "admin":
+						setIsAdmin(true);
+						localStorage.setItem("role", "1");
+						break;
+					case "guard":
+						setIsAdmin(false);
+						break;
+					default:
+						setIsAdmin(false);
+						break;
 				}
 
 				setIsLoggedIn(true);
 			})
 			.catch((err) => {
+				//TODO Create Wrong username/password error message
 				console.log(err);
 			});
 	});
@@ -120,7 +128,6 @@ function LoginLayout({ setIsAdmin, setIsLoggedIn }: LoginProps) {
 											<LockOutlined />
 										</Label>
 									</div>
-									{/* //TODO Continue Working on Login */}
 									<div className="form-control w-full max-w-xs">
 										<div className="flex flex-col">
 											<div

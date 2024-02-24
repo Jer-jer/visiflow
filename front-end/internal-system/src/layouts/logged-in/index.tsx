@@ -26,12 +26,18 @@ export const WidthContext = createContext(0);
 interface LoggedInProps {
 	isAdmin: boolean;
 	setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+	setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
 	children: React.ReactNode;
 }
 
 export let expandedWidth: number;
 
-function LoggedIn({ isAdmin, setIsLoggedIn, children }: LoggedInProps) {
+function LoggedIn({
+	isAdmin,
+	setIsLoggedIn,
+	setIsAdmin,
+	children,
+}: LoggedInProps) {
 	const [expanded, setExpanded] = useState(false);
 	const [width, setWidth] = useState(0);
 	const ref = useRef<HTMLDivElement>(null);
@@ -110,7 +116,11 @@ function LoggedIn({ isAdmin, setIsLoggedIn, children }: LoggedInProps) {
 				</Sidebar>
 				<div className="h-fit min-w-0 flex-1">
 					<div>
-						<Header setIsLoggedIn={setIsLoggedIn} />
+						<Header
+							setIsLoggedIn={setIsLoggedIn}
+							isAdmin={isAdmin}
+							setIsAdmin={setIsAdmin}
+						/>
 					</div>
 					{/* Main content Here */}
 					<div id="parentDiv" className="children" ref={ref}>

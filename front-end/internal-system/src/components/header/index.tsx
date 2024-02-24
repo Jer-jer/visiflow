@@ -4,18 +4,23 @@ import React, { Dispatch, SetStateAction } from "react";
 import RyanReynolds from "../../assets/ryan_reynolds.jpg";
 import TheRock from "../../assets/the_rock.jpg";
 
-// Lib
-import AxiosInstance from "../../lib/axios";
-
 //Styles
 import "./styles.scss";
 
 interface HeaderProps {
+	isAdmin: boolean;
 	setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
+	setIsAdmin: Dispatch<SetStateAction<boolean>>;
 }
 
-export default function Header({ setIsLoggedIn }: HeaderProps) {
+export default function Header({
+	isAdmin,
+	setIsLoggedIn,
+	setIsAdmin,
+}: HeaderProps) {
+	const wasAdmin = localStorage.getItem("role");
 	const logout = () => {
+		wasAdmin && localStorage.removeItem("role");
 		localStorage.removeItem("token");
 		localStorage.removeItem("refreshToken");
 		setIsLoggedIn(false);
@@ -109,6 +114,22 @@ export default function Header({ setIsLoggedIn }: HeaderProps) {
 						className="menu dropdown-content rounded-box menu-sm z-[1] mt-3 w-52 bg-white p-2 shadow"
 					>
 						<li>
+							{wasAdmin && (
+								<>
+									<button
+										className="hover:bg-primary-500 hover:text-white"
+										onClick={() => setIsAdmin(true)}
+									>
+										Admin System
+									</button>
+									<button
+										className="hover:bg-primary-500 hover:text-white"
+										onClick={() => setIsAdmin(false)}
+									>
+										Guard System
+									</button>
+								</>
+							)}
 							<button
 								className="hover:bg-primary-500 hover:text-white"
 								onClick={logout}

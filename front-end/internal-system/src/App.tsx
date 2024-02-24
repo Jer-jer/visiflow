@@ -21,11 +21,9 @@ import Schedules from "./pages/admin/schedules";
 import "./App.scss";
 
 function App() {
-	//TODO Add isGuard state to check if the role is guard
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [isAdmin, setIsAdmin] = useState(false);
 
-	//? Temporary
 	useEffect(() => {
 		const token = localStorage.getItem("token");
 
@@ -42,7 +40,11 @@ function App() {
 	return (
 		<div className="min-h-screen">
 			{isLoggedIn ? (
-				<LoggedIn setIsLoggedIn={setIsLoggedIn} isAdmin={isAdmin}>
+				<LoggedIn
+					setIsLoggedIn={setIsLoggedIn}
+					isAdmin={isAdmin}
+					setIsAdmin={setIsAdmin}
+				>
 					<Routes>
 						{isAdmin ? (
 							<>
@@ -57,7 +59,6 @@ function App() {
 								<Route path="/schedules" element={<Schedules />} />
 							</>
 						) : (
-							//TODO Add check if the role is guard else display improper login error or 404 Page Not Found
 							<>
 								<Route
 									path="/"
@@ -65,6 +66,8 @@ function App() {
 								/>
 							</>
 						)}
+						{/*//TODO enchance error 404 page */}
+						<Route path="*" element={<span>Error</span>} />
 					</Routes>
 				</LoggedIn>
 			) : (
@@ -75,6 +78,7 @@ function App() {
 							<Login setIsLoggedIn={setIsLoggedIn} setIsAdmin={setIsAdmin} />
 						}
 					/>
+					<Route path="*" element={<span>Error</span>} />
 				</Routes>
 			)}
 		</div>

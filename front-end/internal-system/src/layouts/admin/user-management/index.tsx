@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import AxiosInstance from "../../../lib/axios";
+import AxiosInstance, { AxiosLoginInstance } from "../../../lib/axios";
 
 //Interfaces
 import { UserDataType } from "../../../utils/interfaces";
@@ -74,6 +74,7 @@ export default function UserManagementLayout() {
 	const [alertMsg, setAlertMsg] = useState("");
 
 	useEffect(() => {
+		// apiFetchUsers();
 		AxiosInstance.get("/user")
 			.then((res) => {
 				setUsers(res.data.users);

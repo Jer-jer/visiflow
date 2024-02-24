@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 // Utils
-import AxiosInstance from "../../lib/axios";
+import AxiosInstance, { AxiosLoginInstance } from "../../lib/axios";
 
 // Types and Interfaces
 import type { PayloadAction } from "@reduxjs/toolkit";
