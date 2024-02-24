@@ -1,3 +1,7 @@
 # dependencies
 node_modules
 .vscode
+.env
+/back-end/.env
+/front-end/internal-system/.env
+/front-end/visitor-system/.env

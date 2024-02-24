@@ -17,17 +17,8 @@ interface HeaderProps {
 export default function Header({ setIsLoggedIn }: HeaderProps) {
 	const logout = () => {
 		localStorage.removeItem("token");
+		localStorage.removeItem("refreshToken");
 		setIsLoggedIn(false);
-		// AxiosInstance.post("/auth/logout", {
-		// 	token,
-		// })
-		// 	.then((res) => {
-		// 		console.log(res.data);
-		// 		localStorage.removeItem("token");
-		// 	})
-		// 	.catch((err) => {
-		// 		console.log(err);
-		// 	});
 	};
 
 	return (

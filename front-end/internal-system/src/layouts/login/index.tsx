@@ -50,9 +50,10 @@ function LoginLayout({ setIsAdmin, setIsLoggedIn }: LoginProps) {
 	const onSubmit = handleSubmit((data) => {
 		AxiosLoginInstance.post("/auth/login", data)
 			.then((res) => {
-				//TODO add a call to the back-end to verify token
-				localStorage.setItem("token", res.data.token);
-				const decoded: any = jwtDecode(res.data.token);
+				localStorage.setItem("token", res.data.access_token);
+				localStorage.setItem("refreshToken", res.data.refresh_token);
+
+				const decoded: any = jwtDecode(res.data.access_token);
 				const role = decoded.role;
 
 				if (role === "admin") {

@@ -42,7 +42,7 @@ function App() {
 	return (
 		<div className="min-h-screen">
 			{isLoggedIn ? (
-				<LoggedIn setIsLoggedIn={setIsLoggedIn}>
+				<LoggedIn setIsLoggedIn={setIsLoggedIn} isAdmin={isAdmin}>
 					<Routes>
 						{isAdmin ? (
 							<>
