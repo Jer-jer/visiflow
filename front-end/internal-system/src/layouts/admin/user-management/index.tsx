@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import AxiosInstace from "../../../lib/axios";
+import AxiosInstance, { AxiosLoginInstance } from "../../../lib/axios";
 
 //Interfaces
 import { UserDataType } from "../../../utils/interfaces";
@@ -82,7 +82,8 @@ export default function UserManagementLayout() {
 	const [alertMsg, setAlertMsg] = useState("");
 
 	useEffect(() => {
-		AxiosInstace.get("/user")
+		// apiFetchUsers();
+		AxiosInstance.get("/user")
 			.then((res) => {
 				setUsers(res.data.users);
 			})
@@ -96,7 +97,7 @@ export default function UserManagementLayout() {
 	};
 
 	const createUser = () => {
-		AxiosInstace.post("/user/new", {
+		AxiosInstance.post("/user/new", {
 			first_name: " ",
 			middle_name: " ",
 			last_name: " ",

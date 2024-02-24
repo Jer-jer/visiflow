@@ -8,7 +8,7 @@ import React, {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import AxiosInstace from "../../../../lib/axios";
+import AxiosInstance from "../../../../lib/axios";
 
 //Interfaces
 import { UserDataType } from "../../../../utils/interfaces";
@@ -94,7 +94,7 @@ const showDeleteConfirm = (
 		okType: "danger",
 		cancelText: "No",
 		onOk() {
-			AxiosInstace.delete("/user/delete", {
+			AxiosInstance.delete("/user/delete", {
 				data: {
 					_id: !_id && _id,
 				},
@@ -197,7 +197,7 @@ export default function UserDetails({
 
 		setDisabledInputs(!disabledInputs);
 
-		AxiosInstace.put("/user/update", {
+		AxiosInstance.put("/user/update", {
 			_id,
 			first_name: data.first_name,
 			middle_name: data.middle_name,
