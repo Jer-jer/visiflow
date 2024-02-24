@@ -32,6 +32,13 @@ export interface TabItems {
 }
 
 const UserList = ({ users, addTab, createUser }: UserListProps) => {
+	const [search, setSearch] = useState<string>("");
+
+	//TODO Add Search Functionality
+	const searchingUsers = () => {
+		// dispatch(searchVisitor(search));
+	}
+
 	return (
 		<div className="ml-[45px] flex flex-col gap-[50px]">
 			<div className="mt-[30px] flex w-full items-center justify-start gap-[25px] pr-[65px]">
@@ -40,6 +47,7 @@ const UserList = ({ users, addTab, createUser }: UserListProps) => {
 					size="large"
 					placeholder="Search"
 					prefix={<Search />}
+					onChange={(e) => setSearch(e.target.value)}
 				/>
 				<Button type="primary" className="search-button !bg-primary-500">
 					Search

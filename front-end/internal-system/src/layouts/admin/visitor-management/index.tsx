@@ -14,7 +14,7 @@ import VisitorDetails from "./visitor-details";
 import { AppDispatch, RootState } from "../../../store";
 
 // Reducers
-import { fetchVisitors } from "../../../states/visitors";
+import { fetchVisitors, searchVisitor } from "../../../states/visitors";
 
 //Styles
 import "../../../utils/variables.scss";
@@ -35,6 +35,14 @@ export interface TabItems {
 }
 
 const VisitorList = ({ addTab }: VisitorProps) => {
+	const [search, setSearch] = useState<string>("");
+
+	const dispatch = useDispatch<AppDispatch>();
+
+	const searchingVisitor = () => {
+		dispatch(searchVisitor(search));
+	}
+
 	return (
 		<div className="ml-[45px] mt-[30px] flex flex-col gap-[50px]">
 			<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
@@ -44,10 +52,14 @@ const VisitorList = ({ addTab }: VisitorProps) => {
 					size="large"
 					placeholder="Search"
 					prefix={<Search />}
+					onChange={(e) => setSearch(e.target.value)}
 				/>
 				{/* <DateTimePicker size="large" /> */}
-				<Button type="primary" className="search-button !bg-primary-500">
+				<Button type="primary" className="search-button !bg-primary-500" onClick={searchingVisitor}>
 					Search
+				</Button>
+				<Button type="primary" className="search-button !bg-primary-500" onClick={()=> dispatch(fetchVisitors())}>
+					Reset
 				</Button>
 				<div className="ml-auto">
 					<ExcelDownload />
@@ -71,9 +83,12 @@ export default function VisitorManagementLayout() {
 
 	const dispatch = useDispatch<AppDispatch>();
 
+	//TODO to change to real-time fetching soon
 	useEffect(() => {
 		dispatch(fetchVisitors());
+	}, [items]);
 
+	useEffect(() => {
 		if (dashboardVisitor) {
 			add(dashboardVisitor);
 		}
@@ -84,7 +99,6 @@ export default function VisitorManagementLayout() {
 	};
 
 	const add = (record: VisitorDataType) => {
-		console.log("add");
 		const newActiveKey = ++newTabIndex.current;
 
 		setItems((prevItems) => [

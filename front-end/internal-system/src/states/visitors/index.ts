@@ -56,6 +56,16 @@ export const visitorSlice = createSlice({
 		openVisitor: (state, action: PayloadAction<VisitorDataType>) => {
 			state.dashboardVisitor = action.payload;
 		},
+		searchVisitor: (state, action: PayloadAction<string>) => {
+			state.data = state.data.filter((visitor) => {
+				return (
+					visitor.visitor_details.name.first_name.toLowerCase().includes(action.payload.toLowerCase()) ||
+					visitor.visitor_details.name.middle_name!.toLowerCase().includes(action.payload.toLowerCase()) ||
+					visitor.visitor_details.name.last_name.toLowerCase().includes(action.payload.toLowerCase()) ||
+					visitor.visitor_details.phone.toLowerCase().includes(action.payload.toLowerCase())
+				);
+			});
+		},
 	},
 	extraReducers: (builder) => {
 		// For Fetching Visitors
@@ -73,6 +83,6 @@ export const visitorSlice = createSlice({
 	},
 });
 
-export const { update, deleteVisitor, deleteCompanion, openVisitor } =
+export const { update, deleteVisitor, deleteCompanion, openVisitor, searchVisitor } =
 	visitorSlice.actions;
 export default visitorSlice.reducer;
