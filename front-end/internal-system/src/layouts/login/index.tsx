@@ -9,7 +9,7 @@ import { jwtDecode } from "jwt-decode";
 import { LoginZod } from "../../utils/zodSchemas";
 
 //Components
-import { Input, Button, Form } from "antd";
+import { Input, Button, Form, Modal } from "antd";
 import Label from "../../components/fields/input/label";
 
 //Lib
@@ -36,6 +36,22 @@ interface LoginProps {
 
 function LoginLayout({ setIsAdmin, setIsLoggedIn }: LoginProps) {
 	const [isFocused, setIsFocused] = useState(false);
+
+	// Modal related data
+	const [modalMessage, setModalMessage] = useState("");
+	const [isModalOpen, setIsModalOpen] = useState(false);
+
+	const showModal = () => {
+		setIsModalOpen(true);
+	};
+
+	const handleOk = () => {
+		setIsModalOpen(false);
+	};
+
+	const handleCancel = () => {
+		setIsModalOpen(false);
+	};
 
 	// Client-side Validation related data
 	const {
@@ -72,8 +88,13 @@ function LoginLayout({ setIsAdmin, setIsLoggedIn }: LoginProps) {
 				setIsLoggedIn(true);
 			})
 			.catch((err) => {
-				//TODO Create Wrong username/password error message
-				console.log(err);
+				showModal();
+				if (err.response.status === 401) {
+					setModalMessage("Invalid Username/Password.");
+				} else {
+					showModal();
+					setModalMessage("Login Request Failed. Please try again later.");
+				}
 			});
 	});
 
@@ -176,6 +197,14 @@ function LoginLayout({ setIsAdmin, setIsLoggedIn }: LoginProps) {
 						</div>
 					</div>
 				</div>
+				<Modal
+					title="Login Failed"
+					open={isModalOpen}
+					onOk={handleOk}
+					onCancel={handleCancel}
+				>
+					<p>{modalMessage}</p>
+				</Modal>
 			</div>
 		</Form>
 	);

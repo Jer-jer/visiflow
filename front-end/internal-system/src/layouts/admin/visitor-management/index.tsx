@@ -1,12 +1,17 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import weekday from "dayjs/plugin/weekday";
+import localeData from "dayjs/plugin/localeData";
 
 //Interfaces
 import { VisitorDataType } from "../../../utils/interfaces";
+import type { Dayjs } from "dayjs";
 
 //Components
 import { Tabs, Button, Input } from "antd";
-// import DateTimePicker from "../../../components/datetime-picker";
+import DateTimePicker from "../../../components/datetime-picker";
 import VisitorListTable from "../../../components/table/visitor-list";
 import VisitorDetails from "./visitor-details";
 
@@ -34,19 +39,31 @@ export interface TabItems {
 	visitorData: VisitorDataType;
 }
 
+dayjs.extend(weekday);
+dayjs.extend(localeData);
+dayjs.extend(customParseFormat);
+
 const VisitorList = ({ addTab }: VisitorProps) => {
 	const [search, setSearch] = useState<string>("");
+	const [dateSearch, setDateSearch] = useState<string[]>([]);
 
 	const dispatch = useDispatch<AppDispatch>();
 
 	const searchingVisitor = () => {
-		dispatch(searchVisitor(search));
-	}
+		dispatch(searchVisitor({ search: search, dateSearch: dateSearch }));
+	};
+
+	const onRangeChange = (dates: Dayjs[], dateStrings: string[]) => {
+		if (dates) {
+			setDateSearch([dateStrings[0], dateStrings[1]]);
+		} else {
+			console.log("Clear");
+		}
+	};
 
 	return (
 		<div className="ml-[45px] mt-[30px] flex flex-col gap-[50px]">
 			<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
-				{/* //TODO Add Search Functionality */}
 				<Input
 					className="w-[366px]"
 					size="large"
@@ -54,11 +71,19 @@ const VisitorList = ({ addTab }: VisitorProps) => {
 					prefix={<Search />}
 					onChange={(e) => setSearch(e.target.value)}
 				/>
-				{/* <DateTimePicker size="large" /> */}
-				<Button type="primary" className="search-button !bg-primary-500" onClick={searchingVisitor}>
+				<DateTimePicker size="large" onRangeChange={onRangeChange} />
+				<Button
+					type="primary"
+					className="search-button !bg-primary-500"
+					onClick={searchingVisitor}
+				>
 					Search
 				</Button>
-				<Button type="primary" className="search-button !bg-primary-500" onClick={()=> dispatch(fetchVisitors())}>
+				<Button
+					type="primary"
+					className="search-button !bg-primary-500"
+					onClick={() => dispatch(fetchVisitors())}
+				>
 					Reset
 				</Button>
 				<div className="ml-auto">

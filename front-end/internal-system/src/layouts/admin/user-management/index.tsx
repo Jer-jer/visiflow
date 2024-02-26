@@ -1,4 +1,10 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, {
+	useRef,
+	useState,
+	useEffect,
+	Dispatch,
+	SetStateAction,
+} from "react";
 import AxiosInstance, { AxiosLoginInstance } from "../../../lib/axios";
 
 //Interfaces
@@ -21,6 +27,7 @@ type TargetKey = React.MouseEvent | React.KeyboardEvent | string | number;
 
 interface UserListProps {
 	users: UserDataType[];
+	setUsers: Dispatch<SetStateAction<UserDataType[]>>;
 	addTab: () => void;
 	createUser: () => void;
 }
@@ -31,13 +38,33 @@ export interface TabItems {
 	userData?: UserDataType;
 }
 
-const UserList = ({ users, addTab, createUser }: UserListProps) => {
+const UserList = ({ users, setUsers, addTab, createUser }: UserListProps) => {
 	const [search, setSearch] = useState<string>("");
 
-	//TODO Add Search Functionality
 	const searchingUsers = () => {
-		// dispatch(searchVisitor(search));
-	}
+		setUsers((users) =>
+			users.filter((user) => {
+				return (
+					user.name.first_name.toLowerCase().includes(search.toLowerCase()) ||
+					user.name.middle_name!.toLowerCase().includes(search.toLowerCase()) ||
+					user.name.last_name.toLowerCase().includes(search.toLowerCase()) ||
+					`${user.name.first_name.toLowerCase()} ${user.name.middle_name!.toLowerCase()} ${user.name.last_name.toLowerCase()}` ===
+						search.toLowerCase() ||
+					user.phone.includes(search.toLowerCase())
+				);
+			}),
+		);
+	};
+
+	const fetchUsers = () => {
+		AxiosInstance.get("/user")
+			.then((res) => {
+				setUsers(res.data.users);
+			})
+			.catch((err) => {
+				console.error(err);
+			});
+	};
 
 	return (
 		<div className="ml-[45px] flex flex-col gap-[50px]">
@@ -49,8 +76,19 @@ const UserList = ({ users, addTab, createUser }: UserListProps) => {
 					prefix={<Search />}
 					onChange={(e) => setSearch(e.target.value)}
 				/>
-				<Button type="primary" className="search-button !bg-primary-500">
+				<Button
+					type="primary"
+					className="search-button !bg-primary-500"
+					onClick={searchingUsers}
+				>
 					Search
+				</Button>
+				<Button
+					type="primary"
+					className="search-button !bg-primary-500"
+					onClick={fetchUsers}
+				>
+					Reset
 				</Button>
 				<Button
 					type="primary"
@@ -82,7 +120,6 @@ export default function UserManagementLayout() {
 	const [alertMsg, setAlertMsg] = useState("");
 
 	useEffect(() => {
-		// apiFetchUsers();
 		AxiosInstance.get("/user")
 			.then((res) => {
 				setUsers(res.data.users);
@@ -199,7 +236,12 @@ export default function UserManagementLayout() {
 								setOpen={setAlertOpen}
 							/>
 						</div>
-						<UserList users={users} addTab={add} createUser={createUser} />
+						<UserList
+							users={users}
+							addTab={add}
+							createUser={createUser}
+							setUsers={setUsers}
+						/>
 					</div>
 				</Tabs.TabPane>
 				{items.map((item, key) => (

@@ -20,15 +20,6 @@ exports.test = async (req, res) => {
   const userId = await verifyRefreshToken(req.body.refreshToken);
   return res.status(200).json(userId);
 };
-exports.logout = async (req, res, next) => {
-  if (!req.user) {
-    res.status(400).json({ msg: "Not logged-in" });
-  } else {
-    req.logout(() => {
-      res.status(201).json({ msg: "Successfully logged-out" });
-    });
-  }
-};
 
 exports.refreshToken = async (req, res) => {
   const { refreshToken } = req.body;
