@@ -1,12 +1,14 @@
 require('dotenv').config();
+
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const QRCode = require('qrcode');
 const RefreshToken = require('../models/refreshToken');
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
-const ACCESS_TOKEN_EXPIRATION = process.env.ACCESS_TOKEN_EXPIRATION;
+const ACCESS_TOKEN_EXPIRATION = '20m';
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
-const REFRESH_TOKEN_EXPIRATION = process.env.REFRESH_TOKEN_EXPIRATION; 
+const REFRESH_TOKEN_EXPIRATION = "7d";
 
 function hashPassword(password) {
     const salt = bcrypt.genSaltSync();
@@ -46,4 +48,29 @@ async function verifyRefreshToken(token) {
     }
 }
 
-module.exports = { hashPassword, comparePassword, generateAccessToken, generateRefreshToken, storeRefreshToken, verifyRefreshToken};
+async function generateQRCode(badgeId) {
+    return new Promise((resolve, reject) => {
+        const filename = `api/resource/badge/badge${badgeId}.png`;
+        //insert local machine ip here
+        const uri = `http://192.168.43.94:5000/badge/checkBadge?qr_id=${badgeId}`;
+        QRCode.toFile(filename, uri, { errorCorrectionLevel: 'H' }, function (err) {
+            if (err) {
+              console.error(`Error generating QR code for badge ${badgeId}: ${err.message}`);
+              reject(err);
+            } else {
+              console.log(`QR code saved for badge ${badgeId}`);
+              resolve();
+            }
+          });
+    })
+}
+
+module.exports = { 
+    hashPassword, 
+    comparePassword, 
+    generateAccessToken, 
+    generateRefreshToken, 
+    storeRefreshToken, 
+    verifyRefreshToken,
+    generateQRCode
+};

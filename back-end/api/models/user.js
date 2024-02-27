@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-//! DO NOT REMOVE!! REQUIRED TO CREATE A SEPARATE COLLECTION
 const authConnection = mongoose.createConnection(`${process.env.MONGODB_AUTH}`);
 
 const Schema = mongoose.Schema;
@@ -29,7 +28,6 @@ const UserSchema = new Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-//! DO NOT REMOVE OR UPDATE!! REQUIRED TO CREATE A SEPARATE COLLECTION
 const UserModel = authConnection.model("user", UserSchema);
 
 module.exports = UserModel;

@@ -1,15 +1,20 @@
 const express = require("express");
 const router = express.Router();
+const passport = require('passport');
 const VisitorLogsController = require('../controllers/visitorLogsController');
 
-router.get("/all", VisitorLogsController.getLogs);
+router.use(
+    passport.authenticate('jwt', { session: false })
+);
 
-router.get("/:id", VisitorLogsController.searchLog);
+router.get("/", VisitorLogsController.getLogs);
 
 router.post("/new", VisitorLogsController.addLog);
 
-router.put("/update/:id", VisitorLogsController.updateLog);
+router.get("/find", VisitorLogsController.findLog);
 
-router.delete("/delete/:id", VisitorLogsController.deleteLog);
+router.put("/update", VisitorLogsController.updateLog);
+
+router.delete("/delete", VisitorLogsController.deleteLog);
 
 module.exports = router;
