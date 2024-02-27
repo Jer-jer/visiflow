@@ -1,14 +1,7 @@
+const express = require("express");//for import of express package
+const bodyParser = require("body-parser");
 const BuildingLoc = require('../models/buildingLocation');
-
-const { body, validationResult } = require('express-validator');
-
-// Middleware to validate the request body
-const validateData = [
-    body('name').isString().withMessage("Building name must be a String")
-    .notEmpty().withMessage('Building Name is required'),
-    body('roomNo').isString().withMessage("Room Number must be a string")
-    .notEmpty().withMessage('Room Number is required')
-];
+const { validateBldgLoc, handleValidationErrors, validationResult } = require('../middleware/dataValidation');
 
 function sanitizeData(bldgLoc) {
     return {
@@ -33,11 +26,11 @@ exports.getAllBldgLoc = async (req, res) => {
 //Create a new building record
 exports.createNewBldgLoc = async (req, res) => {
     // Run validation middleware
-    await Promise.all(validateData.map(validation => validation.run(req)));
+    await Promise.all(validateBldgLoc.map(validation => validation.run(req)));
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({ errors: errors.array()[0].msg });
     }
     
     try {
@@ -46,11 +39,11 @@ exports.createNewBldgLoc = async (req, res) => {
             roomNo
         } = req.body;
         
-        //check if the bldgLoc already exists
-        const existingbldgLoc = await BuildingLoc.findOne({ name, roomNo });
-        if (existingbldgLoc) {
-            return res.status(400).json({ error: 'Bldg Loc already exists' });
-        }
+        // //check if the bldgLoc already exists
+        // const existingbldgLoc = await BuildingLoc.findOne({ name, roomNo });
+        // if (existingbldgLoc) {
+        //     return res.status(400).json({ error: 'Bldg Loc already exists' });
+        // }
 
         const newBldgLoc = new BuildingLoc({ 
             name, 
@@ -63,7 +56,7 @@ exports.createNewBldgLoc = async (req, res) => {
         } else {
             return res.status(400).json({ error: 'Failed to Create new User' });
         }
-    } catch (error) {
+    } catch (err) {
         return res.status(500).json({ error: 'Internal Server Error'});
     }
 };

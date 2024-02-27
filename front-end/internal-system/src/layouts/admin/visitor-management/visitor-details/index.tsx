@@ -1,21 +1,38 @@
-import React, { useState, useContext, createContext } from "react";
+import React, {
+	useState,
+	useContext,
+	createContext,
+	MutableRefObject,
+	Dispatch,
+	SetStateAction,
+	useEffect,
+} from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import weekday from "dayjs/plugin/weekday";
+import localeData from "dayjs/plugin/localeData";
+import { useDispatch } from "react-redux";
 
 //Interfaces
 import {
 	VisitorDetailZod,
 	VisitorDetailsInterfaceZod,
 } from "../../../../utils/zodSchemas";
-import {
-	VisitorDataType,
-	VisitorStatus,
-	VisitorType,
-	CompanionDetailsProps,
-} from "../../../../utils/interfaces";
+import { VisitorDataType, IDPictureProps } from "../../../../utils/interfaces";
+import { VisitorStatus, VisitorType } from "../../../../utils/enums";
 import { WidthContext } from "../../../logged-in";
+import { TabItems } from "..";
 import type { Dayjs } from "dayjs";
+import type { DatePickerProps } from "antd";
+
+// Utils
+import { formatDate } from "../../../../utils";
+
+// Actions
+import { update, deleteVisitor } from "../../../../states/visitors";
 
 //Layouts
 import VisitorLogs from "../visitor-logs";
@@ -25,19 +42,41 @@ import Identification from "../identification";
 
 //Components
 import type { MenuProps } from "antd";
-import { Button, Avatar, Dropdown, Select, Input, Form, Tag } from "antd";
+import {
+	Button,
+	Avatar,
+	Dropdown,
+	Select,
+	Input,
+	Form,
+	Tag,
+	DatePicker,
+	Modal,
+} from "antd";
 import DateTimePicker from "../../../../components/datetime-picker";
 import Label from "../../../../components/fields/input/label";
 import Alert from "../../../../components/alert";
 
 //Assets
 import { ExcelDownload } from "../../../../assets/svg";
+import { ExclamationCircleFilled } from "@ant-design/icons";
 
 //Styles
 import "./styles.scss";
 
+// Libraries
+import AxiosInstance from "../../../../lib/axios";
+
+dayjs.extend(weekday);
+dayjs.extend(localeData);
+dayjs.extend(customParseFormat);
+
 interface VisitorDeetsProps {
+	newTabIndex: MutableRefObject<number>;
 	record: VisitorDataType;
+	items: TabItems[];
+	setItems: Dispatch<SetStateAction<TabItems[]>>;
+	setActiveKey: Dispatch<SetStateAction<number>>;
 }
 
 type VisitorDetailTypeZod = z.infer<typeof VisitorDetailZod>;
@@ -61,15 +100,23 @@ const exportOptions: MenuProps["items"] = [
 	},
 ];
 
-const { TextArea } = Input;
+const { confirm } = Modal;
 
-export const VisitorCompanionsContext = createContext<
-	CompanionDetailsProps[] | undefined
->(undefined);
+export const VisitorRecordContext = createContext<VisitorDataType | undefined>(
+	undefined,
+);
 
-export default function VisitorDetails({ record }: VisitorDeetsProps) {
+export default function VisitorDetails({
+	newTabIndex,
+	record,
+	items,
+	setItems,
+	setActiveKey,
+}: VisitorDeetsProps) {
 	//Alert State
+	const [status, setStatus] = useState(false);
 	const [alertOpen, setAlertOpen] = useState(false);
+	const [alertMsg, setAlertMsg] = useState("");
 
 	//Modal States
 	const [visitLogsOpen, setVisitLogsOpen] = useState(false);
@@ -79,8 +126,30 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 
 	const [disabledInputs, setDisabledInputs] = useState<boolean>(true);
 
+	const [idPicture, setIdPicture] = useState<IDPictureProps>({
+		front: "../../../../assets/no-image.svg",
+		back: "../../../../assets/no-image.svg",
+		selfie: "../../../../assets/no-image.svg",
+	});
+
 	const width = useContext(WidthContext);
 
+	// Store Related variables
+	const dispatch = useDispatch();
+
+	useEffect(() => {
+		AxiosInstance.post("/visitor/retrieve-image", {
+			_id: record._id,
+		})
+			.then((res) => {
+				setIdPicture(res.data.id_picture);
+			})
+			.catch((err) => {
+				console.log(err.data.error || err.data.errors);
+			});
+	}, []);
+
+	// Client-side Validation related data
 	const {
 		register,
 		handleSubmit,
@@ -90,28 +159,35 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 	} = useForm<VisitorDetailTypeZod>({
 		resolver: zodResolver(VisitorDetailZod),
 		defaultValues: {
-			first_name: record.visitor_details.fullName.first_name,
-			middle_name: record.visitor_details.fullName.middle_name,
-			last_name: record.visitor_details.fullName.last_name,
-			mobile: record.visitor_details.mobile,
+			first_name: record.visitor_details.name.first_name,
+			middle_name: record.visitor_details.name.middle_name,
+			last_name: record.visitor_details.name.last_name,
+			phone: record.visitor_details.phone,
 			email: record.visitor_details.email,
-			house: record.visitor_details.houseNo,
-			street: record.visitor_details.street,
-			barangay: record.visitor_details.brgy,
-			city: record.visitor_details.city,
-			province: record.visitor_details.province,
-			country: record.visitor_details.country,
+			house: record.visitor_details.address.house,
+			street: record.visitor_details.address.street,
+			brgy: record.visitor_details.address.brgy,
+			city: record.visitor_details.address.city,
+			province: record.visitor_details.address.province,
+			country: record.visitor_details.address.country,
 			check_in_out: [
-				record.visitor_details.timeIn,
-				record.visitor_details.timeOut,
+				record.visitor_details.time_in,
+				record.visitor_details.time_out,
 			],
+			plate_num: record.plate_num,
 			status: record.status,
 			visitor_type: record.visitor_type,
-			purpose: record.purpose,
+			what: record.purpose.what,
+			when: record.purpose.when,
+			where: record.purpose.where,
+			who: record.purpose.who,
 		},
 	});
 
-	const updateInput = (value: string | [string, string], property: string) => {
+	const updateInput = (
+		value: string | [string, string] | string[] | any,
+		property: string,
+	) => {
 		switch (property) {
 			case "first_name":
 				setValue(property, value as string);
@@ -122,11 +198,8 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 			case "last_name":
 				setValue(property, value as string);
 				break;
-			case "mobile":
-				const reg = /^[0-9\-+\b]*$/;
-				if (reg.test(value as string)) {
-					setValue(property, value as string);
-				}
+			case "phone":
+				setValue(property, value as string);
 				break;
 			case "email":
 				setValue(property, value as string);
@@ -134,7 +207,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 			case "street":
 				setValue(property, value as string);
 				break;
-			case "barangay":
+			case "brgy":
 				setValue(property, value as string);
 				break;
 			case "city":
@@ -149,14 +222,26 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 			case "check_in_out":
 				setValue(property, value as [string, string]);
 				break;
-			case "visitor_type":
+			case "plate_num":
 				setValue(property, value as string);
+				break;
+			case "visitor_type":
+				setValue(property, value);
 				break;
 			case "status":
+				setValue(property, value);
+				break;
+			case "what":
+				setValue(property, value as string[]);
+				break;
+			case "when":
 				setValue(property, value as string);
 				break;
-			case "purpose":
-				setValue(property, value as string);
+			case "where":
+				setValue(property, value as string[]);
+				break;
+			case "who":
+				setValue(property, value as string[]);
 				break;
 		}
 	};
@@ -172,22 +257,101 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 		}
 	};
 
-	const handleChange = (value: string) => updateInput(value, "status");
+	const onChange: DatePickerProps["onChange"] = (date, dateString) => {};
+
+	const handleChange = (property: string, value: string | string[]) =>
+		updateInput(value, property);
 
 	const editOrCancel = () => {
 		setDisabledInputs(!disabledInputs);
 		clearErrors();
 	};
 
-	const saveAction = (visitorId: string, data: VisitorDetailsInterfaceZod) => {
-		//This needs to be customized to whatever the DB returns
-		setAlertOpen(!alertOpen);
-		setDisabledInputs(!disabledInputs);
+	const saveAction = (zodData: VisitorDetailsInterfaceZod) => {
+		AxiosInstance.put("/visitor/update", {
+			_id: record._id,
+			first_name: zodData.first_name,
+			middle_name: zodData.middle_name,
+			last_name: zodData.last_name,
+			phone: zodData.phone,
+			email: zodData.email,
+			house_no: zodData.house,
+			street: zodData.street,
+			brgy: zodData.brgy,
+			city: zodData.city,
+			province: zodData.province,
+			country: zodData.country,
+			time_in: zodData.check_in_out[0],
+			time_out: zodData.check_in_out[1],
+			plate_num: zodData.plate_num,
+			status: zodData.status,
+			visitor_type: zodData.visitor_type,
+		})
+			.then((res) => {
+				dispatch(update(res.data.updatedVisitor));
+
+				setStatus(true);
+				setAlertMsg(res.data.message);
+				setAlertOpen(!alertOpen);
+				setDisabledInputs(!disabledInputs);
+
+				setItems((prev) =>
+					prev.map((item) => {
+						if (item.key === newTabIndex.current)
+							item.visitorData = res.data.updatedVisitor;
+
+						return item;
+					}),
+				);
+			})
+			.catch((err) => {
+				setStatus(false);
+				setAlertMsg(err.response.data.error || err.response.data.errors);
+			});
 	};
 
 	const onSubmit = handleSubmit((data) => {
-		saveAction(record.id, data);
+		saveAction(data);
 	});
+
+	const closeTab = (_id: string | undefined) => {
+		const newActiveKey = --newTabIndex.current;
+		const newItems = [...items];
+		const index = newItems.map((e) => e.visitorData._id).indexOf(_id!);
+		if (index !== -1) {
+			newItems.splice(index, 1);
+			setItems(newItems);
+		}
+		setActiveKey(newActiveKey);
+	};
+
+	const showDeleteConfirm = (_id: string) => {
+		confirm({
+			title: "Are you sure you want to delete this visitor?",
+			className: "confirm-buttons",
+			icon: <ExclamationCircleFilled className="!text-error-500" />,
+			okText: "Yes",
+			okType: "danger",
+			cancelText: "No",
+			onOk() {
+				AxiosInstance.delete("/visitor/delete", {
+					data: {
+						_id,
+					},
+				})
+					.then((res) => {
+						dispatch(deleteVisitor(_id));
+						closeTab(_id);
+					})
+					.catch((err) => {
+						console.error(err.response.data.error || err.response.data.errors);
+					});
+			},
+			onCancel() {
+				console.log("Cancel");
+			},
+		});
+	};
 
 	return (
 		<div className="visitor-details">
@@ -196,23 +360,22 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 					alertOpen && "scale-y-100"
 				}`}
 			>
-				{/* // Needs to be customized to whatever the DB returns */}
 				<Alert
 					globalCustomStyling={`flex w-full overflow-hidden rounded-lg rounded-tl-none bg-white shadow-md`}
 					statusStyling="flex w-12 items-center justify-center"
-					statusColor="bg-primary-500"
+					statusColor={status ? "bg-primary-500" : "bg-error-500"}
 					spanStyling="font-semibold"
-					statusTextHeaderColor="text-primary-500"
+					statusTextHeaderColor={status ? "text-primary-500" : "text-error-500"}
 					descStyling="text-sm text-gray-600"
 					header="Information Box"
-					desc="Message successfully sent to Visitor via Email"
+					desc={alertMsg}
 					open={alertOpen}
 					setOpen={setAlertOpen}
 				/>
 			</div>
 
 			<Form name="Visitor Details" onFinish={onSubmit} autoComplete="off">
-				<div className="mr-[135px] flex flex-col gap-[35px] pt-[30px]">
+				<div className="mr-[130px] flex flex-col gap-[35px] pt-[30px]">
 					<div className="flex justify-end">
 						<Dropdown menu={{ items: exportOptions }} trigger={["click"]}>
 							<a title="Download" onClick={(e) => e.preventDefault()} href="/">
@@ -222,20 +385,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 					</div>
 					<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
 						<div className="flex">
-							<div className="flex w-[782px] flex-col gap-[20px]">
-								<div className="flex w-full gap-[33px]">
-									<Label
-										spanStyling="text-black font-medium text-[16px]"
-										labelStyling="w-[13.8%]"
-									>
-										Visitor ID
-									</Label>
-									<Input
-										className="vm-placeholder h-[38px] w-[650px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-										placeholder={record.id}
-										disabled
-									/>
-								</div>
+							<div className="flex flex-col gap-[20px]">
 								<div className="flex gap-[60px]">
 									<div
 										className={`flex w-[360px] ${
@@ -248,7 +398,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.fullName.first_name}
+												placeholder={record.visitor_details.name.first_name}
 												{...register("first_name")}
 												onChange={(e) =>
 													updateInput(e.target.value, "first_name")
@@ -273,9 +423,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={
-													record.visitor_details.fullName.middle_name
-												}
+												placeholder={record.visitor_details.name.middle_name}
 												{...register("middle_name")}
 												onChange={(e) =>
 													updateInput(e.target.value, "middle_name")
@@ -302,7 +450,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.fullName.last_name}
+												placeholder={record.visitor_details.name.last_name}
 												{...register("last_name")}
 												onChange={(e) =>
 													updateInput(e.target.value, "last_name")
@@ -327,14 +475,14 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.mobile}
-												{...register("mobile")}
-												onChange={(e) => updateInput(e.target.value, "mobile")}
+												placeholder={record.visitor_details.phone}
+												{...register("phone")}
+												onChange={(e) => updateInput(e.target.value, "phone")}
 												disabled={disabledInputs}
 											/>
-											{errors?.mobile && (
+											{errors?.phone && (
 												<p className="mt-1 text-sm text-red-500">
-													{errors.mobile.message}
+													{errors.phone.message}
 												</p>
 											)}
 										</div>
@@ -378,7 +526,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.houseNo}
+												placeholder={record.visitor_details.address.house}
 												{...register("house")}
 												onChange={(e) => updateInput(e.target.value, "house")}
 												disabled={disabledInputs}
@@ -401,7 +549,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.city}
+												placeholder={record.visitor_details.address.city}
 												{...register("city")}
 												onChange={(e) => updateInput(e.target.value, "city")}
 												disabled={disabledInputs}
@@ -426,7 +574,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.city}
+												placeholder={record.visitor_details.address.street}
 												{...register("street")}
 												onChange={(e) => updateInput(e.target.value, "street")}
 												disabled={disabledInputs}
@@ -449,7 +597,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.province}
+												placeholder={record.visitor_details.address.province}
 												{...register("province")}
 												onChange={(e) =>
 													updateInput(e.target.value, "province")
@@ -476,16 +624,14 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.brgy}
-												{...register("barangay")}
-												onChange={(e) =>
-													updateInput(e.target.value, "barangay")
-												}
+												placeholder={record.visitor_details.address.brgy}
+												{...register("brgy")}
+												onChange={(e) => updateInput(e.target.value, "brgy")}
 												disabled={disabledInputs}
 											/>
-											{errors?.barangay && (
+											{errors?.brgy && (
 												<p className="mt-1 text-sm text-red-500">
-													{errors.barangay.message}
+													{errors.brgy.message}
 												</p>
 											)}
 										</div>
@@ -501,7 +647,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.country}
+												placeholder={record.visitor_details.address.country}
 												{...register("country")}
 												onChange={(e) => updateInput(e.target.value, "country")}
 												disabled={disabledInputs}
@@ -528,15 +674,15 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 									<div className="flex w-full flex-col">
 										<DateTimePicker
 											globalStyling="w-full"
-											rangePickerStyling="bg-[#e0ebf0] border-none w-[inherit]"
+											rangePickerStyling="bg-[#e0ebf0] hover:!bg-[#e0ebf0] border-none w-[inherit] focus-within:!bg-[#e0ebf0] focus:!bg-[#e0ebf0]"
 											size="large"
 											defaultVal={{
 												from:
-													record.visitor_details.timeIn ||
-													"9999-99-99 99:99 PM",
+													record.visitor_details.time_in ||
+													formatDate(new Date()),
 												to:
-													record.visitor_details.timeOut ||
-													"9999-99-99 99:99 PM",
+													record.visitor_details.time_out ||
+													formatDate(new Date()),
 											}}
 											onRangeChange={onRangeChange}
 											visitorMngmnt
@@ -550,30 +696,144 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 									</div>
 								</div>
 								<div
-									className={`flex w-[782px] ${
+									className={`flex w-full ${
 										errors && "items-start"
-									} justify-between`}
+									} justify-start`}
 								>
 									<Label
 										spanStyling="text-black font-medium text-[16px]"
-										labelStyling="w-[13.8%]"
+										labelStyling="w-[21.5%]"
 									>
 										Purpose
 									</Label>
-									<div className="flex flex-col">
-										<TextArea
-											className="vm-placeholder h-[38px] w-[640px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-											rows={3}
-											placeholder={record.purpose}
-											{...register("purpose")}
-											onChange={(e) => updateInput(e.target.value, "purpose")}
-											disabled={disabledInputs}
-										/>
-										{errors?.purpose && (
-											<p className="mt-1 text-sm text-red-500">
-												{errors.purpose.message}
-											</p>
-										)}
+									<div className="flex w-full flex-col gap-[10px]">
+										<div className="flex gap-[20px]">
+											<div className="flex w-full flex-col">
+												<Select
+													className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
+													showSearch
+													mode="multiple"
+													allowClear
+													placeholder="What"
+													disabled={disabledInputs}
+													listHeight={128}
+													defaultValue={record.purpose.what}
+													onChange={(value: string[]) =>
+														handleChange("what", value)
+													}
+													options={[
+														{
+															value: "meeting",
+															label: "Meeting",
+														},
+														{
+															value: "intramurals",
+															label: "Intramurals",
+														},
+														{
+															value: "conference",
+															label: "Conference",
+														},
+													]}
+												/>
+												{errors?.what && (
+													<p className="mt-1 text-sm text-red-500">
+														{errors.what.message}
+													</p>
+												)}
+											</div>
+											<div className="flex w-full flex-col">
+												<DatePicker
+													showTime
+													className={`w-[inherit] border-none !border-[#d9d9d9] bg-[#e0ebf0] focus-within:!bg-[#e0ebf0] hover:!border-primary-500 hover:!bg-[#e0ebf0] focus:!border-primary-500 focus:!bg-[#e0ebf0] ${
+														disabledInputs && "picker-disabled"
+													} vm-placeholder`}
+													defaultValue={dayjs(
+														record.purpose.when,
+														"YYYY-MM-DD hh:mm A",
+													)}
+													onChange={onChange}
+													disabled={disabledInputs}
+												/>
+												{errors?.when && (
+													<p className="mt-1 text-sm text-red-500">
+														{errors.when.message}
+													</p>
+												)}
+											</div>
+											<div className="flex w-full flex-col">
+												<Select
+													className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
+													showSearch
+													mode="multiple"
+													allowClear
+													placeholder="Where"
+													disabled={disabledInputs}
+													defaultValue={record.purpose.where}
+													onChange={(value: string[]) =>
+														handleChange("where", value)
+													}
+													options={[
+														{
+															value: "gym",
+															label: "Gymnasium",
+														},
+														{
+															value: "office_of_the_president",
+															label: "Office of the President",
+														},
+														{
+															value: "guard_house",
+															label: "Guard House",
+														},
+														{
+															value: "conference_hall",
+															label: "Conference Hall",
+														},
+														{
+															value: "classroom",
+															label: "Classroom",
+														},
+													]}
+												/>
+												{errors?.where && (
+													<p className="mt-1 text-sm text-red-500">
+														{errors.where.message}
+													</p>
+												)}
+											</div>
+										</div>
+										<div className="flex gap-[20px]">
+											<div className="flex w-full flex-col">
+												<Select
+													className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
+													showSearch
+													mode="multiple"
+													allowClear
+													placeholder="Who"
+													disabled={disabledInputs}
+													defaultValue={record.purpose.who}
+													onChange={(value: string[]) =>
+														handleChange("who", value)
+													}
+													options={[
+														{
+															value: "john_doe",
+															label: "Dr. John Doe",
+														},
+														{
+															value: "lucy_grimm",
+															label: "Lucy Grimm",
+														},
+													]}
+												/>
+												{errors?.who && (
+													<p className="mt-1 text-sm text-red-500">
+														{errors.who.message}
+													</p>
+												)}
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -582,19 +842,12 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 									className="cursor-pointer"
 									onClick={() => setIdentificationOpen(!identificationOpen)}
 									size={width === 1210 ? 150 : 220}
-									src="https://www.sars.gov.za/wp-content/uploads/images/Verify-banking-details.jpg"
+									src={idPicture.selfie}
 								/>
 								<Identification
 									open={identificationOpen}
 									setOpen={setIdentificationOpen}
-									image={{
-										frontId:
-											"https://media.philstar.com/photos/2021/07/23/10_2021-07-23_18-27-24.jpg",
-										backId:
-											"https://s3-alpha-sig.figma.com/img/6541/e76f/4938b0155718de8af5610a0f82b07fc5?Expires=1696809600&Signature=g9ee7Y9K6izTlUfPBSWDgv2t9CilaBU3wsYb~xTBNwzFqBIgD~qDFl1WJms9oyFfyQXVxeFC5zydUUKHzBz-JaG~jZ31ambhXu9Gqte1D5vDh9x6WnZF8Kszq9IisRwRC1ytG02cYqFmIFpwLjb-hZ-JFXIWPbB~g-EA-pVFCSsElqjTHikVTTSSmEQiViHAXOSZo0OF3spgfGhfQhtobuWeryxKXlrr3Wu6CnxlIN0VGWKrCMzNH3qp6o99M8KZ4tkEsA8oFrhz~ijLF2GntP1DSBpZNm07wWoLJ2T1l7zSdqRJ5OOl4wiRucamxNbR8wnqPxjrKxrRGE7nJhAQ6w__&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4",
-										selfieId:
-											"https://www.sars.gov.za/wp-content/uploads/images/Verify-banking-details.jpg",
-									}}
+									image={idPicture}
 								/>
 								<div
 									className={`flex flex-col items-center ${
@@ -622,7 +875,9 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 													? "Walk-In"
 													: "Pre-Registered"
 											}
-											onChange={handleChange}
+											onChange={(value: string) =>
+												handleChange("visitor_type", value)
+											}
 											options={[
 												{ value: VisitorType.WalkIn, label: "Walk-In" },
 												{
@@ -635,6 +890,27 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 									{errors?.visitor_type && (
 										<p className="mt-1 text-sm text-red-500">
 											{errors.visitor_type.message}
+										</p>
+									)}
+									{record.plate_num &&
+										(disabledInputs ? (
+											<span className="mt-2 rounded border border-black px-3 py-1 text-[20px] font-bold shadow-md">
+												{record.plate_num}
+											</span>
+										) : (
+											<Input
+												className="vm-placeholder h-[38px] w-fit rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
+												placeholder={record.plate_num}
+												{...register("plate_num")}
+												onChange={(e) =>
+													updateInput(e.target.value, "plate_num")
+												}
+												disabled={disabledInputs}
+											/>
+										))}
+									{errors?.plate_num && (
+										<p className="mt-1 text-sm text-red-500">
+											{errors.plate_num.message}
 										</p>
 									)}
 									{disabledInputs ? (
@@ -660,7 +936,9 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 													? "In Progress"
 													: "Declined"
 											}
-											onChange={handleChange}
+											onChange={(value: string) =>
+												handleChange("status", value)
+											}
 											options={[
 												{ value: VisitorStatus.Approved, label: "Approved" },
 												{
@@ -696,7 +974,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 										setOpen={setVisitLogsOpen}
 									/>
 									{/* Optional only for visitors with companions */}
-									{record.companions_details && (
+									{record.companion_details!.length > 0 && (
 										<>
 											<Button
 												type="primary"
@@ -708,14 +986,12 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 											>
 												View Companions
 											</Button>
-											<VisitorCompanionsContext.Provider
-												value={record.companions_details}
-											>
+											<VisitorRecordContext.Provider value={record}>
 												<VisitorCompanions
 													open={vistorCompanionsOpen}
 													setOpen={setVisitorCompanionsOpen}
 												/>
-											</VisitorCompanionsContext.Provider>
+											</VisitorRecordContext.Provider>
 										</>
 									)}
 
@@ -729,7 +1005,7 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 									</Button>
 									<NotifyPOI
 										emailInput={record.visitor_details.email}
-										companionRecords={record.companions_details}
+										companionRecords={record.companion_details}
 										open={notifyOpen}
 										setOpen={setNotifyOpen}
 									/>
@@ -737,15 +1013,25 @@ export default function VisitorDetails({ record }: VisitorDeetsProps) {
 							)}
 
 							{!disabledInputs && (
-								<Button
-									// onClick={saveAction}
-									type="primary"
-									size="large"
-									className="search-button !rounded-[18px] !bg-primary-500"
-									htmlType="submit"
-								>
-									Save
-								</Button>
+								<>
+									<Button
+										onClick={() => showDeleteConfirm(record._id)}
+										type="primary"
+										size="large"
+										className="search-button !rounded-[18px] !bg-error-500"
+									>
+										Delete
+									</Button>
+									<Button
+										// onClick={saveAction}
+										type="primary"
+										size="large"
+										className="search-button !rounded-[18px] !bg-primary-500"
+										htmlType="submit"
+									>
+										Save
+									</Button>
+								</>
 							)}
 							<Button
 								onClick={editOrCancel}

@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 //Layouts
 import LoggedIn from "./layouts/logged-in";
@@ -11,7 +13,7 @@ import Statistics from "./pages/admin/statistics";
 import VisitorManagement from "./pages/admin/visitor-management";
 import UserManagement from "./pages/admin/user-management";
 import HomeEditor from "./pages/admin/home-editor";
-import Schedules from './pages/admin/schedules';
+import Schedules from "./pages/admin/schedules";
 
 //Guard
 import Capture from "./pages/guard/capture";
@@ -22,28 +24,72 @@ import VisitorStatus from "./pages/guard/visitor-status";
 
 //Styles
 import "./App.scss";
-import { Routes, Route } from "react-router-dom";
 
 function App() {
+	const [isLoggedIn, setIsLoggedIn] = useState(false);
+	const [isAdmin, setIsAdmin] = useState(false);
+
+	useEffect(() => {
+		const token = localStorage.getItem("token");
+
+		if (token) {
+			const decoded: any = jwtDecode(token);
+			setIsLoggedIn(true);
+
+			if (decoded.role === "admin") {
+				setIsAdmin(true);
+			}
+		}
+	}, []);
+
 	return (
 		<div className="min-h-screen">
-			{/* Either <Login /> or <LoggedIn></LoggedIn> depending if the user is logged in or not */}
-			{/* <Login /> */}
-			<LoggedIn>
-				{/* Add Routes here */}
+			{isLoggedIn ? (
+				<LoggedIn
+					setIsLoggedIn={setIsLoggedIn}
+					isAdmin={isAdmin}
+					setIsAdmin={setIsAdmin}
+				>
+					<Routes>
+						{isAdmin ? (
+							<>
+								<Route path="/" element={<Dashboard />} />
+								<Route path="/statistics" element={<Statistics />} />
+								<Route
+									path="/visitor-management"
+									element={<VisitorManagement />}
+								/>
+								<Route path="/manage-users" element={<UserManagement />} />
+								<Route path="/home-editor" element={<HomeEditor />} />
+								<Route path="/capture" element={<Capture />} />
+								<Route path="/visitor-form" element={<VisitorForm />} />
+								<Route path="/qr-scanner" element={<QRScanner />} />
+								<Route path="/preregistered-qr" element={<PreregisteredQR />} />
+								<Route path="/visitor-status" element={<VisitorStatus />} />
+							</>
+						) : (
+							<>
+								<Route
+									path="/"
+									element={<span>Guard System Routes Here</span>}
+								/>
+							</>
+						)}
+						{/*//TODO enchance error 404 page */}
+						<Route path="*" element={<span>Error</span>} />
+					</Routes>
+				</LoggedIn>
+			) : (
 				<Routes>
-					<Route path="/" element={<Dashboard />} />
-					<Route path="/statistics" element={<Statistics />} />
-					<Route path="/visitor-management" element={<VisitorManagement />} />
-					<Route path="/manage-users" element={<UserManagement />} />
-					<Route path="/home-editor" element={<HomeEditor />} />
-					<Route path="/capture" element={<Capture />} />
-					<Route path="/visitor-form" element={<VisitorForm />} />
-					<Route path="/qr-scanner" element={<QRScanner />} />
-					<Route path="/preregistered-qr" element={<PreregisteredQR />} />
-					<Route path="/visitor-status" element={<VisitorStatus />} />
+					<Route
+						path="/"
+						element={
+							<Login setIsLoggedIn={setIsLoggedIn} setIsAdmin={setIsAdmin} />
+						}
+					/>
+					<Route path="*" element={<span>Error</span>} />
 				</Routes>
-			</LoggedIn>
+			)}
 		</div>
 	);
 }

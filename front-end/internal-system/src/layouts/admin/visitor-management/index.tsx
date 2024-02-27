@@ -1,16 +1,20 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 
 //Interfaces
-import {
-	VisitorDataType,
-	VisitorDetailsProps,
-} from "../../../utils/interfaces";
+import { VisitorDataType } from "../../../utils/interfaces";
 
 //Components
 import { Tabs, Button, Input } from "antd";
-import DateTimePicker from "../../../components/datetime-picker";
+// import DateTimePicker from "../../../components/datetime-picker";
 import VisitorListTable from "../../../components/table/visitor-list";
 import VisitorDetails from "./visitor-details";
+
+// Store
+import { AppDispatch } from "../../../store";
+
+// Reducers
+import { fetchVisitors } from "../../../states/visitors";
 
 //Styles
 import "../../../utils/variables.scss";
@@ -25,23 +29,23 @@ interface VisitorProps {
 	addTab: () => void;
 }
 
-interface TabItems {
+export interface TabItems {
 	key: TargetKey;
 	visitorData: VisitorDataType;
-	// companionsDetails?: VisitorDetailsProps[];
 }
 
 const VisitorList = ({ addTab }: VisitorProps) => {
 	return (
 		<div className="ml-[45px] mt-[30px] flex flex-col gap-[50px]">
 			<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
+				{/* //TODO Add Search Functionality */}
 				<Input
 					className="w-[366px]"
 					size="large"
 					placeholder="Search"
 					prefix={<Search />}
 				/>
-				<DateTimePicker size="large" />
+				{/* <DateTimePicker size="large" /> */}
 				<Button type="primary" className="search-button !bg-primary-500">
 					Search
 				</Button>
@@ -58,26 +62,27 @@ const VisitorList = ({ addTab }: VisitorProps) => {
 
 export default function VisitorManagementLayout() {
 	const [items, setItems] = useState<TabItems[]>([]);
-	// const [visitors, setVisitors] = useState<UserDataType[]>([]);
 	const [activeKey, setActiveKey]: any = useState(1);
 	const newTabIndex = useRef(1);
+
+	const dispatch = useDispatch<AppDispatch>();
+
+	useEffect(() => {
+		dispatch(fetchVisitors());
+	}, [items]);
 
 	const onChange = (newActiveKey: string) => {
 		setActiveKey(newActiveKey);
 	};
 
-	const add = (
-		record?: VisitorDataType,
-		// companionRecords?: VisitorDetailsProps[],
-	) => {
+	const add = (record?: VisitorDataType) => {
 		const newActiveKey = ++newTabIndex.current;
 
-		setItems([
-			...items,
+		setItems((prevItems) => [
+			...prevItems,
 			{
 				key: newActiveKey,
 				visitorData: record!,
-				// companionsDetails: companionRecords,
 			},
 		]);
 
@@ -120,20 +125,21 @@ export default function VisitorManagementLayout() {
 				activeKey={activeKey.toString()}
 				onEdit={onEdit}
 			>
-				<Tabs.TabPane closable={false} tab="" key="1">
+				<Tabs.TabPane closable={false} tab="Visitor List" key="1">
 					<VisitorList addTab={add} />
 				</Tabs.TabPane>
-				{items.map((items, key) => (
+				{items.map((item) => (
 					<Tabs.TabPane
 						tab="Visitor Details"
-						key={items.key.toString()}
+						key={item.key.toString()}
 						closeIcon={<TabClose />}
 					>
 						<VisitorDetails
-							// record={items.visitorData}
-							record={items.visitorData}
-							// status={items.}
-							// companionRecords={items.companionsDetails}
+							record={item.visitorData}
+							items={items}
+							setItems={setItems}
+							setActiveKey={setActiveKey}
+							newTabIndex={newTabIndex}
 						/>
 					</Tabs.TabPane>
 				))}

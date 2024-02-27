@@ -2,23 +2,48 @@
 	?	USED FOR DATA VALIDATION
 */
 import { z, ZodType } from "zod";
+import { VisitorStatus, VisitorType } from "./enums";
+
+export interface LoginInterfaceZod {
+	username: string;
+	password: string;
+}
+
+export const LoginZod: ZodType<LoginInterfaceZod> = z.object({
+	username: z
+		.string({
+			required_error: "Username is required.",
+			invalid_type_error: "Username must not have number.",
+		})
+		.min(1, { message: "Please enter a desired username." }),
+	password: z
+		.string({
+			required_error: "Password is required.",
+			invalid_type_error: "Password must not have number.",
+		})
+		.min(1, { message: "Please enter a desired password." }),
+});
 
 export interface VisitorDetailsInterfaceZod {
 	first_name: string;
 	middle_name?: string;
 	last_name: string;
 	email: string;
-	mobile: string;
+	phone: string;
 	house?: string;
 	street?: string;
-	barangay: string;
+	brgy: string;
 	city: string;
 	province: string;
 	country: string;
 	check_in_out: [string, string];
-	visitor_type: string;
-	status: string;
-	purpose: string;
+	plate_num?: string | null;
+	visitor_type: VisitorType;
+	status: VisitorStatus;
+	what: string[];
+	when: string;
+	where: string[];
+	who: string[];
 }
 
 export const VisitorDetailZod: ZodType<VisitorDetailsInterfaceZod> = z.object({
@@ -35,7 +60,7 @@ export const VisitorDetailZod: ZodType<VisitorDetailsInterfaceZod> = z.object({
 			required_error: "Middle Name is required.",
 			invalid_type_error: "Middle Name must not have number.",
 		})
-		.regex(/^[a-zA-Z]+/, {
+		.regex(/^[a-zA-Z]*$|\b/, {
 			message: "Must not contain any numerals.",
 		})
 		.optional(),
@@ -49,7 +74,7 @@ export const VisitorDetailZod: ZodType<VisitorDetailsInterfaceZod> = z.object({
 		}),
 
 	email: z.string().email({ message: "Invalid email address." }),
-	mobile: z.coerce
+	phone: z.coerce
 		.string({
 			required_error: "Mobile Number is required.",
 			invalid_type_error: "Mobile Number must not have a letter or symbol.",
@@ -60,7 +85,7 @@ export const VisitorDetailZod: ZodType<VisitorDetailsInterfaceZod> = z.object({
 
 	house: z.string().optional(),
 	street: z.string().optional(),
-	barangay: z
+	brgy: z
 		.string({
 			required_error: "Barangay is required.",
 			invalid_type_error: "Barangay must not have a number.",
@@ -95,11 +120,38 @@ export const VisitorDetailZod: ZodType<VisitorDetailsInterfaceZod> = z.object({
 	check_in_out: z.custom<[string, string]>().refine((val) => val[0] < val[1], {
 		message: "Check in must be before the Check out date.",
 	}),
-	visitor_type: z.enum(["Pre-registered", "Walk-In"]),
-	status: z.enum(["Approved", "In Progress", "Declined"]),
-	purpose: z.string({
-		required_error: "Purpose is required.",
-	}),
+	plate_num: z.string().optional().nullable(),
+	visitor_type: z.nativeEnum(VisitorType),
+	status: z.nativeEnum(VisitorStatus),
+	what: z
+		.string({
+			required_error: '"What" is required.',
+		})
+		.array()
+		.nonempty({
+			message: '"What" is required.',
+		}),
+	when: z
+		.string({
+			required_error: '"When" is required.',
+		})
+		.min(1, '"When" is required.'),
+	where: z
+		.string({
+			required_error: '"Where" is required.',
+		})
+		.array()
+		.nonempty({
+			message: '"Where" is required.',
+		}),
+	who: z
+		.string({
+			required_error: '"Who" is required.',
+		})
+		.array()
+		.nonempty({
+			message: '"Who" is required.',
+		}),
 });
 
 export interface CompanionDetailsInterfaceZod {
@@ -107,10 +159,10 @@ export interface CompanionDetailsInterfaceZod {
 	middle_name?: string;
 	last_name: string;
 	email: string;
-	mobile: string;
+	phone: string;
 	house?: string;
 	street?: string;
-	barangay: string;
+	brgy: string;
 	city: string;
 	province: string;
 	country: string;
@@ -132,7 +184,7 @@ export const CompanionDetailZod: ZodType<CompanionDetailsInterfaceZod> =
 				required_error: "Middle Name is required.",
 				invalid_type_error: "Middle Name must not have number.",
 			})
-			.regex(/^[a-zA-Z]+/, {
+			.regex(/^[a-zA-Z]*$|\b/, {
 				message: "Must not contain any numerals.",
 			})
 			.optional(),
@@ -146,7 +198,7 @@ export const CompanionDetailZod: ZodType<CompanionDetailsInterfaceZod> =
 			}),
 
 		email: z.string().email({ message: "Invalid email address." }),
-		mobile: z.coerce
+		phone: z.coerce
 			.string({
 				required_error: "Mobile Number is required.",
 				invalid_type_error: "Mobile Number must not have a letter or symbol.",
@@ -157,7 +209,7 @@ export const CompanionDetailZod: ZodType<CompanionDetailsInterfaceZod> =
 
 		house: z.string().optional(),
 		street: z.string().optional(),
-		barangay: z
+		brgy: z
 			.string({
 				required_error: "Barangay is required.",
 				invalid_type_error: "Barangay must not have a number.",
@@ -222,7 +274,7 @@ export const UserDetailsZod: ZodType<UserDetailsInterfaceZod> = z.object({
 			required_error: "Middle Name is required.",
 			invalid_type_error: "Middle Name must not have number.",
 		})
-		.regex(/^[a-zA-Z]+/, {
+		.regex(/^[a-zA-Z\s]/, {
 			message: "Must not contain any numerals.",
 		})
 		.min(1, { message: "Please enter a middle name." })
@@ -257,7 +309,7 @@ export const UserDetailsZod: ZodType<UserDetailsInterfaceZod> = z.object({
 			required_error: "Mobile Number is required.",
 			invalid_type_error: "Mobile Number must not have a letter or symbol.",
 		})
-		.regex(/^[0-9\-+\b]*$/, { message: "Only numeric values allowed." })
+		.regex(/([0-9\-+\b])\w+/, { message: "Only numeric values allowed." })
 		.min(1, { message: "Please enter a phone number." }),
 	role: z.enum(["admin", "security"]),
 });

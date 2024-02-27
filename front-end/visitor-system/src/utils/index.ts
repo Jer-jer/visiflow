@@ -1,3 +1,5 @@
+import { VisitorDetailsProps } from "./interfaces";
+
 export function formatDateTimeRange(startDate: Date, endDate: Date) {
 	// Format the date part (e.g., "April 30, 2023")
 	const startd = startDate.toLocaleDateString("en-US", {
@@ -29,3 +31,11 @@ export function formatDateTimeRange(startDate: Date, endDate: Date) {
 		startd !== endd && `to ${endd}`
 	} | ${startTime} to ${endTime}`;
 }
+
+export const mainOrCompanion = (
+	increment: number,
+	mainVisitor: VisitorDetailsProps,
+	companions: VisitorDetailsProps[],
+) => {
+	return increment === 0 ? mainVisitor : companions[increment - 1];
+};

@@ -3,7 +3,6 @@ import dayjs from "dayjs";
 
 // Components
 import {
-	Input,
 	Button,
 	InputNumber,
 	Select,
@@ -11,10 +10,11 @@ import {
 	Modal,
 	Form,
 	DatePicker,
+	Input,
 } from "antd";
 
 // Interfaces
-import { VisitorData } from "../../../utils/interfaces";
+import { VisitorDataType } from "../../../utils/interfaces";
 import type {
 	UseFormRegister,
 	UseFormSetValue,
@@ -26,10 +26,14 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
+import type { DatePickerProps } from "antd";
+
+// Styles
+import "./styles.scss";
 
 interface FormProps {
 	visitorNo: number;
-	visitors: VisitorData;
+	visitors: VisitorDataType;
 	isTCOpen: boolean;
 	errors: FieldErrors<StepOneData>;
 	register: UseFormRegister<StepOneData>;
@@ -40,14 +44,12 @@ interface FormProps {
 	handleTCCancel: () => void;
 
 	setVisitorNo: Dispatch<SetStateAction<number>>;
-	setVisitors: Dispatch<SetStateAction<VisitorData>>;
+	setVisitors: Dispatch<SetStateAction<VisitorDataType>>;
 }
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
 dayjs.extend(customParseFormat);
-
-const { TextArea } = Input;
 
 function StepOneForm({
 	visitorNo,
@@ -68,52 +70,53 @@ function StepOneForm({
 	const addVisitor = (value: any) => {
 		setVisitorNo(value);
 		setValue("visitorNo", visitorNo);
-		if (value > visitors.data.length) {
+		if (value > visitors.companions_details!.length) {
 			setVisitors((prevVisitors) => ({
 				...prevVisitors,
-				data: [
-					...prevVisitors.data,
+				companions_details: [
+					...prevVisitors.companions_details!,
 					{
-						firstName: "",
-						middleName: "",
-						lastName: "",
+						name: {
+							first_name: "",
+							middle_name: "",
+							last_name: "",
+						},
 						email: "",
-						mobile: "",
-						house: "",
-						street: "",
-						barangay: "",
-						city: "",
-						province: "",
-						country: "",
+						phone: "",
+						address: {
+							house: "",
+							street: "",
+							brgy: "",
+							city: "",
+							province: "",
+							country: "",
+						},
+						time_in: "",
+						time_out: "",
 					},
 				],
 			}));
-		} else if (value < visitors.data.length) {
-			const indexToRemove = visitors.data.length - 1;
+		} else if (value < visitors.companions_details!.length) {
+			const indexToRemove = visitors.companions_details!.length - 1;
 			setVisitors((prevVisitors) => ({
 				...prevVisitors,
-				data: prevVisitors.data.filter((_, index) => index !== indexToRemove),
+				companions_details: prevVisitors.companions_details!.filter(
+					(_, index) => index !== indexToRemove,
+				),
 			}));
 		}
 	};
 
-	const handleChangePoi = (value: string) => {
-		setVisitors({ ...visitors, poi: value });
-
-		setValue("poi", visitors.poi!);
-	};
-
-	const onChangeDate = (
+	const onChangeRange = (
 		value: RangePickerProps["value"],
 		dateString: [string, string],
 	) => {
-		setVisitors({ ...visitors, timeIn: dateString[0], timeOut: dateString[1] });
+		setVisitors({
+			...visitors,
+			expected_time_in: dateString[0],
+			expected_time_out: dateString[1],
+		});
 		setValue("checkInOut", dateString);
-	};
-
-	const handlePurpose = (value: string) => {
-		setVisitors({ ...visitors, purpose: value });
-		setValue("purpose", value);
 	};
 
 	const onChange = (e: CheckboxChangeEvent) => {
@@ -121,6 +124,56 @@ function StepOneForm({
 
 		setValue("termsConditions", e.target.checked);
 	};
+
+	const handlePurpose = (purpose: string, value: string | string[]) => {
+		switch (purpose) {
+			case "what":
+				setVisitors((prevVisitors) => ({
+					...prevVisitors,
+					purpose: {
+						...prevVisitors.purpose,
+						what: value as string[],
+					},
+				}));
+				setValue("what", value as string[]);
+				break;
+			case "when":
+				setVisitors((prevVisitors) => ({
+					...prevVisitors,
+					purpose: {
+						...prevVisitors.purpose,
+						when: value as string,
+					},
+				}));
+				setValue("when", value as string);
+				break;
+			case "where":
+				setVisitors((prevVisitors) => ({
+					...prevVisitors,
+					purpose: {
+						...prevVisitors.purpose,
+						where: value as string[],
+					},
+				}));
+				setValue("where", value as string[]);
+				break;
+			case "who":
+				setVisitors((prevVisitors) => ({
+					...prevVisitors,
+					purpose: {
+						...prevVisitors.purpose,
+						who: value as string[],
+					},
+				}));
+				setValue("who", value as string[]);
+				break;
+			default:
+				console.error("Something went wrong");
+		}
+	};
+
+	const onChangeDate: DatePickerProps["onChange"] = (date, dateString) =>
+		handlePurpose("when", dateString);
 
 	return (
 		<>
@@ -131,7 +184,7 @@ function StepOneForm({
 					</span>
 
 					<InputNumber
-						className="rounded-[5px] border-none bg-[#DFEAEF] focus:border-primary-500 focus:outline-0 focus:!ring-transparent"
+						className="rounded-[5px] border-none bg-[#DFEAEF] focus-within:!bg-[#DFEAEF] hover:bg-[#DFEAEF] focus:border-primary-500 focus:!bg-[#DFEAEF] focus:outline-0 focus:!ring-transparent"
 						{...register("visitorNo", { valueAsNumber: true })}
 						style={{ width: 80, height: 35 }}
 						min={1}
@@ -145,38 +198,35 @@ function StepOneForm({
 					</p>
 				)}
 			</Form.Item>
+
 			<Form.Item>
-				<div
-					className={`mb-[5px] flex ${
-						errors?.poi ? "items-start" : "items-center"
-					}  gap-8 lg:w-[30%]`}
-				>
-					<span className="text-[16px] font-[400] text-[#0000004d]">
-						Person of Interest
+				<div className="mb-[5px] flex items-center gap-8 lg:w-[20%]">
+					<span className="plate-num w-[24%] text-[16px] font-[400] text-[#0000004d] md:w-[14%] lg:w-[100%]">
+						Plate Number
 					</span>
-					<div className="flex flex-col">
-						<Select
-							className="border-none"
-							{...register("poi")}
-							defaultValue={visitors.poi}
-							style={{ width: 180 }}
-							onChange={handleChangePoi}
-							options={[
-								{ value: "johnDoe", label: "Dr. John Doe" },
-								{ value: "lucyGrimm", label: "Lucy Grimm" },
-							]}
-						/>
-						{errors?.poi && (
-							<p className="mt-1 text-sm text-red-500">{errors.poi.message}</p>
-						)}
-					</div>
+
+					<Input
+						className="w-[100px] rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent lg:w-full"
+						{...register("plateNum")}
+						value={visitors.plate_num === null ? "" : visitors.plate_num}
+						onChange={(event: any) => {
+							setVisitors((prevVisitors) => ({
+								...prevVisitors,
+								plate_num: event.target.value,
+							}));
+							setValue("plateNum", event.target.value);
+						}}
+					/>
 				</div>
+				{errors?.plateNum && (
+					<p className="mt-1 text-sm text-red-500">{errors.plateNum.message}</p>
+				)}
 			</Form.Item>
 
 			<Form.Item>
 				<div
-					className={`mb-[10px] flex flex-col gap-[10px] md:mb-[5px] md:flex-row md:items-center md:gap-8 ${
-						errors?.checkInOut ? "items-start" : "items-center"
+					className={`mb-[10px] flex flex-col items-start gap-[10px] md:mb-[5px] md:flex-row md:items-center md:gap-8 ${
+						errors?.checkInOut && "items-start"
 					}`}
 				>
 					<span className="text-[16px] font-[400] text-[#0000004d]">
@@ -188,10 +238,10 @@ function StepOneForm({
 							className="vm-placeholder w-[86%] !border-[#d9d9d9] hover:!border-primary-500 focus:!border-primary-500 md:w-auto"
 							size="middle"
 							defaultValue={[
-								dayjs(visitors.timeIn, `YYYY-MM-DD ${timeFormat}`),
-								dayjs(visitors.timeOut, `YYYY-MM-DD ${timeFormat}`),
+								dayjs(visitors.expected_time_in, `YYYY-MM-DD ${timeFormat}`),
+								dayjs(visitors.expected_time_out, `YYYY-MM-DD ${timeFormat}`),
 							]}
-							onChange={onChangeDate}
+							onChange={onChangeRange}
 							placeholder={["From", "To"]}
 							changeOnBlur={false}
 							format={`YYYY-MM-DD ${timeFormat}`}
@@ -209,31 +259,120 @@ function StepOneForm({
 				</div>
 			</Form.Item>
 
-			<Form.Item>
-				<div className="mb-[27px] flex w-[50%] flex-col gap-[8px]">
-					<span className="text-[16px] font-[400] text-[#0000004d]">
-						Purpose of Visit
-					</span>
+			<div className="mb-[27px] flex w-[50%] flex-col gap-[8px]">
+				<span className="text-[16px] font-[400] text-[#0000004d]">
+					Purpose of Visit
+				</span>
+				<div className="flex flex-col gap-[15px] lg:flex-row">
+					<div className="flex w-full flex-col">
+						<Select
+							className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
+							style={{ width: "100%" }}
+							showSearch
+							mode="multiple"
+							allowClear
+							placeholder="What"
+							listHeight={128}
+							defaultValue={
+								visitors.purpose.what ? undefined : visitors.purpose.what
+							}
+							onChange={(value: string[]) => handlePurpose("what", value)}
+							options={[
+								{
+									value: "meeting",
+									label: "Meeting",
+								},
+								{
+									value: "intramurals",
+									label: "Intramurals",
+								},
+								{
+									value: "conference",
+									label: "Conference",
+								},
+							]}
+						/>
+						{errors?.what && (
+							<p className="mt-1 text-sm text-red-500">{errors.what.message}</p>
+						)}
+					</div>
 
-					<div>
-						<div className="flex flex-wrap gap-[15px]">
-							<TextArea
-								{...register("purpose")}
-								value={visitors.purpose}
-								onChange={(event: any) => handlePurpose(event.target.value)}
-								rows={4}
-							/>
-						</div>
-						{errors?.purpose && (
+					<div className="flex w-full flex-col">
+						<Select
+							className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
+							showSearch
+							mode="multiple"
+							allowClear
+							placeholder="Where"
+							defaultValue={
+								visitors.purpose.what ? undefined : visitors.purpose.what
+							}
+							onChange={(value: string) => handlePurpose("where", value)}
+							options={[
+								{
+									value: "gym",
+									label: "Gymnasium",
+								},
+								{
+									value: "office_of_the_president",
+									label: "Office of the President",
+								},
+								{
+									value: "guard_house",
+									label: "Guard House",
+								},
+							]}
+						/>
+						{errors?.where && (
 							<p className="mt-1 text-sm text-red-500">
-								{errors.purpose.message}
+								{errors.where.message}
 							</p>
 						)}
 					</div>
-				</div>
-			</Form.Item>
 
-			<div className="mb-[5px] flex flex-col md:w-[44%] lg:w-[30%]">
+					<div className="flex w-full flex-col">
+						<DatePicker
+							showTime
+							className="vm-placeholder hover:bg-[#DFEAEF]!border-[#d9d9d9] h-[52px] border-none bg-[#e0ebf0] hover:!border-primary-500 hover:bg-[#DFEAEF] focus:!border-primary-500"
+							placeholder="When"
+							defaultValue={dayjs(visitors.purpose.when, "YYYY-MM-DD hh:mm A")}
+							onChange={onChangeDate}
+						/>
+						{errors?.when && (
+							<p className="mt-1 text-sm text-red-500">{errors.when.message}</p>
+						)}
+					</div>
+
+					<div className="flex w-full flex-col">
+						<Select
+							className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
+							showSearch
+							mode="multiple"
+							allowClear
+							placeholder="Who"
+							defaultValue={
+								visitors.purpose.what ? undefined : visitors.purpose.what
+							}
+							onChange={(value: string) => handlePurpose("who", value)}
+							options={[
+								{
+									value: "john_doe",
+									label: "Dr. John Doe",
+								},
+								{
+									value: "lucy_grimm",
+									label: "Lucy Grimm",
+								},
+							]}
+						/>
+						{errors?.who && (
+							<p className="mt-1 text-sm text-red-500">{errors.who.message}</p>
+						)}
+					</div>
+				</div>
+			</div>
+
+			<div className="mb-[5px] flex flex-col md:w-[50%] lg:w-[30%]">
 				<div className="flex items-center gap-[13px] ">
 					<Form.Item className="m-0" rules={[{ required: true }]}>
 						<Checkbox

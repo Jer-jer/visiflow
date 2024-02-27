@@ -2,24 +2,13 @@ import { ZodType, z } from "zod";
 
 export type StepOneData = {
 	visitorNo: number;
-	poi: string;
+	plateNum?: string | null;
 	checkInOut: [string, string];
-	purpose: string;
+	what: string[];
+	when: string;
+	where: string[];
+	who: string[];
 	termsConditions: boolean;
-};
-
-export type StepTwoData = {
-	firstName: string;
-	middleName?: string;
-	lastName: string;
-	email: string;
-	mobile: string;
-	house?: string;
-	street?: string;
-	barangay: string;
-	city: string;
-	province: string;
-	country: string;
 };
 
 export const StepOneZod: ZodType<StepOneData> = z.object({
@@ -28,15 +17,39 @@ export const StepOneZod: ZodType<StepOneData> = z.object({
 			required_error: "Visitor must be at least 1.",
 		})
 		.min(1, { message: "Must be 1 or more visitor" }),
-	poi: z.string(), // Person of Interest
+	plateNum: z.string().nullable().optional(),
 	checkInOut: z.custom<[string, string]>().refine((val) => val[0] < val[1], {
 		message: "Check in must be before the Check out date.",
 	}),
-	purpose: z
+	what: z
 		.string({
-			required_error: "Purpose is required.",
+			required_error: '"What" is required.',
 		})
-		.min(1, { message: "You must have a purpose." }),
+		.array()
+		.nonempty({
+			message: '"What" is required.',
+		}),
+	when: z
+		.string({
+			required_error: '"When" is required.',
+		})
+		.min(1, '"When" is required.'),
+	where: z
+		.string({
+			required_error: '"Where" is required.',
+		})
+		.array()
+		.nonempty({
+			message: '"Where" is required.',
+		}),
+	who: z
+		.string({
+			required_error: '"Who" is required.',
+		})
+		.array()
+		.nonempty({
+			message: '"Who" is required.',
+		}),
 	termsConditions: z.literal(true, {
 		errorMap: (issue, _ctx) => {
 			switch (issue.code) {
@@ -46,6 +59,23 @@ export const StepOneZod: ZodType<StepOneData> = z.object({
 		},
 	}),
 });
+
+export type StepTwoData = {
+	firstName: string;
+	middleName?: string;
+	lastName: string;
+	email: string;
+	mobile: string;
+	house?: string;
+	street?: string;
+	brgy: string;
+	city: string;
+	province: string;
+	country: string;
+	front?: string;
+	back?: string;
+	selfie: string;
+};
 
 export const StepTwoZod: ZodType<StepTwoData> = z.object({
 	firstName: z
@@ -83,11 +113,11 @@ export const StepTwoZod: ZodType<StepTwoData> = z.object({
 			required_error: "Mobile Number is required.",
 			invalid_type_error: "Mobile Number must not have a letter or symbol.",
 		})
-		.regex(/^[0-9\-+\b]*$/, { message: "Only numeric values allowed." }),
+		.regex(/([0-9\-+\b])\w+/, { message: "Only numeric values allowed." }),
 
 	house: z.string().optional(),
 	street: z.string().optional(),
-	barangay: z
+	brgy: z
 		.string({
 			required_error: "Barangay is required.",
 			invalid_type_error: "Barangay must not have a number.",
@@ -114,9 +144,27 @@ export const StepTwoZod: ZodType<StepTwoData> = z.object({
 	country: z
 		.string({
 			required_error: "Country is required.",
-			invalid_type_error: "Countrty must not have a number.",
+			invalid_type_error: "Country must not have a number.",
 		})
 		.regex(/^[a-zA-Z]+/, {
 			message: "Must not be empty or contain any numerals.",
 		}),
+	front: z
+		.string({
+			required_error: "Front of ID is required.",
+			invalid_type_error: "Front of ID must not have a number.",
+		})
+		.min(1, "Front of ID is required."),
+	back: z
+		.string({
+			required_error: "Back of ID is required.",
+			invalid_type_error: "Back of ID must not have a number.",
+		})
+		.min(1, "Back of ID is required."),
+	selfie: z
+		.string({
+			required_error: "Selfie with your ID is required.",
+			invalid_type_error: "Selfie with your ID must not have a number.",
+		})
+		.min(1, "Selfie with your ID is required."),
 });

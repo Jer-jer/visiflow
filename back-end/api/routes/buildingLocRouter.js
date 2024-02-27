@@ -1,15 +1,20 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const buildingLocController = require('../controllers/buildingLocController');
+const buildingLocController = require("../controllers/buildingLocController");
 
-router.get('/', buildingLocController.getAllBldgLoc);
+router.use((req, res, next) => {
+  if (req.user && req.user.role.includes("admin")) next();
+  else res.sendStatus(401);
+});
 
-router.post('/', buildingLocController.createNewBldgLoc);
+router.get("/", buildingLocController.getAllBldgLoc);
 
-router.post('/search', buildingLocController.getBldgLocByID);
+router.post("/new", buildingLocController.createNewBldgLoc);
 
-router.post('/update', buildingLocController.updateBldgLoc);
+router.post("/search", buildingLocController.getBldgLocByID);
 
-router.post('/delete', buildingLocController.deleteBldgLoc);
+router.put("/update", buildingLocController.updateBldgLoc);
+
+router.delete("/delete", buildingLocController.deleteBldgLoc);
 
 module.exports = router;

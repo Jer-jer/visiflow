@@ -1,123 +1,165 @@
-const Visitor = require('../models/visitor');
-const { validateData, handleValidationErrors, validationResult } = require('../middleware/visitorValidation');
-const { filterData} = require('../middleware/filterVisitorData');
+const Visitor = require("../models/visitor");
+const {
+  validateVisitor,
+  handleValidationErrors,
+  validationResult,
+} = require("../middleware/dataValidation");
+const { filterVisitorData } = require("../middleware/filterData");
+const mongoose = require("mongoose");
 
-//Get list of all visitors
+//Get list of all visitors (This doesn't include their ID picture)
 exports.getAllVisitors = async (req, res) => {
-    try {
-        const visitors = await Visitor.find();
-        return res.json({ visitors });
-    } catch (error) {
-        return res.status(500).json({ error: 'Internal Server Error '});
-    }
+  try {
+    const visitors = await Visitor.find({}, { id_picture: 0 });
+    return res.json({ visitors });
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error " });
+  }
 };
 
 //Create a new visitor
 exports.createNewVisitor = async (req, res) => {
-    const { first_name, middle_name, last_name, email, phone, plate_num, visitor_type, status, 
-        street, house, barangay, city, province, country} = req.body;
-    
-    await Promise.all(validateData.map(validation => validation.run(req)));
-    const errors = validationResult(req);
-    if(!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array()[0].msg });
-    }
+  await Promise.all(validateVisitor.map((validation) => validation.run(req)));
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array()[0].msg });
+  }
 
-    try {
-        const userDB = await Visitor.findOne({email});
-        if(userDB) {
-            res.status(401).json({error: 'User already exists'});
-        } else {
-            const newVisitor = await Visitor.create({
-                name: {
-                    first_name,
-                    middle_name,
-                    last_name
-                },
-                email,
-                phone,
-                plate_num,
-                visitor_type,
-                status,
-                address: {
-                    street,
-                    house,
-                    barangay,
-                    city,
-                    province,
-                    country
-                }
-            });
-            res.status(201).json({ newVisitor: filterData(newVisitor)});
-        }
-    } catch (error) {
-        return res.status(500).json({ error: 'Internal Server Error' });
+  try {
+    const visitorDB = await Visitor.findOne({
+      "visitor_details.name.first_name":
+        req.body.visitor_data.visitor_details.name.first_name,
+      "visitor_details.name.middle_name":
+        req.body.visitor_data.visitor_details.name.middle_name,
+      "visitor_details.name.last_name":
+        req.body.visitor_data.visitor_details.name.last_name,
+    });
+    if (visitorDB) {
+      res.status(400).json({ error: "Visitor already exists" });
+    } else {
+      const newVisitor = await Visitor.create({
+        visitor_details: req.body.visitor_data.visitor_details,
+        companion_details: req.body.visitor_data.companion_details,
+        plate_num: req.body.visitor_data.plate_num,
+        purpose: req.body.visitor_data.purpose,
+        id_picture: req.body.visitor_data.id_picture,
+        visitor_type: req.body.visitor_data.visitor_type,
+        status: req.body.visitor_data.status,
+      });
+      res.status(201).json({
+        message: "Successfully Pre-registered.",
+        newVisitor: filterVisitorData(newVisitor),
+      });
     }
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 //Get visitor by ID
 exports.getVisitorById = async (req, res) => {
-    try {
-        const { _id } = req.body;
-        const searchedVisitor = await Visitor.findById(_id);
-        
-        if(searchedVisitor) {
-            return res.status(201).json({ visitor: searchedVisitor });
-        } else {
-            return res.status(404).json({ error: 'visitor not found'});
-        }
-    } catch (error) {
-        return res.status(500).json({ error: 'Internal Server Error' });
+  try {
+    const { _id } = req.body;
+    const searchedVisitor = await Visitor.findById(_id);
+
+    if (searchedVisitor) {
+      return res.status(201).json({ visitor: searchedVisitor });
+    } else {
+      return res.status(404).json({ error: "visitor not found" });
     }
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+//Get visitor image by ID
+exports.getVisitorImageById = async (req, res) => {
+  try {
+    const { _id } = req.body;
+    const searchedVisitor = await Visitor.findById(_id);
+
+    if (searchedVisitor) {
+      return res.status(201).json({ id_picture: searchedVisitor.id_picture });
+    } else {
+      return res.status(404).json({ error: "visitor not found" });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 // Update a visitor by ID
 exports.updateVisitor = async (req, res) => {
-    const { _id } = req.body;
-    try {
-        const visitor = await Visitor.findById(_id);        
-        if(visitor) {
-            //need to add validation for data here
-            visitor.name.first_name = req.body.first_name || visitor.name.first_name;
-            visitor.name.middle_name = req.body.middle_name || visitor.name.middle_name;
-            visitor.name.last_name = req.body.last_name || visitor.name.last_name;
-            visitor.email = req.body.email || visitor.email;
-            visitor.phone = req.body.phone || visitor.phone;
-            visitor.plate_num = req.body.plate_num || visitor.plate_num;
-            visitor.visitor_type = req.body.visitor_type || visitor.visitor_type;
-            visitor.status = req.body.status || visitor.status;
-            visitor.address.street = req.body.street || visitor.address.street;
-            visitor.address.house = req.body.house || visitor.address.house;
-            visitor.address.barangay = req.body.barangay || visitor.address.barangay;
-            visitor.address.city = req.body.city || visitor.address.city;
-            visitor.address.province = req.body.province || visitor.address.province;
-            visitor.address.country = req.body.country || visitor.address.country;
-            visitor.updatedAt = Date.now();
+  await Promise.all(validateVisitor.map((validation) => validation.run(req)));
 
-            await visitor.save();
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array()[0].msg });
+  }
+  const { _id } = req.body;
+  try {
+    const visitor = await Visitor.findById(_id);
+    if (visitor) {
+      visitor.visitor_details.name.first_name =
+        req.body.first_name || visitor.visitor_details.name.first_name;
+      visitor.visitor_details.name.middle_name =
+        req.body.middle_name || visitor.visitor_details.name.middle_name;
+      visitor.visitor_details.name.last_name =
+        req.body.last_name || visitor.visitor_details.name.last_name;
+      visitor.visitor_details.address.street =
+        req.body.street || visitor.visitor_details.address.street;
+      visitor.visitor_details.address.house =
+        req.body.house || visitor.visitor_details.address.house;
+      visitor.visitor_details.address.brgy =
+        req.body.brgy || visitor.visitor_details.address.brgy;
+      visitor.visitor_details.address.city =
+        req.body.city || visitor.visitor_details.address.city;
+      visitor.visitor_details.address.province =
+        req.body.province || visitor.visitor_details.address.province;
+      visitor.visitor_details.address.country =
+        req.body.country || visitor.visitor_details.address.country;
+      visitor.visitor_details.email =
+        req.body.email || visitor.visitor_details.email;
+      visitor.visitor_details.phone =
+        req.body.phone || visitor.visitor_details.phone;
+      visitor.visitor_details.time_in =
+        req.body.time_in || visitor.visitor_details.time_in;
+      visitor.visitor_details.time_out =
+        req.body.time_out || visitor.visitor_details.time_out;
+      visitor.companion_details =
+        req.body.companion_details || visitor.companion_details;
+      visitor.plate_num = req.body.plate_num || visitor.plate_num;
+      visitor.visitor_type = req.body.visitor_type || visitor.visitor_type;
+      visitor.status = req.body.status || visitor.status;
+      visitor.updatedAt = Date.now();
 
-            res.json({ message: 'Visitor updated successfully', updatedVisitor: visitor });
-        } else {
-            return res.status(404).json({ error: 'visitor not found'});
-        }
-    } catch (error) {
-        return res.status(500).json({ error: 'Internal Server Error' });
+      await visitor.save();
+
+      res.json({
+        message: "Visitor updated successfully",
+        updatedVisitor: visitor,
+      });
+    } else {
+      return res.status(404).json({ error: "Visitor not found" });
     }
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 //Delete a visitor by ID
 exports.deleteVisitor = async (req, res) => {
-    try {
-        const { _id } = req.body;
-        const deletedVisitor = await Visitor.findByIdAndDelete(_id);
-        if (deletedVisitor) {
-            return res.status(201).json({ message: 'Visitor deleted sucessfully' });
-        } else {
-            return res.status(404).json({ error: 'Visitor not found' });
-        }
-    } catch (error) {
-        return res.status(500).json({ error: 'Internal Server Error' });
+  try {
+    const { _id } = req.body;
+    const deletedVisitor = await Visitor.findByIdAndDelete(_id);
+    if (deletedVisitor) {
+      return res.status(201).json({ message: "Visitor deleted sucessfully" });
+    } else {
+      return res.status(404).json({ error: "Visitor not found" });
     }
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 //RESPONSE CODE LIST

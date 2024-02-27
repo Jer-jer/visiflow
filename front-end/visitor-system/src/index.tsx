@@ -5,8 +5,10 @@ import { ConfigProvider } from "antd";
 import Kommunicate from "@kommunicate/kommunicate-chatbot-plugin";
 import { BrowserRouter } from "react-router-dom";
 
+import { App } from "antd";
+
 // Components
-import App from "./App";
+import MainApp from "./App";
 
 // Styles
 import "./index.scss";
@@ -43,7 +45,9 @@ root.render(
 			}}
 		>
 			<BrowserRouter basename="/">
-				<App />
+				<App>
+					<MainApp />
+				</App>
 			</BrowserRouter>
 		</ConfigProvider>
 	</React.StrictMode>,

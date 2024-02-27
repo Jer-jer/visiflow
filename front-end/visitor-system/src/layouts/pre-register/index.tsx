@@ -7,7 +7,8 @@ import StepTwo from "../../components/forms/step-two";
 import StepThree from "../../components/forms/step-three";
 
 // Interfaces
-import { VisitorData } from "../../utils/interfaces";
+import { VisitorDataType } from "../../utils/interfaces";
+import { VisitorStatus, VisitorType } from "../../utils/enums";
 
 // Styles
 import "./styles.scss";
@@ -31,42 +32,58 @@ const now = () => {
 	if (amPm === "a.m.") finalDateTime = finalDateTime.replace("a.m.", "AM");
 	else if (amPm === "p.m.") finalDateTime = finalDateTime.replace("p.m.", "PM");
 
-	// const finalDateTimeWSlash = finalDateTime.replace(/\\|\//g, "-");
 	return finalDateTime;
 };
 
 export default function PreRegister() {
 	const [progress, setProgress] = useState(1);
 	const [visitorNo, setVisitorNo] = useState(1);
-	const [visitors, setVisitors] = useState<VisitorData>({
-		id: 1,
-		poi: "johnDoe",
-		timeIn: now(),
-		timeOut: now(),
-		purpose: "",
-		termsConditions: false,
-		data: [
-			{
-				firstName: "",
-				middleName: "",
-				lastName: "",
-				email: "",
-				mobile: "",
+	const [visitors, setVisitors] = useState<VisitorDataType>({
+		visitor_details: {
+			name: {
+				first_name: "",
+				middle_name: "",
+				last_name: "",
+			},
+
+			email: "",
+			phone: "",
+			address: {
 				house: "",
 				street: "",
-				barangay: "",
+				brgy: "",
 				city: "",
 				province: "",
 				country: "",
 			},
-		],
+			time_in: "",
+			time_out: "",
+		},
+		companions_details: [],
+		expected_time_in: now(),
+		expected_time_out: now(),
+		purpose: {
+			what: [],
+			when: now(),
+			where: [],
+			who: [],
+		},
+		termsConditions: false,
+		plate_num: null,
+		id_picture: {
+			front: "",
+			back: "",
+			selfie: "",
+		},
+		status: VisitorStatus.InProgress,
+		visitor_type: VisitorType.PreRegistered,
 	});
 
 	return (
 		<div className="flex w-full flex-col pb-[32px]">
 			<Stepper progress={progress} setProgress={setProgress} />
 			<div className="flex-start ml-[20px] mt-[25px] flex flex-col gap-[10px] md:ml-[30px] lg:ml-[182px]">
-				<h1 className="font-700 mb-[10px] text-[38px] text-[#1B3B22]">
+				<h1 className="font-700 header mb-[10px] text-[38px] text-[#1B3B22]">
 					Pre-Registration Form
 				</h1>
 				{progress === 1 ? (
@@ -86,7 +103,11 @@ export default function PreRegister() {
 					/>
 				) : (
 					progress === 3 && (
-						<StepThree setProgress={setProgress} visitors={visitors} />
+						<StepThree
+							visitorNo={visitorNo}
+							setProgress={setProgress}
+							visitors={visitors}
+						/>
 					)
 				)}
 				<div className="mr-[30px] flex items-center justify-center gap-2 lg:mr-0 lg:w-[80%] lg:justify-end"></div>
