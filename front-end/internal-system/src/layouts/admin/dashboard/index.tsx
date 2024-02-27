@@ -1,4 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
+// Interfaces
+import { VisitorStatus } from "../../../utils/enums";
 
 //Components
 import OuterContainer from "../../../components/container";
@@ -6,15 +10,27 @@ import InnerContainer from "../../../components/container/inner-container";
 import StatisticsSummaryContent from "../../../components/stats-smmry-ctnt";
 import PendingAppointments from "../../../components/pending-appointments";
 
+// Store
+import { AppDispatch } from "../../../store";
+
+// Reducers
+import { fetchVisitors } from "../../../states/visitors";
+
 //Assets
-import TheRock from "../../../assets/the_rock.jpg";
-import RyanReynolds from "../../../assets/ryan_reynolds.jpg";
 
 //Styles
 import "../../../utils/variables.scss";
 import "./styles.scss";
+import { VisitorDataType } from "../../../utils/interfaces";
 
 export default function DashboardLayout() {
+	const { data } = useSelector((state: any) => state.visitors);
+	const dispatch = useDispatch<AppDispatch>();
+
+	useEffect(() => {
+		dispatch(fetchVisitors());
+	}, []);
+
 	return (
 		<div className="mb-[35px] ml-2 mt-3 flex">
 			<div className="w-[761px] flex-auto">
@@ -77,44 +93,10 @@ export default function DashboardLayout() {
 			<div className="w-[485px] flex-auto">
 				<OuterContainer header="Pending Appointments">
 					<PendingAppointments
-						pendingAppointmentDetails={[
-							{
-								imgSrc: TheRock,
-								date: "April 16, 2023 2:00 PM",
-								name: "Dwayne Johnson",
-								desc: "Scheduled meeting with HR",
-							},
-							{
-								imgSrc: RyanReynolds,
-								date: "April 16, 2023 2:00 PM",
-								name: "Ryan Reynolds",
-								desc: "Daily meeting with Executive Vice-President on 5:00 PM",
-							},
-							{
-								imgSrc: RyanReynolds,
-								date: "April 16, 2023 2:00 PM",
-								name: "Ryan Reynolds",
-								desc: "Daily meeting with Executive Vice-President on 5:00 PM",
-							},
-							{
-								imgSrc: RyanReynolds,
-								date: "April 16, 2023 2:00 PM",
-								name: "Ryan Reynolds",
-								desc: "Daily meeting with Executive Vice-President on 5:00 PM",
-							},
-							{
-								imgSrc: RyanReynolds,
-								date: "April 16, 2023 2:00 PM",
-								name: "Ryan Reynolds",
-								desc: "Daily meeting with Executive Vice-President on 5:00 PM",
-							},
-							{
-								imgSrc: RyanReynolds,
-								date: "April 16, 2023 2:00 PM",
-								name: "Ryan Reynolds",
-								desc: "Daily meeting with Executive Vice-President on 5:00 PM",
-							},
-						]}
+						pendingAppointments={data.filter(
+							(visitor: VisitorDataType) =>
+								visitor.status === VisitorStatus.InProgress,
+						)}
 					/>
 				</OuterContainer>
 			</div>

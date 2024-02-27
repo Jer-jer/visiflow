@@ -1,14 +1,18 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 // Utils
-import AxiosInstace from "../../lib/axios";
+import AxiosInstance, { AxiosLoginInstance } from "../../lib/axios";
 
 // Types and Interfaces
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { VisitorDataType } from "../../utils/interfaces";
 
+// Utils
+import { formatDate } from "../../utils";
+
 export interface VisitorStoreState {
 	data: VisitorDataType[];
+	dashboardVisitor?: VisitorDataType;
 	loading: boolean;
 }
 
@@ -20,7 +24,7 @@ const initialState: VisitorStoreState = {
 export const fetchVisitors = createAsyncThunk(
 	"visitors/fetchVisitors",
 	async () => {
-		const response = await AxiosInstace.get("/visitor");
+		const response = await AxiosInstance.get("/visitor");
 		return response.data;
 	},
 );
@@ -52,6 +56,45 @@ export const visitorSlice = createSlice({
 				return visitor;
 			});
 		},
+		openVisitor: (state, action: PayloadAction<VisitorDataType>) => {
+			state.dashboardVisitor = action.payload;
+		},
+		searchVisitor: (
+			state,
+			action: PayloadAction<{ search: string; dateSearch: string[] }>,
+		) => {
+			if (action.payload.search.length > 0) {
+				state.data = state.data.filter((visitor) => {
+					return (
+						visitor.visitor_details.name.first_name
+							.toLowerCase()
+							.includes(action.payload.search.toLowerCase()) ||
+						visitor.visitor_details.name
+							.middle_name!.toLowerCase()
+							.includes(action.payload.search.toLowerCase()) ||
+						visitor.visitor_details.name.last_name
+							.toLowerCase()
+							.includes(action.payload.search.toLowerCase()) ||
+						`${visitor.visitor_details.name.first_name.toLowerCase()} ${visitor.visitor_details.name.middle_name!.toLowerCase()} ${visitor.visitor_details.name.last_name.toLowerCase()}` ===
+							action.payload.search.toLowerCase() ||
+						visitor.visitor_details.phone
+							.toLowerCase()
+							.includes(action.payload.search.toLowerCase())
+					);
+				});
+			}
+
+			if (action.payload.dateSearch.length > 0) {
+				state.data = state.data.filter((visitor) => {
+					return (
+						new Date(formatDate(visitor.created_at)) >=
+							new Date(action.payload.dateSearch[0]) &&
+						new Date(formatDate(visitor.created_at)) <=
+							new Date(action.payload.dateSearch[1])
+					);
+				});
+			}
+		},
 	},
 	extraReducers: (builder) => {
 		// For Fetching Visitors
@@ -69,5 +112,11 @@ export const visitorSlice = createSlice({
 	},
 });
 
-export const { update, deleteVisitor, deleteCompanion } = visitorSlice.actions;
+export const {
+	update,
+	deleteVisitor,
+	deleteCompanion,
+	openVisitor,
+	searchVisitor,
+} = visitorSlice.actions;
 export default visitorSlice.reducer;
