@@ -21,7 +21,6 @@ app.use(passport.session());
 
 connectDB();
 
-<<<<<<< HEAD
 app.use('/user', require('./api/routes/userRouter'));
 app.use('/auth', require('./api/routes/authRouter'));
 app.use('/buildings', require('./api/routes/buildingRouter'));
@@ -30,19 +29,6 @@ app.use('/visitor/logs', require('./api/routes/visitorLogsRouter'));
 app.use('/visitor/companion/logs', require('./api/routes/visitorLogsRouter'));
 app.use('/badge', require('./api/routes/badgeRouter'));
 app.use('/events',require('./api/routes/eventsRouter'));
-=======
-app.use("/user", require("./api/routes/userRouter"));
-app.use("/auth", require("./api/routes/authRouter"));
-app.use("/bldgLoc", require("./api/routes/buildingLocRouter"));
-
-//? Visitor Related Links
-app.use("/visitor", require("./api/routes/visitorRouter"));
-app.use("/visitor/logs", require("./api/routes/visitorLogsRouter"));
-app.use("/visitor/companion/logs", require("./api/routes/visitorLogsRouter"));
-
-//Events Related Links
-app.use("/events", require("./api/routes/eventsRouter"));
->>>>>>> refs/remotes/origin/neil-be-branch
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
