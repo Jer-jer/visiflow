@@ -1,12 +1,12 @@
-require('dotenv').config();
-require('./api/strategies/locals');
+require("dotenv").config();
+require("./api/strategies/locals");
 
-const express = require('express');
-const passport = require('passport');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
+const express = require("express");
+const passport = require("passport");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
-const createSession = require('./api/utils/sessionHelper');
+const createSession = require("./api/utils/sessionHelper");
 
 const connectDB = require("./api/config/db");
 
@@ -15,12 +15,13 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use(createSession)
+app.use(createSession);
 app.use(passport.initialize());
 app.use(passport.session());
 
 connectDB();
 
+<<<<<<< HEAD
 app.use('/user', require('./api/routes/userRouter'));
 app.use('/auth', require('./api/routes/authRouter'));
 app.use('/buildings', require('./api/routes/buildingRouter'));
@@ -29,6 +30,19 @@ app.use('/visitor/logs', require('./api/routes/visitorLogsRouter'));
 app.use('/visitor/companion/logs', require('./api/routes/visitorLogsRouter'));
 app.use('/badge', require('./api/routes/badgeRouter'));
 app.use('/events',require('./api/routes/eventsRouter'));
+=======
+app.use("/user", require("./api/routes/userRouter"));
+app.use("/auth", require("./api/routes/authRouter"));
+app.use("/bldgLoc", require("./api/routes/buildingLocRouter"));
+
+//? Visitor Related Links
+app.use("/visitor", require("./api/routes/visitorRouter"));
+app.use("/visitor/logs", require("./api/routes/visitorLogsRouter"));
+app.use("/visitor/companion/logs", require("./api/routes/visitorLogsRouter"));
+
+//Events Related Links
+app.use("/events", require("./api/routes/eventsRouter"));
+>>>>>>> refs/remotes/origin/neil-be-branch
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

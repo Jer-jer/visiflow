@@ -3,7 +3,7 @@ const User = require("../models/user");
 const { hashPassword } = require('../utils/helper');
 const { filterData } = require("../middleware/filterData");
 const { 
-  validateData, 
+  validateUser, 
   validationResult 
 } = require("../middleware/dataValidation");
 
@@ -22,7 +22,7 @@ exports.addUser = async (req, res) => {
   const { first_name, middle_name, last_name, username, email, password, phone, role } = req.body;
   const ObjectId = mongoose.Types.ObjectId;
 
-  await Promise.all(validateData.map((validation) => validation.run(req)));
+  await Promise.all(validateUser.map((validation) => validation.run(req)));
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {

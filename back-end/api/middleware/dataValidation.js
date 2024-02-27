@@ -1,6 +1,6 @@
 const { body, validationResult } = require('express-validator');
 
-const validateData = [
+const validateUser = [
     body('first_name').isString().withMessage('Invalid First name').notEmpty().withMessage('First name is required'),
     body('middle_name').isString().withMessage('Invalid Middle name').notEmpty().withMessage('Middle name is required'),
     body('last_name').isString().withMessage('Invalid Last name').notEmpty().withMessage('Last name is required'),
@@ -59,7 +59,8 @@ const handleValidationErrors = (req, res, next) => {
 };
 
 module.exports = { 
-    validateData,
+    validateVisitor,
+    validateUser,
     validateBldgLoc,
     validateEvents,
     validateVisitor,

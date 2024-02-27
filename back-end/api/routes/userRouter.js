@@ -18,5 +18,3 @@ router.put("/update", UserController.updateUser);
 router.delete("/delete", UserController.deleteUser);
 
 module.exports = router;
-
-

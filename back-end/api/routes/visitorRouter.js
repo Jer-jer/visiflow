@@ -13,6 +13,8 @@ router.post("/new", VisitorController.addVisitor);
 
 router.post("/find", VisitorController.findVisitor);
 
+router.post("/retrieve-image", VisitorController.getVisitorImageById);
+
 router.put("/update", VisitorController.updateVisitor);
 
 router.delete("/delete", VisitorController.deleteVisitor);
