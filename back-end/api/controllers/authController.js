@@ -1,5 +1,4 @@
 require('dotenv').config();
-const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
 const { 
@@ -27,4 +26,3 @@ exports.refreshToken = async (req, res) => {
     const access_token = generateAccessToken(user);
     return res.status(200).json({ access_token });
 }
-

@@ -65,7 +65,7 @@ export interface VisitorDataType {
 	status: VisitorStatus;
 	visitor_type: VisitorType;
 	id_picture: IDPictureProps;
-	created_at?: Date;
+	created_at: Date;
 }
 
 export interface IDPictureProps {
