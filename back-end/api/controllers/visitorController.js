@@ -3,6 +3,7 @@ const {
   validateVisitor,
   validationResult,
 } = require("../middleware/dataValidation");
+const { generateSingleQRCode } = require('../utils/helper');
 
 
 exports.getVisitors = async (req, res) => {
@@ -63,6 +64,10 @@ exports.addVisitor = async (req, res) => {
       status: status
     })
     
+    if (newVisitor.visitor_type === 'Pre-Registered') {
+      generateSingleQRCode(newVisitor._id);
+    } 
+
     return res.status(201).json({ Visitor: newVisitor });
     
   } catch (error) {
