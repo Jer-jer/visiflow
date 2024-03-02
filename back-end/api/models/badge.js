@@ -9,6 +9,7 @@ const badgeSchema = new Schema({
     visitor_id: { type: ObjectId, ref: 'visitor', require: true },
     qr_id: { type: Number},
     is_active: { type: Boolean, require: true, default: true},
+    is_valid: { type: Boolean, requrie: true, default: true},
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 });
