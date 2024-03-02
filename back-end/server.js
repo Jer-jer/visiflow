@@ -29,6 +29,8 @@ app.use('/visitor/logs', require('./api/routes/visitorLogsRouter'));
 app.use('/visitor/companion/logs', require('./api/routes/visitorLogsRouter'));
 app.use('/badge', require('./api/routes/badgeRouter'));
 app.use('/events',require('./api/routes/eventsRouter'));
+//Homepage Related Links
+app.use('/announcements', require('./api/routes/announcementsRouter'));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
