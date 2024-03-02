@@ -30,6 +30,7 @@ app.use('/visitor/companion/logs', require('./api/routes/visitorLogsRouter'));
 app.use('/badge', require('./api/routes/badgeRouter'));
 app.use('/events',require('./api/routes/eventsRouter'));
 
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something went wrong!');
