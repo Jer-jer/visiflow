@@ -43,6 +43,8 @@ const validateVisitor = [
     body('purpose.when').isString().withMessage('Purpose When must be a string').notEmpty().withMessage('Purpose When is required'),
     body('purpose.where').isArray().withMessage('Purpose Where must be an array').notEmpty().withMessage('Purpose Where is required'),
     body('purpose.who').isArray().withMessage('Purpose Who must be an array').notEmpty().withMessage('Purpose Who is required'),
+    body('expected_time_in').isString().withMessage('Expected Time In must be a string').notEmpty().withMessage('Expected Time In is required'),
+    body('expected_time_out').isString().withMessage('Expected Time Out must be a string').notEmpty().withMessage('Expected Time Out is required'),
     body('id_picture').isObject().withMessage('ID Picture must be an object').notEmpty().withMessage('ID Picture is required'),
     body('id_picture.front').isString().withMessage('Front must be a string').notEmpty().withMessage('Front is required'),
     body('id_picture.back').isString().withMessage('Back must be a string').notEmpty().withMessage('Back is required'),

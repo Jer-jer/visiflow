@@ -18,8 +18,8 @@ const REFRESH_TOKEN_EXPIRATION = "7d";
 const transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
-      user: 'your-email',
-      pass: 'your-pass'
+      user: process.env.MAILER,
+      pass: process.env.MAILER_PASSWORD //! DO NOT REMOVE, I DID NOT MEMORIZE THIS
     }
 });
 

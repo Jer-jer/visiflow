@@ -18,11 +18,15 @@ import "./styles.scss";
 import { ExcelDownload, Search } from "../../../../assets/svg";
 
 interface VisitorCompanionsProps {
+	expectedIn: String;
+	expectedOut: String;
 	open: boolean;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function VisitorCompanions({
+	expectedIn,
+	expectedOut,
 	open,
 	setOpen,
 }: VisitorCompanionsProps) {
@@ -58,8 +62,8 @@ export default function VisitorCompanions({
 				city: companion.address.city,
 				province: companion.address.province,
 				country: companion.address.country,
-				check_in: companion.time_in,
-				check_out: companion.time_out,
+				check_in: expectedIn,
+				check_out: expectedOut,
 			};
 		},
 	);

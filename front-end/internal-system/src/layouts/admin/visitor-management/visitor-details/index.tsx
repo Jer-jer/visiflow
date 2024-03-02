@@ -149,8 +149,8 @@ export default function VisitorDetails({
 			province: record.visitor_details.address.province,
 			country: record.visitor_details.address.country,
 			check_in_out: [
-				record.visitor_details.time_in,
-				record.visitor_details.time_out,
+				record.expected_time_in,
+				record.expected_time_out,
 			],
 			plate_num: record.plate_num,
 			status: record.status,
@@ -180,6 +180,9 @@ export default function VisitorDetails({
 				setValue(property, value as string);
 				break;
 			case "email":
+				setValue(property, value as string);
+				break;
+				case "house":
 				setValue(property, value as string);
 				break;
 			case "street":
@@ -650,10 +653,10 @@ export default function VisitorDetails({
 											size="large"
 											defaultVal={{
 												from:
-													record.visitor_details.time_in ||
+													record.expected_time_in ||
 													formatDate(new Date()),
 												to:
-													record.visitor_details.time_out ||
+													record.expected_time_out ||
 													formatDate(new Date()),
 											}}
 											onRangeChange={onRangeChange}
@@ -963,6 +966,8 @@ export default function VisitorDetails({
 											</Button>
 											<VisitorRecordContext.Provider value={record}>
 												<VisitorCompanions
+													expectedIn={record.expected_time_in}
+													expectedOut={record.expected_time_out}
 													open={vistorCompanionsOpen}
 													setOpen={setVisitorCompanionsOpen}
 												/>
