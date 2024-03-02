@@ -70,11 +70,7 @@ module.exports = {
     validateUser,
     validateBldgLoc,
     validateEvents,
-<<<<<<< HEAD
     validateAnnouncements,
-=======
-    validateVisitor,
->>>>>>> master
     handleValidationErrors, 
     validationResult 
 };
