@@ -18,8 +18,8 @@ const REFRESH_TOKEN_EXPIRATION = "7d";
 const transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
-      user: '18105955@usc.edu.ph',
-      pass: 'neil5425430'
+      user: 'your-email',
+      pass: 'your-pass'
     }
 });
 
