@@ -1,9 +1,12 @@
+require('dotenv').config();
 const passport = require('passport');
 const { Strategy } = require('passport-local').Strategy;
 const JwtStrategy = require('passport-jwt').Strategy;
 const { ExtractJwt } = require('passport-jwt');
 const User = require('../models/user');
 const { comparePassword } = require('../utils/helper');
+
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
 passport.serializeUser((user, done) => {
     console.log('Serializing user...');
@@ -51,7 +54,7 @@ passport.use(
 
 passport.use(new JwtStrategy({
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: 'visiflow'
+    secretOrKey: ACCESS_TOKEN_SECRET
 }, async (jwtPayload, done) => {
     try {
         const user = await User.findById(jwtPayload.sub);

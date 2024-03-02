@@ -3,9 +3,7 @@
 import React, { useState, Dispatch, SetStateAction } from "react";
 
 //Interfaces
-import {
-	VisitorDetailsProps,
-} from "../../../../utils/interfaces";
+import { VisitorDetailsProps } from "../../../../utils/interfaces";
 
 //Layouts
 // import CompanionDetails from "./details";
@@ -35,9 +33,7 @@ export default function NotifyPOI({
 	companionRecords,
 }: VisitorCompanionsProps) {
 	let emailArray: any = [];
-	companionRecords?.map((item) =>
-		emailArray.push(item.email),
-	);
+	companionRecords?.map((item) => emailArray.push(item.email));
 	const combinedEmail = emailArray.join(",");
 
 	const [email, setEmail] = useState(emailInput || "");
@@ -47,7 +43,11 @@ export default function NotifyPOI({
 
 	return (
 		<StandardModal
-			header="Notify Person of Interest"
+			header={
+				<span className="text-[22px] text-[#0C0D0D]">
+					Notify Person of Interest
+				</span>
+			}
 			open={open}
 			setOpen={setOpen}
 		>

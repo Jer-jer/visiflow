@@ -1,15 +1,18 @@
 const express = require("express");
 const router = express.Router();
-const visitorController = require("../controllers/visitorController");
+const passport = require("passport");
+const VisitorController = require("../controllers/visitorController");
 
-router.get("/", visitorController.getAllVisitors);
+router.get("/", passport.authenticate("jwt", { session: false }), VisitorController.getVisitors);
 
-router.post("/new", visitorController.createNewVisitor);
+router.post("/new", VisitorController.addVisitor);
 
-router.post("/search", visitorController.getVisitorById);
+router.post("/find", passport.authenticate("jwt", { session: false }), VisitorController.findVisitor);
 
-router.put("/update", visitorController.updateVisitor);
+router.post("/retrieve-image",passport.authenticate("jwt", { session: false }),  VisitorController.getVisitorImageById);
 
-router.delete("/delete", visitorController.deleteVisitor);
+router.put("/update", passport.authenticate("jwt", { session: false }),  VisitorController.updateVisitor);
+
+router.delete("/delete", passport.authenticate("jwt", { session: false }), VisitorController.deleteVisitor);
 
 module.exports = router;
