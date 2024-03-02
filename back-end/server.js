@@ -21,43 +21,23 @@ app.use(passport.session());
 
 connectDB();
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> master
-app.use('/user', require('./api/routes/userRouter'));
-app.use('/auth', require('./api/routes/authRouter'));
-app.use('/buildings', require('./api/routes/buildingRouter'));
-app.use('/visitor', require('./api/routes/visitorRouter'));
-app.use('/visitor/logs', require('./api/routes/visitorLogsRouter'));
-app.use('/visitor/companion/logs', require('./api/routes/visitorLogsRouter'));
-app.use('/badge', require('./api/routes/badgeRouter'));
-app.use('/events',require('./api/routes/eventsRouter'));
-<<<<<<< HEAD
-=======
-=======
 app.use("/user", require("./api/routes/userRouter"));
 app.use("/auth", require("./api/routes/authRouter"));
-app.use("/bldgLoc", require("./api/routes/buildingLocRouter"));
->>>>>>> master
-
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something went wrong!');
-});
-
-<<<<<<< HEAD
-=======
-//Events Related Links
+app.use("/buildings", require("./api/routes/buildingRouter"));
+app.use("/visitor", require("./api/routes/visitorRouter"));
+app.use("/visitor/logs", require("./api/routes/visitorLogsRouter"));
+app.use("/visitor/companion/logs", require("./api/routes/visitorLogsRouter"));
+app.use("/badge", require("./api/routes/badgeRouter"));
 app.use("/events", require("./api/routes/eventsRouter"));
->>>>>>> refs/remotes/origin/neil-be-branch
+
+app.use("/bldgLoc", require("./api/routes/buildingRouter"));
+app.use("/events", require("./api/routes/eventsRouter"));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send('Something went wrong!');
+  res.status(500).send("Something went wrong!");
 });
 
->>>>>>> master
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

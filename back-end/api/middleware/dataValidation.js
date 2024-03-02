@@ -26,7 +26,7 @@ const validateEvents = [
 
 const validateVisitor = [
     body('visitor_details.name.first_name').isString().withMessage('First name must be a string').notEmpty().withMessage('First name is required'),
-    body('visitor_details.name.middle_name').isString().withMessage('Middle name must be a string'),
+    body('visitor_details.name.middle_name').isString().withMessage('Middle name must be a string').optional(),
     body('visitor_details.name.last_name').isString().withMessage('Last name must be a string').notEmpty().withMessage('Last name is required'),
     body('visitor_details.address').isObject().withMessage('Address must be an object'),
     body('visitor_details.address.brgy').isString().withMessage('Barangay must be a string').notEmpty().withMessage('Barangay is required'),

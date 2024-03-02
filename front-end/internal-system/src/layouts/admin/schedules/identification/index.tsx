@@ -33,7 +33,9 @@ export default function Identification({
 }: IdentificationProps) {
 	return (
 		<StandardModal
-			header="Identification"
+			header={
+				<span className="text-[22px] text-[#0C0D0D]">Identification</span>
+			}
 			open={open}
 			setOpen={setOpen}
 			footer={false}

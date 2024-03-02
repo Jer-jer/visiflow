@@ -31,7 +31,7 @@ const VisitorDetails = new Schema({
   name: { type: Name, required: true },
   address: { type: Address, required: true },
   email: { type: String, require: true },
-  phone: { type: String, require: true }
+  phone: { type: String, require: true },
 });
 
 const Purpose = new Schema({
@@ -68,6 +68,7 @@ const VisitorSchema = new Schema({
     {
       type: VisitorDetails,
       required: true,
+      default: [],
     },
   ],
   plate_num: {
@@ -92,6 +93,12 @@ const VisitorSchema = new Schema({
   id_picture: {
     type: IdPhoto,
     required: true,
+  },
+  expected_time_in: {
+    type: String,
+  },
+  expected_time_out: {
+    type: String,
   },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },

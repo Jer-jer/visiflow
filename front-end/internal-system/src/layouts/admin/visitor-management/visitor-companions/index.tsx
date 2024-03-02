@@ -1,11 +1,13 @@
 /* Components designed using Ant Design */
 
-import React, { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction, useContext } from "react";
+import { CSVLink } from "react-csv";
 
 //Interface
+import { VisitorRecordContext } from "../visitor-details";
 
 //Components
-import { Button, Input } from "antd";
+import { Button, Input, Tooltip } from "antd";
 import StandardModal from "../../../../components/modal";
 import VisitorCompanionsList from "../../../../components/table/companion-list";
 
@@ -24,9 +26,49 @@ export default function VisitorCompanions({
 	open,
 	setOpen,
 }: VisitorCompanionsProps) {
+	const recordContext = useContext(VisitorRecordContext);
+
+	const companionDetailsHeaders = [
+		{ label: "First Name", key: "firstname" },
+		{ label: "Middle Name", key: "middlename" },
+		{ label: "Last Name", key: "lastname" },
+		{ label: "Phone Number", key: "phone" },
+		{ label: "Email", key: "email" },
+		{ label: "House No.", key: "house" },
+		{ label: "Street", key: "street" },
+		{ label: "Barangay", key: "brgy" },
+		{ label: "City", key: "city" },
+		{ label: "Province", key: "province" },
+		{ label: "Country", key: "country" },
+		{ label: "Expected Check In", key: "check_in" },
+		{ label: "Expected Check Out", key: "check_out" },
+	];
+
+	const companionDetailsData = recordContext!.companion_details!.map(
+		(companion) => {
+			return {
+				firstname: companion.name.first_name,
+				middlename: companion.name.middle_name,
+				lastname: companion.name.last_name,
+				phone: companion.phone,
+				email: companion.email,
+				house: companion.address.house,
+				street: companion.address.street,
+				brgy: companion.address.brgy,
+				city: companion.address.city,
+				province: companion.address.province,
+				country: companion.address.country,
+				check_in: companion.time_in,
+				check_out: companion.time_out,
+			};
+		},
+	);
+
 	return (
 		<StandardModal
-			header="Visitor Companions"
+			header={
+				<span className="text-[22px] text-[#0C0D0D]">Visitor Companions</span>
+			}
 			open={open}
 			setOpen={setOpen}
 			footer={false}
@@ -36,7 +78,16 @@ export default function VisitorCompanions({
 				<Button type="primary" className="search-button !bg-primary-500">
 					Search
 				</Button>
-				<ExcelDownload />
+				<Tooltip placement="top" title="Export Companion List" arrow={false}>
+					<CSVLink
+						className="ml-auto"
+						filename={`${recordContext!.visitor_details.name.last_name.toUpperCase()}_Companion_List.csv`}
+						data={companionDetailsData}
+						headers={companionDetailsHeaders}
+					>
+						<ExcelDownload />
+					</CSVLink>
+				</Tooltip>
 			</div>
 			<VisitorCompanionsList />
 		</StandardModal>

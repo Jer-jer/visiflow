@@ -64,7 +64,11 @@ export default function StepThree({
 						successMessage(res.data.message);
 					})
 					.catch((err: any) => {
-						error(err.response.data.error || err.response.data.errors);
+						if(err.response){
+							error(err.response.data.error || err.response.data.errors || err.response.errors);
+						} else {
+							error("Something went wrong.");
+						}
 					});
 			},
 		});
