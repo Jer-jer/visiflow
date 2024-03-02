@@ -26,7 +26,9 @@ export default function VisitorCompanions({
 }: VisitorCompanionsProps) {
 	return (
 		<StandardModal
-			header="Visitor Companions"
+			header={
+				<span className="text-[22px] text-[#0C0D0D]">Visitor Companions</span>
+			}
 			open={open}
 			setOpen={setOpen}
 			footer={false}

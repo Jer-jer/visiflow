@@ -41,11 +41,9 @@ import NotifyPOI from "../notify-poi";
 import Identification from "../identification";
 
 //Components
-import type { MenuProps } from "antd";
 import {
 	Button,
 	Avatar,
-	Dropdown,
 	Select,
 	Input,
 	Form,
@@ -58,7 +56,6 @@ import Label from "../../../../components/fields/input/label";
 import Alert from "../../../../components/alert";
 
 //Assets
-import { ExcelDownload } from "../../../../assets/svg";
 import { ExclamationCircleFilled } from "@ant-design/icons";
 
 //Styles
@@ -80,25 +77,6 @@ interface VisitorDeetsProps {
 }
 
 type VisitorDetailTypeZod = z.infer<typeof VisitorDetailZod>;
-
-const exportOptions: MenuProps["items"] = [
-	{
-		label: "Export All",
-		key: "0",
-	},
-	{
-		label: "Export Visitor Details",
-		key: "1",
-	},
-	{
-		label: "Export Visitor Logs",
-		key: "2",
-	},
-	{
-		label: "Export Visitor Details + Logs",
-		key: "3",
-	},
-];
 
 const { confirm } = Modal;
 
@@ -145,7 +123,7 @@ export default function VisitorDetails({
 				setIdPicture(res.data.id_picture);
 			})
 			.catch((err) => {
-				console.log(err.data.error || err.data.errors);
+				console.log(err || err.data.error || err.data.errors);
 			});
 	}, []);
 
@@ -273,6 +251,7 @@ export default function VisitorDetails({
 			first_name: zodData.first_name,
 			middle_name: zodData.middle_name,
 			last_name: zodData.last_name,
+			companion_details: record.companion_details,
 			phone: zodData.phone,
 			email: zodData.email,
 			house_no: zodData.house,
@@ -281,8 +260,8 @@ export default function VisitorDetails({
 			city: zodData.city,
 			province: zodData.province,
 			country: zodData.country,
-			time_in: zodData.check_in_out[0],
-			time_out: zodData.check_in_out[1],
+			expected_time_in: zodData.check_in_out[0],
+			expected_time_out: zodData.check_in_out[1],
 			plate_num: zodData.plate_num,
 			status: zodData.status,
 			visitor_type: zodData.visitor_type,
@@ -306,7 +285,7 @@ export default function VisitorDetails({
 			})
 			.catch((err) => {
 				setStatus(false);
-				setAlertMsg(err.response.data.error || err.response.data.errors);
+				setAlertMsg(err || err.response.data.error || err.response.data.errors);
 			});
 	};
 
@@ -375,14 +354,7 @@ export default function VisitorDetails({
 			</div>
 
 			<Form name="Visitor Details" onFinish={onSubmit} autoComplete="off">
-				<div className="mr-[130px] flex flex-col gap-[35px] pt-[30px]">
-					<div className="flex justify-end">
-						<Dropdown menu={{ items: exportOptions }} trigger={["click"]}>
-							<a title="Download" onClick={(e) => e.preventDefault()} href="/">
-								<ExcelDownload />
-							</a>
-						</Dropdown>
-					</div>
+				<div className="mr-[130px] flex flex-col gap-[35px] pt-[80px]">
 					<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
 						<div className="flex">
 							<div className="flex flex-col gap-[20px]">
@@ -669,7 +641,7 @@ export default function VisitorDetails({
 										spanStyling="text-black font-medium text-[16px]"
 										labelStyling="w-[22.5%]"
 									>
-										Time In and Out
+										Expected In and Out
 									</Label>
 									<div className="flex w-full flex-col">
 										<DateTimePicker
@@ -842,7 +814,7 @@ export default function VisitorDetails({
 									className="cursor-pointer"
 									onClick={() => setIdentificationOpen(!identificationOpen)}
 									size={width === 1210 ? 150 : 220}
-									src={idPicture.selfie}
+									src="../../../../assets/no-image.svg"
 								/>
 								<Identification
 									open={identificationOpen}
@@ -972,6 +944,9 @@ export default function VisitorDetails({
 									<VisitorLogs
 										open={visitLogsOpen}
 										setOpen={setVisitLogsOpen}
+										lastName={record.visitor_details.name.last_name}
+										visitorId={record._id}
+										purpose={record.purpose}
 									/>
 									{/* Optional only for visitors with companions */}
 									{record.companion_details!.length > 0 && (

@@ -72,8 +72,8 @@ export type StepTwoData = {
 	city: string;
 	province: string;
 	country: string;
-	front?: string;
-	back?: string;
+	front: string;
+	back: string;
 	selfie: string;
 };
 

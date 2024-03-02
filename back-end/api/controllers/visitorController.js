@@ -5,33 +5,39 @@ const {
 } = require("../middleware/dataValidation");
 const { generateSingleQRCode } = require('../utils/helper');
 
-
 exports.getVisitors = async (req, res) => {
   try {
     const visitors = await Visitor.find({}, "-id_picture");
     return res.status(200).json({ visitors });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Failed to retrieve visitors from the database" });
+    return res
+      .status(500)
+      .json({ error: "Failed to retrieve visitors from the database" });
   }
 };
 
 exports.addVisitor = async (req, res) => {
-  const { 
-    visitor_details: {
-      name: {first_name, middle_name, last_name },
-      address: {street, house, brgy, city, province, country},
-      email, phone
+  const {
+    visitor_data: {
+      visitor_details: {
+        name: { first_name, middle_name, last_name },
+        address: { street, house, brgy, city, province, country },
+        email,
+        phone,
+      },
+      companion_details,
+      plate_num,
+      purpose,
+      visitor_type,
+      status,
+      id_picture,
     },
-    companion_details,
-    plate_num,
-    purpose,
-    visitor_type,
-    status,
-    id_picture
-   } = req.body;
+  } = req.body;
 
-  await Promise.all(validateVisitor.map((validation) => validation.run(req)));
+  await Promise.all(
+    validateVisitor.map((validation) => validation.run(req.body.visitor_data))
+  );
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -46,7 +52,7 @@ exports.addVisitor = async (req, res) => {
 
   if (visitorDB) {
     return res.status(409).json({ error: "Visitor already exists" });
-  } 
+  }
 
   try {
     const newVisitor = await Visitor.create({
@@ -54,7 +60,7 @@ exports.addVisitor = async (req, res) => {
         name: { first_name, middle_name, last_name },
         address: { street, house, brgy, city, province, country },
         email,
-        phone
+        phone,
       },
       companion_details: companion_details,
       plate_num: plate_num,
@@ -69,7 +75,6 @@ exports.addVisitor = async (req, res) => {
     } 
 
     return res.status(201).json({ Visitor: newVisitor });
-    
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to create a new visitor" });
@@ -78,72 +83,97 @@ exports.addVisitor = async (req, res) => {
 
 exports.findVisitor = async (req, res) => {
   const { _id } = req.body;
-  
+
   try {
-  const visitorDB = await Visitor.findById(_id);
+    const visitorDB = await Visitor.findById(_id);
 
     if (visitorDB) {
       return res.status(200).json({ Visitor: visitorDB });
     } else {
       return res.status(404).json({ error: "Visitor not found" });
     }
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to find visitor by ID" });
   }
 };
 
+//Get visitor image by ID
+exports.getVisitorImageById = async (req, res) => {
+  try {
+    const { _id } = req.body;
+    const searchedVisitor = await Visitor.findById(_id);
+
+    if (searchedVisitor) {
+      return res.status(201).json({ id_picture: searchedVisitor.id_picture });
+    } else {
+      return res.status(404).json({ error: "visitor not found" });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 exports.updateVisitor = async (req, res) => {
-  const { 
+  const {
     _id,
-    visitor_details: {
-      name: {first_name, middle_name, last_name },
-      address: {street, house, brgy, city, province, country},
-      email, phone
-    },
+    first_name,
+    middle_name,
+    last_name,
     companion_details,
+    street,
+    house,
+    brgy,
+    city,
+    province,
+    country,
+    email,
+    phone,
     plate_num,
     purpose,
+    expected_time_in,
+    expected_time_out,
     visitor_type,
     status,
-    id_picture
+    id_picture,
   } = req.body;
 
   try {
     const visitorDB = await Visitor.findById(_id);
     if (!visitorDB) {
-      return res.status(404).json({ error: 'Visitor not found' });
+      return res.status(404).json({ error: "Visitor not found" });
     }
 
     const updateFields = {
-      'visitor_details.name.first_name': first_name,
-      'visitor_details.name.middle_name': middle_name,
-      'visitor_details.name.last_name': last_name,
-      'visitor_details.address.street': street,
-      'visitor_details.address.house': house,
-      'visitor_details.address.brgy': brgy,
-      'visitor_details.address.city': city,
-      'visitor_details.address.province': province,
-      'visitor_details.address.country': country,
-      'visitor_details.email': email,
-      'visitor_details.phone': phone,
+      "visitor_details.name.first_name": first_name,
+      "visitor_details.name.middle_name": middle_name,
+      "visitor_details.name.last_name": last_name,
+      "visitor_details.address.street": street,
+      "visitor_details.address.house": house,
+      "visitor_details.address.brgy": brgy,
+      "visitor_details.address.city": city,
+      "visitor_details.address.province": province,
+      "visitor_details.address.country": country,
+      "visitor_details.email": email,
+      "visitor_details.phone": phone,
       companion_details: companion_details,
       plate_num: plate_num,
       purpose: purpose,
+      expected_time_in: expected_time_in,
+      expected_time_out: expected_time_out,
       visitor_type: visitor_type,
       status: status,
-      id_picture: id_picture
-    }
+      id_picture: id_picture,
+    };
 
     const filteredUpdateFields = Object.fromEntries(
-        Object.entries(updateFields).filter(([key, value]) => value !== undefined)
+      Object.entries(updateFields).filter(([key, value]) => value !== undefined)
     );
-    
+
     if (Object.keys(filteredUpdateFields).length === 0) {
-        return res.status(400).json({ error: "No valid fields to update" });
+      return res.status(400).json({ error: "No valid fields to update" });
     }
-      
+
     const updatedVisitor = await Visitor.findByIdAndUpdate(
       _id,
       filteredUpdateFields,
@@ -151,7 +181,6 @@ exports.updateVisitor = async (req, res) => {
     );
 
     res.status(201).json({ Visitor: updatedVisitor });
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to update user" });
@@ -160,7 +189,7 @@ exports.updateVisitor = async (req, res) => {
 
 exports.deleteVisitor = async (req, res) => {
   const { _id } = req.body;
-  
+
   try {
     const visitorDB = await Visitor.findByIdAndDelete(_id);
 
@@ -169,7 +198,6 @@ exports.deleteVisitor = async (req, res) => {
     } else {
       return res.status(404).json({ error: "Visitor not found" });
     }
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });

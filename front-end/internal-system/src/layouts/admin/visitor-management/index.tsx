@@ -4,13 +4,14 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
+import { CSVLink } from "react-csv";
 
 //Interfaces
 import { VisitorDataType } from "../../../utils/interfaces";
 import type { Dayjs } from "dayjs";
 
 //Components
-import { Tabs, Button, Input } from "antd";
+import { Tabs, Button, Input, Tooltip } from "antd";
 import DateTimePicker from "../../../components/datetime-picker";
 import VisitorListTable from "../../../components/table/visitor-list";
 import VisitorDetails from "./visitor-details";
@@ -48,6 +49,7 @@ const VisitorList = ({ addTab }: VisitorProps) => {
 	const [dateSearch, setDateSearch] = useState<string[]>([]);
 
 	const dispatch = useDispatch<AppDispatch>();
+	const { data } = useSelector((state: RootState) => state.visitors);
 
 	const searchingVisitor = () => {
 		dispatch(searchVisitor({ search: search, dateSearch: dateSearch }));
@@ -57,9 +59,59 @@ const VisitorList = ({ addTab }: VisitorProps) => {
 		if (dates) {
 			setDateSearch([dateStrings[0], dateStrings[1]]);
 		} else {
-			console.log("Clear");
+			console.log("Clear Search");
 		}
 	};
+
+	const visitorDetailsHeaders = [
+		{ label: "First Name", key: "firstname" },
+		{ label: "Middle Name", key: "middlename" },
+		{ label: "Last Name", key: "lastname" },
+		{ label: "Phone Number", key: "phone" },
+		{ label: "Email", key: "email" },
+		{ label: "House No.", key: "house" },
+		{ label: "Street", key: "street" },
+		{ label: "Barangay", key: "brgy" },
+		{ label: "City", key: "city" },
+		{ label: "Province", key: "province" },
+		{ label: "Country", key: "country" },
+		{ label: "Expected Check In", key: "check_in" },
+		{ label: "Expected Check Out", key: "check_out" },
+		{ label: "What", key: "what" },
+		{ label: "When", key: "when" },
+		{ label: "Where", key: "where" },
+		{ label: "Who", key: "who" },
+		{ label: "Plate Number", key: "plate_num" },
+		{ label: "Visitor Type", key: "visitor_type" },
+		{ label: "Status", key: "status" },
+		{ label: "Created At", key: "created_at" },
+	];
+
+	const visitorDetailsData = data.map((visitor) => {
+		return {
+			firstname: visitor.visitor_details.name.first_name,
+			middlename: visitor.visitor_details.name.middle_name,
+			lastname: visitor.visitor_details.name.last_name,
+			phone: visitor.visitor_details.phone,
+			email: visitor.visitor_details.email,
+			house: visitor.visitor_details.address.house,
+			street: visitor.visitor_details.address.street,
+			brgy: visitor.visitor_details.address.brgy,
+			city: visitor.visitor_details.address.city,
+			province: visitor.visitor_details.address.province,
+			country: visitor.visitor_details.address.country,
+			check_in: visitor.visitor_details.time_in,
+			check_out: visitor.visitor_details.time_out,
+			what: visitor.purpose.what.join(", "),
+			when: visitor.purpose.when,
+			where: visitor.purpose.where.join(", "),
+			who: visitor.purpose.who.join(", "),
+			plate_num: visitor.plate_num,
+			visitor_type: visitor.visitor_type,
+			status: visitor.status,
+			created_at: visitor.created_at,
+		};
+	});
 
 	return (
 		<div className="ml-[45px] mt-[30px] flex flex-col gap-[50px]">
@@ -86,9 +138,16 @@ const VisitorList = ({ addTab }: VisitorProps) => {
 				>
 					Reset
 				</Button>
-				<div className="ml-auto">
-					<ExcelDownload />
-				</div>
+				<Tooltip placement="top" title="Export List" arrow={false}>
+					<CSVLink
+						className="ml-auto"
+						filename={"Visitors_List.csv"}
+						data={visitorDetailsData}
+						headers={visitorDetailsHeaders}
+					>
+						<ExcelDownload />
+					</CSVLink>
+				</Tooltip>
 			</div>
 			<div className="mr-[50px]">
 				<VisitorListTable addTab={addTab} />

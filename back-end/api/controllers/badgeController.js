@@ -3,16 +3,38 @@ const { generateQRCode, updateLog } = require('../utils/helper');
 
 const badgeQty = 5;
 
-exports.generateBadge = async (req, res) => {
-    const clientIP = req.ip;
-    
-    console.log(clientIP);
+exports.getBadges = async (req, res) => {
+  try {
+    const badges = await Badge.find();
+    res.status(200).json({ badges });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Failed to retrieve badges from the database" });
+  }
+};
 
-    for (let counter = 0; counter < badgeQty; counter++) {
-        await generateQRCode(counter);       
-    }
-    res.status(200).json({ message: `Generated ${badgeQty} of badges`});
-}
+exports.findBadge = async (req, res) => {
+  const { visitor_id } = req.body;
+  const badge = await Badge.findOne({ visitor_id });
+  if (!badge)
+    return res
+      .status(400)
+      .json({ message: `No badge assigned to visitor ${visitor_id}` });
+  res.status(200).json({ badge });
+};
+
+exports.generateBadge = async (req, res) => {
+  const clientIP = req.ip;
+
+  console.log(clientIP);
+
+  for (let counter = 0; counter < badgeQty; counter++) {
+    await generateQRCode(counter);
+  }
+  res.status(200).json({ message: `Generated ${badgeQty} of badges` });
+};
 
 exports.newBadge = async (req, res) => {
     const badge = new Badge({
