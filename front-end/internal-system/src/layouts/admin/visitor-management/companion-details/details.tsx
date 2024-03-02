@@ -17,6 +17,7 @@ import {
 	CompanionDetailsInterfaceZod,
 } from "../../../../utils/zodSchemas";
 import type { Dayjs } from "dayjs";
+import type { RootState } from "../../../../store";
 
 //Store
 import { update, deleteCompanion } from "../../../../states/visitors";
@@ -39,7 +40,6 @@ import { ExclamationCircleFilled } from "@ant-design/icons";
 
 //Styles
 import "./styles.scss";
-import { RootState } from "../../../../store";
 interface CompanionDetailsProps {
 	mainVisitorId: string;
 	setOpen: Dispatch<SetStateAction<boolean>>;
@@ -54,6 +54,9 @@ export default function CompanionDetails({
 	setOpen,
 }: CompanionDetailsProps) {
 	const record = useContext(CompanionRecord);
+
+	const { data } = useSelector((state: RootState) => state.visitors);
+	const mainVisitorIndex = data.findIndex((item) => item._id === mainVisitorId);
 
 	//Alert State
 	const [alertOpen, setAlertOpen] = useState(false);
@@ -94,7 +97,7 @@ export default function CompanionDetails({
 			city: record!.address.city,
 			province: record!.address.province,
 			country: record!.address.country,
-			check_in_out: [record!.time_in, record!.time_out],
+			check_in_out: [data[mainVisitorIndex].expected_time_in, data[mainVisitorIndex].expected_time_out],
 		},
 	});
 
@@ -151,9 +154,6 @@ export default function CompanionDetails({
 		setDisabledInputs(!disabledInputs);
 		clearErrors();
 	};
-
-	const { data } = useSelector((state: RootState) => state.visitors);
-	const mainVisitorIndex = data.findIndex((item) => item._id === mainVisitorId);
 
 	const saveAction = (zodData: CompanionDetailsInterfaceZod) => {
 		AxiosInstance.put("/visitor/update", {
@@ -212,8 +212,6 @@ export default function CompanionDetails({
 			city: data[mainVisitorIndex].visitor_details.address.city,
 			province: data[mainVisitorIndex].visitor_details.address.province,
 			country: data[mainVisitorIndex].visitor_details.address.country,
-			time_in: data[mainVisitorIndex].visitor_details.time_in,
-			time_out: data[mainVisitorIndex].visitor_details.time_in,
 			companion_details: data[mainVisitorIndex].companion_details,
 			plate_num: data[mainVisitorIndex].plate_num,
 			status: data[mainVisitorIndex].status,
@@ -582,8 +580,8 @@ export default function CompanionDetails({
 											rangePickerStyling="bg-[#e0ebf0] border-none w-[inherit] hover:!bg-[#e0ebf0] focus-within:!bg-[#e0ebf0] focus:!bg-[#e0ebf0]"
 											size="large"
 											defaultVal={{
-												from: record!.time_in || formatDate(new Date()),
-												to: record!.time_out || formatDate(new Date()),
+												from: data[mainVisitorIndex].expected_time_in || formatDate(new Date()),
+												to: data[mainVisitorIndex].expected_time_out || formatDate(new Date()),
 											}}
 											onRangeChange={onRangeChange}
 											visitorMngmnt

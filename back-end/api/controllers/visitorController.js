@@ -1,74 +1,104 @@
 const Visitor = require("../models/visitor");
 const {
   validateVisitor,
-  handleValidationErrors,
   validationResult,
 } = require("../middleware/dataValidation");
-const { filterVisitorData } = require("../middleware/filterData");
-const mongoose = require("mongoose");
+const { generateSingleQRCode } = require("../utils/helper");
 
-//Get list of all visitors (This doesn't include their ID picture)
-exports.getAllVisitors = async (req, res) => {
+exports.getVisitors = async (req, res) => {
   try {
-    const visitors = await Visitor.find({}, { id_picture: 0 });
-    return res.json({ visitors });
+    const visitors = await Visitor.find({}, "-id_picture");
+    return res.status(200).json({ visitors });
   } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error " });
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Failed to retrieve visitors from the database" });
   }
 };
 
-//Create a new visitor
-exports.createNewVisitor = async (req, res) => {
-  await Promise.all(validateVisitor.map((validation) => validation.run(req)));
+exports.addVisitor = async (req, res) => {
+  const {
+    visitor_data: {
+      visitor_details: {
+        name: { first_name, middle_name, last_name },
+        address: { street, house, brgy, city, province, country },
+        email,
+        phone,
+      },
+      expected_time_in,
+      expected_time_out,
+      companion_details,
+      plate_num,
+      purpose,
+      visitor_type,
+      status,
+      id_picture,
+    },
+  } = req.body;
+
+  await Promise.all(
+    validateVisitor.map((validation) => validation.run(req.body.visitor_data))
+  );
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array()[0].msg });
   }
 
+  const visitorDB = await Visitor.findOne({
+    "visitor_details.name.first_name": first_name,
+    "visitor_details.name.middle_name": middle_name,
+    "visitor_details.name.last_name": last_name,
+  });
+
+  if (visitorDB) {
+    return res.status(409).json({ error: "Visitor already exists" });
+  }
+
   try {
-    const visitorDB = await Visitor.findOne({
-      "visitor_details.name.first_name":
-        req.body.visitor_data.visitor_details.name.first_name,
-      "visitor_details.name.middle_name":
-        req.body.visitor_data.visitor_details.name.middle_name,
-      "visitor_details.name.last_name":
-        req.body.visitor_data.visitor_details.name.last_name,
+    const newVisitor = await Visitor.create({
+      visitor_details: {
+        name: { first_name, middle_name, last_name },
+        address: { street, house, brgy, city, province, country },
+        email,
+        phone,
+      },
+      companion_details: companion_details,
+      plate_num: plate_num,
+      purpose: purpose,
+      expected_time_in,
+      expected_time_out,
+      id_picture: id_picture,
+      visitor_type: visitor_type,
+      status: status,
     });
-    if (visitorDB) {
-      res.status(400).json({ error: "Visitor already exists" });
-    } else {
-      const newVisitor = await Visitor.create({
-        visitor_details: req.body.visitor_data.visitor_details,
-        companion_details: req.body.visitor_data.companion_details,
-        plate_num: req.body.visitor_data.plate_num,
-        purpose: req.body.visitor_data.purpose,
-        id_picture: req.body.visitor_data.id_picture,
-        visitor_type: req.body.visitor_data.visitor_type,
-        status: req.body.visitor_data.status,
-      });
-      res.status(201).json({
-        message: "Successfully Pre-registered.",
-        newVisitor: filterVisitorData(newVisitor),
-      });
+
+    if (newVisitor.visitor_type === "Pre-Registered") {
+      generateSingleQRCode(newVisitor._id);
     }
+
+    return res.status(201).json({ Visitor: newVisitor });
   } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    return res.status(500).json({ error: "Failed to create a new visitor" });
   }
 };
 
-//Get visitor by ID
-exports.getVisitorById = async (req, res) => {
-  try {
-    const { _id } = req.body;
-    const searchedVisitor = await Visitor.findById(_id);
+exports.findVisitor = async (req, res) => {
+  const { _id } = req.body;
 
-    if (searchedVisitor) {
-      return res.status(201).json({ visitor: searchedVisitor });
+  try {
+    const visitorDB = await Visitor.findById(_id);
+
+    if (visitorDB) {
+      return res.status(200).json({ Visitor: visitorDB });
     } else {
-      return res.status(404).json({ error: "visitor not found" });
+      return res.status(404).json({ error: "Visitor not found" });
     }
   } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    return res.status(500).json({ error: "Failed to find visitor by ID" });
   }
 };
 
@@ -88,82 +118,92 @@ exports.getVisitorImageById = async (req, res) => {
   }
 };
 
-// Update a visitor by ID
 exports.updateVisitor = async (req, res) => {
-  await Promise.all(validateVisitor.map((validation) => validation.run(req)));
+  const {
+    _id,
+    first_name,
+    middle_name,
+    last_name,
+    companion_details,
+    street,
+    house,
+    brgy,
+    city,
+    province,
+    country,
+    email,
+    phone,
+    plate_num,
+    purpose,
+    expected_time_in,
+    expected_time_out,
+    visitor_type,
+    status,
+    id_picture,
+  } = req.body;
 
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array()[0].msg });
-  }
-  const { _id } = req.body;
   try {
-    const visitor = await Visitor.findById(_id);
-    if (visitor) {
-      visitor.visitor_details.name.first_name =
-        req.body.first_name || visitor.visitor_details.name.first_name;
-      visitor.visitor_details.name.middle_name =
-        req.body.middle_name || visitor.visitor_details.name.middle_name;
-      visitor.visitor_details.name.last_name =
-        req.body.last_name || visitor.visitor_details.name.last_name;
-      visitor.visitor_details.address.street =
-        req.body.street || visitor.visitor_details.address.street;
-      visitor.visitor_details.address.house =
-        req.body.house || visitor.visitor_details.address.house;
-      visitor.visitor_details.address.brgy =
-        req.body.brgy || visitor.visitor_details.address.brgy;
-      visitor.visitor_details.address.city =
-        req.body.city || visitor.visitor_details.address.city;
-      visitor.visitor_details.address.province =
-        req.body.province || visitor.visitor_details.address.province;
-      visitor.visitor_details.address.country =
-        req.body.country || visitor.visitor_details.address.country;
-      visitor.visitor_details.email =
-        req.body.email || visitor.visitor_details.email;
-      visitor.visitor_details.phone =
-        req.body.phone || visitor.visitor_details.phone;
-      visitor.visitor_details.time_in =
-        req.body.time_in || visitor.visitor_details.time_in;
-      visitor.visitor_details.time_out =
-        req.body.time_out || visitor.visitor_details.time_out;
-      visitor.companion_details =
-        req.body.companion_details || visitor.companion_details;
-      visitor.plate_num = req.body.plate_num || visitor.plate_num;
-      visitor.visitor_type = req.body.visitor_type || visitor.visitor_type;
-      visitor.status = req.body.status || visitor.status;
-      visitor.updatedAt = Date.now();
-
-      await visitor.save();
-
-      res.json({
-        message: "Visitor updated successfully",
-        updatedVisitor: visitor,
-      });
-    } else {
+    const visitorDB = await Visitor.findById(_id);
+    if (!visitorDB) {
       return res.status(404).json({ error: "Visitor not found" });
     }
+
+    const updateFields = {
+      "visitor_details.name.first_name": first_name,
+      "visitor_details.name.middle_name": middle_name,
+      "visitor_details.name.last_name": last_name,
+      "visitor_details.address.street": street,
+      "visitor_details.address.house": house,
+      "visitor_details.address.brgy": brgy,
+      "visitor_details.address.city": city,
+      "visitor_details.address.province": province,
+      "visitor_details.address.country": country,
+      "visitor_details.email": email,
+      "visitor_details.phone": phone,
+      companion_details: companion_details,
+      plate_num: plate_num,
+      purpose: purpose,
+      expected_time_in: expected_time_in,
+      expected_time_out: expected_time_out,
+      visitor_type: visitor_type,
+      status: status,
+      id_picture: id_picture,
+    };
+
+    const filteredUpdateFields = Object.fromEntries(
+      Object.entries(updateFields).filter(([key, value]) => value !== undefined)
+    );
+
+    if (Object.keys(filteredUpdateFields).length === 0) {
+      return res.status(400).json({ error: "No valid fields to update" });
+    }
+
+    const updatedVisitor = await Visitor.findByIdAndUpdate(
+      _id,
+      filteredUpdateFields,
+      { new: true }
+    );
+
+    res.status(201).json({ Visitor: updatedVisitor });
   } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    return res.status(500).json({ error: "Failed to update user" });
   }
 };
 
-//Delete a visitor by ID
 exports.deleteVisitor = async (req, res) => {
+  const { _id } = req.body;
+
   try {
-    const { _id } = req.body;
-    const deletedVisitor = await Visitor.findByIdAndDelete(_id);
-    if (deletedVisitor) {
-      return res.status(201).json({ message: "Visitor deleted sucessfully" });
+    const visitorDB = await Visitor.findByIdAndDelete(_id);
+
+    if (visitorDB) {
+      return res.status(204).send();
     } else {
       return res.status(404).json({ error: "Visitor not found" });
     }
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
-//RESPONSE CODE LIST
-//201 Request Successful
-//500 Internal Server Error
-//404 Request Not Found
-//400 Failed Query

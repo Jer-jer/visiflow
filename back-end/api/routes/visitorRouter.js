@@ -1,25 +1,18 @@
 const express = require("express");
-const passport = require("passport");
 const router = express.Router();
-const visitorController = require("../controllers/visitorController");
+const passport = require("passport");
+const VisitorController = require("../controllers/visitorController");
 
-// router.use((req, res, next) => {
-//     if (req.user && req.user.role.includes("admin")) next();
-//     else res.sendStatus(401);
-//  });
+router.get("/", passport.authenticate("jwt", { session: false }), VisitorController.getVisitors);
 
- router.use(passport.authenticate("jwt", { session: false }));
+router.post("/new", VisitorController.addVisitor);
 
-router.get("/", visitorController.getAllVisitors);
+router.post("/find", passport.authenticate("jwt", { session: false }), VisitorController.findVisitor);
 
-router.post("/new", visitorController.createNewVisitor);
+router.post("/retrieve-image",passport.authenticate("jwt", { session: false }),  VisitorController.getVisitorImageById);
 
-router.get("/search", visitorController.getVisitorById);
+router.put("/update", passport.authenticate("jwt", { session: false }),  VisitorController.updateVisitor);
 
-router.post("/retrieve-image", visitorController.getVisitorImageById);
-
-router.put("/update", visitorController.updateVisitor);
-
-router.delete("/delete", visitorController.deleteVisitor);
+router.delete("/delete", passport.authenticate("jwt", { session: false }), VisitorController.deleteVisitor);
 
 module.exports = router;

@@ -12,7 +12,6 @@ import AxiosInstance from "../../../../lib/axios";
 
 //Interfaces
 import { UserDataType } from "../../../../utils/interfaces";
-import type { MenuProps } from "antd";
 import { TabItems } from "..";
 import {
 	UserDetailsZod,
@@ -23,13 +22,12 @@ import {
 import UserActionLogs from "../user-action-logs";
 
 //Components
-import { Button, Dropdown, Modal, Input, Select, Form } from "antd";
+import { Button, Modal, Input, Select, Form } from "antd";
 import Label from "../../../../components/fields/input/label";
 import Alert from "../../../../components/alert";
 
 //Assets
 import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
-import { ExcelDownload } from "../../../../assets/svg";
 import { ExclamationCircleFilled } from "@ant-design/icons";
 
 //Styles
@@ -44,21 +42,6 @@ interface UserDetailsProps {
 }
 
 type UserDetailsTypeZod = z.infer<typeof UserDetailsZod>;
-
-const exportOptions: MenuProps["items"] = [
-	{
-		label: "Export All",
-		key: "0",
-	},
-	{
-		label: "Export User Details",
-		key: "1",
-	},
-	{
-		label: "Export Action Logs",
-		key: "2",
-	},
-];
 
 const { confirm } = Modal;
 
@@ -246,22 +229,7 @@ export default function UserDetails({
 			</div>
 
 			<Form name="User Details" onFinish={onSubmit} autoComplete="off">
-				<div className="mr-[135px] flex flex-col gap-[35px] pt-[30px]">
-					<div className="flex justify-end">
-						<Dropdown
-							placement="bottomRight"
-							menu={{ items: exportOptions }}
-							trigger={["click"]}
-						>
-							<a
-								title="Export Data"
-								onClick={(e) => e.preventDefault()}
-								href="/"
-							>
-								<ExcelDownload />
-							</a>
-						</Dropdown>
-					</div>
+				<div className="mr-[135px] flex flex-col gap-[35px] pt-[80px]">
 					<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
 						<div className="flex justify-between">
 							<div className="flex w-[782px] flex-col gap-[20px]">
@@ -498,6 +466,8 @@ export default function UserDetails({
 										View Action Logs
 									</Button>
 									<UserActionLogs
+										userId={record!._id}
+										lastName={record!.name.last_name}
 										open={actionLogsOpen}
 										setOpen={setActionLogsOpen}
 									/>

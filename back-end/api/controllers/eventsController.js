@@ -1,118 +1,80 @@
-const express = require("express");//for import of express package
-const bodyParser = require("body-parser");
-const EventsModel = require('../models/events');
-const { validateEvents, handleValidationErrors, validationResult } = require('../middleware/dataValidation');
-//const { filterData} = require('../middleware/filterVisitorData');
-//const { checkout } = require("../routes/visitorCompRouter");
+const Event = require('../models/events');
+const { 
+    validateEvents, 
+    validationResult 
+} = require('../middleware/dataValidation');
 
-const router = express.Router();
 
-router.use(bodyParser.json());
-
-//For Get All Events
 exports.getEvents = async (req, res) => {
     try {
-        const events = await EventsModel.find({}, { _id: 0 });
-        return res.json({ events });
+        const events = await Event.find();
+        return res.status(200).json({ events });
     } catch (error) {
-        return res.status(500).json({ error: "Internal Server Error " });
+        console.error(error);
+        return res.status(500).json({ error: "Failed to retrieve events from the database" });
     }
 };
 
-//Get event by ID
-exports.getEventsbyID = async (req, res) => {
-    
-    try {
-        const {_id} = req.body;
-        const searchedEvents = await EventsModel.findById(_id);
-        
-        if(searchedEvents) {
-            return res.status(201).json({ events: searchedEvents });
-        } else {
-            return res.status(404).json({ error: 'user not found'});
-        }
-    } catch (error) {
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-};
+exports.addEvent = async (req, res) => {
+    const { name, startDate, endDate, locationID, userID } = req.body;
 
-//Create
-exports.addEvents = async (req, res) => {
-    
     await Promise.all(validateEvents.map(validation => validation.run(req)));
 
     const errors = validationResult(req);
-    if(!errors.isEmpty()) {
+    if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array()[0].msg });
     }
 
     try {
-
-        const {
+        const newEvent = await Event.create({
             name,
-            date,
-            enddate,
-            locationId,
-            userId,
-        } = req.body;
+            startDate,
+            endDate,
+            locationID,
+            userID
+        });
 
-        const newEvent = new EventsModel({
-            name: name,
-            date: date,
-            enddate: enddate,
-            locationId: locationId,
-            userId: userId
-        })
-
-        const createdEvents = await EventsModel.create(newEvent);
-
-        if (createdEvents instanceof EventsModel) {
-        return res
-            .status(201)
-            .json({ success: "Successfully created a event" });
-        } else {
-        return res.status(400).json({ error: "Failed to Create new event" });
-        }
-    } catch (err) {
-        return res.status(500).json({ error: "Internal Server Error" });
+        res.status(201).json({ Event: newEvent });
+        
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Failed to create new event" });
     }
 };
-//Delete Events
-exports.deleteEvents = async (req, res) => {
+
+exports.findEvent = async (req, res) => {
+    const { _id } = req.body;
+
     try {
-      const {_id} = req.body;
-
-      const deletedData = await EventsModel.findByIdAndDelete(_id);
-
-      if (deletedData) {
-          return res.status(201).json({ message: 'Data deleted successfully'});
-      } else {
-          return res.status(404).json({ error: "Event not found"});
-      }
-    } catch (error) {
-      return res.status(500).json({ error: 'Internal Server Error' });
-    }
-}
-
-exports.updateEvents = async (req, res) => {
-    try {
+        const eventDB = await Event.findById(_id);
         
-
-        const { _id, name, date, enddate, locationId, userId} = req.body;
-
-        const event = await EventsModel.findById(_id);
-
-        if(!event) {
+        if (eventDB) {
+            return res.status(200).json({ Event: eventDB });
+        } else {
             return res.status(404).json({ error: 'Event not found'});
         }
-        
-        //prepare to update the data
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+exports.updateEvent = async (req, res) => {
+    const { _id, name, startDate, endDate, locationID, userID} = req.body;
+
+    try {
+        const eventDB = await Event.findById(_id);
+        if (!eventDB) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
         const updateFields = {
-            name: name !== undefined ? name : event.name,
-            date: date !== undefined ? date : event.date,
-            enddate: enddate !== undefined ? enddate : event.enddate,
-            locationId: locationId !== undefined ? locationId : event.locationId,
-            userId: userId !== undefined ? userId : event.userId
+            name: name || event.name,
+            startDate: startDate || event.startDate,
+            endDate: endDate || event.endDate,
+            locationID: locationID || event.locationID,
+            userID: userID || event.userID
         }
         
         const filteredUpdateFields = Object.fromEntries(
@@ -123,10 +85,35 @@ exports.updateEvents = async (req, res) => {
             return res.status(400).json({ error: "No valid fields to update" });
         }
 
-        const updatedEvent = await EventsModel.findByIdAndUpdate(_id, filteredUpdateFields, { new: true });
-        
+        const updatedEvent = await Event.findByIdAndUpdate(
+            _id,
+            filteredUpdateFields,
+            { new: true }
+        );
+
         return res.status(201).json({ event: updatedEvent});
     } catch (error) {
-        return res.status(500).json({ error: 'Internal Server Error' });
+        console.error(error);
+        return res.status(500).json({ error: 'Failed to update event' });
     }
 };
+
+//Delete Events
+exports.deleteEvent = async (req, res) => {
+    const {_id} = req.body;
+
+    try {
+        const eventDB = await Event.findByIdAndDelete(_id);
+
+        if (eventDB) {
+            return res.status(204).send();
+        } else {
+            return res.status(404).json({ error: "Event not found"});
+        }
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+

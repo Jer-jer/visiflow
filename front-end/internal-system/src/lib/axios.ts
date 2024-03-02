@@ -28,7 +28,7 @@ AxiosInstance.interceptors.response.use(
 			if (refreshToken) {
 				try {
 					const refreshResponse = await AxiosLoginInstance.post(
-						"/auth/refresh-token",
+						"/auth/refreshToken",
 						{
 							refreshToken,
 						},
