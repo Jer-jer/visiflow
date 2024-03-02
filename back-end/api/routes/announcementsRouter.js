@@ -11,7 +11,7 @@ router.get("/", announcementsController.getAllAnnouncements);
 
 router.post("/new", announcementsController.createNewAnnouncements);
 
-// router.post("/search", announcementsController.getAnnouncementsByID);
+router.post("/search", announcementsController.getAnnouncementsByTitle);
 
 router.put("/update", announcementsController.updateAnnouncements);
 

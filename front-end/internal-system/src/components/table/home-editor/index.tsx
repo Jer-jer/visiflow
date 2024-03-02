@@ -36,21 +36,31 @@ const { confirm } = Modal;
 //Home editor/announcements
 export default function HomeList() {
 	
-	const [pageDetail, setPageDetail] = useState<HomeEditor>();
+	const [pageDetail, setPageDetail] = useState<any>();
 	const [openDetails, setOpenDetails] = useState(false);
 	//stated variable for useEffect
 	const [data, setData] = useState<any>([]);
 	const [announcements, setAnnouncements] = useState<HomeEditor[]>([]);
+	// const [users, setUsers] = useState<HomeEditor[]>([]);
+	const [searchValue, setSearchValue] = useState("");
 
-	useEffect(() => {
-		
-		  fetchAndSetAnnouncements();
-	  }, []);
-
+	// useEffect(() => {
+	// 	  fetchAndSetAnnouncements();
+	//   }, []);
+	  useEffect(() => {
+		if(searchValue == "") {
+			fetchAndSetAnnouncements();
+		}
+	}, [searchValue])
+//For getting announcements from back-end
+	  //async is used for keyword await
 	  const fetchAndSetAnnouncements = async () => {
 		try {
 			const response = await AxiosInstace.get('/announcements/')
 			const data = response.data.announce
+			// console.log(response)
+
+			//getting only the data we want
 			const convertedData: HomeEditor[] = data.map((announcement: any) => ({
 				title: announcement.title,
 				body: announcement.message,
@@ -84,14 +94,22 @@ export default function HomeList() {
 		});
 	};
 
-	const handleDelete = async() => {
-		await AxiosInstace.delete('/announcements/')
-		.then(() => {
-			
-		})
+	const handleSearch = async() => {
+		try {
+			const response = await AxiosInstace.post('/announcements/search', {title: searchValue})
+			const data = response.data.announce;
+			const convertedData: HomeEditor[] = data.map((announcement: any) => ({
+				title: announcement.title,
+				body: announcement.message,
+			  }));
+			setData(data);
+			setAnnouncements(convertedData);
+		  } catch (error) {
+			console.error('Error fetching announcements:', error);
+		  }
 	}
 
-	const edit = (record: HomeEditor) => {
+	const edit = (record: any) => {
 		setPageDetail(record);
 		setOpenDetails(!openDetails);
 	};
@@ -100,26 +118,7 @@ export default function HomeList() {
 		setPageDetail(undefined);
 		setOpenDetails(!openDetails);
 	};
-
-	// const data: HomeEditor[] = [
-	// 	{
-	// 		title: "Visiting Hours",
-	// 		body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-	// 	},
-	// 	{
-	// 		title: "Dress Code",
-	// 		body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-	// 	},
-	// 	{
-	// 		title: "Announcement",
-	// 		body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-	// 	},
-	// 	{
-	// 		title: "Traffic Advisory",
-	// 		body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-	// 	},
-	// ];
-
+	
 	const columns: ColumnsType<HomeEditor> = [
 		{
 			title: "Title",
@@ -135,7 +134,7 @@ export default function HomeList() {
 			width: "30%",
 			render: (_, record) => (
 				<>
-					<Button className="mr-[3%] w-[20%]" onClick={() => edit(record)}>
+					<Button className="mr-[3%] w-[20%]" onClick={() => edit(data[announcements.indexOf(record)])}>
 						View
 					</Button>
 					{/* _ is the column data */}
@@ -155,9 +154,12 @@ export default function HomeList() {
 						className="w-[366px]"
 						size="large"
 						placeholder="Search"
+						onPressEnter={handleSearch}
 						prefix={<Search />}
+						value={searchValue}
+						onChange={e => setSearchValue(e.target.value)}
 					/>
-					<Button type="primary" className="search-button !bg-primary-500">
+					<Button type="primary" className="search-button !bg-primary-500" onClick={handleSearch}>
 						Search
 					</Button>
 				</div>
@@ -167,7 +169,7 @@ export default function HomeList() {
 					<Table
 						columns={columns}
 						dataSource={announcements}
-						pagination={{ pageSize: 5 }}
+						pagination={{ pageSize: 8 }}
 					/>
 				)}
 				{openDetails && (

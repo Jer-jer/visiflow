@@ -62,21 +62,21 @@ exports.createNewAnnouncements = async (req, res) => {
         return res.status(500).json({ error: 'Internal Server Error'});
     }
 };
-
-// exports.getBldgLocByID = async (req, res) => {
-//     try {
-//         const {_id} = req.body;
-//         const searchedBldgLoc = await BuildingLoc.findById(_id);
-
-//         if(searchedBldgLoc) {
-//             return res.status(201).json({ bldgLoc: searchedBldgLoc });
-//         } else {
-//             return res.status(404).json({ error: 'Building Location not found'});
-//         }
-//     } catch (error) {
-//         return res.status(500).json({ error: 'Internal Server Error '});
-//     }
-// };
+//Find Announcements by Title
+exports.getAnnouncementsByTitle = async (req, res) => {
+    try {
+        const {title} = req.body;
+        const regex = new RegExp(title, 'i');
+        const searchAnnouncements = await Announcements.find({title: regex});
+        if(searchAnnouncements) {
+            return res.status(201).json({ announce: searchAnnouncements });
+        } else {
+            return res.status(404).json({ error: 'Announcement not found'});
+        }
+    } catch (error) {
+        return res.status(500).json({ error: 'Internal Server Error '});
+    }
+};
 
 exports.updateAnnouncements = async (req, res) => {
     try {
