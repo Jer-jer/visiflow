@@ -4,9 +4,17 @@
 
 import { VisitorStatus, VisitorType, UserRole } from "./enums";
 
+export interface PurposeProps {
+	what: string[];
+	when: string;
+	where: string[];
+	who: string[];
+	// why?: string;
+}
+
 export interface VisitorLogDetails {
 	key: string;
-	purpose: string;
+	purpose?: PurposeProps;
 	timeIn: string;
 	timeOut: string;
 }
@@ -38,16 +46,6 @@ export interface VisitorDetailsProps {
 	phone: string;
 	email: string;
 	address: AddressProps;
-	time_in: string;
-	time_out: string;
-}
-
-export interface PurposeProps {
-	what: string[];
-	when: string;
-	where: string[];
-	who: string[];
-	// why?: string;
 }
 
 export interface IDPictureProps {
@@ -56,28 +54,29 @@ export interface IDPictureProps {
 	selfie: string;
 }
 export interface VisitorDataType {
+	key: string;
 	_id: string;
 	visitor_details: VisitorDetailsProps;
 	companion_details?: VisitorDetailsProps[];
 	date: string;
 	purpose: PurposeProps;
 	plate_num: string;
+	expected_time_in: string;
+	expected_time_out: string;
 	status: VisitorStatus;
 	visitor_type: VisitorType;
 	id_picture: IDPictureProps;
-	created_at?: Date;
+	created_at: Date;
 }
 
 export interface IDPictureProps {
-	type: String;
 	front: string;
 	back: string;
 	selfie: string;
 }
 
-export interface UserActionLogs {
+export interface UserActionLogsDetails {
 	logId: string;
-	userId: string;
 	action: string;
 	logDate: string;
 	system: string;
@@ -91,6 +90,7 @@ export interface UserDataType {
 	password: string;
 	phone: string;
 	role: UserRole;
+	created_at: Date;
 }
 
 export interface HomeEditor {

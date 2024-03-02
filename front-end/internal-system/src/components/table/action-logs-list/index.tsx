@@ -1,57 +1,23 @@
 /* Built using Ant Design */
 import React from "react";
+import { useSelector } from "react-redux";
 
 //Components
 import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 //Interfaces
-import { UserActionLogs } from "../../../utils/interfaces";
+import { UserActionLogsDetails } from "../../../utils/interfaces";
+import type { RootState } from "../../../store";
 
 //Styles
 import "../../../utils/variables.scss";
 import "./styles.scss";
 
 export default function ActionLogsTable() {
-	const data: UserActionLogs[] = [
-		{
-			logId: "log123",
-			userId: "user456",
-			action: "Login",
-			logDate: "2023-09-15 10:30 AM",
-			system: "Admin System",
-		},
-		{
-			logId: "log789",
-			userId: "user123",
-			action: "Logout",
-			logDate: "2023-09-15 02:45 PM",
-			system: "Admin System",
-		},
-		{
-			logId: "log456",
-			userId: "user789",
-			action: "Data Update",
-			logDate: "2023-09-16 09:15 AM",
-			system: "Guard System",
-		},
-		{
-			logId: "log234",
-			userId: "user789",
-			action: "Profile Edit",
-			logDate: "2023-09-16 03:00 PM",
-			system: "Admin System",
-		},
-		{
-			logId: "log567",
-			userId: "user456",
-			action: "Logout",
-			logDate: "2023-09-17 11:20 AM",
-			system: "Guard System",
-		},
-	];
+	const userActionLogs = useSelector((state: RootState) => state.userLogs);
 
-	const columns: ColumnsType<UserActionLogs> = [
+	const columns: ColumnsType<UserActionLogsDetails> = [
 		{
 			key: "logId",
 			className: "hidden",
@@ -93,6 +59,10 @@ export default function ActionLogsTable() {
 	];
 
 	return (
-		<Table columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
+		<Table
+			columns={columns}
+			dataSource={userActionLogs}
+			pagination={{ pageSize: 5 }}
+		/>
 	);
 }

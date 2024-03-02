@@ -4,6 +4,26 @@
 import { z, ZodType } from "zod";
 import { VisitorStatus, VisitorType } from "./enums";
 
+export interface LoginInterfaceZod {
+	username: string;
+	password: string;
+}
+
+export const LoginZod: ZodType<LoginInterfaceZod> = z.object({
+	username: z
+		.string({
+			required_error: "Username is required.",
+			invalid_type_error: "Username must not have number.",
+		})
+		.min(1, { message: "Please enter a desired username." }),
+	password: z
+		.string({
+			required_error: "Password is required.",
+			invalid_type_error: "Password must not have number.",
+		})
+		.min(1, { message: "Please enter a desired password." }),
+});
+
 export interface VisitorDetailsInterfaceZod {
 	first_name: string;
 	middle_name?: string;

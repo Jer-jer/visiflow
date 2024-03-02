@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
 
-//! DO NOT REMOVE!! REQUIRED TO CREATE A SEPARATE COLLECTION
 const processConnection = mongoose.createConnection(
-  `${process.env.MONGODB_URI}/process`
+  `${process.env.MONGODB_PROCESS}`
 );
 
 const Schema = mongoose.Schema;
@@ -33,8 +32,6 @@ const VisitorDetails = new Schema({
   address: { type: Address, required: true },
   email: { type: String, require: true },
   phone: { type: String, require: true },
-  time_in: { type: String, require: true, default: "" },
-  time_out: { type: String, require: true, default: "" },
 });
 
 const Purpose = new Schema({
@@ -71,6 +68,7 @@ const VisitorSchema = new Schema({
     {
       type: VisitorDetails,
       required: true,
+      default: [],
     },
   ],
   plate_num: {
@@ -96,11 +94,16 @@ const VisitorSchema = new Schema({
     type: IdPhoto,
     required: true,
   },
+  expected_time_in: {
+    type: String,
+  },
+  expected_time_out: {
+    type: String,
+  },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
 });
 
-//! DO NOT REMOVE OR UPDATE!! REQUIRED TO CREATE A SEPARATE COLLECTION
 const VisitorModel = processConnection.model("visitor", VisitorSchema);
 
 module.exports = VisitorModel;
