@@ -16,6 +16,11 @@ const validateBldgLoc = [
     body('roomNo').notEmpty().withMessage('Room Number is required').isString().withMessage("Room Number must be a String")
 ];
 
+const validateAnnouncements = [
+    body('title').notEmpty().withMessage('Title is required').isString().withMessage("Title must be a String"),
+    body('message').notEmpty().withMessage('Message is required').isString().withMessage("Message must be a String")
+];
+
 const validateEvents = [
     body('name').notEmpty().withMessage('Event name is required').isString().withMessage('Event name must be a string'),
     body('locationID').isString().withMessage('Location ID must be a string').notEmpty().withMessage('Location ID is required'),
@@ -26,7 +31,7 @@ const validateEvents = [
 
 const validateVisitor = [
     body('visitor_details.name.first_name').isString().withMessage('First name must be a string').notEmpty().withMessage('First name is required'),
-    body('visitor_details.name.middle_name').isString().withMessage('Middle name must be a string'),
+    body('visitor_details.name.middle_name').isString().withMessage('Middle name must be a string').optional(),
     body('visitor_details.name.last_name').isString().withMessage('Last name must be a string').notEmpty().withMessage('Last name is required'),
     body('visitor_details.address').isObject().withMessage('Address must be an object'),
     body('visitor_details.address.brgy').isString().withMessage('Barangay must be a string').notEmpty().withMessage('Barangay is required'),
@@ -43,6 +48,8 @@ const validateVisitor = [
     body('purpose.when').isString().withMessage('Purpose When must be a string').notEmpty().withMessage('Purpose When is required'),
     body('purpose.where').isArray().withMessage('Purpose Where must be an array').notEmpty().withMessage('Purpose Where is required'),
     body('purpose.who').isArray().withMessage('Purpose Who must be an array').notEmpty().withMessage('Purpose Who is required'),
+    body('expected_time_in').isString().withMessage('Expected Time In must be a string').notEmpty().withMessage('Expected Time In is required'),
+    body('expected_time_out').isString().withMessage('Expected Time Out must be a string').notEmpty().withMessage('Expected Time Out is required'),
     body('id_picture').isObject().withMessage('ID Picture must be an object').notEmpty().withMessage('ID Picture is required'),
     body('id_picture.front').isString().withMessage('Front must be a string').notEmpty().withMessage('Front is required'),
     body('id_picture.back').isString().withMessage('Back must be a string').notEmpty().withMessage('Back is required'),
@@ -63,7 +70,7 @@ module.exports = {
     validateUser,
     validateBldgLoc,
     validateEvents,
-    validateVisitor,
+    validateAnnouncements,
     handleValidationErrors, 
     validationResult 
 };

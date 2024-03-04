@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 // Components
 import HomeBox from "../../components/home-box";
 
 // Styles
 import "./styles.scss";
+import AxiosInstace from "../../lib/axios";
 
 // Assets
 
@@ -79,8 +80,35 @@ const AnnouncementAdvisoryProps = ({
 	);
 };
 
+interface AnnouncementModel {
+	_id: string,
+	title: string,
+	message: string
+}
+
 export default function Home() {
 	const desktopMedia = window.matchMedia("(min-width: 1024px)");
+	const [announcement, setAnnouncement] = useState<AnnouncementModel[]>([]);
+
+	useEffect(() => {
+		fetchData();
+	}, []);
+
+	const fetchData = async() => {
+		try {
+			const response = await AxiosInstace.get('/announcements/')
+			const data = response.data.announce
+			const convertedData: AnnouncementModel[] = data.map((announcement: any) => ({
+				_id: announcement._id,
+				title: announcement.title,
+				message: announcement.message,
+			  }));
+			setAnnouncement(convertedData);
+			console.log("data", announcement)
+		  } catch (error) {
+			console.error('Error fetching announcements:', error);
+		  }
+	}
 
 	return (
 		<div className="flex flex-col justify-center gap-[36px]">
@@ -110,32 +138,20 @@ export default function Home() {
 							<DressCode sizeOne="text-[22px]" sizeTwo="text-[20px]" />
 						</HomeBox>
 					</div>
-					<div className="mb-[40px] flex w-[90%] justify-center gap-[46px]">
-						<HomeBox
+					<div className="mb-[40px] flex w-[90%] justify-center gap-[46px] flex-wrap flex-row">
+						{announcement.map((announce) => (
+							<HomeBox
 							mainClass="flex w-[42%] items-center justify-center"
 							headerSize="text-[32px]"
-							headerText="Announcement"
-						>
-							<AnnouncementAdvisoryProps size="text-[20px]">
-								<span>
-									Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-									do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-									Ut enim ad minim veniam
-								</span>
-							</AnnouncementAdvisoryProps>
-						</HomeBox>
-						<HomeBox
-							mainClass="flex w-[42%] items-center justify-center"
-							headerSize="text-[32px]"
-							headerText="Traffic Advisory"
-						>
-							<AnnouncementAdvisoryProps size="text-[20px]">
-								<span>
-									Excepteur sint occaecat cupidatat non proident, sunt in culpa
-									qui officia deserunt mollit anim id est laborum
-								</span>
-							</AnnouncementAdvisoryProps>
-						</HomeBox>
+							headerText={announce.title}
+							>
+								<AnnouncementAdvisoryProps size="text-[20px]">
+									<span>
+										{announce.message}
+									</span>
+								</AnnouncementAdvisoryProps>
+							</HomeBox>
+						))}
 					</div>
 				</div>
 			) : (

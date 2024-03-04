@@ -24,8 +24,8 @@ const UserSchema = new Schema({
     default: "security",
     require: true,
   },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
+  created_at: { type: Date, default: Date.now },
+  updated_at: { type: Date, default: Date.now },
 });
 
 const UserModel = authConnection.model("user", UserSchema);

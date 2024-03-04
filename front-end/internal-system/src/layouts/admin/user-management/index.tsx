@@ -5,16 +5,20 @@ import React, {
 	Dispatch,
 	SetStateAction,
 } from "react";
-import AxiosInstance, { AxiosLoginInstance } from "../../../lib/axios";
+import AxiosInstance from "../../../lib/axios";
+import { CSVLink } from "react-csv";
 
 //Interfaces
 import { UserDataType } from "../../../utils/interfaces";
 
 //Components
-import { Tabs, Button, Input } from "antd";
+import { Tabs, Button, Input, Tooltip } from "antd";
 import Alert from "../../../components/alert";
 import UserListTable from "../../../components/table/user-list";
 import UserDetails from "./user-details";
+
+//Utils
+import { formatDate } from "../../../utils";
 
 //Styles
 import "../../../utils/variables.scss";
@@ -66,6 +70,30 @@ const UserList = ({ users, setUsers, addTab, createUser }: UserListProps) => {
 			});
 	};
 
+	const userDataHeaders = [
+		{ label: "First Name", key: "first_name" },
+		{ label: "Middle Name", key: "middle_name" },
+		{ label: "Last Name", key: "last_name" },
+		{ label: "Username", key: "username" },
+		{ label: "Email", key: "email" },
+		{ label: "Phone", key: "phone" },
+		{ label: "Role", key: "role" },
+		{ label: "Date Created", key: "date_created" },
+	];
+
+	const userDataDetails = users.map((user) => {
+		return {
+			first_name: user.name.first_name,
+			middle_name: user.name.middle_name,
+			last_name: user.name.last_name,
+			username: user.username,
+			email: user.email,
+			phone: user.phone,
+			role: user.role,
+			date_created: formatDate(user.created_at),
+		};
+	});
+
 	return (
 		<div className="ml-[45px] flex flex-col gap-[50px]">
 			<div className="mt-[30px] flex w-full items-center justify-start gap-[25px] pr-[65px]">
@@ -97,9 +125,16 @@ const UserList = ({ users, setUsers, addTab, createUser }: UserListProps) => {
 				>
 					Create Account
 				</Button>
-				<div className="ml-auto">
-					<ExcelDownload />
-				</div>
+				<Tooltip placement="top" title="Export List" arrow={false}>
+					<CSVLink
+						className="ml-auto"
+						filename={"Users_List.csv"}
+						data={userDataDetails}
+						headers={userDataHeaders}
+					>
+						<ExcelDownload />
+					</CSVLink>
+				</Tooltip>
 			</div>
 			<div className="mr-[50px]">
 				<UserListTable users={users} addTab={addTab} />

@@ -24,10 +24,12 @@ export default function VisitorCompanionsList() {
 	const [openDetails, setOpenDetails] = useState(false);
 	const [openLogs, setOpenLogs] = useState(false);
 	const [companionRecord, setCompanionRecord] = useState<VisitorDetailsProps>();
+	const [companionLastname, setCompanionLastname] = useState("");
 
 	const recordContext = useContext(VisitorRecordContext);
 
-	const viewLogs = () => {
+	const viewLogs = (lastName: string) => {
+		setCompanionLastname(lastName);
 		setOpenLogs(!openLogs);
 	};
 
@@ -64,7 +66,9 @@ export default function VisitorCompanionsList() {
 			key: "actions",
 			render: (_, record) => (
 				<div className="flex gap-[10px]">
-					<Button onClick={viewLogs}>View Logs</Button>
+					<Button onClick={() => viewLogs(record.name.last_name)}>
+						View Logs
+					</Button>
 					<Button onClick={() => viewDetails(record)}>View Details</Button>
 				</div>
 			),
@@ -84,7 +88,11 @@ export default function VisitorCompanionsList() {
 					open={openDetails}
 					setOpen={setOpenDetails}
 				/>
-				<CompanionLogs open={openLogs} setOpen={setOpenLogs} />
+				<CompanionLogs
+					open={openLogs}
+					setOpen={setOpenLogs}
+					lastname={companionLastname}
+				/>
 			</CompanionRecord.Provider>
 		</>
 	);
