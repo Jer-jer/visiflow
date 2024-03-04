@@ -1,14 +1,15 @@
 /* Built using Ant Design */
-import React from "react";
+import React, { SetStateAction, Dispatch } from "react";
 import { useSelector } from "react-redux";
 
 // Components
-import { Table, Tag, Button } from "antd";
+import { Table, Tag, Button, Checkbox } from "antd";
 
 //Interfaces
 import { VisitorDataType } from "../../../utils/interfaces";
 import { VisitorStatus, VisitorType } from "../../../utils/enums";
 import type { ColumnsType } from "antd/es/table";
+import type { RootState } from "../../../store";
 
 // Utils
 import { formatDate } from "../../../utils";
@@ -18,11 +19,23 @@ import "../../../utils/variables.scss";
 import "./styles.scss";
 
 interface AdminTableProps {
+	search: string;
+	dateSearch: string[];
+	hideInOut: boolean;
+	setHideInOut: Dispatch<SetStateAction<boolean>>;
 	addTab: (record: VisitorDataType) => void;
 }
 
-export default function VisitorListTable({ addTab }: AdminTableProps) {
-	const { data } = useSelector((state: any) => state.visitors);
+export default function VisitorListTable({
+	search,
+	dateSearch,
+	hideInOut,
+	setHideInOut,
+	addTab,
+}: AdminTableProps) {
+	const { data } = useSelector((state: RootState) => state.visitors);
+	const startDate = new Date(dateSearch[0]);
+	const endDate = new Date(dateSearch[1]);
 
 	const columns: ColumnsType<VisitorDataType> = [
 		{
@@ -70,6 +83,43 @@ export default function VisitorListTable({ addTab }: AdminTableProps) {
 				record.visitor_type.indexOf(value) === 0,
 		},
 		{
+			title: "Expected Time In",
+			dataIndex: "expected_time_in",
+			key: "expected_time_in",
+			sorter: (a, b) =>
+				formatDate(a.expected_time_in).localeCompare(
+					formatDate(b.expected_time_in),
+				),
+			render: (_, { expected_time_in }) => {
+				return formatDate(expected_time_in);
+			},
+			hidden: hideInOut,
+		},
+		{
+			title: "Expected Time Out",
+			dataIndex: "expected_time_out",
+			key: "expected_time_out",
+			sorter: (a, b) =>
+				formatDate(a.expected_time_out).localeCompare(
+					formatDate(b.expected_time_out),
+				),
+			render: (_, { expected_time_out }) => {
+				return formatDate(expected_time_out);
+			},
+			hidden: hideInOut,
+		},
+
+		{
+			title: "Date Created",
+			dataIndex: "created_at",
+			key: "created_at",
+			sorter: (a, b) =>
+				formatDate(a.created_at).localeCompare(formatDate(b.created_at)),
+			render: (_, { created_at }) => {
+				return formatDate(created_at);
+			},
+		},
+		{
 			title: "Status",
 			dataIndex: "status",
 			filters: [
@@ -101,18 +151,9 @@ export default function VisitorListTable({ addTab }: AdminTableProps) {
 				record.visitor_type.indexOf(value) === 0,
 		},
 		{
-			title: "Date Created",
-			dataIndex: "created_at",
-			key: "created_at",
-			sorter: (a, b) =>
-				formatDate(a.created_at!).localeCompare(formatDate(b.created_at!)),
-			render: (_, { created_at }) => {
-				return formatDate(created_at!);
-			},
-		},
-		{
 			title: "Action",
 			key: "action",
+			fixed: "right",
 			render: (_, record) => (
 				<Button onClick={() => addTab(record)}>View Details</Button>
 			),
@@ -120,6 +161,50 @@ export default function VisitorListTable({ addTab }: AdminTableProps) {
 	];
 
 	return (
-		<Table columns={columns} dataSource={data} pagination={{ pageSize: 8 }} />
+		<>
+			<Checkbox onChange={() => setHideInOut(!hideInOut)}>
+				Display Expected Time In and Out
+			</Checkbox>
+			<Table
+				className="mt-3"
+				columns={columns}
+				dataSource={data
+					.filter((visitor) => {
+						return search.toLowerCase() === ""
+							? visitor
+							: visitor.visitor_details.name.first_name
+									.toLowerCase()
+									.includes(search.toLowerCase()) ||
+									visitor.visitor_details.name
+										.middle_name!.toLowerCase()
+										.includes(search.toLowerCase()) ||
+									visitor.visitor_details.name.last_name
+										.toLowerCase()
+										.includes(search.toLowerCase()) ||
+									`${visitor.visitor_details.name.last_name} ${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name}`
+										.toLowerCase()
+										.includes(search.toLowerCase()) ||
+									`${visitor.visitor_details.name.first_name}${
+										visitor.visitor_details.name.middle_name
+											? ` ${visitor.visitor_details.name.middle_name}`
+											: ""
+									} ${visitor.visitor_details.name.last_name}`
+										.toLowerCase()
+										.includes(search.toLowerCase()) ||
+									visitor.visitor_details.phone.includes(search) ||
+									formatDate(visitor.created_at).includes(search);
+					})
+					.filter((visitor) => {
+						return dateSearch.length === 0
+							? visitor
+							: hideInOut
+							? new Date(visitor.expected_time_in) >= startDate &&
+							  new Date(visitor.expected_time_out) <= endDate
+							: new Date(formatDate(visitor.created_at)) >= startDate &&
+							  new Date(formatDate(visitor.created_at)) <= endDate;
+					})}
+				pagination={{ pageSize: 8 }}
+			/>
+		</>
 	);
 }

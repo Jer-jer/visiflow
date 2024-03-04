@@ -121,24 +121,7 @@ export default function Home() {
 			</div>
 			{desktopMedia.matches ? (
 				<div className="flex flex-col items-center justify-center gap-[36px]">
-					<div className="flex w-[90%] justify-center gap-[46px]">
-						<HomeBox
-							mainClass="flex w-[42%] items-center justify-center"
-							headerSize="text-[32px]"
-							headerText="Visiting Hours"
-						>
-							<VisitingHours size="text-[20px]" />
-						</HomeBox>
-
-						<HomeBox
-							mainClass="flex w-[42%] items-center justify-center"
-							headerSize="text-[32px]"
-							headerText="Dress Code"
-						>
-							<DressCode sizeOne="text-[22px]" sizeTwo="text-[20px]" />
-						</HomeBox>
-					</div>
-					<div className="mb-[40px] flex w-[90%] justify-center gap-[46px] flex-wrap flex-row">
+					<div className="mb-[40px] flex w-[90%] justify-center gap-[46px] flex-wrap">
 						{announcement.map((announce) => (
 							<HomeBox
 							mainClass="flex w-[42%] items-center justify-center"
