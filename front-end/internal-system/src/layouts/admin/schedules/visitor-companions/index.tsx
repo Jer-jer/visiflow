@@ -1,6 +1,6 @@
 /* Components designed using Ant Design */
 
-import React, { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 
 //Interface
 
@@ -24,6 +24,7 @@ export default function VisitorCompanions({
 	open,
 	setOpen,
 }: VisitorCompanionsProps) {
+	const [search, setSearch] = useState<string>("");
 	return (
 		<StandardModal
 			header={
@@ -40,7 +41,7 @@ export default function VisitorCompanions({
 				</Button>
 				<ExcelDownload />
 			</div>
-			<VisitorCompanionsList />
+			<VisitorCompanionsList search={search} />
 		</StandardModal>
 	);
 }

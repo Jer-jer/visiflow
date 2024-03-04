@@ -137,7 +137,7 @@ const UserList = ({ users, setUsers, addTab, createUser }: UserListProps) => {
 				</Tooltip>
 			</div>
 			<div className="mr-[50px]">
-				<UserListTable users={users} addTab={addTab} />
+				<UserListTable users={users} search={search} addTab={addTab} />
 			</div>
 		</div>
 	);

@@ -17,8 +17,18 @@ import { formatDate } from "../../../utils";
 import "../../../utils/variables.scss";
 import "./styles.scss";
 
-export default function VisitorLogsTable() {
+interface VisitorLogsTableProps {
+	filterWhen: boolean;
+	dateSearch: string[];
+}
+
+export default function VisitorLogsTable({
+	filterWhen,
+	dateSearch,
+}: VisitorLogsTableProps) {
 	const visitorLogs = useSelector((state: RootState) => state.visitorLogs);
+	const startDate = new Date(dateSearch[0]);
+	const endDate = new Date(dateSearch[1]);
 
 	const columns: ColumnsType<VisitorLogDetails> = [
 		{
@@ -79,7 +89,15 @@ export default function VisitorLogsTable() {
 	return (
 		<Table
 			columns={columns}
-			dataSource={visitorLogs}
+			dataSource={visitorLogs.filter((log) => {
+				return dateSearch.length === 0
+					? log
+					: filterWhen
+					? new Date(log.purpose!.when) >= startDate &&
+					  new Date(log.purpose!.when) <= endDate
+					: new Date(log.timeIn) >= startDate &&
+					  new Date(log.timeOut) <= endDate;
+			})}
 			bordered
 			pagination={{ pageSize: 5 }}
 		/>

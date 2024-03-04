@@ -14,8 +14,14 @@ import type { RootState } from "../../../store";
 import "../../../utils/variables.scss";
 import "./styles.scss";
 
-export default function ActionLogsTable() {
+interface ActionLogsTableProps {
+	dateSearch: string[];
+}
+
+export default function ActionLogsTable({ dateSearch }: ActionLogsTableProps) {
 	const userActionLogs = useSelector((state: RootState) => state.userLogs);
+	const startDate = new Date(dateSearch[0]);
+	const endDate = new Date(dateSearch[1]);
 
 	const columns: ColumnsType<UserActionLogsDetails> = [
 		{
@@ -61,7 +67,12 @@ export default function ActionLogsTable() {
 	return (
 		<Table
 			columns={columns}
-			dataSource={userActionLogs}
+			dataSource={userActionLogs.filter((log) => {
+				return dateSearch.length === 0
+					? log
+					: new Date(log.logDate) >= startDate &&
+							new Date(log.logDate) <= endDate;
+			})}
 			pagination={{ pageSize: 5 }}
 		/>
 	);
