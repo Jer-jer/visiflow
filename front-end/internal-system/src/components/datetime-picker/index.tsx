@@ -57,7 +57,7 @@ function DateTimePicker({
 				size={size}
 				defaultValue={
 					defaultVal === undefined
-						? null
+						? undefined
 						: [
 								dayjs(defaultVal?.from, `YYYY-MM-DD ${timeFormat}`),
 								dayjs(defaultVal?.to, `YYYY-MM-DD ${timeFormat}`),
