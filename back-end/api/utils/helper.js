@@ -1,13 +1,14 @@
 require("dotenv").config();
 
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const QRCode = require("qrcode");
-const RefreshToken = require("../models/refreshToken");
-const Badge = require("../models/badge");
-const VisitorLogs = require("../models/visitorLogs");
-const Visitor = require("../models/visitor");
-const nodemailer = require("nodemailer");
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const QRCode = require('qrcode');
+const RefreshToken = require('../models/refreshToken');
+const Badge = require('../models/badge');
+const VisitorLogs = require('../models/visitorLogs');
+const Visitor = require('../models/visitor');
+const nodemailer = require('nodemailer');
+const { Storage } = require('@google-cloud/storage');
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 const ACCESS_TOKEN_EXPIRATION = "20m";
@@ -21,6 +22,14 @@ const transporter = nodemailer.createTransport({
     pass: process.env.MAILER_PASSWORD, //! DO NOT REMOVE, I DID NOT MEMORIZE THIS
   },
 });
+
+const storage = new Storage({
+    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    projectId: process.env.GOOGLE_CLOUD_PROJECT,
+});
+
+const bucketName = 'visiflow';
+
 
 function hashPassword(password) {
   const salt = bcrypt.genSaltSync();
@@ -212,14 +221,40 @@ async function updateLog(badgeId, visitorId, res) {
   }
 }
 
-module.exports = {
-  hashPassword,
-  comparePassword,
-  generateAccessToken,
-  generateRefreshToken,
-  storeRefreshToken,
-  verifyRefreshToken,
-  generateQRCode,
-  generateSingleQRCode,
-  updateLog,
-};
+async function uploadFileToGCS(file) {
+    const bucket = storage.bucket(bucketName);
+    const fileName = `${Date.now()}_${file.originalname}`;
+    const fileUpload = bucket.file(fileName);
+
+    const stream = fileUpload.createWriteStream({
+        metadata: {
+        contentType: file.mimetype,
+        },
+        resumable: false,
+    });
+
+    return new Promise((resolve, reject) => {
+        stream.on('error', (err) => {
+        reject(err);
+        });
+
+        stream.on('finish', () => {
+        resolve(`https://storage.googleapis.com/${bucketName}/${fileName}`);
+        });
+
+        stream.end(file.buffer);
+    });
+}
+
+module.exports = { 
+    hashPassword, 
+    comparePassword, 
+    generateAccessToken, 
+    generateRefreshToken, 
+    storeRefreshToken, 
+    verifyRefreshToken,
+    generateQRCode,
+    generateSingleQRCode,
+    updateLog,
+    uploadFileToGCS
+}

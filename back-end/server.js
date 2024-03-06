@@ -4,8 +4,8 @@ require("./api/strategies/locals");
 const express = require("express");
 const passport = require("passport");
 const cors = require("cors");
-const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 const createSession = require("./api/utils/sessionHelper");
 
 const connectDB = require("./api/config/db");
@@ -14,9 +14,9 @@ const app = express();
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(passport.initialize());
 // app.use(cookieParser());
 // app.use(createSession);
-app.use(passport.initialize());
 // app.use(passport.session());
 
 connectDB();
