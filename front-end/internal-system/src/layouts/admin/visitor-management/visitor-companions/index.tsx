@@ -1,13 +1,13 @@
 /* Components designed using Ant Design */
 
-import React, { Dispatch, SetStateAction, useContext } from "react";
+import React, { Dispatch, SetStateAction, useContext, useState } from "react";
 import { CSVLink } from "react-csv";
 
 //Interface
 import { VisitorRecordContext } from "../visitor-details";
 
 //Components
-import { Button, Input, Tooltip } from "antd";
+import { Input, Tooltip } from "antd";
 import StandardModal from "../../../../components/modal";
 import VisitorCompanionsList from "../../../../components/table/companion-list";
 
@@ -30,6 +30,7 @@ export default function VisitorCompanions({
 	open,
 	setOpen,
 }: VisitorCompanionsProps) {
+	const [search, setSearch] = useState<string>("");
 	const recordContext = useContext(VisitorRecordContext);
 
 	const companionDetailsHeaders = [
@@ -78,10 +79,12 @@ export default function VisitorCompanions({
 			footer={false}
 		>
 			<div className="flex w-full items-center justify-start gap-[25px]">
-				<Input className="w-[366px]" placeholder="Search" prefix={<Search />} />
-				<Button type="primary" className="search-button !bg-primary-500">
-					Search
-				</Button>
+				<Input
+					className="w-[366px]"
+					placeholder="Search"
+					prefix={<Search />}
+					onChange={(e) => setSearch(e.target.value)}
+				/>
 				<Tooltip placement="top" title="Export Companion List" arrow={false}>
 					<CSVLink
 						className="ml-auto"
@@ -93,7 +96,7 @@ export default function VisitorCompanions({
 					</CSVLink>
 				</Tooltip>
 			</div>
-			<VisitorCompanionsList />
+			<VisitorCompanionsList search={search} />
 		</StandardModal>
 	);
 }
