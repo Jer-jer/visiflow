@@ -116,7 +116,7 @@ function LoggedIn({
 						</>
 					) : (
 						<>
-							<NavLink to="/qr-scanner">
+							<NavLink to="/">
 								{({ isActive }) => (
 									<SidebarItem
 										icon={<QRScanner />}

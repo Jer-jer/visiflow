@@ -16,7 +16,6 @@ import HomeEditor from "./pages/admin/home-editor";
 import Schedules from "./pages/admin/schedules";
 
 //Guard
-import Capture from "./pages/guard/capture";
 import VisitorForm from "./pages/guard/visitor-form";
 import QRScanner from "./pages/guard/qr-scanner";
 import PreregisteredQR from "./pages/guard/preregistered-qr";
@@ -61,18 +60,13 @@ function App() {
 								/>
 								<Route path="/manage-users" element={<UserManagement />} />
 								<Route path="/home-editor" element={<HomeEditor />} />
-								<Route path="/capture" element={<Capture />} />
-								<Route path="/visitor-form" element={<VisitorForm />} />
-								<Route path="/qr-scanner" element={<QRScanner />} />
-								<Route path="/preregistered-qr" element={<PreregisteredQR />} />
-								<Route path="/visitor-status" element={<VisitorStatus />} />
 							</>
 						) : (
 							<>
-								<Route
-									path="/"
-									element={<span>Guard System Routes Here</span>}
-								/>
+								<Route path="/" element={<QRScanner />} />
+								<Route path="/visitor-form" element={<VisitorForm />} />
+								<Route path="/preregistered-qr" element={<PreregisteredQR />} />
+								<Route path="/visitor-status" element={<VisitorStatus />} />
 							</>
 						)}
 						{/*//TODO enchance error 404 page */}
