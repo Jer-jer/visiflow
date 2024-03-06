@@ -11,7 +11,7 @@ import { VisitorDataType } from "../../../utils/interfaces";
 import type { Dayjs } from "dayjs";
 
 //Components
-import { Tabs, Button, Input, Tooltip } from "antd";
+import { Tabs, Input, Tooltip } from "antd";
 import DateTimePicker from "../../../components/datetime-picker";
 import VisitorListTable from "../../../components/table/visitor-list";
 import VisitorDetails from "./visitor-details";
@@ -20,7 +20,7 @@ import VisitorDetails from "./visitor-details";
 import { AppDispatch, RootState } from "../../../store";
 
 // Reducers
-import { fetchVisitors, searchVisitor } from "../../../states/visitors";
+import { fetchVisitors } from "../../../states/visitors";
 
 //Styles
 import "../../../utils/variables.scss";
@@ -47,19 +47,15 @@ dayjs.extend(customParseFormat);
 const VisitorList = ({ addTab }: VisitorProps) => {
 	const [search, setSearch] = useState<string>("");
 	const [dateSearch, setDateSearch] = useState<string[]>([]);
+	const [hideInOut, setHideInOut] = useState<boolean>(true);
 
-	const dispatch = useDispatch<AppDispatch>();
 	const { data } = useSelector((state: RootState) => state.visitors);
-
-	const searchingVisitor = () => {
-		dispatch(searchVisitor({ search: search, dateSearch: dateSearch }));
-	};
 
 	const onRangeChange = (dates: Dayjs[], dateStrings: string[]) => {
 		if (dates) {
 			setDateSearch([dateStrings[0], dateStrings[1]]);
 		} else {
-			console.log("Clear Search");
+			setDateSearch([]);
 		}
 	};
 
@@ -123,21 +119,19 @@ const VisitorList = ({ addTab }: VisitorProps) => {
 					prefix={<Search />}
 					onChange={(e) => setSearch(e.target.value)}
 				/>
-				<DateTimePicker size="large" onRangeChange={onRangeChange} />
-				<Button
-					type="primary"
-					className="search-button !bg-primary-500"
-					onClick={searchingVisitor}
+				<Tooltip
+					placement="top"
+					title={
+						hideInOut
+							? "Filter Date Created"
+							: "Filter Expected Time In and Out"
+					}
+					arrow={false}
 				>
-					Search
-				</Button>
-				<Button
-					type="primary"
-					className="search-button !bg-primary-500"
-					onClick={() => dispatch(fetchVisitors())}
-				>
-					Reset
-				</Button>
+					<>
+						<DateTimePicker size="large" onRangeChange={onRangeChange} />
+					</>
+				</Tooltip>
 				<Tooltip placement="top" title="Export List" arrow={false}>
 					<CSVLink
 						className="ml-auto"
@@ -150,7 +144,13 @@ const VisitorList = ({ addTab }: VisitorProps) => {
 				</Tooltip>
 			</div>
 			<div className="mr-[50px]">
-				<VisitorListTable addTab={addTab} />
+				<VisitorListTable
+					search={search}
+					dateSearch={dateSearch}
+					hideInOut={hideInOut}
+					setHideInOut={setHideInOut}
+					addTab={addTab}
+				/>
 			</div>
 		</div>
 	);

@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 
 //Components
 import { Table } from "antd";
-import type { ColumnsType, TableProps } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 
 //Interfaces
 import { VisitorLogDetails } from "../../../utils/interfaces";
@@ -17,17 +17,18 @@ import { formatDate } from "../../../utils";
 import "../../../utils/variables.scss";
 import "./styles.scss";
 
-const onChange: TableProps<VisitorLogDetails>["onChange"] = (
-	pagination: any,
-	filters: any,
-	sorter: any,
-	extra: any,
-) => {
-	console.log("params", pagination, filters, sorter, extra);
-};
+interface CompanionLogsTableProps {
+	filterWhen: boolean;
+	dateSearch: string[];
+}
 
-export default function CompanionLogsTable() {
+export default function CompanionLogsTable({
+	filterWhen,
+	dateSearch,
+}: CompanionLogsTableProps) {
 	const companionLogs = useSelector((state: RootState) => state.companionLogs);
+	const startDate = new Date(dateSearch[0]);
+	const endDate = new Date(dateSearch[1]);
 
 	const columns: ColumnsType<VisitorLogDetails> = [
 		{
@@ -88,8 +89,15 @@ export default function CompanionLogsTable() {
 	return (
 		<Table
 			columns={columns}
-			dataSource={companionLogs}
-			onChange={onChange}
+			dataSource={companionLogs.filter((log) => {
+				return dateSearch.length === 0
+					? log
+					: filterWhen
+					? new Date(log.purpose!.when) >= startDate &&
+					  new Date(log.purpose!.when) <= endDate
+					: new Date(log.timeIn) >= startDate &&
+					  new Date(log.timeOut) <= endDate;
+			})}
 			pagination={{ pageSize: 5 }}
 		/>
 	);
