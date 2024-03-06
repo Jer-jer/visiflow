@@ -1,4 +1,5 @@
 import React, { Dispatch, SetStateAction } from "react";
+import { useNavigate } from "react-router-dom";
 
 //Assets
 import RyanReynolds from "../../assets/ryan_reynolds.jpg";
@@ -19,11 +20,14 @@ export default function Header({
 	setIsAdmin,
 }: HeaderProps) {
 	const wasAdmin = localStorage.getItem("role");
+	const navigate = useNavigate();
+
 	const logout = () => {
 		wasAdmin && localStorage.removeItem("role");
 		localStorage.removeItem("token");
 		localStorage.removeItem("refreshToken");
 		setIsLoggedIn(false);
+		navigate("/");
 	};
 
 	return (

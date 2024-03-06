@@ -21,6 +21,7 @@ import { AppDispatch, RootState } from "../../../store";
 
 // Reducers
 import { fetchVisitors } from "../../../states/visitors";
+import { addTab, removeTab } from "../../../states/visitors/tab";
 
 //Styles
 import "../../../utils/variables.scss";
@@ -33,11 +34,6 @@ type TargetKey = React.MouseEvent | React.KeyboardEvent | string | number;
 
 interface VisitorProps {
 	addTab: (record: VisitorDataType) => void;
-}
-
-export interface TabItems {
-	key: TargetKey;
-	visitorData: VisitorDataType;
 }
 
 dayjs.extend(weekday);
@@ -157,7 +153,6 @@ const VisitorList = ({ addTab }: VisitorProps) => {
 };
 
 export default function VisitorManagementLayout() {
-	const [items, setItems] = useState<TabItems[]>([]);
 	const [activeKey, setActiveKey]: any = useState(1);
 	const newTabIndex = useRef(1);
 
@@ -165,12 +160,14 @@ export default function VisitorManagementLayout() {
 		(state: RootState) => state.visitors,
 	);
 
+	const tabs = useSelector((state: RootState) => state.visitorTabs);
+
 	const dispatch = useDispatch<AppDispatch>();
 
 	//TODO to change to real-time fetching soon
 	useEffect(() => {
 		dispatch(fetchVisitors());
-	}, [items]);
+	}, [tabs]);
 
 	useEffect(() => {
 		if (dashboardVisitor) {
@@ -185,22 +182,16 @@ export default function VisitorManagementLayout() {
 	const add = (record: VisitorDataType) => {
 		const newActiveKey = ++newTabIndex.current;
 
-		setItems((prevItems) => [
-			...prevItems,
-			{
-				key: newActiveKey,
-				visitorData: record!,
-			},
-		]);
+		dispatch(addTab({ newActiveKey, visitor: record }));
 
 		setActiveKey(newActiveKey);
 	};
 
 	const remove = (targetKey: TargetKey) => {
-		const targetIndex = items.findIndex(
+		const targetIndex = tabs.findIndex(
 			(pane) => pane.key.toString() === targetKey,
 		);
-		const newPanes = items.filter((pane) => pane.key.toString() !== targetKey);
+		const newPanes = tabs.filter((pane) => pane.key.toString() !== targetKey);
 
 		if (newPanes.length && targetKey === activeKey.toString()) {
 			const newActiveKey =
@@ -211,7 +202,7 @@ export default function VisitorManagementLayout() {
 			setActiveKey(newActiveKey.key);
 		} else setActiveKey(1);
 
-		setItems(newPanes);
+		dispatch(removeTab(newPanes));
 	};
 
 	const onEdit = (
@@ -235,16 +226,14 @@ export default function VisitorManagementLayout() {
 				<Tabs.TabPane closable={false} tab="Visitor List" key="1">
 					<VisitorList addTab={add} />
 				</Tabs.TabPane>
-				{items.map((item) => (
+				{tabs.map((tab) => (
 					<Tabs.TabPane
 						tab="Visitor Details"
-						key={item.key.toString()}
+						key={tab.key.toString()}
 						closeIcon={<TabClose />}
 					>
 						<VisitorDetails
-							record={item.visitorData}
-							items={items}
-							setItems={setItems}
+							record={tab.visitorData}
 							setActiveKey={setActiveKey}
 							newTabIndex={newTabIndex}
 						/>

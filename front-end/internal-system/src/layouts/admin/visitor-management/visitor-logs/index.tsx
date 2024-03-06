@@ -14,7 +14,7 @@ import { RootState } from "../../../../store";
 import type { Dayjs } from "dayjs";
 
 //Components
-import { Tooltip, Checkbox } from "antd";
+import { Tooltip, Checkbox, Modal } from "antd";
 import StandardModal from "../../../../components/modal";
 import VisitorLogsTable from "../../../../components/table/visitor-logs";
 import DateTimePicker from "../../../../components/datetime-picker";
@@ -91,6 +91,13 @@ export default function VisitorLogs({
 		};
 	});
 
+	const error = (message: string) => {
+		Modal.error({
+			title: `Error`,
+			content: message,
+		});
+	};
+
 	//TODO Must be updated real-time
 	useEffect(() => {
 		AxiosInstance.post(`/badge/findBadge`, { visitor_id: visitorId })
@@ -127,11 +134,20 @@ export default function VisitorLogs({
 						})
 						.catch((err) => {
 							console.log(err);
+							error(
+								err?.response?.data?.error ||
+									err?.response?.data?.errors ||
+									"Something went wrong.",
+							);
 						});
 				}
 			})
 			.catch((err) => {
-				console.log(err);
+				error(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
 			});
 	}, []);
 

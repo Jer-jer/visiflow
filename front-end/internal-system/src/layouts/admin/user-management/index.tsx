@@ -5,7 +5,7 @@ import React, {
 	Dispatch,
 	SetStateAction,
 } from "react";
-import AxiosInstance from "../../../lib/axios";
+import { useDispatch, useSelector } from "react-redux";
 import { CSVLink } from "react-csv";
 
 //Interfaces
@@ -17,8 +17,17 @@ import Alert from "../../../components/alert";
 import UserListTable from "../../../components/table/user-list";
 import UserDetails from "./user-details";
 
+//Store
+import { AppDispatch, RootState } from "../../../store";
+
+//Reducers
+import { addTab, removeTab } from "../../../states/users/tab";
+
 //Utils
 import { formatDate } from "../../../utils";
+
+//Libs
+import AxiosInstance from "../../../lib/axios";
 
 //Styles
 import "../../../utils/variables.scss";
@@ -30,45 +39,16 @@ import { ExcelDownload, Search, TabClose } from "../../../assets/svg";
 type TargetKey = React.MouseEvent | React.KeyboardEvent | string | number;
 
 interface UserListProps {
+	loading: boolean;
 	users: UserDataType[];
+	setLoading: Dispatch<SetStateAction<boolean>>;
 	setUsers: Dispatch<SetStateAction<UserDataType[]>>;
-	addTab: () => void;
+	addTab: (record: UserDataType) => void;
 	createUser: () => void;
 }
 
-export interface TabItems {
-	key: TargetKey;
-	tabName: string;
-	userData?: UserDataType;
-}
-
-const UserList = ({ users, setUsers, addTab, createUser }: UserListProps) => {
+const UserList = ({ loading, users, addTab, createUser }: UserListProps) => {
 	const [search, setSearch] = useState<string>("");
-
-	const searchingUsers = () => {
-		setUsers((users) =>
-			users.filter((user) => {
-				return (
-					user.name.first_name.toLowerCase().includes(search.toLowerCase()) ||
-					user.name.middle_name!.toLowerCase().includes(search.toLowerCase()) ||
-					user.name.last_name.toLowerCase().includes(search.toLowerCase()) ||
-					`${user.name.first_name.toLowerCase()} ${user.name.middle_name!.toLowerCase()} ${user.name.last_name.toLowerCase()}` ===
-						search.toLowerCase() ||
-					user.phone.includes(search.toLowerCase())
-				);
-			}),
-		);
-	};
-
-	const fetchUsers = () => {
-		AxiosInstance.get("/user")
-			.then((res) => {
-				setUsers(res.data.users);
-			})
-			.catch((err) => {
-				console.error(err);
-			});
-	};
 
 	const userDataHeaders = [
 		{ label: "First Name", key: "first_name" },
@@ -106,20 +86,6 @@ const UserList = ({ users, setUsers, addTab, createUser }: UserListProps) => {
 				/>
 				<Button
 					type="primary"
-					className="search-button !bg-primary-500"
-					onClick={searchingUsers}
-				>
-					Search
-				</Button>
-				<Button
-					type="primary"
-					className="search-button !bg-primary-500"
-					onClick={fetchUsers}
-				>
-					Reset
-				</Button>
-				<Button
-					type="primary"
 					onClick={createUser}
 					className="search-button !bg-primary-500"
 				>
@@ -137,32 +103,50 @@ const UserList = ({ users, setUsers, addTab, createUser }: UserListProps) => {
 				</Tooltip>
 			</div>
 			<div className="mr-[50px]">
-				<UserListTable users={users} search={search} addTab={addTab} />
+				<UserListTable
+					users={users}
+					search={search}
+					loading={loading}
+					addTab={addTab}
+				/>
 			</div>
 		</div>
 	);
 };
 
 export default function UserManagementLayout() {
-	const [items, setItems] = useState<TabItems[]>([]);
+	// const [items, setItems] = useState<TabItems[]>([]);
 	const [users, setUsers] = useState<UserDataType[]>([]);
 	const [activeKey, setActiveKey]: any = useState(1);
 	const newTabIndex = useRef(1);
+
+	const [loading, setLoading] = useState<boolean>(true);
 
 	// Alert
 	const [alertOpen, setAlertOpen] = useState(false);
 	const [status, setStatus] = useState(false);
 	const [alertMsg, setAlertMsg] = useState("");
 
+	const tabs = useSelector((state: RootState) => state.userTabs);
+
+	const dispatch = useDispatch<AppDispatch>();
+
 	useEffect(() => {
 		AxiosInstance.get("/user")
 			.then((res) => {
 				setUsers(res.data.users);
+				setLoading(false);
 			})
 			.catch((err) => {
-				console.error(err);
+				setAlertMsg(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
+				setAlertOpen(!alertOpen);
+				setLoading(false);
 			});
-	}, [items]);
+	}, [tabs]);
 
 	const onChange = (newActiveKey: string) => {
 		setActiveKey(newActiveKey);
@@ -181,43 +165,33 @@ export default function UserManagementLayout() {
 			.then((res) => {
 				const newActiveKey = ++newTabIndex.current;
 
-				setItems([
-					...items,
-					{
-						key: newActiveKey,
-						tabName: "New User",
-						userData: res.data.newUser,
-					},
-				]);
+				dispatch(addTab({ newActiveKey, user: res.data.newUser }));
 
 				setActiveKey(newActiveKey);
 			})
 			.catch((err) => {
-				setAlertMsg(err.response.data.error || err.response.data.errors);
+				setAlertMsg(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
 				setAlertOpen(!alertOpen);
 			});
 	};
 
-	const add = (record?: UserDataType) => {
+	const add = (record: UserDataType) => {
 		const newActiveKey = ++newTabIndex.current;
 
-		setItems([
-			...items,
-			{
-				key: newActiveKey,
-				tabName: "User Details",
-				userData: record,
-			},
-		]);
+		dispatch(addTab({ newActiveKey, user: record }));
 
 		setActiveKey(newActiveKey);
 	};
 
 	const remove = (targetKey: TargetKey) => {
-		const targetIndex = items.findIndex(
+		const targetIndex = tabs.findIndex(
 			(pane) => pane.key.toString() === targetKey,
 		);
-		const newPanes = items.filter((pane) => pane.key.toString() !== targetKey);
+		const newPanes = tabs.filter((pane) => pane.key.toString() !== targetKey);
 
 		if (newPanes.length && targetKey === activeKey.toString()) {
 			const newActiveKey =
@@ -228,7 +202,7 @@ export default function UserManagementLayout() {
 			setActiveKey(newActiveKey.key);
 		} else setActiveKey(1);
 
-		setItems(newPanes);
+		dispatch(removeTab(newPanes));
 	};
 
 	const onEdit = (
@@ -272,6 +246,8 @@ export default function UserManagementLayout() {
 							/>
 						</div>
 						<UserList
+							loading={loading}
+							setLoading={setLoading}
 							users={users}
 							addTab={add}
 							createUser={createUser}
@@ -279,16 +255,14 @@ export default function UserManagementLayout() {
 						/>
 					</div>
 				</Tabs.TabPane>
-				{items.map((item, key) => (
+				{tabs.map((item, key) => (
 					<Tabs.TabPane
-						tab={item.tabName}
+						tab="User Details"
 						key={item.key.toString()}
 						closeIcon={<TabClose />}
 					>
 						<UserDetails
 							record={item.userData}
-							items={items}
-							setItems={setItems}
 							setActiveKey={setActiveKey}
 							newTabIndex={newTabIndex}
 						/>
