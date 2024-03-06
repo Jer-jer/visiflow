@@ -1,9 +1,14 @@
 const Visitor = require("../models/visitor");
+const { Storage } = require('@google-cloud/storage');
 const {
   validateVisitor,
   validationResult,
 } = require("../middleware/dataValidation");
-const { generateSingleQRCode } = require("../utils/helper");
+const { 
+  generateSingleQRCode, 
+  uploadFileToGCS 
+} = require("../utils/helper");
+
 
 exports.getVisitors = async (req, res) => {
   try {
@@ -14,8 +19,9 @@ exports.getVisitors = async (req, res) => {
     return res
       .status(500)
       .json({ error: "Failed to retrieve visitors from the database" });
-  }
-};
+    }
+  };
+
 
 exports.addVisitor = async (req, res) => {
   const {
@@ -32,10 +38,15 @@ exports.addVisitor = async (req, res) => {
       plate_num,
       purpose,
       visitor_type,
-      status,
-      id_picture,
-    },
+      status
+    }
   } = req.body;
+
+  const [ frontId, backId, selfie ] = await Promise.all([
+    uploadFileToGCS(req.files['visitor_data[id_picture][front]'][0]),
+    uploadFileToGCS(req.files['visitor_data[id_picture][back]'][0]),
+    uploadFileToGCS(req.files['visitor_data[id_picture][selfie]'][0]),
+  ]);
 
   await Promise.all(
     validateVisitor.map((validation) => validation.run(req.body.visitor_data))
@@ -64,18 +75,22 @@ exports.addVisitor = async (req, res) => {
         email,
         phone,
       },
-      companion_details: companion_details,
+      companion_details: companion_details || [],
       plate_num: plate_num,
       purpose: purpose,
       expected_time_in,
       expected_time_out,
-      id_picture: id_picture,
+      id_picture: { 
+        front: frontId, 
+        back: backId, 
+        selfie: selfie 
+      },
       visitor_type: visitor_type,
       status: status,
     });
 
     if (newVisitor.visitor_type === "Pre-Registered") {
-      generateSingleQRCode(newVisitor._id);
+      // generateSingleQRCode(newVisitor._id);
     }
 
     return res.status(201).json({ Visitor: newVisitor });
