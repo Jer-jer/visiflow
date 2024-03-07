@@ -122,9 +122,6 @@ export default function UserActionLogs({
 			<div className="flex justify-between">
 				<div className="flex w-full items-center justify-start gap-[25px]">
 					<DateTimePicker size="middle" onRangeChange={onRangeChange} />
-					<Button type="primary" className="search-button !bg-primary-500">
-						Search
-					</Button>
 				</div>
 				<Tooltip placement="top" title="Export Logs" arrow={false}>
 					<CSVLink

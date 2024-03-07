@@ -199,7 +199,7 @@ exports.updateVisitor = async (req, res) => {
       { new: true }
     );
 
-    res.status(201).json({ Visitor: updatedVisitor });
+    res.status(201).json({ visitor: updatedVisitor });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to update user" });
