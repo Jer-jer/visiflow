@@ -9,7 +9,6 @@ const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
 const nodemailer = require("nodemailer");
 const { Storage } = require("@google-cloud/storage");
-const base64 = require("base64-js");
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 const ACCESS_TOKEN_EXPIRATION = "20m";
@@ -222,83 +221,38 @@ async function updateLog(badgeId, visitorId, res) {
   }
 }
 
-//TODO FIX
-//? Convert base64 image to file
-function base64ToFile(string64, fileName) {
-  const trimmedString = string64.replace("data:image/jpeg;base64,", "");
-  const imageContent = atob(trimmedString);
-  const buffer = new ArrayBuffer(imageContent.length);
-  const view = new Uint8Array(buffer);
-
-  for (let n = 0; n < imageContent.length; n++) {
-    view[n] = imageContent.charCodeAt(n);
-  }
-  const type = "image/jpeg";
-  const blob = new Blob([buffer], { type });
-
-  // Save the file (optional, uncomment if needed)
-  // saveAs(blob, fileName); // Saves the file to the user's device
-
-  const file = new File([blob], fileName, {
-    lastModified: new Date().getTime(),
-    type,
-  });
-
-  return file; // Return the created File object
-}
-//TODO FIX THIS FUCKING SHIT
-//? Upload Base64 to GCS
-async function uploadBase64ToGCS(base64String, fileName, mimeType) {
-  const trimmedString = base64String.replace("data:image/jpeg;base64,", "");
-  const decode = base64.toByteArray(trimmedString);
-  const bucket = storage.bucket(bucketName);
-  const fileUpload = bucket.file(fileName);
-
-  const stream = fileUpload.createWriteStream({
-    metadata: {
-      contentType: mimeType,
-    },
-    resumable: false,
-  });
-
-  return new Promise((resolve, reject) => {
-    stream.on("error", (err) => {
-      reject(err);
-    });
-
-    stream.on("finish", () => {
-      resolve(`https://storage.googleapis.com/${bucketName}/${fileName}`);
-    });
-
-    stream.end(decode);
-  });
-}
-
 //? Upload File to GCS
-// async function uploadFileToGCS(file) {
-//   const bucket = storage.bucket(bucketName);
-//   const fileName = `${Date.now()}_${file.originalname}`;
-//   const fileUpload = bucket.file(fileName);
+function uploadFileToGCS(bufferData, fileName) {
+  const bucket = storage.bucket(bucketName);
+  const file = bucket.file(fileName);
 
-//   const stream = fileUpload.createWriteStream({
-//     metadata: {
-//       contentType: file.mimetype,
-//     },
-//     resumable: false,
-//   });
+  file.save(bufferData, {
+    contentType: "image/jpeg",
+  });
 
-//   return new Promise((resolve, reject) => {
-//     stream.on("error", (err) => {
-//       reject(err);
-//     });
+  const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
 
-//     stream.on("finish", () => {
-//       resolve(`https://storage.googleapis.com/${bucketName}/${fileName}`);
-//     });
+  return publicUrl;
 
-//     stream.end(file.buffer);
-//   });
-// }
+  // const stream = fileUpload.createWriteStream({
+  //   metadata: {
+  //     contentType: file.type,
+  //   },
+  //   resumable: false,
+  // });
+
+  // return new Promise((resolve, reject) => {
+  //   stream.on("error", (err) => {
+  //     reject(err);
+  //   });
+
+  //   stream.on("finish", () => {
+  //     resolve(`https://storage.googleapis.com/${bucketName}/${fileName}`);
+  //   });
+
+  //   stream.end(file.buffer);
+  // });
+}
 
 module.exports = {
   hashPassword,
@@ -310,6 +264,5 @@ module.exports = {
   generateQRCode,
   generateSingleQRCode,
   updateLog,
-  base64ToFile,
-  uploadBase64ToGCS,
+  uploadFileToGCS,
 };

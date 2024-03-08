@@ -5,7 +5,6 @@ import React, {
 	MutableRefObject,
 	Dispatch,
 	SetStateAction,
-	useEffect,
 } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -101,8 +100,8 @@ export default function VisitorDetails({
 
 	const [disabledInputs, setDisabledInputs] = useState<boolean>(true);
 
-	const [idPicture, setIdPicture] = useState<IDPictureProps>({
-		// TEMPORARY
+	const [idPicture] = useState<IDPictureProps>({
+		//? In case there are no pictures
 		front:
 			"https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2d0041db-96ab-4012-b808-2cf1a664da62/d4ci082-7c5296e1-da7e-4d78-bc19-09123ba8da8f.png/v1/fill/w_600,h_600/profile_unavailable_by_whledo_d4ci082-fullview.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NjAwIiwicGF0aCI6IlwvZlwvMmQwMDQxZGItOTZhYi00MDEyLWI4MDgtMmNmMWE2NjRkYTYyXC9kNGNpMDgyLTdjNTI5NmUxLWRhN2UtNGQ3OC1iYzE5LTA5MTIzYmE4ZGE4Zi5wbmciLCJ3aWR0aCI6Ijw9NjAwIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.qwXReMzAA7SgocVUaM4qjm8SLZTdyyNoiZ_mD-ZSH7o",
 		back: "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2d0041db-96ab-4012-b808-2cf1a664da62/d4ci082-7c5296e1-da7e-4d78-bc19-09123ba8da8f.png/v1/fill/w_600,h_600/profile_unavailable_by_whledo_d4ci082-fullview.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NjAwIiwicGF0aCI6IlwvZlwvMmQwMDQxZGItOTZhYi00MDEyLWI4MDgtMmNmMWE2NjRkYTYyXC9kNGNpMDgyLTdjNTI5NmUxLWRhN2UtNGQ3OC1iYzE5LTA5MTIzYmE4ZGE4Zi5wbmciLCJ3aWR0aCI6Ijw9NjAwIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.qwXReMzAA7SgocVUaM4qjm8SLZTdyyNoiZ_mD-ZSH7o",
@@ -115,23 +114,6 @@ export default function VisitorDetails({
 	// Store Related variables
 	const tabs = useSelector((state: RootState) => state.visitorTabs);
 	const dispatch = useDispatch();
-
-	useEffect(() => {
-		AxiosInstance.post("/visitor/retrieve-image", {
-			_id: record._id,
-		})
-			.then((res) => {
-				setIdPicture(res.data.id_picture);
-			})
-			.catch((err) => {
-				setAlertOpen(!alertOpen);
-				setAlertMsg(
-					err?.response?.data?.error ||
-						err?.response?.data?.errors ||
-						"Something went wrong.",
-				);
-			});
-	}, []);
 
 	// Client-side Validation related data
 	const {
@@ -302,10 +284,10 @@ export default function VisitorDetails({
 		saveAction(data);
 	});
 
-	const closeTab = (_id: string | undefined) => {
-		const newActiveKey = --newTabIndex.current;
+	const closeTab = (_id: string) => {
+		const newActiveKey = newTabIndex.current - 1;
 		const newItems = [...tabs];
-		const index = newItems.map((e) => e.visitorData._id).indexOf(_id!);
+		const index = newItems.map((e) => e.visitorData._id).indexOf(_id);
 		if (index !== -1) {
 			newItems.splice(index, 1);
 			dispatch(removeTab(newItems));
@@ -824,17 +806,16 @@ export default function VisitorDetails({
 									className="cursor-pointer"
 									onClick={() => setIdentificationOpen(!identificationOpen)}
 									size={width === 1210 ? 150 : 220}
-									//TEMPORARY
 									src={
-										idPicture
-											? idPicture.selfie
-											: "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2d0041db-96ab-4012-b808-2cf1a664da62/d4ci082-7c5296e1-da7e-4d78-bc19-09123ba8da8f.png/v1/fill/w_600,h_600/profile_unavailable_by_whledo_d4ci082-fullview.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NjAwIiwicGF0aCI6IlwvZlwvMmQwMDQxZGItOTZhYi00MDEyLWI4MDgtMmNmMWE2NjRkYTYyXC9kNGNpMDgyLTdjNTI5NmUxLWRhN2UtNGQ3OC1iYzE5LTA5MTIzYmE4ZGE4Zi5wbmciLCJ3aWR0aCI6Ijw9NjAwIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.qwXReMzAA7SgocVUaM4qjm8SLZTdyyNoiZ_mD-ZSH7o"
+										record.id_picture
+											? record.id_picture.selfie
+											: idPicture.selfie
 									}
 								/>
 								<Identification
 									open={identificationOpen}
 									setOpen={setIdentificationOpen}
-									image={idPicture}
+									image={record.id_picture ? record.id_picture : idPicture}
 								/>
 								<div
 									className={`flex flex-col items-center ${

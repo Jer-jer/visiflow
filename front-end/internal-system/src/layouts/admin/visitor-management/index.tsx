@@ -29,7 +29,6 @@ import "./styles.scss";
 
 //Assets
 import { ExcelDownload, Search, TabClose } from "../../../assets/svg";
-import AxiosInstace from "../../../lib/axios";
 
 type TargetKey = React.MouseEvent | React.KeyboardEvent | string | number;
 

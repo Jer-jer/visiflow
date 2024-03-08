@@ -4,15 +4,12 @@ const {
   validateVisitor,
   validationResult,
 } = require("../middleware/dataValidation");
-const {
-  generateSingleQRCode,
-  uploadBase64ToGCS,
-  base64ToFile,
-} = require("../utils/helper");
+const { generateSingleQRCode, uploadFileToGCS } = require("../utils/helper");
+const { Buffer } = require("node:buffer");
 
 exports.getVisitors = async (req, res) => {
   try {
-    const visitors = await Visitor.find({}, "-id_picture");
+    const visitors = await Visitor.find();
     return res.status(200).json({ visitors });
   } catch (error) {
     console.error(error);
@@ -42,48 +39,50 @@ exports.addVisitor = async (req, res) => {
     },
   } = req.body;
 
-  console.log(
-    base64ToFile(id_picture.front, `${last_name.toUpperCase()}_FRONT.jpeg`)
-  );
-
-  const [frontId, backId, selfie] = await Promise.all([
-    uploadBase64ToGCS(
-      id_picture.front,
-      `${last_name.toUpperCase()}_FRONT.jpg`,
-      "image/jpeg"
-    ),
-    uploadBase64ToGCS(
-      id_picture.back,
-      `${last_name.toUpperCase()}_BACK.jpg`,
-      "image/jpeg"
-    ),
-    uploadBase64ToGCS(
-      id_picture.selfie,
-      `${last_name.toUpperCase()}_SELFIE.jpg`,
-      "image/jpeg"
-    ),
-  ]);
-
-  await Promise.all(
-    validateVisitor.map((validation) => validation.run(req.body.visitor_data))
-  );
-
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array()[0].msg });
-  }
-
-  const visitorDB = await Visitor.findOne({
-    "visitor_details.name.first_name": first_name,
-    "visitor_details.name.middle_name": middle_name,
-    "visitor_details.name.last_name": last_name,
-  });
-
-  if (visitorDB) {
-    return res.status(409).json({ error: "Visitor already exists" });
-  }
-
   try {
+    await Promise.all(
+      validateVisitor.map((validation) => validation.run(req.body.visitor_data))
+    );
+  
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array()[0].msg });
+    }
+  
+    const visitorDB = await Visitor.findOne({
+      "visitor_details.name.first_name": first_name,
+      "visitor_details.name.middle_name": middle_name,
+      "visitor_details.name.last_name": last_name,
+    });
+  
+    if (visitorDB) {
+      return res.status(409).json({ error: "Visitor already exists" });
+    }
+  
+    const [frontId, backId, selfieId] = [
+      uploadFileToGCS(
+        Buffer.from(
+          id_picture.front.replace(/^data:image\/\w+;base64,/, ""),
+          "base64"
+        ),
+        `${Date.now()}_${last_name.toUpperCase()}_front.jpg`
+      ),
+      uploadFileToGCS(
+        Buffer.from(
+          id_picture.back.replace(/^data:image\/\w+;base64,/, ""),
+          "base64"
+        ),
+        `${Date.now()}_${last_name.toUpperCase()}_back.jpg`
+      ),
+      uploadFileToGCS(
+        Buffer.from(
+          id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""),
+          "base64"
+        ),
+        `${Date.now()}_${last_name.toUpperCase()}_selfie.jpg`
+      ),
+    ];
+  
     const newVisitor = await Visitor.create({
       visitor_details: {
         name: { first_name, middle_name, last_name },
@@ -99,17 +98,13 @@ exports.addVisitor = async (req, res) => {
       id_picture: {
         front: frontId,
         back: backId,
-        selfie: selfie,
+        selfie: selfieId,
       },
       visitor_type: visitor_type,
       status: status,
     });
-
-    if (newVisitor.visitor_type === "Pre-Registered") {
-      // generateSingleQRCode(newVisitor._id);
-    }
-
-    return res.status(201).json({ Visitor: newVisitor });
+  
+    return res.status(201).json({ visitor: newVisitor });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to create a new visitor" });
@@ -130,22 +125,6 @@ exports.findVisitor = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to find visitor by ID" });
-  }
-};
-
-//Get visitor image by ID
-exports.getVisitorImageById = async (req, res) => {
-  try {
-    const { _id } = req.body;
-    const searchedVisitor = await Visitor.findById(_id);
-
-    if (searchedVisitor) {
-      return res.status(201).json({ id_picture: searchedVisitor.id_picture });
-    } else {
-      return res.status(404).json({ error: "visitor not found" });
-    }
-  } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -236,5 +215,30 @@ exports.deleteVisitor = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.updateStatus = async (req, res) => {
+  const { _id, status } = req.body;
+
+  try {
+    const visitorDB = await Visitor.findById(_id);
+
+    if (!visitorDB) {
+      return res.status(404).json({ error: "Visitor not found" });
+    }
+
+    visitorDB.status = status;
+    await visitorDB.save();
+
+    if (status === "Approved") {
+      generateSingleQRCode(visitorDB._id);
+      //add to notification model
+    }
+
+    res.status(200).json({ message: `User is now ${status}` });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to update visitor status" });
   }
 };
