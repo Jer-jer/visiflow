@@ -245,6 +245,7 @@ async function uploadFileToGCS(imageData) {
 
         const buffer = Buffer.from(imageData, 'base64');
         stream.end(buffer);
+
     });
 }
 

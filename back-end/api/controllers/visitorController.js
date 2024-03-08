@@ -1,4 +1,5 @@
 const Visitor = require("../models/visitor");
+const { Storage } = require('@google-cloud/storage');
 const {
   validateVisitor,
   validationResult,
@@ -18,8 +19,9 @@ exports.getVisitors = async (req, res) => {
     return res
       .status(500)
       .json({ error: "Failed to retrieve visitors from the database" });
-  }
-};
+    }
+  };
+
 
 exports.addVisitor = async (req, res) => {
   const {
@@ -87,7 +89,7 @@ exports.addVisitor = async (req, res) => {
       visitor_type: visitor_type,
       status: status,
     });
-    
+
     return res.status(201).json({ Visitor: newVisitor });
   } catch (error) {
     console.error(error);
@@ -193,7 +195,7 @@ exports.updateVisitor = async (req, res) => {
       { new: true }
     );
 
-    res.status(201).json({ Visitor: updatedVisitor });
+    res.status(201).json({ visitor: updatedVisitor });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to update user" });
