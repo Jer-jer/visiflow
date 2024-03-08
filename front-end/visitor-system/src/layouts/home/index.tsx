@@ -104,7 +104,6 @@ export default function Home() {
 				message: announcement.message,
 			  }));
 			setAnnouncement(convertedData);
-			console.log("data", announcement)
 		  } catch (error) {
 			console.error('Error fetching announcements:', error);
 		  }

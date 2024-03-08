@@ -97,7 +97,10 @@ export default function CompanionDetails({
 			city: record!.address.city,
 			province: record!.address.province,
 			country: record!.address.country,
-			check_in_out: [data[mainVisitorIndex].expected_time_in, data[mainVisitorIndex].expected_time_out],
+			check_in_out: [
+				data[mainVisitorIndex].expected_time_in,
+				data[mainVisitorIndex].expected_time_out,
+			],
 		},
 	});
 
@@ -190,7 +193,11 @@ export default function CompanionDetails({
 			.catch((err) => {
 				setStatus(false);
 				setAlertOpen(true);
-				setAlertMsg(err.response.data.error || err.response.data.errors);
+				setAlertMsg(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
 			});
 	};
 
@@ -223,7 +230,11 @@ export default function CompanionDetails({
 			.catch((err) => {
 				setStatus(false);
 				setAlertOpen(true);
-				setAlertMsg(err.response.data.error || err.response.data.errors);
+				setAlertMsg(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
 			});
 	};
 
@@ -580,8 +591,12 @@ export default function CompanionDetails({
 											rangePickerStyling="bg-[#e0ebf0] border-none w-[inherit] hover:!bg-[#e0ebf0] focus-within:!bg-[#e0ebf0] focus:!bg-[#e0ebf0]"
 											size="large"
 											defaultVal={{
-												from: data[mainVisitorIndex].expected_time_in || formatDate(new Date()),
-												to: data[mainVisitorIndex].expected_time_out || formatDate(new Date()),
+												from:
+													data[mainVisitorIndex].expected_time_in ||
+													formatDate(new Date()),
+												to:
+													data[mainVisitorIndex].expected_time_out ||
+													formatDate(new Date()),
 											}}
 											onRangeChange={onRangeChange}
 											visitorMngmnt

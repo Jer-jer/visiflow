@@ -14,6 +14,9 @@ import type { RootState } from "../../../store";
 // Utils
 import { formatDate } from "../../../utils";
 
+// Assets
+import { LoadingOutlined } from "@ant-design/icons";
+
 //Styles
 import "../../../utils/variables.scss";
 import "./styles.scss";
@@ -33,7 +36,7 @@ export default function VisitorListTable({
 	setHideInOut,
 	addTab,
 }: AdminTableProps) {
-	const { data } = useSelector((state: RootState) => state.visitors);
+	const { data, loading } = useSelector((state: RootState) => state.visitors);
 	const startDate = new Date(dateSearch[0]);
 	const endDate = new Date(dateSearch[1]);
 
@@ -168,6 +171,10 @@ export default function VisitorListTable({
 			<Table
 				className="mt-3"
 				columns={columns}
+				loading={{
+					spinning: loading,
+					indicator: <LoadingOutlined />,
+				}}
 				dataSource={data
 					.filter((visitor) => {
 						return search.toLowerCase() === ""
