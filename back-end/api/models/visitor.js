@@ -35,50 +35,17 @@ const VisitorDetails = new Schema({
 });
 
 const Purpose = new Schema({
-  what: [
-    {
-      type: String,
-      required: true,
-    },
-  ],
-  when: {
-    type: String,
-    required: true,
-  },
-  where: [
-    {
-      type: String,
-      required: true,
-    },
-  ],
-  who: [
-    {
-      type: String,
-      required: true,
-    },
-  ],
+  what: [{ type: String, required: true }],
+  when: { type: String, required: true },
+  where: [{ type: String, required: true }],
+  who: [{ type: String, required: true }],
 });
 
 const VisitorSchema = new Schema({
-  visitor_details: {
-    type: VisitorDetails,
-    required: true,
-  },
-  companion_details: [
-    {
-      type: VisitorDetails,
-      required: true,
-      default: [],
-    },
-  ],
-  plate_num: {
-    type: String,
-    required: false,
-  },
-  purpose: {
-    type: Purpose,
-    required: true,
-  },
+  visitor_details: { type: VisitorDetails, required: true },
+  companion_details: [{ type: VisitorDetails, required: true, default: [] }],
+  plate_num: { type: String, sparse: true },
+  purpose: { type: Purpose, required: true },
   visitor_type: {
     type: String,
     enum: ["Walk-In", "Pre-Registered"],
@@ -90,19 +57,22 @@ const VisitorSchema = new Schema({
     default: "In Progress",
     required: true,
   },
-  id_picture: {
-    type: IdPhoto,
-    required: true,
-  },
-  expected_time_in: {
-    type: String,
-  },
-  expected_time_out: {
-    type: String,
-  },
+  id_picture: { type: IdPhoto, required: true },
+  expected_time_in: { type: String, sparse: true },
+  expected_time_out: { type: String, sparse: true },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
 });
+
+VisitorSchema.index({ "visitor_details.email": 1, "visitor_details.phone": 1 });
+
+VisitorSchema.index({
+  "visitor_details.name.first_name": 1,
+  "visitor_details.name.middle_name": 1,
+  "visitor_details.name.last_name": 1
+});
+
+VisitorSchema.index({ status: 1 });
 
 const VisitorModel = processConnection.model("visitor", VisitorSchema);
 
