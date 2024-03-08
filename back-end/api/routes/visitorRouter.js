@@ -21,6 +21,8 @@ router.post("/retrieve-image",passport.authenticate("jwt", { session: false }), 
 
 router.put("/update", passport.authenticate("jwt", { session: false }),  VisitorController.updateVisitor);
 
+router.put("/update-status", passport.authenticate("jwt", {session: false }), VisitorController.updateStatus);
+
 router.delete("/delete", passport.authenticate("jwt", { session: false }), VisitorController.deleteVisitor);
 
 module.exports = router;

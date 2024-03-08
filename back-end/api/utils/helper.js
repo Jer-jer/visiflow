@@ -221,14 +221,15 @@ async function updateLog(badgeId, visitorId, res) {
   }
 }
 
-async function uploadFileToGCS(file) {
+async function uploadFileToGCS(imageData) {
     const bucket = storage.bucket(bucketName);
-    const fileName = `${Date.now()}_${file.originalname}`;
+    // const fileName = `${Date.now()}_${file.originalname}`;
+    const fileName = `${Date.now()}_image.jpg`
     const fileUpload = bucket.file(fileName);
 
     const stream = fileUpload.createWriteStream({
         metadata: {
-        contentType: file.mimetype,
+          contentType: 'image/jpeg',
         },
         resumable: false,
     });
@@ -242,7 +243,9 @@ async function uploadFileToGCS(file) {
         resolve(`https://storage.googleapis.com/${bucketName}/${fileName}`);
         });
 
-        stream.end(file.buffer);
+        const buffer = Buffer.from(imageData, 'base64');
+        stream.end(buffer);
+
     });
 }
 

@@ -42,32 +42,33 @@ exports.addVisitor = async (req, res) => {
     }
   } = req.body;
 
-  const [ frontId, backId, selfie ] = await Promise.all([
-    uploadFileToGCS(req.files['visitor_data[id_picture][front]'][0]),
-    uploadFileToGCS(req.files['visitor_data[id_picture][back]'][0]),
-    uploadFileToGCS(req.files['visitor_data[id_picture][selfie]'][0]),
-  ]);
-
-  await Promise.all(
-    validateVisitor.map((validation) => validation.run(req.body.visitor_data))
-  );
-
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array()[0].msg });
-  }
-
-  const visitorDB = await Visitor.findOne({
-    "visitor_details.name.first_name": first_name,
-    "visitor_details.name.middle_name": middle_name,
-    "visitor_details.name.last_name": last_name,
-  });
-
-  if (visitorDB) {
-    return res.status(409).json({ error: "Visitor already exists" });
-  }
-
   try {
+    
+    await Promise.all(
+      validateVisitor.map((validation) => validation.run(req.body.visitor_data))
+    );
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array()[0].msg });
+    }
+
+    const visitorDB = await Visitor.findOne({
+      "visitor_details.name.first_name": first_name,
+      "visitor_details.name.middle_name": middle_name,
+      "visitor_details.name.last_name": last_name,
+    });
+
+    if (visitorDB) {
+      return res.status(409).json({ error: "Visitor already exists" });
+    }
+
+    const [ frontId, backId, selfie ] = await Promise.all([
+      uploadFileToGCS('visitor_data.id_picture.front'),
+      uploadFileToGCS('visitor_data.id_picture.back'),
+      uploadFileToGCS('visitor_data.id_picture.selfie'),
+    ]);
+
     const newVisitor = await Visitor.create({
       visitor_details: {
         name: { first_name, middle_name, last_name },
@@ -88,10 +89,6 @@ exports.addVisitor = async (req, res) => {
       visitor_type: visitor_type,
       status: status,
     });
-
-    if (newVisitor.visitor_type === "Pre-Registered") {
-      // generateSingleQRCode(newVisitor._id);
-    }
 
     return res.status(201).json({ Visitor: newVisitor });
   } catch (error) {
@@ -117,7 +114,6 @@ exports.findVisitor = async (req, res) => {
   }
 };
 
-//Get visitor image by ID
 exports.getVisitorImageById = async (req, res) => {
   try {
     const { _id } = req.body;
@@ -220,5 +216,31 @@ exports.deleteVisitor = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.updateStatus = async (req, res) => {
+  const { _id, status } = req.body;
+
+  try {
+    const visitorDB = await Visitor.findById(_id);
+    
+    if (!visitorDB) {
+      return res.status(404).json({ error: "Visitor not found" });
+    }
+
+    visitorDB.status = status;
+    await visitorDB.save();
+
+    if (status === 'Approved') {
+      generateSingleQRCode(visitorDB._id);
+      //add to notification model
+    }
+
+    res.status(200).json({ message: `User is now ${status}` });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to update visitor status" });
   }
 };
