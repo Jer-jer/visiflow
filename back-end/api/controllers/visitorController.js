@@ -62,9 +62,9 @@ exports.addVisitor = async (req, res) => {
     }
 
     const [ frontId, backId, selfie ] = await Promise.all([
-      uploadFileToGCS('visitor_data.id_picture.front'),
-      uploadFileToGCS('visitor_data.id_picture.back'),
-      uploadFileToGCS('visitor_data.id_picture.selfie'),
+      uploadFileToGCS(req.files['visitor_data[id_picture][front]'][0]),
+      uploadFileToGCS(req.files['visitor_data[id_picture][back]'][0]),
+      uploadFileToGCS(req.files['visitor_data[id_picture][selfie]'][0]),
     ]);
 
     const newVisitor = await Visitor.create({
@@ -87,7 +87,7 @@ exports.addVisitor = async (req, res) => {
       visitor_type: visitor_type,
       status: status,
     });
-    
+    q
     return res.status(201).json({ Visitor: newVisitor });
   } catch (error) {
     console.error(error);
@@ -227,13 +227,15 @@ exports.updateStatus = async (req, res) => {
       return res.status(404).json({ error: "Visitor not found" });
     }
 
+    try {
+      generateSingleQRCode(visitorDB._id);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ Error: 'Failed to send email' });
+    }
+
     visitorDB.status = status;
     await visitorDB.save();
-
-    if (status === 'Approved') {
-      generateSingleQRCode(visitorDB._id);
-      //add to notification model
-    }
 
     res.status(200).json({ message: `User is now ${status}` });
 

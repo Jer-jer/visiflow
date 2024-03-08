@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
   service: "Gmail",
   auth: {
     user: process.env.MAILER,
-    pass: process.env.MAILER_PASSWORD, //! DO NOT REMOVE, I DID NOT MEMORIZE THIS
+    pass: process.env.MAILER_PASSWORD,
   },
 });
 
@@ -77,7 +77,7 @@ async function generateQRCode(badgeId) {
   return new Promise((resolve, reject) => {
     const filename = `api/resource/badge/badge${badgeId}.png`;
     //insert local machine ip here
-    const uri = `http://192.168.1.175:5000/badge/checkBadge?qr_id=${badgeId}`;
+    const uri = `http://192.168.1.2:5000/badge/checkBadge?qr_id=${badgeId}`;
     QRCode.toFile(filename, uri, { errorCorrectionLevel: "H" }, function (err) {
       if (err) {
         console.error(
@@ -109,7 +109,7 @@ async function generateSingleQRCode(visitorId) {
     await badge.save();
 
     const filename = `api/resource/badge/badge${badge._id}.png`;
-    const uri = `http://192.168.1.175:5000/badge/checkBadge?visitor_id=${visitorId}`;
+    const uri = `http://192.168.1.2:5000/badge/checkBadge?visitor_id=${visitorId}`;
     await generateQRCode(uri, filename, badge._id);
 
     const mailOptions = {
@@ -221,31 +221,29 @@ async function updateLog(badgeId, visitorId, res) {
   }
 }
 
-async function uploadFileToGCS(imageData) {
-    const bucket = storage.bucket(bucketName);
-    // const fileName = `${Date.now()}_${file.originalname}`;
-    const fileName = `${Date.now()}_image.jpg`
-    const fileUpload = bucket.file(fileName);
+async function uploadFileToGCS(file) {
+  const bucket = storage.bucket(bucketName);
+  const fileName = `${Date.now()}_${file.originalname}`;
+  const fileUpload = bucket.file(fileName);
 
-    const stream = fileUpload.createWriteStream({
-        metadata: {
-          contentType: 'image/jpeg',
-        },
-        resumable: false,
-    });
+  const stream = fileUpload.createWriteStream({
+      metadata: {
+      contentType: file.mimetype,
+      },
+      resumable: false,
+  });
 
-    return new Promise((resolve, reject) => {
-        stream.on('error', (err) => {
-        reject(err);
-        });
+  return new Promise((resolve, reject) => {
+      stream.on('error', (err) => {
+      reject(err);
+      });
 
-        stream.on('finish', () => {
-        resolve(`https://storage.googleapis.com/${bucketName}/${fileName}`);
-        });
+      stream.on('finish', () => {
+      resolve(`https://storage.googleapis.com/${bucketName}/${fileName}`);
+      });
 
-        const buffer = Buffer.from(imageData, 'base64');
-        stream.end(buffer);
-    });
+      stream.end(file.buffer);
+  });
 }
 
 module.exports = { 
