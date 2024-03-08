@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 // Utils
-import AxiosInstace from "../../lib/axios";
+import AxiosInstance from "../../lib/axios";
 
 // Types and Interfaces
 import type { PayloadAction } from "@reduxjs/toolkit";
@@ -9,6 +9,7 @@ import { VisitorDataType } from "../../utils/interfaces";
 
 export interface VisitorStoreState {
 	data: VisitorDataType[];
+	dashboardVisitor?: VisitorDataType;
 	loading: boolean;
 }
 
@@ -20,7 +21,7 @@ const initialState: VisitorStoreState = {
 export const fetchVisitors = createAsyncThunk(
 	"visitors/fetchVisitors",
 	async () => {
-		const response = await AxiosInstace.get("/visitor");
+		const response = await AxiosInstance.get("/visitor");
 		return response.data;
 	},
 );
@@ -52,6 +53,9 @@ export const visitorSlice = createSlice({
 				return visitor;
 			});
 		},
+		openVisitor: (state, action: PayloadAction<VisitorDataType>) => {
+			state.dashboardVisitor = action.payload;
+		},
 	},
 	extraReducers: (builder) => {
 		// For Fetching Visitors
@@ -69,5 +73,6 @@ export const visitorSlice = createSlice({
 	},
 });
 
-export const { update, deleteVisitor, deleteCompanion } = visitorSlice.actions;
+export const { update, deleteVisitor, deleteCompanion, openVisitor } =
+	visitorSlice.actions;
 export default visitorSlice.reducer;

@@ -8,6 +8,8 @@ const BuildingLocSchema = new Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
+BuildingLocSchema.index({ name: 1, roomNo: 1 }, { unique: true });
+
 const BuildingLocModel = mongoose.model('buildingLocation', BuildingLocSchema);
 
 module.exports = BuildingLocModel;

@@ -42,10 +42,6 @@ const exportOptions: MenuProps["items"] = [
 		label: "Export Visitor Logs",
 		key: "2",
 	},
-	{
-		label: "Export Visitor Details + Logs",
-		key: "3",
-	},
 ];
 
 const statusOptions = [

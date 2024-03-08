@@ -7,7 +7,7 @@ import { Modal } from "antd";
 import "./styles.scss";
 
 interface ModalProps {
-	header: string;
+	header: React.ReactNode;
 	size?: number;
 	centered?: boolean;
 	open: boolean;
@@ -27,7 +27,7 @@ export default function StandardModal({
 }: ModalProps) {
 	return (
 		<Modal
-			title={<span className="text-[22px] text-[#0C0D0D]">{header}</span>}
+			title={header}
 			centered={centered}
 			open={open}
 			maskClosable

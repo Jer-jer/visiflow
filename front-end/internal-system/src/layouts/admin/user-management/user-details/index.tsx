@@ -8,28 +8,34 @@ import React, {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import AxiosInstace from "../../../../lib/axios";
+import { useDispatch, useSelector } from "react-redux";
 
 //Interfaces
 import { UserDataType } from "../../../../utils/interfaces";
-import type { MenuProps } from "antd";
-import { TabItems } from "..";
 import {
 	UserDetailsZod,
 	UserDetailsInterfaceZod,
 } from "../../../../utils/zodSchemas";
+import type { TabItems } from "../../../../states/users/tab";
+import type { RootState } from "../../../../store";
+import type { UnknownAction } from "redux";
 
 //Layouts
 import UserActionLogs from "../user-action-logs";
 
 //Components
-import { Button, Dropdown, Modal, Input, Select, Form } from "antd";
+import { Button, Modal, Input, Select, Form } from "antd";
 import Label from "../../../../components/fields/input/label";
 import Alert from "../../../../components/alert";
 
+//Reducers
+import { updateUser, removeTab } from "../../../../states/users/tab";
+
+//Libs
+import AxiosInstance from "../../../../lib/axios";
+
 //Assets
 import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
-import { ExcelDownload } from "../../../../assets/svg";
 import { ExclamationCircleFilled } from "@ant-design/icons";
 
 //Styles
@@ -37,44 +43,27 @@ import "./styles.scss";
 
 interface UserDetailsProps {
 	newTabIndex: MutableRefObject<number>;
-	items: TabItems[];
 	record?: UserDataType;
-	setItems: Dispatch<React.SetStateAction<TabItems[]>>;
 	setActiveKey: Dispatch<SetStateAction<number>>;
 }
 
 type UserDetailsTypeZod = z.infer<typeof UserDetailsZod>;
-
-const exportOptions: MenuProps["items"] = [
-	{
-		label: "Export All",
-		key: "0",
-	},
-	{
-		label: "Export User Details",
-		key: "1",
-	},
-	{
-		label: "Export Action Logs",
-		key: "2",
-	},
-];
 
 const { confirm } = Modal;
 
 const closeTab = (
 	_id: string | undefined,
 	newTabIndex: MutableRefObject<number>,
-	items: TabItems[],
-	setItems: Dispatch<React.SetStateAction<TabItems[]>>,
+	tabs: TabItems[],
+	dispatch: Dispatch<UnknownAction>,
 	setActiveKey: Dispatch<SetStateAction<number>>,
 ) => {
 	const newActiveKey = --newTabIndex.current;
-	const newItems = [...items];
+	const newItems = [...tabs];
 	const index = newItems.map((e) => e.userData!._id).indexOf(_id!);
 	if (index !== -1) {
 		newItems.splice(index, 1);
-		setItems(newItems);
+		dispatch(removeTab(newItems));
 	}
 	setActiveKey(newActiveKey);
 };
@@ -82,9 +71,11 @@ const closeTab = (
 const showDeleteConfirm = (
 	_id: string | undefined,
 	newTabIndex: MutableRefObject<number>,
-	items: TabItems[],
-	setItems: Dispatch<React.SetStateAction<TabItems[]>>,
+	tabs: TabItems[],
+	dispatch: Dispatch<UnknownAction>,
 	setActiveKey: Dispatch<SetStateAction<number>>,
+	setAlertMsg: Dispatch<SetStateAction<string>>,
+	setAlertOpen: Dispatch<SetStateAction<boolean>>,
 ) => {
 	confirm({
 		title: "Are you sure you want to delete this user?",
@@ -94,16 +85,21 @@ const showDeleteConfirm = (
 		okType: "danger",
 		cancelText: "No",
 		onOk() {
-			AxiosInstace.delete("/user/delete", {
+			AxiosInstance.delete("/user/delete", {
 				data: {
 					_id: !_id && _id,
 				},
 			})
 				.then((res) => {
-					closeTab(_id, newTabIndex, items, setItems, setActiveKey);
+					closeTab(_id, newTabIndex, tabs, dispatch, setActiveKey);
 				})
 				.catch((err) => {
-					console.error(err.response.data.error || err.response.data.errors);
+					setAlertMsg(
+						err?.response?.data?.error ||
+							err?.response?.data?.errors ||
+							"Something went wrong.",
+					);
+					setAlertOpen(true);
 				});
 		},
 		onCancel() {
@@ -115,8 +111,6 @@ const showDeleteConfirm = (
 export default function UserDetails({
 	record,
 	newTabIndex,
-	items,
-	setItems,
 	setActiveKey,
 }: UserDetailsProps) {
 	// Alert State
@@ -128,6 +122,9 @@ export default function UserDetails({
 	const [actionLogsOpen, setActionLogsOpen] = useState(false);
 
 	const [disabledInputs, setDisabledInputs] = useState<boolean>(true);
+
+	const tabs = useSelector((state: RootState) => state.userTabs);
+	const dispatch = useDispatch();
 
 	useEffect(() => {}, [record]);
 
@@ -197,7 +194,7 @@ export default function UserDetails({
 
 		setDisabledInputs(!disabledInputs);
 
-		AxiosInstace.put("/user/update", {
+		AxiosInstance.put("/user/update", {
 			_id,
 			first_name: data.first_name,
 			middle_name: data.middle_name,
@@ -216,7 +213,11 @@ export default function UserDetails({
 			})
 			.catch((err) => {
 				setStatus(false);
-				setAlertMsg(err.response.data.error || err.response.data.errors);
+				setAlertMsg(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
 			});
 	};
 
@@ -246,22 +247,7 @@ export default function UserDetails({
 			</div>
 
 			<Form name="User Details" onFinish={onSubmit} autoComplete="off">
-				<div className="mr-[135px] flex flex-col gap-[35px] pt-[30px]">
-					<div className="flex justify-end">
-						<Dropdown
-							placement="bottomRight"
-							menu={{ items: exportOptions }}
-							trigger={["click"]}
-						>
-							<a
-								title="Export Data"
-								onClick={(e) => e.preventDefault()}
-								href="/"
-							>
-								<ExcelDownload />
-							</a>
-						</Dropdown>
-					</div>
+				<div className="mr-[135px] flex flex-col gap-[35px] pt-[80px]">
 					<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
 						<div className="flex justify-between">
 							<div className="flex w-[782px] flex-col gap-[20px]">
@@ -498,6 +484,8 @@ export default function UserDetails({
 										View Action Logs
 									</Button>
 									<UserActionLogs
+										userId={record!._id}
+										lastName={record!.name.last_name}
 										open={actionLogsOpen}
 										setOpen={setActionLogsOpen}
 									/>
@@ -511,9 +499,11 @@ export default function UserDetails({
 											showDeleteConfirm(
 												record!._id,
 												newTabIndex,
-												items,
-												setItems,
+												tabs,
+												dispatch,
 												setActiveKey,
+												setAlertMsg,
+												setAlertOpen,
 											)
 										}
 										type="primary"

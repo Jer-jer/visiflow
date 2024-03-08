@@ -16,18 +16,26 @@ import type { ColumnsType } from "antd/es/table";
 import "../../../utils/variables.scss";
 import "./styles.scss";
 
+interface VisitorCompanionsProps {
+	search: string;
+}
+
 export const CompanionRecord = createContext<VisitorDetailsProps | undefined>(
 	undefined,
 );
 
-export default function VisitorCompanionsList() {
+export default function VisitorCompanionsList({
+	search,
+}: VisitorCompanionsProps) {
 	const [openDetails, setOpenDetails] = useState(false);
 	const [openLogs, setOpenLogs] = useState(false);
 	const [companionRecord, setCompanionRecord] = useState<VisitorDetailsProps>();
+	const [companionLastname, setCompanionLastname] = useState("");
 
 	const recordContext = useContext(VisitorRecordContext);
 
-	const viewLogs = () => {
+	const viewLogs = (lastName: string) => {
+		setCompanionLastname(lastName);
 		setOpenLogs(!openLogs);
 	};
 
@@ -64,7 +72,9 @@ export default function VisitorCompanionsList() {
 			key: "actions",
 			render: (_, record) => (
 				<div className="flex gap-[10px]">
-					<Button onClick={viewLogs}>View Logs</Button>
+					<Button onClick={() => viewLogs(record.name.last_name)}>
+						View Logs
+					</Button>
 					<Button onClick={() => viewDetails(record)}>View Details</Button>
 				</div>
 			),
@@ -75,7 +85,30 @@ export default function VisitorCompanionsList() {
 		<>
 			<Table
 				columns={columns}
-				dataSource={recordContext!.companion_details}
+				dataSource={recordContext!.companion_details!.filter((companion) => {
+					return search.toLowerCase() === ""
+						? companion
+						: companion.name.first_name
+								.toLowerCase()
+								.includes(search.toLowerCase()) ||
+								companion.name
+									.middle_name!.toLowerCase()
+									.includes(search.toLowerCase()) ||
+								companion.name.last_name
+									.toLowerCase()
+									.includes(search.toLowerCase()) ||
+								`${companion.name.last_name} ${companion.name.first_name} ${companion.name.middle_name}`
+									.toLowerCase()
+									.includes(search.toLowerCase()) ||
+								`${companion.name.first_name}${
+									companion.name.middle_name
+										? ` ${companion.name.middle_name}`
+										: ""
+								} ${companion.name.last_name}`
+									.toLowerCase()
+									.includes(search.toLowerCase()) ||
+								companion.email.includes(search);
+				})}
 				pagination={{ pageSize: 5 }}
 			/>
 			<CompanionRecord.Provider value={companionRecord}>
@@ -84,7 +117,11 @@ export default function VisitorCompanionsList() {
 					open={openDetails}
 					setOpen={setOpenDetails}
 				/>
-				<CompanionLogs open={openLogs} setOpen={setOpenLogs} />
+				<CompanionLogs
+					open={openLogs}
+					setOpen={setOpenLogs}
+					lastname={companionLastname}
+				/>
 			</CompanionRecord.Provider>
 		</>
 	);

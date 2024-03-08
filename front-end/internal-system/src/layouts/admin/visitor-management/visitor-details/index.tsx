@@ -14,7 +14,7 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 //Interfaces
 import {
@@ -24,15 +24,12 @@ import {
 import { VisitorDataType, IDPictureProps } from "../../../../utils/interfaces";
 import { VisitorStatus, VisitorType } from "../../../../utils/enums";
 import { WidthContext } from "../../../logged-in";
-import { TabItems } from "..";
+import type { RootState } from "../../../../store";
 import type { Dayjs } from "dayjs";
 import type { DatePickerProps } from "antd";
 
 // Utils
 import { formatDate } from "../../../../utils";
-
-// Actions
-import { update, deleteVisitor } from "../../../../states/visitors";
 
 //Layouts
 import VisitorLogs from "../visitor-logs";
@@ -41,11 +38,9 @@ import NotifyPOI from "../notify-poi";
 import Identification from "../identification";
 
 //Components
-import type { MenuProps } from "antd";
 import {
 	Button,
 	Avatar,
-	Dropdown,
 	Select,
 	Input,
 	Form,
@@ -57,15 +52,18 @@ import DateTimePicker from "../../../../components/datetime-picker";
 import Label from "../../../../components/fields/input/label";
 import Alert from "../../../../components/alert";
 
+//Reducers
+import { update, deleteVisitor } from "../../../../states/visitors";
+import { updateVisitor, removeTab } from "../../../../states/visitors/tab";
+
 //Assets
-import { ExcelDownload } from "../../../../assets/svg";
 import { ExclamationCircleFilled } from "@ant-design/icons";
 
 //Styles
 import "./styles.scss";
 
 // Libraries
-import AxiosInstace from "../../../../lib/axios";
+import AxiosInstance from "../../../../lib/axios";
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -74,31 +72,10 @@ dayjs.extend(customParseFormat);
 interface VisitorDeetsProps {
 	newTabIndex: MutableRefObject<number>;
 	record: VisitorDataType;
-	items: TabItems[];
-	setItems: Dispatch<SetStateAction<TabItems[]>>;
 	setActiveKey: Dispatch<SetStateAction<number>>;
 }
 
 type VisitorDetailTypeZod = z.infer<typeof VisitorDetailZod>;
-
-const exportOptions: MenuProps["items"] = [
-	{
-		label: "Export All",
-		key: "0",
-	},
-	{
-		label: "Export Visitor Details",
-		key: "1",
-	},
-	{
-		label: "Export Visitor Logs",
-		key: "2",
-	},
-	{
-		label: "Export Visitor Details + Logs",
-		key: "3",
-	},
-];
 
 const { confirm } = Modal;
 
@@ -109,8 +86,6 @@ export const VisitorRecordContext = createContext<VisitorDataType | undefined>(
 export default function VisitorDetails({
 	newTabIndex,
 	record,
-	items,
-	setItems,
 	setActiveKey,
 }: VisitorDeetsProps) {
 	//Alert State
@@ -127,25 +102,34 @@ export default function VisitorDetails({
 	const [disabledInputs, setDisabledInputs] = useState<boolean>(true);
 
 	const [idPicture, setIdPicture] = useState<IDPictureProps>({
-		front: "../../../../assets/no-image.svg",
-		back: "../../../../assets/no-image.svg",
-		selfie: "../../../../assets/no-image.svg",
+		// TEMPORARY
+		front:
+			"https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2d0041db-96ab-4012-b808-2cf1a664da62/d4ci082-7c5296e1-da7e-4d78-bc19-09123ba8da8f.png/v1/fill/w_600,h_600/profile_unavailable_by_whledo_d4ci082-fullview.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NjAwIiwicGF0aCI6IlwvZlwvMmQwMDQxZGItOTZhYi00MDEyLWI4MDgtMmNmMWE2NjRkYTYyXC9kNGNpMDgyLTdjNTI5NmUxLWRhN2UtNGQ3OC1iYzE5LTA5MTIzYmE4ZGE4Zi5wbmciLCJ3aWR0aCI6Ijw9NjAwIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.qwXReMzAA7SgocVUaM4qjm8SLZTdyyNoiZ_mD-ZSH7o",
+		back: "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2d0041db-96ab-4012-b808-2cf1a664da62/d4ci082-7c5296e1-da7e-4d78-bc19-09123ba8da8f.png/v1/fill/w_600,h_600/profile_unavailable_by_whledo_d4ci082-fullview.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NjAwIiwicGF0aCI6IlwvZlwvMmQwMDQxZGItOTZhYi00MDEyLWI4MDgtMmNmMWE2NjRkYTYyXC9kNGNpMDgyLTdjNTI5NmUxLWRhN2UtNGQ3OC1iYzE5LTA5MTIzYmE4ZGE4Zi5wbmciLCJ3aWR0aCI6Ijw9NjAwIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.qwXReMzAA7SgocVUaM4qjm8SLZTdyyNoiZ_mD-ZSH7o",
+		selfie:
+			"https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2d0041db-96ab-4012-b808-2cf1a664da62/d4ci082-7c5296e1-da7e-4d78-bc19-09123ba8da8f.png/v1/fill/w_600,h_600/profile_unavailable_by_whledo_d4ci082-fullview.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NjAwIiwicGF0aCI6IlwvZlwvMmQwMDQxZGItOTZhYi00MDEyLWI4MDgtMmNmMWE2NjRkYTYyXC9kNGNpMDgyLTdjNTI5NmUxLWRhN2UtNGQ3OC1iYzE5LTA5MTIzYmE4ZGE4Zi5wbmciLCJ3aWR0aCI6Ijw9NjAwIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.qwXReMzAA7SgocVUaM4qjm8SLZTdyyNoiZ_mD-ZSH7o",
 	});
 
 	const width = useContext(WidthContext);
 
 	// Store Related variables
+	const tabs = useSelector((state: RootState) => state.visitorTabs);
 	const dispatch = useDispatch();
 
 	useEffect(() => {
-		AxiosInstace.post("/visitor/retrieve-image", {
+		AxiosInstance.post("/visitor/retrieve-image", {
 			_id: record._id,
 		})
 			.then((res) => {
 				setIdPicture(res.data.id_picture);
 			})
 			.catch((err) => {
-				console.log(err.data.error || err.data.errors);
+				setAlertOpen(!alertOpen);
+				setAlertMsg(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
 			});
 	}, []);
 
@@ -170,10 +154,7 @@ export default function VisitorDetails({
 			city: record.visitor_details.address.city,
 			province: record.visitor_details.address.province,
 			country: record.visitor_details.address.country,
-			check_in_out: [
-				record.visitor_details.time_in,
-				record.visitor_details.time_out,
-			],
+			check_in_out: [record.expected_time_in, record.expected_time_out],
 			plate_num: record.plate_num,
 			status: record.status,
 			visitor_type: record.visitor_type,
@@ -202,6 +183,9 @@ export default function VisitorDetails({
 				setValue(property, value as string);
 				break;
 			case "email":
+				setValue(property, value as string);
+				break;
+			case "house":
 				setValue(property, value as string);
 				break;
 			case "street":
@@ -268,11 +252,12 @@ export default function VisitorDetails({
 	};
 
 	const saveAction = (zodData: VisitorDetailsInterfaceZod) => {
-		AxiosInstace.put("/visitor/update", {
+		AxiosInstance.put("/visitor/update", {
 			_id: record._id,
 			first_name: zodData.first_name,
 			middle_name: zodData.middle_name,
 			last_name: zodData.last_name,
+			companion_details: record.companion_details,
 			phone: zodData.phone,
 			email: zodData.email,
 			house_no: zodData.house,
@@ -281,32 +266,35 @@ export default function VisitorDetails({
 			city: zodData.city,
 			province: zodData.province,
 			country: zodData.country,
-			time_in: zodData.check_in_out[0],
-			time_out: zodData.check_in_out[1],
+			expected_time_in: zodData.check_in_out[0],
+			expected_time_out: zodData.check_in_out[1],
 			plate_num: zodData.plate_num,
 			status: zodData.status,
 			visitor_type: zodData.visitor_type,
 		})
 			.then((res) => {
-				dispatch(update(res.data.updatedVisitor));
+				dispatch(update(res.data.visitor));
 
 				setStatus(true);
-				setAlertMsg(res.data.message);
-				setAlertOpen(!alertOpen);
+				setAlertMsg("Successfully Updated Visitor");
+				setAlertOpen(true);
 				setDisabledInputs(!disabledInputs);
 
-				setItems((prev) =>
-					prev.map((item) => {
-						if (item.key === newTabIndex.current)
-							item.visitorData = res.data.updatedVisitor;
-
-						return item;
+				dispatch(
+					updateVisitor({
+						tabIndex: newTabIndex.current,
+						visitor: res.data.visitor,
 					}),
 				);
 			})
 			.catch((err) => {
 				setStatus(false);
-				setAlertMsg(err.response.data.error || err.response.data.errors);
+				setAlertOpen(true);
+				setAlertMsg(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
 			});
 	};
 
@@ -316,11 +304,11 @@ export default function VisitorDetails({
 
 	const closeTab = (_id: string | undefined) => {
 		const newActiveKey = --newTabIndex.current;
-		const newItems = [...items];
+		const newItems = [...tabs];
 		const index = newItems.map((e) => e.visitorData._id).indexOf(_id!);
 		if (index !== -1) {
 			newItems.splice(index, 1);
-			setItems(newItems);
+			dispatch(removeTab(newItems));
 		}
 		setActiveKey(newActiveKey);
 	};
@@ -334,7 +322,7 @@ export default function VisitorDetails({
 			okType: "danger",
 			cancelText: "No",
 			onOk() {
-				AxiosInstace.delete("/visitor/delete", {
+				AxiosInstance.delete("/visitor/delete", {
 					data: {
 						_id,
 					},
@@ -344,7 +332,12 @@ export default function VisitorDetails({
 						closeTab(_id);
 					})
 					.catch((err) => {
-						console.error(err.response.data.error || err.response.data.errors);
+						setAlertOpen(!alertOpen);
+						setAlertMsg(
+							err?.response?.data?.error ||
+								err?.response?.data?.errors ||
+								"Something went wrong.",
+						);
 					});
 			},
 			onCancel() {
@@ -375,14 +368,7 @@ export default function VisitorDetails({
 			</div>
 
 			<Form name="Visitor Details" onFinish={onSubmit} autoComplete="off">
-				<div className="mr-[130px] flex flex-col gap-[35px] pt-[30px]">
-					<div className="flex justify-end">
-						<Dropdown menu={{ items: exportOptions }} trigger={["click"]}>
-							<a title="Download" onClick={(e) => e.preventDefault()} href="/">
-								<ExcelDownload />
-							</a>
-						</Dropdown>
-					</div>
+				<div className="mr-[130px] flex flex-col gap-[35px] pt-[80px]">
 					<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
 						<div className="flex">
 							<div className="flex flex-col gap-[20px]">
@@ -669,7 +655,7 @@ export default function VisitorDetails({
 										spanStyling="text-black font-medium text-[16px]"
 										labelStyling="w-[22.5%]"
 									>
-										Time In and Out
+										Expected In and Out
 									</Label>
 									<div className="flex w-full flex-col">
 										<DateTimePicker
@@ -677,12 +663,8 @@ export default function VisitorDetails({
 											rangePickerStyling="bg-[#e0ebf0] hover:!bg-[#e0ebf0] border-none w-[inherit] focus-within:!bg-[#e0ebf0] focus:!bg-[#e0ebf0]"
 											size="large"
 											defaultVal={{
-												from:
-													record.visitor_details.time_in ||
-													formatDate(new Date()),
-												to:
-													record.visitor_details.time_out ||
-													formatDate(new Date()),
+												from: record.expected_time_in || formatDate(new Date()),
+												to: record.expected_time_out || formatDate(new Date()),
 											}}
 											onRangeChange={onRangeChange}
 											visitorMngmnt
@@ -842,7 +824,12 @@ export default function VisitorDetails({
 									className="cursor-pointer"
 									onClick={() => setIdentificationOpen(!identificationOpen)}
 									size={width === 1210 ? 150 : 220}
-									src={idPicture.selfie}
+									//TEMPORARY
+									src={
+										idPicture
+											? idPicture.selfie
+											: "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2d0041db-96ab-4012-b808-2cf1a664da62/d4ci082-7c5296e1-da7e-4d78-bc19-09123ba8da8f.png/v1/fill/w_600,h_600/profile_unavailable_by_whledo_d4ci082-fullview.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NjAwIiwicGF0aCI6IlwvZlwvMmQwMDQxZGItOTZhYi00MDEyLWI4MDgtMmNmMWE2NjRkYTYyXC9kNGNpMDgyLTdjNTI5NmUxLWRhN2UtNGQ3OC1iYzE5LTA5MTIzYmE4ZGE4Zi5wbmciLCJ3aWR0aCI6Ijw9NjAwIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.qwXReMzAA7SgocVUaM4qjm8SLZTdyyNoiZ_mD-ZSH7o"
+									}
 								/>
 								<Identification
 									open={identificationOpen}
@@ -972,6 +959,9 @@ export default function VisitorDetails({
 									<VisitorLogs
 										open={visitLogsOpen}
 										setOpen={setVisitLogsOpen}
+										lastName={record.visitor_details.name.last_name}
+										visitorId={record._id}
+										purpose={record.purpose}
 									/>
 									{/* Optional only for visitors with companions */}
 									{record.companion_details!.length > 0 && (
@@ -988,6 +978,8 @@ export default function VisitorDetails({
 											</Button>
 											<VisitorRecordContext.Provider value={record}>
 												<VisitorCompanions
+													expectedIn={record.expected_time_in}
+													expectedOut={record.expected_time_out}
 													open={vistorCompanionsOpen}
 													setOpen={setVisitorCompanionsOpen}
 												/>

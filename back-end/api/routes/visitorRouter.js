@@ -1,17 +1,26 @@
 const express = require("express");
 const router = express.Router();
-const visitorController = require("../controllers/visitorController");
+const passport = require("passport");
+const VisitorController = require("../controllers/visitorController");
+const multer = require('multer');
 
-router.get("/", visitorController.getAllVisitors);
+const multerStorage = multer.memoryStorage();
+const upload = multer({ storage: multerStorage });
 
-router.post("/new", visitorController.createNewVisitor);
+router.get("/", passport.authenticate("jwt", { session: false }), VisitorController.getVisitors);
 
-router.get("/search", visitorController.getVisitorById);
+router.post("/new", upload.fields([
+    { name: 'visitor_data[id_picture][front]', maxCount: 1},
+    { name: 'visitor_data[id_picture][back]', maxCount: 1},
+    { name: 'visitor_data[id_picture][selfie]', maxCount: 1},
+]), VisitorController.addVisitor);
 
-router.post("/retrieve-image", visitorController.getVisitorImageById);
+router.post("/find", passport.authenticate("jwt", { session: false }), VisitorController.findVisitor);
 
-router.put("/update", visitorController.updateVisitor);
+router.post("/retrieve-image",passport.authenticate("jwt", { session: false }),  VisitorController.getVisitorImageById);
 
-router.delete("/delete", visitorController.deleteVisitor);
+router.put("/update", passport.authenticate("jwt", { session: false }),  VisitorController.updateVisitor);
+
+router.delete("/delete", passport.authenticate("jwt", { session: false }), VisitorController.deleteVisitor);
 
 module.exports = router;
