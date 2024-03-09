@@ -9,7 +9,7 @@ import { VisitorStatus, VisitorType } from "../../../utils/enums";
 import { Tabs, Divider, Button, Form, Modal } from "antd";
 
 // Utils
-import { mainOrCompanion } from "../../../utils";
+import { mainOrCompanion, tabName } from "../../../utils";
 
 // Assets
 import { ExclamationCircleFilled } from "@ant-design/icons";
@@ -52,24 +52,41 @@ export default function StepThree({
 		},
 	});
 
+	const companions_not_empty = (obj: any) => {
+		for (const key in obj) {
+			if (!obj[key]) {
+				return true;
+			}
+		}
+		return false;
+	};
+
 	const showConfirm = (data: any) => {
 		confirm({
 			title: "Do you want to proceed?",
 			icon: <ExclamationCircleFilled />,
 			onOk() {
-				AxiosInstace.post("/visitor/new", {
-					visitor_data: data,
-				})
-					.then((res: any) => {
-						successMessage(res.data.message);
-					})
-					.catch((err: any) => {
-						if(err.response){
-							error(err.response.data.error || err.response.data.errors || err.response.errors);
-						} else {
-							error("Something went wrong.");
-						}
-					});
+				data.companion_details.filter((companion: any) =>
+					companions_not_empty(companion),
+				).length > 0
+					? error("Some companions are not filled.")
+					: AxiosInstace.post("/visitor/new", {
+							visitor_data: data,
+					  })
+							.then((res: any) => {
+								successMessage(res.data.message);
+							})
+							.catch((err: any) => {
+								if (err.response) {
+									error(
+										err.response.data.error ||
+											err.response.data.errors ||
+											err.response.errors,
+									);
+								} else {
+									error("Something went wrong.");
+								}
+							});
 			},
 		});
 	};
@@ -295,7 +312,7 @@ export default function StepThree({
 					items={new Array(visitorNo).fill(null).map((_, i) => {
 						const id = String(i + 1);
 						return {
-							label: `Visitor ${id}`,
+							label: tabName(id),
 							key: id,
 							children: <ConfirmForm increment={i} visitors={visitors} />,
 						};

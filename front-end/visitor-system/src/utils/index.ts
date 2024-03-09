@@ -39,3 +39,7 @@ export const mainOrCompanion = (
 ) => {
 	return increment === 0 ? mainVisitor : companions[increment - 1];
 };
+
+export const tabName = (id: string) => {
+	return id === "1" ? "Main Visitor" : `Companion ${parseInt(id) - 1}`;
+};
