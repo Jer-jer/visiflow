@@ -7,6 +7,9 @@ import type { ColumnsType } from "antd/es/table";
 import { UserRole } from "../../../utils/enums";
 import { UserDataType } from "../../../utils/interfaces";
 
+// Assets
+import { LoadingOutlined } from "@ant-design/icons";
+
 //Styles
 import "../../../utils/variables.scss";
 import "./styles.scss";
@@ -14,12 +17,14 @@ import "./styles.scss";
 interface UserListTableProps {
 	users: UserDataType[];
 	search: string;
+	loading: boolean;
 	addTab: (record: UserDataType) => void;
 }
 
 export default function UserListTable({
 	users,
 	search,
+	loading,
 	addTab,
 }: UserListTableProps) {
 	const columns: ColumnsType<UserDataType> = [
@@ -76,6 +81,10 @@ export default function UserListTable({
 	return (
 		<Table
 			columns={columns}
+			loading={{
+				spinning: loading,
+				indicator: <LoadingOutlined />,
+			}}
 			dataSource={users.filter((user) => {
 				return search.toLowerCase() === ""
 					? user

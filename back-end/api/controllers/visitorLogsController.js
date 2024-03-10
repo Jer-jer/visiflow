@@ -1,102 +1,99 @@
-const VisitorLogs = require('../models/visitorLogs');
-
+const VisitorLogs = require("../models/visitorLogs");
 
 exports.getLogs = async (req, res) => {
-    try {
-        const visitorLogs = await VisitorLogs.find();
-        return res.status(200).json({ visitorLogs });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "Failed to retrieve visitor logs from the database" });
-    }
+  try {
+    const visitorLogs = await VisitorLogs.find();
+    return res.status(200).json({ visitorLogs });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Failed to retrieve visitor logs from the database" });
+  }
 };
 
 exports.addLog = async (req, res) => {
-    const { badge_id, checkIn, checkOut } = req.body;
-    
-    try {
-        const newLog = await VisitorLogs.create({
-            badge_id: badge_id,
-            check_in_time: checkIn,
-            check_out_time: checkOut
-        });
+  const { badge_id, checkIn, checkOut } = req.body;
 
-        res.status(201).json({ VisitorLog: newLog });    
+  try {
+    const newLog = await VisitorLogs.create({
+      badge_id: badge_id,
+      check_in_time: checkIn,
+      check_out_time: checkOut,
+    });
 
-    } catch (err) {
-        console.error(error);
-        return res.status(500).json({ error: "Failed to add visitor log" });
-    }
+    res.status(201).json({ VisitorLog: newLog });
+  } catch (err) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to add visitor log" });
+  }
 };
 
 exports.findLog = async (req, res) => {
-    const { _id } = req.body;
+  const { _id } = req.body;
 
-    try {
-        const logDB = await VisitorLogs.findOne(_id);
-        
-        if (logDB) {
-            return res.status(200).json({ Log: logDB });
-        } else {
-            return res.status(404).json({ error: "Visitor log not found" });
-        }
+  try {
+    const logDB = await VisitorLogs.findOne(_id);
 
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "Failed to find visitor log by ID" });
+    if (logDB) {
+      return res.status(200).json({ Log: logDB });
+    } else {
+      return res.status(404).json({ error: "Visitor log not found" });
     }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to find visitor log by ID" });
+  }
 };
 
 exports.updateLog = async (req, res) => {
-    const { _id, badge_id, checkIn, checkOut } = req.body;
+  const { _id, badge_id, checkIn, checkOut } = req.body;
 
-    try {
-        const logDB = await VisitorLogs.findById(_id);
-        if (!logDB) {
-            return res.status(404).json({ error: 'Visitor log not found' });
-        }
-
-        const updateFields = {
-            badge_id: badge_id,
-            check_in_time: checkIn,
-            check_out_time: checkOut
-        }
-
-        const filteredUpdateFields = Object.fromEntries(
-            Object.entries(updateFields).filter(([key, value]) => value !== undefined)
-        );
-
-        if (Object.keys(filteredUpdateFields).length === 0) {
-            return res.status(400).json({ error: "No valid fields to update" });
-        }
-
-        const updatedLog = await VisitorLogs.findByIdAndUpdate(
-            _id,
-            filteredUpdateFields,
-            { new: true }
-        );
-
-        res.status(201).json({ Log: updatedLog });
-
-    } catch (error) {
-        return res.status(500).json({ error: "Internal Server Error" });
+  try {
+    const logDB = await VisitorLogs.findById(_id);
+    if (!logDB) {
+      return res.status(404).json({ error: "Visitor log not found" });
     }
+
+    const updateFields = {
+      badge_id: badge_id,
+      check_in_time: checkIn,
+      check_out_time: checkOut,
+    };
+
+    const filteredUpdateFields = Object.fromEntries(
+      Object.entries(updateFields).filter(([key, value]) => value !== undefined)
+    );
+
+    if (Object.keys(filteredUpdateFields).length === 0) {
+      return res.status(400).json({ error: "No valid fields to update" });
+    }
+
+    const updatedLog = await VisitorLogs.findByIdAndUpdate(
+      _id,
+      filteredUpdateFields,
+      { new: true }
+    );
+
+    res.status(201).json({ Log: updatedLog });
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 exports.deleteLog = async (req, res) => {
-    const { _id } = req.body;
+  const { _id } = req.body;
 
-    try {
-        const logDB = await VisitorLogs.findOneAndDelete(_id);
+  try {
+    const logDB = await VisitorLogs.findOneAndDelete(_id);
 
-        if (logDB) {
-            return res.status(204).send();
-        } else {
-            return res.status(404).json({ error: "Visitor not found" });
-        }
-
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: err });
+    if (logDB) {
+      return res.status(204).send();
+    } else {
+      return res.status(404).json({ error: "Visitor not found" });
     }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: err });
+  }
 };

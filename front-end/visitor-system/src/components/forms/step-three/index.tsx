@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import { useForm } from "react-hook-form";
 
 // Interfaces
@@ -12,7 +12,7 @@ import { Tabs, Divider, Button, Form, Modal } from "antd";
 import { mainOrCompanion } from "../../../utils";
 
 // Assets
-import { ExclamationCircleFilled } from "@ant-design/icons";
+import { ExclamationCircleFilled, LoadingOutlined } from "@ant-design/icons";
 
 // Lib
 import AxiosInstace from "../../../lib/axios";
@@ -35,6 +35,8 @@ export default function StepThree({
 	visitors,
 	visitorNo,
 }: StepThreeProps) {
+	const [loading, setLoading] = useState(false);
+
 	//TODO Create a validation that would make sure the companions (if there are any) are filled
 	const [modal, contextHolder] = Modal.useModal();
 
@@ -57,15 +59,22 @@ export default function StepThree({
 			title: "Do you want to proceed?",
 			icon: <ExclamationCircleFilled />,
 			onOk() {
+				setLoading(true);
 				AxiosInstace.post("/visitor/new", {
 					visitor_data: data,
 				})
 					.then((res: any) => {
+						setLoading(false);
 						successMessage(res.data.message);
 					})
 					.catch((err: any) => {
-						if(err.response){
-							error(err.response.data.error || err.response.data.errors || err.response.errors);
+						setLoading(false);
+						if (err.response) {
+							error(
+								err.response.data.error ||
+									err.response.data.errors ||
+									err.response.errors,
+							);
 						} else {
 							error("Something went wrong.");
 						}
@@ -119,167 +128,176 @@ export default function StepThree({
 
 	const ConfirmForm = ({ visitors, increment }: ConfirmFormProps) => {
 		return (
-			<div className="flex flex-col">
-				<div className="flex flex-col gap-x-[5%] gap-y-[0.8em] lg:flex-row lg:flex-wrap">
-					<div className="flex items-center gap-[3%] lg:w-[25%]">
-						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
-							First Name:
-						</label>
-						<span className="text-[1.15rem]">
-							{
-								mainOrCompanion(
-									increment,
-									visitors.visitor_details,
-									visitors.companions_details!,
-								).name.first_name
-							}
-						</span>
+			<>
+				{loading && (
+					<div className="absolute left-[50%]">
+						<div className="relative left-[-50%]">
+							<LoadingOutlined className="text-[128px] text-primary-500" />
+						</div>
 					</div>
-					<div className="flex items-center gap-[3%] lg:w-[30%]">
-						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
-							Middle Name:
-						</label>
-						<span className="text-[1.15rem]">
-							{
-								mainOrCompanion(
-									increment,
-									visitors.visitor_details,
-									visitors.companions_details!,
-								).name.middle_name
-							}
-						</span>
+				)}
+				<div className="flex flex-col">
+					<div className="flex flex-col gap-x-[5%] gap-y-[0.8em] lg:flex-row lg:flex-wrap">
+						<div className="flex items-center gap-[3%] lg:w-[25%]">
+							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
+								First Name:
+							</label>
+							<span className="text-[1.15rem]">
+								{
+									mainOrCompanion(
+										increment,
+										visitors.visitor_details,
+										visitors.companions_details!,
+									).name.first_name
+								}
+							</span>
+						</div>
+						<div className="flex items-center gap-[3%] lg:w-[30%]">
+							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
+								Middle Name:
+							</label>
+							<span className="text-[1.15rem]">
+								{
+									mainOrCompanion(
+										increment,
+										visitors.visitor_details,
+										visitors.companions_details!,
+									).name.middle_name
+								}
+							</span>
+						</div>
+						<div className="flex items-center gap-[3%] lg:w-[35%]">
+							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
+								Last Name:
+							</label>
+							<span className="text-[1.15rem]">
+								{
+									mainOrCompanion(
+										increment,
+										visitors.visitor_details,
+										visitors.companions_details!,
+									).name.last_name
+								}
+							</span>
+						</div>
+						<div className="flex items-center gap-[3%] lg:w-[40%]">
+							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
+								Email Address:
+							</label>
+							<span className="text-[1.15rem]">
+								{
+									mainOrCompanion(
+										increment,
+										visitors.visitor_details,
+										visitors.companions_details!,
+									).email
+								}
+							</span>
+						</div>
+						<div className="flex items-center gap-[3%] lg:w-[40%]">
+							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
+								Mobile Number:
+							</label>
+							<span className="text-[1.15rem]">
+								{
+									mainOrCompanion(
+										increment,
+										visitors.visitor_details,
+										visitors.companions_details!,
+									).phone
+								}
+							</span>
+						</div>
 					</div>
-					<div className="flex items-center gap-[3%] lg:w-[35%]">
-						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
-							Last Name:
-						</label>
-						<span className="text-[1.15rem]">
-							{
-								mainOrCompanion(
-									increment,
-									visitors.visitor_details,
-									visitors.companions_details!,
-								).name.last_name
-							}
-						</span>
-					</div>
-					<div className="flex items-center gap-[3%] lg:w-[40%]">
-						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
-							Email Address:
-						</label>
-						<span className="text-[1.15rem]">
-							{
-								mainOrCompanion(
-									increment,
-									visitors.visitor_details,
-									visitors.companions_details!,
-								).email
-							}
-						</span>
-					</div>
-					<div className="flex items-center gap-[3%] lg:w-[40%]">
-						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
-							Mobile Number:
-						</label>
-						<span className="text-[1.15rem]">
-							{
-								mainOrCompanion(
-									increment,
-									visitors.visitor_details,
-									visitors.companions_details!,
-								).phone
-							}
-						</span>
+					<Divider className="border border-[#00000030]" /> {/* Divider */}
+					<div className="flex flex-col gap-x-[5%] gap-y-[0.8em] lg:flex-row lg:flex-wrap">
+						<div className="flex items-center gap-[3%] lg:w-[28%]">
+							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
+								House No.:
+							</label>
+							<span className="text-[1.15rem]">
+								{
+									mainOrCompanion(
+										increment,
+										visitors.visitor_details,
+										visitors.companions_details!,
+									).address.house
+								}
+							</span>
+						</div>
+						<div className="flex items-center gap-[3%] lg:w-[28%]">
+							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
+								Street:
+							</label>
+							<span className="text-[1.15rem]">
+								{
+									mainOrCompanion(
+										increment,
+										visitors.visitor_details,
+										visitors.companions_details!,
+									).address.street
+								}
+							</span>
+						</div>
+						<div className="flex items-center gap-[3%] lg:w-[28%]">
+							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
+								Barangay:
+							</label>
+							<span className="text-[1.15rem]">
+								{
+									mainOrCompanion(
+										increment,
+										visitors.visitor_details,
+										visitors.companions_details!,
+									).address.brgy
+								}
+							</span>
+						</div>
+						<div className="flex items-center gap-[3%] lg:w-[28%]">
+							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
+								City:
+							</label>
+							<span className="text-[1.15rem]">
+								{
+									mainOrCompanion(
+										increment,
+										visitors.visitor_details,
+										visitors.companions_details!,
+									).address.city
+								}
+							</span>
+						</div>
+						<div className="flex items-center gap-[3%] lg:w-[28%]">
+							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
+								Province:
+							</label>
+							<span className="text-[1.15rem]">
+								{
+									mainOrCompanion(
+										increment,
+										visitors.visitor_details,
+										visitors.companions_details!,
+									).address.province
+								}
+							</span>
+						</div>
+						<div className="flex items-center gap-[3%] lg:w-[28%]">
+							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
+								Country:
+							</label>
+							<span className="text-[1.15rem]">
+								{
+									mainOrCompanion(
+										increment,
+										visitors.visitor_details,
+										visitors.companions_details!,
+									).address.country
+								}
+							</span>
+						</div>
 					</div>
 				</div>
-				<Divider className="border border-[#00000030]" /> {/* Divider */}
-				<div className="flex flex-col gap-x-[5%] gap-y-[0.8em] lg:flex-row lg:flex-wrap">
-					<div className="flex items-center gap-[3%] lg:w-[28%]">
-						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
-							House No.:
-						</label>
-						<span className="text-[1.15rem]">
-							{
-								mainOrCompanion(
-									increment,
-									visitors.visitor_details,
-									visitors.companions_details!,
-								).address.house
-							}
-						</span>
-					</div>
-					<div className="flex items-center gap-[3%] lg:w-[28%]">
-						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
-							Street:
-						</label>
-						<span className="text-[1.15rem]">
-							{
-								mainOrCompanion(
-									increment,
-									visitors.visitor_details,
-									visitors.companions_details!,
-								).address.street
-							}
-						</span>
-					</div>
-					<div className="flex items-center gap-[3%] lg:w-[28%]">
-						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
-							Barangay:
-						</label>
-						<span className="text-[1.15rem]">
-							{
-								mainOrCompanion(
-									increment,
-									visitors.visitor_details,
-									visitors.companions_details!,
-								).address.brgy
-							}
-						</span>
-					</div>
-					<div className="flex items-center gap-[3%] lg:w-[28%]">
-						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
-							City:
-						</label>
-						<span className="text-[1.15rem]">
-							{
-								mainOrCompanion(
-									increment,
-									visitors.visitor_details,
-									visitors.companions_details!,
-								).address.city
-							}
-						</span>
-					</div>
-					<div className="flex items-center gap-[3%] lg:w-[28%]">
-						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
-							Province:
-						</label>
-						<span className="text-[1.15rem]">
-							{
-								mainOrCompanion(
-									increment,
-									visitors.visitor_details,
-									visitors.companions_details!,
-								).address.province
-							}
-						</span>
-					</div>
-					<div className="flex items-center gap-[3%] lg:w-[28%]">
-						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
-							Country:
-						</label>
-						<span className="text-[1.15rem]">
-							{
-								mainOrCompanion(
-									increment,
-									visitors.visitor_details,
-									visitors.companions_details!,
-								).address.country
-							}
-						</span>
-					</div>
-				</div>
-			</div>
+			</>
 		);
 	};
 
