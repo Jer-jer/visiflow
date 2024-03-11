@@ -6,6 +6,7 @@ const {
 } = require("../middleware/dataValidation");
 const { generateSingleQRCode, uploadFileToGCS } = require("../utils/helper");
 const { Buffer } = require("node:buffer");
+const Notification = require('../models/notification');
 
 exports.getVisitors = async (req, res) => {
   try {
@@ -228,22 +229,38 @@ exports.updateStatus = async (req, res) => {
       return res.status(404).json({ error: "Visitor not found" });
     }
 
-    try {
-      generateSingleQRCode(visitorDB._id);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ Error: 'Failed to send email' });
-    }
-
     visitorDB.status = status;
     await visitorDB.save();
 
     if (status === "Approved") {
-      generateSingleQRCode(visitorDB._id);
-      //add to notification model
-    }
+      try {
 
-    res.status(200).json({ message: `User is now ${status}` });
+        let result = generateSingleQRCode(visitorDB._id);
+
+        if (!(await result).success) {
+          return res.status(500).json({ Error: (await result).message});
+        }
+
+        await Notification.create({
+          type: 'Appointment Confirmation',
+          recipient: visitorDB.visitor_details._id,
+          content: {
+            visitor_name: visitorDB.visitor_details.name.first_name,
+            host_name: visitorDB.purpose.who[0],
+            date: visitorDB.purpose.when,
+            time: visitorDB.expected_time_in,
+            location: visitorDB.purpose.where[0],
+            purpose: visitorDB.purpose.what.join(', ')
+          }
+        });
+
+        res.status(200).json({ message: `Visitor is now ${status}` });
+
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({ Error: 'Failed to send email' });
+      }
+    }  
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to update visitor status" });

@@ -1,5 +1,9 @@
 const mongoose = require('mongoose');
 
+const processConnection = mongoose.createConnection(
+    `${process.env.MONGODB_PROCESS}`
+  );
+
 const Schema = mongoose.Schema;
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -15,16 +19,17 @@ const Content = new Schema({
 const NotificationSchema = new Schema({
     type: {
         type: String,
-        enum: ['arrival', 'departure', 'check-in reminder', 'check-out reminder', 'appointment confirmation'],
+        enum: ['check-in reminder', 'exceeded time-in', 'Appointment Confirmation', 'Pending Visitors'],
         required: true
     },
     recipient: { type: ObjectId, require: true },
     content: { type: Content, require: true },
+    is_read: { type: Boolean, default: false },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
 });
 
-const NotificationModel = mongoose.model('notification', NotificationSchema);
+const NotificationModel = processConnection.model('notification', NotificationSchema);
 
 module.exports = NotificationModel;
 
