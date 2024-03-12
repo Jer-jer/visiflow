@@ -1,12 +1,17 @@
 /* Components designed using Ant Design */
 
-import React, { Dispatch, SetStateAction, useEffect } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { CSVLink } from "react-csv";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import weekday from "dayjs/plugin/weekday";
+import localeData from "dayjs/plugin/localeData";
 
 //Interfaces
 import { UserActionLogsDetails } from "../../../../utils/interfaces";
 import type { AppDispatch, RootState } from "../../../../store";
+import type { Dayjs } from "dayjs";
 
 //Reducer
 import { addLog } from "../../../../states/logs/user";
@@ -23,6 +28,10 @@ import "./styles.scss";
 //Assets
 import { ExcelDownload } from "../../../../assets/svg";
 
+dayjs.extend(weekday);
+dayjs.extend(localeData);
+dayjs.extend(customParseFormat);
+
 interface UserActionLogsProps {
 	userId: string;
 	lastName: string;
@@ -36,8 +45,17 @@ export default function UserActionLogs({
 	open,
 	setOpen,
 }: UserActionLogsProps) {
+	const [dateSearch, setDateSearch] = useState<string[]>([]);
 	const userLogs = useSelector((state: RootState) => state.userLogs);
 	const dispatch = useDispatch<AppDispatch>();
+
+	const onRangeChange = (dates: Dayjs[], dateStrings: string[]) => {
+		if (dates) {
+			setDateSearch([dateStrings[0], dateStrings[1]]);
+		} else {
+			setDateSearch([]);
+		}
+	};
 
 	//TODO Must be updated real-time
 	useEffect(() => {
@@ -103,10 +121,7 @@ export default function UserActionLogs({
 		>
 			<div className="flex justify-between">
 				<div className="flex w-full items-center justify-start gap-[25px]">
-					<DateTimePicker size="middle" />
-					<Button type="primary" className="search-button !bg-primary-500">
-						Search
-					</Button>
+					<DateTimePicker size="middle" onRangeChange={onRangeChange} />
 				</div>
 				<Tooltip placement="top" title="Export Logs" arrow={false}>
 					<CSVLink
@@ -119,7 +134,7 @@ export default function UserActionLogs({
 				</Tooltip>
 			</div>
 
-			<ActionLogsTable />
+			<ActionLogsTable dateSearch={dateSearch} />
 		</StandardModal>
 	);
 }

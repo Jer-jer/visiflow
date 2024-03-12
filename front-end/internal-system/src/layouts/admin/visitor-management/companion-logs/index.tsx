@@ -1,20 +1,26 @@
 /* Components designed using Ant Design */
 
-import React, { Dispatch, SetStateAction, useEffect } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { CSVLink } from "react-csv";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import weekday from "dayjs/plugin/weekday";
+import localeData from "dayjs/plugin/localeData";
 
 //Interfaces
 import { RootState } from "../../../../store";
 import type { AppDispatch } from "../../../../store";
 import { VisitorLogDetails } from "../../../../utils/interfaces";
+import type { Dayjs } from "dayjs";
 
 //Layouts
 import CompanionLogsTable from "../../../../components/table/companion-logs";
 
 //Components
-import { Tooltip } from "antd";
+import { Tooltip, Checkbox } from "antd";
 import StandardModal from "../../../../components/modal";
+import DateTimePicker from "../../../../components/datetime-picker";
 
 //Reducers
 import { addLog } from "../../../../states/logs/companions";
@@ -28,6 +34,10 @@ import "./styles.scss";
 //Assets
 import { ExcelDownload } from "../../../../assets/svg";
 
+dayjs.extend(weekday);
+dayjs.extend(localeData);
+dayjs.extend(customParseFormat);
+
 interface CompanionLogsProps {
 	lastname: string;
 	open: boolean;
@@ -39,9 +49,20 @@ export default function CompanionLogs({
 	open,
 	setOpen,
 }: CompanionLogsProps) {
+	const [dateSearch, setDateSearch] = useState<string[]>([]);
+	const [filterWhen, setFilterWhen] = useState<boolean>(true);
+
 	// Store Related variables
 	const companionLogs = useSelector((state: RootState) => state.companionLogs);
 	const dispatch = useDispatch<AppDispatch>();
+
+	const onRangeChange = (dates: Dayjs[], dateStrings: string[]) => {
+		if (dates) {
+			setDateSearch([dateStrings[0], dateStrings[1]]);
+		} else {
+			setDateSearch([]);
+		}
+	};
 
 	useEffect(() => {
 		//TODO Add Axios call to companion logs
@@ -162,14 +183,24 @@ export default function CompanionLogs({
 	return (
 		<StandardModal
 			header={
-				<div className="flex items-center gap-2">
-					<span className="text-[22px] text-[#0C0D0D]">Companion Logs</span>
-					<Tooltip
-						className="flex items-center"
-						placement="top"
-						title="Export Logs"
-						arrow={false}
-					>
+				<span className="text-[22px] text-[#0C0D0D]">Companion Logs</span>
+			}
+			open={open}
+			setOpen={setOpen}
+			footer={false}
+		>
+			<div className="flex flex-col gap-8">
+				<div className="flex justify-between">
+					<div className="flex w-full items-center justify-start gap-[25px]">
+						<DateTimePicker size="middle" onRangeChange={onRangeChange} />
+						<Checkbox
+							onChange={() => setFilterWhen(!filterWhen)}
+							checked={filterWhen}
+						>
+							Filter When
+						</Checkbox>
+					</div>
+					<Tooltip placement="top" title="Export Logs" arrow={false}>
 						<CSVLink
 							filename={`${lastname.toUpperCase()}_Logs.csv`}
 							data={companionLogsData}
@@ -179,12 +210,8 @@ export default function CompanionLogs({
 						</CSVLink>
 					</Tooltip>
 				</div>
-			}
-			open={open}
-			setOpen={setOpen}
-			footer={false}
-		>
-			<CompanionLogsTable />
+				<CompanionLogsTable filterWhen={filterWhen} dateSearch={dateSearch} />
+			</div>
 		</StandardModal>
 	);
 }

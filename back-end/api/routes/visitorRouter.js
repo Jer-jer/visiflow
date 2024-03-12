@@ -9,9 +9,9 @@ router.post("/new", VisitorController.addVisitor);
 
 router.post("/find", passport.authenticate("jwt", { session: false }), VisitorController.findVisitor);
 
-router.post("/retrieve-image",passport.authenticate("jwt", { session: false }),  VisitorController.getVisitorImageById);
-
 router.put("/update", passport.authenticate("jwt", { session: false }),  VisitorController.updateVisitor);
+
+router.put("/update-status", passport.authenticate("jwt", {session: false }), VisitorController.updateStatus);
 
 router.delete("/delete", passport.authenticate("jwt", { session: false }), VisitorController.deleteVisitor);
 

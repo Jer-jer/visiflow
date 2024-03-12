@@ -7,7 +7,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 const initialState: UserActionLogsDetails[] = [];
 
 export const userLogsSlice = createSlice({
-	name: "visitors",
+	name: "userLogs",
 	initialState,
 	reducers: {
 		addLog: (state, action: PayloadAction<UserActionLogsDetails>) => {

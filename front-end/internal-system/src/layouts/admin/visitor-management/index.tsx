@@ -11,7 +11,7 @@ import { VisitorDataType } from "../../../utils/interfaces";
 import type { Dayjs } from "dayjs";
 
 //Components
-import { Tabs, Button, Input, Tooltip } from "antd";
+import { Tabs, Input, Tooltip } from "antd";
 import DateTimePicker from "../../../components/datetime-picker";
 import VisitorListTable from "../../../components/table/visitor-list";
 import VisitorDetails from "./visitor-details";
@@ -20,7 +20,8 @@ import VisitorDetails from "./visitor-details";
 import { AppDispatch, RootState } from "../../../store";
 
 // Reducers
-import { fetchVisitors, searchVisitor } from "../../../states/visitors";
+import { fetchVisitors } from "../../../states/visitors";
+import { addTab, removeTab } from "../../../states/visitors/tab";
 
 //Styles
 import "../../../utils/variables.scss";
@@ -35,11 +36,6 @@ interface VisitorProps {
 	addTab: (record: VisitorDataType) => void;
 }
 
-export interface TabItems {
-	key: TargetKey;
-	visitorData: VisitorDataType;
-}
-
 dayjs.extend(weekday);
 dayjs.extend(localeData);
 dayjs.extend(customParseFormat);
@@ -47,19 +43,15 @@ dayjs.extend(customParseFormat);
 const VisitorList = ({ addTab }: VisitorProps) => {
 	const [search, setSearch] = useState<string>("");
 	const [dateSearch, setDateSearch] = useState<string[]>([]);
+	const [hideInOut, setHideInOut] = useState<boolean>(true);
 
-	const dispatch = useDispatch<AppDispatch>();
 	const { data } = useSelector((state: RootState) => state.visitors);
-
-	const searchingVisitor = () => {
-		dispatch(searchVisitor({ search: search, dateSearch: dateSearch }));
-	};
 
 	const onRangeChange = (dates: Dayjs[], dateStrings: string[]) => {
 		if (dates) {
 			setDateSearch([dateStrings[0], dateStrings[1]]);
 		} else {
-			console.log("Clear Search");
+			setDateSearch([]);
 		}
 	};
 
@@ -123,21 +115,19 @@ const VisitorList = ({ addTab }: VisitorProps) => {
 					prefix={<Search />}
 					onChange={(e) => setSearch(e.target.value)}
 				/>
-				<DateTimePicker size="large" onRangeChange={onRangeChange} />
-				<Button
-					type="primary"
-					className="search-button !bg-primary-500"
-					onClick={searchingVisitor}
+				<Tooltip
+					placement="top"
+					title={
+						hideInOut
+							? "Filter Date Created"
+							: "Filter Expected Time In and Out"
+					}
+					arrow={false}
 				>
-					Search
-				</Button>
-				<Button
-					type="primary"
-					className="search-button !bg-primary-500"
-					onClick={() => dispatch(fetchVisitors())}
-				>
-					Reset
-				</Button>
+					<>
+						<DateTimePicker size="large" onRangeChange={onRangeChange} />
+					</>
+				</Tooltip>
 				<Tooltip placement="top" title="Export List" arrow={false}>
 					<CSVLink
 						className="ml-auto"
@@ -150,14 +140,19 @@ const VisitorList = ({ addTab }: VisitorProps) => {
 				</Tooltip>
 			</div>
 			<div className="mr-[50px]">
-				<VisitorListTable addTab={addTab} />
+				<VisitorListTable
+					search={search}
+					dateSearch={dateSearch}
+					hideInOut={hideInOut}
+					setHideInOut={setHideInOut}
+					addTab={addTab}
+				/>
 			</div>
 		</div>
 	);
 };
 
 export default function VisitorManagementLayout() {
-	const [items, setItems] = useState<TabItems[]>([]);
 	const [activeKey, setActiveKey]: any = useState(1);
 	const newTabIndex = useRef(1);
 
@@ -165,12 +160,14 @@ export default function VisitorManagementLayout() {
 		(state: RootState) => state.visitors,
 	);
 
+	const tabs = useSelector((state: RootState) => state.visitorTabs);
+
 	const dispatch = useDispatch<AppDispatch>();
 
 	//TODO to change to real-time fetching soon
 	useEffect(() => {
 		dispatch(fetchVisitors());
-	}, [items]);
+	}, [tabs]);
 
 	useEffect(() => {
 		if (dashboardVisitor) {
@@ -185,22 +182,16 @@ export default function VisitorManagementLayout() {
 	const add = (record: VisitorDataType) => {
 		const newActiveKey = ++newTabIndex.current;
 
-		setItems((prevItems) => [
-			...prevItems,
-			{
-				key: newActiveKey,
-				visitorData: record!,
-			},
-		]);
+		dispatch(addTab({ newActiveKey, visitor: record }));
 
 		setActiveKey(newActiveKey);
 	};
 
 	const remove = (targetKey: TargetKey) => {
-		const targetIndex = items.findIndex(
+		const targetIndex = tabs.findIndex(
 			(pane) => pane.key.toString() === targetKey,
 		);
-		const newPanes = items.filter((pane) => pane.key.toString() !== targetKey);
+		const newPanes = tabs.filter((pane) => pane.key.toString() !== targetKey);
 
 		if (newPanes.length && targetKey === activeKey.toString()) {
 			const newActiveKey =
@@ -211,7 +202,7 @@ export default function VisitorManagementLayout() {
 			setActiveKey(newActiveKey.key);
 		} else setActiveKey(1);
 
-		setItems(newPanes);
+		dispatch(removeTab(newPanes));
 	};
 
 	const onEdit = (
@@ -235,16 +226,14 @@ export default function VisitorManagementLayout() {
 				<Tabs.TabPane closable={false} tab="Visitor List" key="1">
 					<VisitorList addTab={add} />
 				</Tabs.TabPane>
-				{items.map((item) => (
+				{tabs.map((tab) => (
 					<Tabs.TabPane
 						tab="Visitor Details"
-						key={item.key.toString()}
+						key={tab.key.toString()}
 						closeIcon={<TabClose />}
 					>
 						<VisitorDetails
-							record={item.visitorData}
-							items={items}
-							setItems={setItems}
+							record={tab.visitorData}
 							setActiveKey={setActiveKey}
 							newTabIndex={newTabIndex}
 						/>

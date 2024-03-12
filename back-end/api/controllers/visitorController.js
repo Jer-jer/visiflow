@@ -1,13 +1,16 @@
 const Visitor = require("../models/visitor");
+const { Storage } = require("@google-cloud/storage");
 const {
   validateVisitor,
   validationResult,
 } = require("../middleware/dataValidation");
-const { generateSingleQRCode } = require("../utils/helper");
+const { generateSingleQRCode, uploadFileToGCS } = require("../utils/helper");
+const { Buffer } = require("node:buffer");
+const Notification = require('../models/notification');
 
 exports.getVisitors = async (req, res) => {
   try {
-    const visitors = await Visitor.find({}, "-id_picture");
+    const visitors = await Visitor.find();
     return res.status(200).json({ visitors });
   } catch (error) {
     console.error(error);
@@ -31,32 +34,56 @@ exports.addVisitor = async (req, res) => {
       companion_details,
       plate_num,
       purpose,
+      id_picture,
       visitor_type,
       status,
-      id_picture,
     },
   } = req.body;
 
-  await Promise.all(
-    validateVisitor.map((validation) => validation.run(req.body.visitor_data))
-  );
-
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array()[0].msg });
-  }
-
-  const visitorDB = await Visitor.findOne({
-    "visitor_details.name.first_name": first_name,
-    "visitor_details.name.middle_name": middle_name,
-    "visitor_details.name.last_name": last_name,
-  });
-
-  if (visitorDB) {
-    return res.status(409).json({ error: "Visitor already exists" });
-  }
-
   try {
+    await Promise.all(
+      validateVisitor.map((validation) => validation.run(req.body.visitor_data))
+    );
+  
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array()[0].msg });
+    }
+  
+    const visitorDB = await Visitor.findOne({
+      "visitor_details.name.first_name": first_name,
+      "visitor_details.name.middle_name": middle_name,
+      "visitor_details.name.last_name": last_name,
+    });
+  
+    if (visitorDB) {
+      return res.status(409).json({ error: "Visitor already exists" });
+    }
+  
+    const [frontId, backId, selfieId] = [
+      uploadFileToGCS(
+        Buffer.from(
+          id_picture.front.replace(/^data:image\/\w+;base64,/, ""),
+          "base64"
+        ),
+        `${Date.now()}_${last_name.toUpperCase()}_front.jpg`
+      ),
+      uploadFileToGCS(
+        Buffer.from(
+          id_picture.back.replace(/^data:image\/\w+;base64,/, ""),
+          "base64"
+        ),
+        `${Date.now()}_${last_name.toUpperCase()}_back.jpg`
+      ),
+      uploadFileToGCS(
+        Buffer.from(
+          id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""),
+          "base64"
+        ),
+        `${Date.now()}_${last_name.toUpperCase()}_selfie.jpg`
+      ),
+    ];
+  
     const newVisitor = await Visitor.create({
       visitor_details: {
         name: { first_name, middle_name, last_name },
@@ -64,21 +91,21 @@ exports.addVisitor = async (req, res) => {
         email,
         phone,
       },
-      companion_details: companion_details,
+      companion_details: companion_details || [],
       plate_num: plate_num,
       purpose: purpose,
       expected_time_in,
       expected_time_out,
-      id_picture: id_picture,
+      id_picture: {
+        front: frontId,
+        back: backId,
+        selfie: selfieId,
+      },
       visitor_type: visitor_type,
       status: status,
     });
-
-    if (newVisitor.visitor_type === "Pre-Registered") {
-      generateSingleQRCode(newVisitor._id);
-    }
-
-    return res.status(201).json({ Visitor: newVisitor });
+  
+    return res.status(201).json({ visitor: newVisitor });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to create a new visitor" });
@@ -99,22 +126,6 @@ exports.findVisitor = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to find visitor by ID" });
-  }
-};
-
-//Get visitor image by ID
-exports.getVisitorImageById = async (req, res) => {
-  try {
-    const { _id } = req.body;
-    const searchedVisitor = await Visitor.findById(_id);
-
-    if (searchedVisitor) {
-      return res.status(201).json({ id_picture: searchedVisitor.id_picture });
-    } else {
-      return res.status(404).json({ error: "visitor not found" });
-    }
-  } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -184,7 +195,7 @@ exports.updateVisitor = async (req, res) => {
       { new: true }
     );
 
-    res.status(201).json({ Visitor: updatedVisitor });
+    res.status(201).json({ visitor: updatedVisitor });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to update user" });
@@ -205,5 +216,53 @@ exports.deleteVisitor = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.updateStatus = async (req, res) => {
+  const { _id, status } = req.body;
+
+  try {
+    const visitorDB = await Visitor.findById(_id);
+
+    if (!visitorDB) {
+      return res.status(404).json({ error: "Visitor not found" });
+    }
+
+    visitorDB.status = status;
+    await visitorDB.save();
+
+    if (status === "Approved") {
+      try {
+
+        let result = generateSingleQRCode(visitorDB._id);
+
+        if (!(await result).success) {
+          return res.status(500).json({ Error: (await result).message});
+        }
+
+        await Notification.create({
+          type: 'Appointment Confirmation',
+          recipient: visitorDB.visitor_details._id,
+          content: {
+            visitor_name: visitorDB.visitor_details.name.first_name,
+            host_name: visitorDB.purpose.who[0],
+            date: visitorDB.purpose.when,
+            time: visitorDB.expected_time_in,
+            location: visitorDB.purpose.where[0],
+            purpose: visitorDB.purpose.what.join(', ')
+          }
+        });
+
+        res.status(200).json({ message: `Visitor is now ${status}` });
+
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({ Error: 'Failed to send email' });
+      }
+    }  
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to update visitor status" });
   }
 };

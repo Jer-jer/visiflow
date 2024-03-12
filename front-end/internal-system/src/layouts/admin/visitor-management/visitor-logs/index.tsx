@@ -1,15 +1,20 @@
 /* Components designed using Ant Design */
 
-import React, { Dispatch, SetStateAction, useEffect } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { CSVLink } from "react-csv";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import weekday from "dayjs/plugin/weekday";
+import localeData from "dayjs/plugin/localeData";
 
 // Interfaces
 import { PurposeProps } from "../../../../utils/interfaces";
 import { RootState } from "../../../../store";
+import type { Dayjs } from "dayjs";
 
 //Components
-import { Button, Tooltip } from "antd";
+import { Tooltip, Checkbox, Modal } from "antd";
 import StandardModal from "../../../../components/modal";
 import VisitorLogsTable from "../../../../components/table/visitor-logs";
 import DateTimePicker from "../../../../components/datetime-picker";
@@ -32,6 +37,10 @@ import "./styles.scss";
 //Assets
 import { ExcelDownload } from "../../../../assets/svg";
 
+dayjs.extend(weekday);
+dayjs.extend(localeData);
+dayjs.extend(customParseFormat);
+
 interface VisitorLogsProps {
 	visitorId: string;
 	lastName: string;
@@ -47,9 +56,20 @@ export default function VisitorLogs({
 	open,
 	setOpen,
 }: VisitorLogsProps) {
+	const [dateSearch, setDateSearch] = useState<string[]>([]);
+	const [filterWhen, setFilterWhen] = useState<boolean>(true);
+
 	// Store Related variables
 	const visitorLogs = useSelector((state: RootState) => state.visitorLogs);
 	const dispatch = useDispatch<AppDispatch>();
+
+	const onRangeChange = (dates: Dayjs[], dateStrings: string[]) => {
+		if (dates) {
+			setDateSearch([dateStrings[0], dateStrings[1]]);
+		} else {
+			setDateSearch([]);
+		}
+	};
 
 	const visitorLogsHeaders = [
 		{ label: "What", key: "what" },
@@ -70,6 +90,13 @@ export default function VisitorLogs({
 			timeOut: logs.timeOut,
 		};
 	});
+
+	const error = (message: string) => {
+		Modal.error({
+			title: `Error`,
+			content: message,
+		});
+	};
 
 	//TODO Must be updated real-time
 	useEffect(() => {
@@ -107,11 +134,20 @@ export default function VisitorLogs({
 						})
 						.catch((err) => {
 							console.log(err);
+							error(
+								err?.response?.data?.error ||
+									err?.response?.data?.errors ||
+									"Something went wrong.",
+							);
 						});
 				}
 			})
 			.catch((err) => {
-				console.log(err);
+				error(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
 			});
 	}, []);
 
@@ -126,10 +162,13 @@ export default function VisitorLogs({
 			<div className="flex flex-col gap-8">
 				<div className="flex justify-between">
 					<div className="flex w-full items-center justify-start gap-[25px]">
-						<DateTimePicker size="middle" />
-						<Button type="primary" className="search-button !bg-primary-500">
-							Search
-						</Button>
+						<DateTimePicker size="middle" onRangeChange={onRangeChange} />
+						<Checkbox
+							onChange={() => setFilterWhen(!filterWhen)}
+							checked={filterWhen}
+						>
+							Filter When
+						</Checkbox>
 					</div>
 					<Tooltip placement="top" title="Export Logs" arrow={false}>
 						<CSVLink
@@ -141,7 +180,7 @@ export default function VisitorLogs({
 						</CSVLink>
 					</Tooltip>
 				</div>
-				<VisitorLogsTable />
+				<VisitorLogsTable filterWhen={filterWhen} dateSearch={dateSearch} />
 			</div>
 		</StandardModal>
 	);
