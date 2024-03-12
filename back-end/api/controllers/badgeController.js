@@ -53,7 +53,7 @@ exports.checkBadge = async (req, res) => {
     if (qr_id !== undefined) {
     badge = await Badge.findOne({qr_id: qr_id});
     } else {
-    badge = await Badge.findOne({ visitor_id: visitor_id });
+      badge = await Badge.findOne({ visitor_id: visitor_id });
     }
 
    if(!badge) {
