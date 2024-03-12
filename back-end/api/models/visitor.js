@@ -69,7 +69,7 @@ VisitorSchema.index({ "visitor_details.email": 1, "visitor_details.phone": 1 });
 VisitorSchema.index({
   "visitor_details.name.first_name": 1,
   "visitor_details.name.middle_name": 1,
-  "visitor_details.name.last_name": 1
+  "visitor_details.name.last_name": 1,
 });
 
 VisitorSchema.index({ status: 1 });

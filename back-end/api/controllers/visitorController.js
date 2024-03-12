@@ -1,27 +1,23 @@
 const Visitor = require("../models/visitor");
-const { Storage } = require('@google-cloud/storage');
+const { Storage } = require("@google-cloud/storage");
 const {
   validateVisitor,
   validationResult,
 } = require("../middleware/dataValidation");
-const { 
-  generateSingleQRCode, 
-  uploadFileToGCS 
-} = require("../utils/helper");
-
+const { generateSingleQRCode, uploadFileToGCS } = require("../utils/helper");
+const { Buffer } = require("node:buffer");
 
 exports.getVisitors = async (req, res) => {
   try {
-    const visitors = await Visitor.find({}, "-id_picture");
+    const visitors = await Visitor.find();
     return res.status(200).json({ visitors });
   } catch (error) {
     console.error(error);
     return res
       .status(500)
       .json({ error: "Failed to retrieve visitors from the database" });
-    }
-  };
-
+  }
+};
 
 exports.addVisitor = async (req, res) => {
   const {
@@ -37,13 +33,13 @@ exports.addVisitor = async (req, res) => {
       companion_details,
       plate_num,
       purpose,
+      id_picture,
       visitor_type,
-      status
-    }
+      status,
+    },
   } = req.body;
 
   try {
-    
     await Promise.all(
       validateVisitor.map((validation) => validation.run(req.body.visitor_data))
     );
@@ -63,11 +59,29 @@ exports.addVisitor = async (req, res) => {
       return res.status(409).json({ error: "Visitor already exists" });
     }
 
-    const [ frontId, backId, selfie ] = await Promise.all([
-      uploadFileToGCS('visitor_data.id_picture.front'),
-      uploadFileToGCS('visitor_data.id_picture.back'),
-      uploadFileToGCS('visitor_data.id_picture.selfie'),
-    ]);
+    const [frontId, backId, selfieId] = [
+      uploadFileToGCS(
+        Buffer.from(
+          id_picture.front.replace(/^data:image\/\w+;base64,/, ""),
+          "base64"
+        ),
+        `${Date.now()}_${last_name.toUpperCase()}_front.jpg`
+      ),
+      uploadFileToGCS(
+        Buffer.from(
+          id_picture.back.replace(/^data:image\/\w+;base64,/, ""),
+          "base64"
+        ),
+        `${Date.now()}_${last_name.toUpperCase()}_back.jpg`
+      ),
+      uploadFileToGCS(
+        Buffer.from(
+          id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""),
+          "base64"
+        ),
+        `${Date.now()}_${last_name.toUpperCase()}_selfie.jpg`
+      ),
+    ];
 
     const newVisitor = await Visitor.create({
       visitor_details: {
@@ -81,16 +95,16 @@ exports.addVisitor = async (req, res) => {
       purpose: purpose,
       expected_time_in,
       expected_time_out,
-      id_picture: { 
-        front: frontId, 
-        back: backId, 
-        selfie: selfie 
+      id_picture: {
+        front: frontId,
+        back: backId,
+        selfie: selfieId,
       },
       visitor_type: visitor_type,
       status: status,
     });
 
-    return res.status(201).json({ Visitor: newVisitor });
+    return res.status(201).json({ visitor: newVisitor });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to create a new visitor" });
@@ -111,21 +125,6 @@ exports.findVisitor = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to find visitor by ID" });
-  }
-};
-
-exports.getVisitorImageById = async (req, res) => {
-  try {
-    const { _id } = req.body;
-    const searchedVisitor = await Visitor.findById(_id);
-
-    if (searchedVisitor) {
-      return res.status(201).json({ id_picture: searchedVisitor.id_picture });
-    } else {
-      return res.status(404).json({ error: "visitor not found" });
-    }
-  } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -224,7 +223,7 @@ exports.updateStatus = async (req, res) => {
 
   try {
     const visitorDB = await Visitor.findById(_id);
-    
+
     if (!visitorDB) {
       return res.status(404).json({ error: "Visitor not found" });
     }
@@ -232,13 +231,19 @@ exports.updateStatus = async (req, res) => {
     visitorDB.status = status;
     await visitorDB.save();
 
-    if (status === 'Approved') {
-      generateSingleQRCode(visitorDB._id);
+    if (status === "Approved") {
+      try {
+        //check if naa companion
+        //loop through & send email
+        generateSingleQRCode(visitorDB._id);
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({ Error: "Failed to send email" });
+      }
       //add to notification model
     }
 
     res.status(200).json({ message: `User is now ${status}` });
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to update visitor status" });

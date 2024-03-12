@@ -1,14 +1,14 @@
 require("dotenv").config();
 
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const QRCode = require('qrcode');
-const RefreshToken = require('../models/refreshToken');
-const Badge = require('../models/badge');
-const VisitorLogs = require('../models/visitorLogs');
-const Visitor = require('../models/visitor');
-const nodemailer = require('nodemailer');
-const { Storage } = require('@google-cloud/storage');
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const QRCode = require("qrcode");
+const RefreshToken = require("../models/refreshToken");
+const Badge = require("../models/badge");
+const VisitorLogs = require("../models/visitorLogs");
+const Visitor = require("../models/visitor");
+const nodemailer = require("nodemailer");
+const { Storage } = require("@google-cloud/storage");
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 const ACCESS_TOKEN_EXPIRATION = "20m";
@@ -23,13 +23,13 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// GET CREDS FROM GOOGLE CLOUD
 const storage = new Storage({
-    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-    projectId: process.env.GOOGLE_CLOUD_PROJECT,
+  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+  projectId: process.env.GOOGLE_CLOUD_PROJECT,
 });
 
-const bucketName = 'visiflow';
-
+const bucketName = "visiflow";
 
 function hashPassword(password) {
   const salt = bcrypt.genSaltSync();
@@ -113,7 +113,7 @@ async function generateSingleQRCode(visitorId) {
     await generateQRCode(uri, filename, badge._id);
 
     const mailOptions = {
-      from: "18105955@usc.edu.ph",
+      from: process.env.MAILER,
       to: visitor.visitor_details.email,
       subject: "QR Code for Badge",
       text: "Please find the QR code attached.",
@@ -221,43 +221,29 @@ async function updateLog(badgeId, visitorId, res) {
   }
 }
 
-async function uploadFileToGCS(imageData) {
-    const bucket = storage.bucket(bucketName);
-    // const fileName = `${Date.now()}_${file.originalname}`;
-    const fileName = `${Date.now()}_image.jpg`
-    const fileUpload = bucket.file(fileName);
+//? Upload File to GCS
+function uploadFileToGCS(bufferData, fileName) {
+  const bucket = storage.bucket(bucketName);
+  const file = bucket.file(fileName);
 
-    const stream = fileUpload.createWriteStream({
-        metadata: {
-          contentType: 'image/jpeg',
-        },
-        resumable: false,
-    });
+  file.save(bufferData, {
+    contentType: "image/jpeg",
+  });
 
-    return new Promise((resolve, reject) => {
-        stream.on('error', (err) => {
-        reject(err);
-        });
+  const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
 
-        stream.on('finish', () => {
-        resolve(`https://storage.googleapis.com/${bucketName}/${fileName}`);
-        });
-
-        const buffer = Buffer.from(imageData, 'base64');
-        stream.end(buffer);
-
-    });
+  return publicUrl;
 }
 
-module.exports = { 
-    hashPassword, 
-    comparePassword, 
-    generateAccessToken, 
-    generateRefreshToken, 
-    storeRefreshToken, 
-    verifyRefreshToken,
-    generateQRCode,
-    generateSingleQRCode,
-    updateLog,
-    uploadFileToGCS
-}
+module.exports = {
+  hashPassword,
+  comparePassword,
+  generateAccessToken,
+  generateRefreshToken,
+  storeRefreshToken,
+  verifyRefreshToken,
+  generateQRCode,
+  generateSingleQRCode,
+  updateLog,
+  uploadFileToGCS,
+};
