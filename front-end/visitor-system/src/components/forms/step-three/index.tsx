@@ -9,7 +9,7 @@ import { VisitorStatus, VisitorType } from "../../../utils/enums";
 import { Tabs, Divider, Button, Form, Modal } from "antd";
 
 // Utils
-import { mainOrCompanion } from "../../../utils";
+import { mainOrCompanion, tabName } from "../../../utils";
 
 // Assets
 import { ExclamationCircleFilled, LoadingOutlined } from "@ant-design/icons";
@@ -54,31 +54,72 @@ export default function StepThree({
 		},
 	});
 
+	const companions_not_empty = (obj: any) => {
+		for (const key in obj) {
+			switch (key) {
+				case "name":
+					for (const name in obj[key]) {
+						if (!obj[key][name] && name !== "middle_name") {
+							return true;
+						}
+					}
+					break;
+				case "address":
+					for (const address in obj[key]) {
+						if (
+							!obj[key][address] &&
+							address !== "house" &&
+							address !== "street"
+						) {
+							return true;
+						}
+					}
+					break;
+				default:
+					return false;
+			}
+		}
+		return false;
+	};
+
 	const showConfirm = (data: any) => {
 		confirm({
 			title: "Do you want to proceed?",
 			icon: <ExclamationCircleFilled />,
 			onOk() {
-				setLoading(true);
-				AxiosInstace.post("/visitor/new", {
-					visitor_data: data,
-				})
-					.then((res: any) => {
-						setLoading(false);
-						successMessage(res.data.message);
+				if (
+					data.companion_details.filter((companion: any) =>
+						companions_not_empty(companion),
+					).length > 0
+				) {
+					console.log(
+						data.companion_details.filter((companion: any) =>
+							companions_not_empty(companion),
+						),
+					);
+					error("Some companions are not filled.");
+				} else {
+					setLoading(true);
+					AxiosInstace.post("/visitor/new", {
+						visitor_data: data,
 					})
-					.catch((err: any) => {
-						setLoading(false);
-						if (err.response) {
-							error(
-								err.response.data.error ||
-									err.response.data.errors ||
-									err.response.errors,
-							);
-						} else {
-							error("Something went wrong.");
-						}
-					});
+						.then((res: any) => {
+							setLoading(false);
+							successMessage(res.data.message);
+						})
+						.catch((err: any) => {
+							setLoading(false);
+							if (err.response) {
+								error(
+									err.response.data.error ||
+										err.response.data.errors ||
+										err.response.errors,
+								);
+							} else {
+								error("Something went wrong.");
+							}
+						});
+				}
 			},
 		});
 	};
@@ -313,7 +354,7 @@ export default function StepThree({
 					items={new Array(visitorNo).fill(null).map((_, i) => {
 						const id = String(i + 1);
 						return {
-							label: `Visitor ${id}`,
+							label: tabName(id),
 							key: id,
 							children: <ConfirmForm increment={i} visitors={visitors} />,
 						};

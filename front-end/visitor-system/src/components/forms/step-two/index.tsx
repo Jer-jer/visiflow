@@ -20,6 +20,9 @@ import { StepTwoData, StepTwoZod } from "../../../utils/zodSchemas";
 // Components
 import StepForm from "./form";
 
+// Utils
+import { tabName } from "../../../utils";
+
 // Assets
 
 // Styles
@@ -47,6 +50,11 @@ export default function StepTwo({
 		formState: { errors },
 	} = useForm<StepTwoData>({
 		resolver: zodResolver(StepTwoZod),
+		defaultValues: {
+			front: visitors.id_picture.front,
+			back: visitors.id_picture.back,
+			selfie: visitors.id_picture.selfie,
+		},
 	});
 
 	// Image Data Stuff
@@ -69,7 +77,6 @@ export default function StepTwo({
 
 			switch (property) {
 				case "front":
-					// setFrontImage(imageSrc);
 					setVisitors((prev) => ({
 						...prev,
 						id_picture: { ...prev.id_picture, front: imageSrc as string },
@@ -77,7 +84,6 @@ export default function StepTwo({
 					setValue("front", imageSrc as string);
 					break;
 				case "back":
-					// setBackImage(imageSrc);
 					setVisitors((prev) => ({
 						...prev,
 						id_picture: { ...prev.id_picture, back: imageSrc as string },
@@ -85,7 +91,6 @@ export default function StepTwo({
 					setValue("back", imageSrc as string);
 					break;
 				case "selfie":
-					// setSelfieImage(imageSrc);
 					setVisitors((prev) => ({
 						...prev,
 						id_picture: { ...prev.id_picture, selfie: imageSrc as string },
@@ -118,7 +123,6 @@ export default function StepTwo({
 	};
 
 	const onSubmit = handleSubmit((data) => {
-		// console.log(data);
 		nextStep();
 	});
 
@@ -131,7 +135,7 @@ export default function StepTwo({
 				items={new Array(visitorNo).fill(null).map((_, i) => {
 					const id = String(i + 1);
 					return {
-						label: `Visitor ${id}`,
+						label: tabName(id),
 						key: id,
 						children: (
 							<StepForm
@@ -400,7 +404,7 @@ export default function StepTwo({
 																				id_picture: {
 																					...prev.id_picture,
 																					selfie: "",
-																				}
+																				},
 																			}));
 																		}}
 																	>

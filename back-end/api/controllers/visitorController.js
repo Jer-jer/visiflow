@@ -4,9 +4,13 @@ const {
   validateVisitor,
   validationResult,
 } = require("../middleware/dataValidation");
-const { generateSingleQRCode, uploadFileToGCS } = require("../utils/helper");
+const {
+  generateSingleQRCode,
+  uploadFileToGCS,
+  sendEmail,
+} = require("../utils/helper");
 const { Buffer } = require("node:buffer");
-const Notification = require('../models/notification');
+const Notification = require("../models/notification");
 
 exports.getVisitors = async (req, res) => {
   try {
@@ -44,22 +48,22 @@ exports.addVisitor = async (req, res) => {
     await Promise.all(
       validateVisitor.map((validation) => validation.run(req.body.visitor_data))
     );
-  
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array()[0].msg });
     }
-  
+
     const visitorDB = await Visitor.findOne({
       "visitor_details.name.first_name": first_name,
       "visitor_details.name.middle_name": middle_name,
       "visitor_details.name.last_name": last_name,
     });
-  
+
     if (visitorDB) {
       return res.status(409).json({ error: "Visitor already exists" });
     }
-  
+
     const [frontId, backId, selfieId] = [
       uploadFileToGCS(
         Buffer.from(
@@ -83,7 +87,7 @@ exports.addVisitor = async (req, res) => {
         `${Date.now()}_${last_name.toUpperCase()}_selfie.jpg`
       ),
     ];
-  
+
     const newVisitor = await Visitor.create({
       visitor_details: {
         name: { first_name, middle_name, last_name },
@@ -104,7 +108,7 @@ exports.addVisitor = async (req, res) => {
       visitor_type: visitor_type,
       status: status,
     });
-  
+
     return res.status(201).json({ visitor: newVisitor });
   } catch (error) {
     console.error(error);
@@ -220,7 +224,7 @@ exports.deleteVisitor = async (req, res) => {
 };
 
 exports.updateStatus = async (req, res) => {
-  const { _id, status } = req.body;
+  const { _id, status, message, email, companions } = req.body;
 
   try {
     const visitorDB = await Visitor.findById(_id);
@@ -230,19 +234,87 @@ exports.updateStatus = async (req, res) => {
     }
 
     visitorDB.status = status;
+
     await visitorDB.save();
 
     if (status === "Approved") {
+      generateSingleQRCode(visitorDB._id, message);
+
+      // let result = generateSingleQRCode(visitorDB._id, message);
+
+      // if (!result.success) {
+      //   return res.status(500).json({ Error: (await result).message });
+      // }
+
+      console.log("I MADE IT HERE4");
+
+      await Notification.create({
+        type: "Appointment Confirmation",
+        recipient: visitorDB.visitor_details._id,
+        content: {
+          visitor_name: visitorDB.visitor_details.name.first_name,
+          host_name: visitorDB.purpose.who[0],
+          date: visitorDB.purpose.when,
+          time: visitorDB.expected_time_in,
+          location: visitorDB.purpose.where[0],
+          purpose: visitorDB.purpose.what.join(", "),
+        },
+      });
+
+      console.log("I MADE IT HERE5");
+      // try {
+      //   console.log("I MADE IT HERE1");
+      //   let result = generateSingleQRCode(visitorDB._id, message);
+
+      //   console.log("I MADE IT HERE2");
+
+      //   if (!(await result).success) {
+      //     console.log("I MADE IT HERE3");
+      //     return res.status(500).json({ Error: (await result).message });
+      //   }
+
+      //   console.log("I MADE IT HERE4");
+
+      //   await Notification.create({
+      //     type: "Appointment Confirmation",
+      //     recipient: visitorDB.visitor_details._id,
+      //     content: {
+      //       visitor_name: visitorDB.visitor_details.name.first_name,
+      //       host_name: visitorDB.purpose.who[0],
+      //       date: visitorDB.purpose.when,
+      //       time: visitorDB.expected_time_in,
+      //       location: visitorDB.purpose.where[0],
+      //       purpose: visitorDB.purpose.what.join(", "),
+      //     },
+      //   });
+
+      //   console.log("I MADE IT HERE5");
+      // } catch (error) {
+      //   console.error(error);
+      //   return res.status(500).json({ Error: "Failed to send email" });
+      // }
+    } else if (status === "Declined") {
       try {
+        sendEmail({
+          from: process.env.MAILER,
+          to: email,
+          subject: "Pre-Registration Declined",
+          text: message,
+        });
 
-        let result = generateSingleQRCode(visitorDB._id);
-
-        if (!(await result).success) {
-          return res.status(500).json({ Error: (await result).message});
+        if (companions && companions.length > 0) {
+          for (const companion of companions) {
+            sendEmail({
+              from: process.env.MAILER,
+              to: companion.email,
+              subject: "Pre-Registration Declined",
+              text: message,
+            });
+          }
         }
 
         await Notification.create({
-          type: 'Appointment Confirmation',
+          type: "Appointment Rejected",
           recipient: visitorDB.visitor_details._id,
           content: {
             visitor_name: visitorDB.visitor_details.name.first_name,
@@ -250,17 +322,17 @@ exports.updateStatus = async (req, res) => {
             date: visitorDB.purpose.when,
             time: visitorDB.expected_time_in,
             location: visitorDB.purpose.where[0],
-            purpose: visitorDB.purpose.what.join(', ')
-          }
+            purpose: visitorDB.purpose.what.join(", "),
+            message: message,
+          },
         });
-
-        res.status(200).json({ message: `Visitor is now ${status}` });
-
       } catch (error) {
         console.error(error);
-        return res.status(500).json({ Error: 'Failed to send email' });
+        return res.status(500).json({ Error: "Failed to send email" });
       }
-    }  
+    }
+
+    res.status(200).json({ message: `Visitor is now ${status}` });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to update visitor status" });

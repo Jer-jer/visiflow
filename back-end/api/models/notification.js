@@ -19,7 +19,7 @@ const Content = new Schema({
 const NotificationSchema = new Schema({
     type: {
         type: String,
-        enum: ['check-in reminder', 'exceeded time-in', 'Appointment Confirmation', 'Pending Visitors'],
+        enum: ['check-in reminder', 'exceeded time-in', 'Appointment Confirmation', 'Appointment Rejected', 'Pending Visitors'],
         required: true
     },
     recipient: { type: ObjectId, require: true },

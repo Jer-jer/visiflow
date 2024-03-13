@@ -42,12 +42,11 @@ export default function PendingAppointments({
 					}`}
 				>
 					<div className="flex justify-start gap-[12px]">
-						{/*//TODO Add Image the moment we have the image saved somewhere not in the DB*/}
-						{/* <div className="avatar">
+						<div className="avatar">
 							<div className="h-[50px] w-[50px] rounded-full">
-								<img src={item.imgSrc} alt="" />
+								<img src={item.id_picture.selfie} alt="" />
 							</div>
-						</div> */}
+						</div>
 						<div className="flex flex-col">
 							<span className="line-normal text-[12px] font-[100] text-black">
 								{formatDate(item.purpose.when)}

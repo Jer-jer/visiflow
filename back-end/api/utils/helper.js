@@ -92,36 +92,42 @@ async function generateQRCode(badgeId) {
   });
 }
 
-async function generateSingleQRCode(visitorId) {
+async function generateSingleQRCode(visitorId, message) {
   try {
     const visitor = await Visitor.findById(visitorId);
     if (!visitor) {
       throw new Error("Visitor not found");
-    } 
-    
+    }
+
     const badges = [];
 
     // Generate QR Code for visitor
-    const visitorBadge = await generateQRForVisitor(visitor);
+    const visitorBadge = await generateQRForVisitor(visitor, message);
     badges.push(visitorBadge);
 
     //Generate QR Code for companions
     if (visitor.companion_details.length > 0) {
       for (const companion of visitor.companion_details) {
-        const companionBadge = await generateQRForVisitor(companion);
+        const companionBadge = await generateQRForVisitor(companion, message);
         badges.push(companionBadge);
       }
+    }
 
-    }    
-
-    return { success: true, message: "QR code and email sent successfully", badges };
+    return {
+      success: true,
+      message: "QR code and email sent successfully",
+      badges,
+    };
   } catch (error) {
     console.error("Error generating QR code and sending email:", error);
-    return { success: false, message: "Failed to generate QR code and send emails" };
+    return {
+      success: false,
+      message: "Failed to generate QR code and send emails",
+    };
   }
 }
 
-async function generateQRForVisitor(visitor) {
+async function generateQRForVisitor(visitor, message) {
   try {
     const badge = new Badge({
       visitor_id: visitor._id,
@@ -129,20 +135,23 @@ async function generateQRForVisitor(visitor) {
       is_active: false,
       is_valid: true,
     });
-  
-    const email = visitor.visitor_details && visitor.visitor_details.email ? visitor.visitor_details.email : visitor.email;
-  
+
+    const email =
+      visitor.visitor_details && visitor.visitor_details.email
+        ? visitor.visitor_details.email
+        : visitor.email;
+
     await badge.save();
-  
+
     const filename = `api/resource/badge/badge${badge._id}.png`;
     const uri = `http://192.168.1.5:5000/badge/checkBadge?visitor_id=${visitor._id}`;
     await generateQRCode(uri, filename, badge._id);
-  
+
     const mailOptions = {
       from: process.env.MAILER,
       to: email,
       subject: "QR Code for Badge",
-      text: "Please find the QR code attached.",
+      text: message,
       attachments: [
         {
           filename: `badge${badge._id}.png`,
@@ -150,12 +159,11 @@ async function generateQRForVisitor(visitor) {
         },
       ],
     };
-  
+
     await sendEmail(mailOptions);
-  
+
     console.log(`QR code and email sent for badge ${badge._id}`);
     return { visitorId: visitor._id, badgeId: badge._id };
-
   } catch (error) {
     console.error("Error generating QR code and sending email:", error);
     throw error;
@@ -164,17 +172,22 @@ async function generateQRForVisitor(visitor) {
 
 async function generateQRCode(uri, filename, badgeId) {
   return new Promise((resolve, reject) => {
-    QRCode.toFile(filename, uri, { errorCorrectionLevel: "H" }, function (error) {
-      if (error) {
-        console.error(
-          `Error generating QR code for badge ${badgeId}: ${error.message}`
-        );
-        reject(error);
-      } else {
-        console.log(`QR code saved for badge ${badgeId}`);
-        resolve();
+    QRCode.toFile(
+      filename,
+      uri,
+      { errorCorrectionLevel: "H" },
+      function (error) {
+        if (error) {
+          console.error(
+            `Error generating QR code for badge ${badgeId}: ${error.message}`
+          );
+          reject(error);
+        } else {
+          console.log(`QR code saved for badge ${badgeId}`);
+          resolve();
+        }
       }
-    });
+    );
   });
 }
 
@@ -196,7 +209,6 @@ async function updateLog(badgeId, visitorId, res) {
   const badge = await Badge.findById(badgeId);
   console.log(badge);
   if (badge.is_active) {
-
     try {
       await VisitorLogs.updateOne(
         {
@@ -220,14 +232,13 @@ async function updateLog(badgeId, visitorId, res) {
           },
         }
       );
-      
+
       return res.status(200).json({ message: "time-out" });
     } catch (error) {
       return res.status(500).json({ Error: "Failed to time-out visitor" });
     }
   } else {
     if (visitorId !== undefined) {
-
       await VisitorLogs.create({
         badge_id: badge._id,
         check_in_time: new Date(),
@@ -279,4 +290,5 @@ module.exports = {
   generateSingleQRCode,
   updateLog,
   uploadFileToGCS,
+  sendEmail,
 };
