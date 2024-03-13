@@ -27,6 +27,8 @@ interface VisitorCompanionsProps {
 	modalHeader: string;
 	subject: string;
 	message: string;
+	disabled?: boolean;
+	setVisitorMessage?: Dispatch<SetStateAction<string>>;
 	onOk?: () => void;
 }
 
@@ -38,11 +40,12 @@ export default function Notify({
 	modalHeader,
 	subject,
 	message,
+	disabled,
+	setVisitorMessage,
 	onOk,
 }: VisitorCompanionsProps) {
 	let ccArray: string[] = [];
 	companionRecords?.map((item) => ccArray.push(item.email));
-	const combinedEmailCC = ccArray.join(",");
 
 	let emailArray: string[] = [];
 	let combinedEmails = "";
@@ -53,10 +56,10 @@ export default function Notify({
 	}
 
 	const [email, setEmail] = useState(
-		(emailInput as string) || combinedEmails || "",
+		ccArray.length > 0
+			? [emailInput, ccArray].join(", ")
+			: (emailInput as string) || combinedEmails || "",
 	);
-	const [cc, setCC] = useState(combinedEmailCC || "");
-	const [disabledInputs] = useState<boolean>(false);
 
 	return (
 		<StandardModal
@@ -79,23 +82,7 @@ export default function Notify({
 						placeHolder="Email Address"
 						input={email}
 						setInput={setEmail}
-						disabled={disabledInputs}
-					/>
-				</div>
-				<div className="mb-[20px] flex">
-					<Label
-						labelStyling="w-[16%]"
-						spanStyling="text-black font-medium text-[16px]"
-					>
-						CC
-					</Label>
-					<Input
-						inputType="text"
-						inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500 w-full"
-						placeHolder="CC"
-						input={cc}
-						setInput={setCC}
-						disabled={disabledInputs}
+						disabled
 					/>
 				</div>
 				<div className="mb-[20px] flex">
@@ -110,7 +97,7 @@ export default function Notify({
 						inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500 w-full"
 						placeHolder="Email Address"
 						input={subject}
-						disabled={true}
+						disabled
 					/>
 				</div>
 				<div className="flex flex-col">
@@ -119,8 +106,12 @@ export default function Notify({
 					</Label>
 					<TextArea
 						className="input h-[38px] rounded-[5px] hover:border-transparent hover:bg-[#DFEAEF] focus:border-primary-500 focus:outline-none focus:ring-0"
+						onChange={(e) =>
+							setVisitorMessage && setVisitorMessage(e.target.value)
+						}
 						value={message}
 						rows={4}
+						disabled={disabled}
 					/>
 				</div>
 			</div>

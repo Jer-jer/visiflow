@@ -63,6 +63,7 @@ import "./styles.scss";
 
 // Libraries
 import AxiosInstance from "../../../../lib/axios";
+import visitor from "../../../../states/logs/visitor";
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -102,6 +103,9 @@ export default function VisitorDetails({
 	const [notifyPOIOpen, setNotifyPOIOpen] = useState(false);
 	const [notifyVisitorOpen, setNotifyVisitorOpen] = useState(false);
 	const [identificationOpen, setIdentificationOpen] = useState(false);
+	const [visitorMessage, setVisitorMessage] = useState<string>(
+		"Your pre-registration application has been approved. Please find the QR code attached. Thank you!",
+	);
 
 	const [disabledInputs, setDisabledInputs] = useState<boolean>(true);
 	const [disabledStatusInput, setDisabledStatusInput] = useState<boolean>(true);
@@ -249,6 +253,11 @@ export default function VisitorDetails({
 		cancel();
 		if (approvedOrDeclined) {
 			if (record.visitor_type === VisitorType.PreRegistered) {
+				if (visitorStatusUpdate === VisitorStatus.Declined) {
+					setVisitorMessage(
+						"Your pre-registration application has been declined. Below is the reason why your application has been rejected.",
+					);
+				}
 				setNotifyVisitorOpen(!notifyVisitorOpen);
 			} else {
 				saveAction(undefined, visitorStatusUpdate);
@@ -264,10 +273,13 @@ export default function VisitorDetails({
 			status: visitorStatusUpdate,
 			email: record.visitor_details.email,
 			companions: record.companion_details,
+			message: visitorMessage,
 		})
 			.then((res) => {
 				setStatus(true);
-				setAlertMsg("Successfully Approved and Sent Email");
+				setAlertMsg(
+					`Successfully ${visitorStatusUpdate === VisitorStatus.Approved ? "Approved" : visitorStatusUpdate === VisitorStatus.Declined && "Declined"} and Sent Email`,
+				);
 				setAlertOpen(true);
 				dispatch(update({ ...record, status: visitorStatusUpdate }));
 				dispatch(
@@ -1069,6 +1081,7 @@ export default function VisitorDetails({
 											>
 												Notify Person of Interest
 											</Button>
+											{/* Change Email Input to OIC of the Office */}
 											<Notify
 												emailInput={record.purpose.who}
 												open={notifyPOIOpen}
@@ -1081,15 +1094,17 @@ What: ${record.purpose.what.map((what) => what).join(", ")}
 When: ${record.purpose.when}
 Where: ${record.purpose.where.map((where) => where).join(", ")}
 Who: ${record.purpose.who.map((who) => who).join(", ")}`}
+												disabled={true}
 											/>
 											<Notify
 												emailInput={record.visitor_details.email}
 												companionRecords={record.companion_details}
 												modalHeader="Notify Visitor"
 												subject="Pre-Registration Application Feedback"
-												message="Your pre-registration application has been approved. Please find the QR code attached. Thank you!"
+												message={visitorMessage}
 												open={notifyVisitorOpen}
 												setOpen={setNotifyVisitorOpen}
+												setVisitorMessage={setVisitorMessage}
 												onOk={updateStatus}
 											/>
 										</>

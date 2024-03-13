@@ -4,8 +4,13 @@ const {
   validateVisitor,
   validationResult,
 } = require("../middleware/dataValidation");
-const { generateSingleQRCode, uploadFileToGCS } = require("../utils/helper");
+const {
+  generateSingleQRCode,
+  uploadFileToGCS,
+  sendEmail,
+} = require("../utils/helper");
 const { Buffer } = require("node:buffer");
+const Notification = require("../models/notification");
 
 exports.getVisitors = async (req, res) => {
   try {
@@ -219,7 +224,7 @@ exports.deleteVisitor = async (req, res) => {
 };
 
 exports.updateStatus = async (req, res) => {
-  const { _id, status } = req.body;
+  const { _id, status, message, email, companions } = req.body;
 
   try {
     const visitorDB = await Visitor.findById(_id);
@@ -229,21 +234,105 @@ exports.updateStatus = async (req, res) => {
     }
 
     visitorDB.status = status;
+
     await visitorDB.save();
 
     if (status === "Approved") {
+      generateSingleQRCode(visitorDB._id, message);
+
+      // let result = generateSingleQRCode(visitorDB._id, message);
+
+      // if (!result.success) {
+      //   return res.status(500).json({ Error: (await result).message });
+      // }
+
+      console.log("I MADE IT HERE4");
+
+      await Notification.create({
+        type: "Appointment Confirmation",
+        recipient: visitorDB.visitor_details._id,
+        content: {
+          visitor_name: visitorDB.visitor_details.name.first_name,
+          host_name: visitorDB.purpose.who[0],
+          date: visitorDB.purpose.when,
+          time: visitorDB.expected_time_in,
+          location: visitorDB.purpose.where[0],
+          purpose: visitorDB.purpose.what.join(", "),
+        },
+      });
+
+      console.log("I MADE IT HERE5");
+      // try {
+      //   console.log("I MADE IT HERE1");
+      //   let result = generateSingleQRCode(visitorDB._id, message);
+
+      //   console.log("I MADE IT HERE2");
+
+      //   if (!(await result).success) {
+      //     console.log("I MADE IT HERE3");
+      //     return res.status(500).json({ Error: (await result).message });
+      //   }
+
+      //   console.log("I MADE IT HERE4");
+
+      //   await Notification.create({
+      //     type: "Appointment Confirmation",
+      //     recipient: visitorDB.visitor_details._id,
+      //     content: {
+      //       visitor_name: visitorDB.visitor_details.name.first_name,
+      //       host_name: visitorDB.purpose.who[0],
+      //       date: visitorDB.purpose.when,
+      //       time: visitorDB.expected_time_in,
+      //       location: visitorDB.purpose.where[0],
+      //       purpose: visitorDB.purpose.what.join(", "),
+      //     },
+      //   });
+
+      //   console.log("I MADE IT HERE5");
+      // } catch (error) {
+      //   console.error(error);
+      //   return res.status(500).json({ Error: "Failed to send email" });
+      // }
+    } else if (status === "Declined") {
       try {
-        //check if naa companion
-        //loop through & send email
-        generateSingleQRCode(visitorDB._id);
+        sendEmail({
+          from: process.env.MAILER,
+          to: email,
+          subject: "Pre-Registration Declined",
+          text: message,
+        });
+
+        if (companions && companions.length > 0) {
+          for (const companion of companions) {
+            sendEmail({
+              from: process.env.MAILER,
+              to: companion.email,
+              subject: "Pre-Registration Declined",
+              text: message,
+            });
+          }
+        }
+
+        await Notification.create({
+          type: "Appointment Rejected",
+          recipient: visitorDB.visitor_details._id,
+          content: {
+            visitor_name: visitorDB.visitor_details.name.first_name,
+            host_name: visitorDB.purpose.who[0],
+            date: visitorDB.purpose.when,
+            time: visitorDB.expected_time_in,
+            location: visitorDB.purpose.where[0],
+            purpose: visitorDB.purpose.what.join(", "),
+            message: message,
+          },
+        });
       } catch (error) {
         console.error(error);
         return res.status(500).json({ Error: "Failed to send email" });
       }
-      //add to notification model
     }
 
-    res.status(200).json({ message: `User is now ${status}` });
+    res.status(200).json({ message: `Visitor is now ${status}` });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to update visitor status" });
