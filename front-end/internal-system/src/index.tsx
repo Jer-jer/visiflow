@@ -21,7 +21,7 @@ const root = ReactDOM.createRoot(
 );
 
 root.render(
-	//<React.StrictMode>
+	// <React.StrictMode>
 	<BrowserRouter basename="/">
 		<ConfigProvider
 			theme={{
@@ -45,7 +45,7 @@ root.render(
 			</Provider>
 		</ConfigProvider>
 	</BrowserRouter>,
-	//</React.StrictMode>,
+	// </React.StrictMode>,
 );
 
 // If you want to start measuring performance in your app, pass a function

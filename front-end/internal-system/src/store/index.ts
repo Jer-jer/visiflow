@@ -2,10 +2,16 @@ import { configureStore } from "@reduxjs/toolkit";
 
 // Slices
 import VisitorReducer from "../states/visitors";
+import VisitorLogsReducer from "../states/logs/visitor";
+import CompanionLogsReducer from "../states/logs/companions";
+import UserLogsReducer from "../states/logs/user";
 
 export const store = configureStore({
 	reducer: {
 		visitors: VisitorReducer,
+		visitorLogs: VisitorLogsReducer,
+		companionLogs: CompanionLogsReducer,
+		userLogs: UserLogsReducer,
 	},
 });
 

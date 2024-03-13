@@ -1,23 +1,26 @@
-//DONE CHECKING
-const User = require("../models/user");
-const { hashPassword, comparePassword } = require('../utils/helper');
-const { validateUser, handleValidationErrors, validationResult } = require("../middleware/dataValidation");
-const { filterData } = require("../middleware/filterData");
 const mongoose = require("mongoose");
+const User = require("../models/user");
+const { hashPassword } = require('../utils/helper');
+const { filterData } = require("../middleware/filterData");
+const { 
+  validateUser, 
+  validationResult 
+} = require("../middleware/dataValidation");
 
-//Get list of all users
-exports.getAllUsers = async (req, res) => {
+
+exports.getUsers = async (req, res) => {
   try {
     const users = await User.find({}, "-password");
-    return res.json({ users });
+    return res.status(200).json({ users });
   } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error " });
+    console.error(error);
+    return res.status(500).json({ error: "Failed to retrieve users from the database" });
   }
 };
 
-//Create a new user
-exports.createNewUser = async (req, res) => {
+exports.addUser = async (req, res) => {
   const { first_name, middle_name, last_name, username, email, password, phone, role } = req.body;
+  const ObjectId = mongoose.Types.ObjectId;
 
   await Promise.all(validateUser.map((validation) => validation.run(req)));
 
@@ -26,100 +29,112 @@ exports.createNewUser = async (req, res) => {
     return res.status(400).json({ errors: errors.array()[0].msg });
   }
 
+  const userDB = await User.findOne({ email: email});
+  if (userDB) {
+    return res.status(409).json({ error: 'User already exists' });
+  }
+  
   try {
-    const userDB = await User.findOne({ email });
-    console.log(userDB);
+    const hashedPassword = hashPassword(password);
+    const _id = new ObjectId();
+
+    const newUser = await User.create({
+      _id,
+      name: {
+        first_name,
+        middle_name,
+        last_name,
+      },
+      username: username || (first_name + last_name).toLowerCase(),
+      email,
+      password: hashedPassword,
+      phone,
+      role,
+    });
+
+    res.status(201).json({ User: filterData(newUser), id: _id });
+    
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to create a new user" });
+  }
+};
+
+exports.findUser = async (req, res) => {
+  const { _id } = req.body;
+  
+  try {
+    const userDB = await User.findById(_id, "-password");
+
     if (userDB) {
-      res.status(401).json({ error: "User already exists" });
-    } else {
-      const hashedPassword = hashPassword(password);
-      const _id = new mongoose.Types.ObjectId();
-
-      const newUser = await User.create({
-        _id: _id,
-        name: {
-          first_name,
-          middle_name,
-          last_name,
-        },
-        username: username || (first_name + last_name).toLowerCase(),
-        email,
-        password: hashedPassword,
-        phone,
-        role,
-      });
-      res.status(201).json({ newUser: filterData(newUser), id: _id });
-    }
-  } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
-//Get user by ID
-exports.getUserById = async (req, res) => {
-  try {
-    const { _id } = req.body;
-    const searchedUser = await User.findById(_id, "-password");
-
-    if (searchedUser) {
-      return res.status(201).json({ user: searchedUser });
+      return res.status(200).json({ User: userDB });
     } else {
       return res.status(404).json({ error: "User not found" });
     }
+
   } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    return res.status(500).json({ error: "Failed to find user by ID" });
   }
 };
 
-//Update a user by ID
 exports.updateUser = async (req, res) => {
-    const { _id } = req.body;
-    try {
-        const user = await User.findById(_id);
-        if(user) {
-            //need to add validation for data here
-            user.name.first_name = req.body.first_name || user.name.first_name;
-            user.name.middle_name = req.body.middle_name || user.name.middle_name;
-            user.name.last_name = req.body.last_name || user.name.last_name;
-            user.username = req.body.username || user.username;
-            //need to create validation for change of email
-            user.email = req.body.email || user.email;
-            // need to create separate update password for user
-            user.password = req.body.password || user.password;
-            user.phone = req.body.phone || user.phone;
-            user.role = req.body.role || user.role;
-            user.updatedAt = Date.now();
+  const { _id, first_name, middle_name, last_name, username, email, phone, role } = req.body;
 
-            await user.save();
-
-            res.json({ message: "User updated successfully", updatedUser: user });
-    } else {
-      return res.status(404).json({ error: "user not found" });
+  try {
+    const userDB = await User.findById(_id);
+    if (!userDB) {
+      return res.status(404).json({ error: 'User not found' });
     }
+    
+    const updateFields = {
+      name: {
+        first_name: first_name || userDB.first_name,
+        middle_name: middle_name || userDB.middle_name,
+        last_name: last_name || userDB.last_name,
+      },
+      username: username || userDB.username,
+      email: email || userDB.email,
+      phone: phone || userDB.phone,
+      role: role || userDB.role
+  }
+
+    const filteredUpdateFields = Object.fromEntries(
+        Object.entries(updateFields).filter(([key, value]) => value !== undefined)
+    );
+    
+    if (Object.keys(filteredUpdateFields).length === 0) {
+        return res.status(400).json({ error: "No valid fields to update" });
+    }
+        
+    const updatedUser = await User.findByIdAndUpdate(
+      _id,
+      filteredUpdateFields,
+      { new: true }
+    );
+
+    res.status(201).json({ User: filterData(updatedUser) });
+    
   } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    return res.status(500).json({ error: "Failed to update user" });
   }
 };
 
-//Delete a user by ID
 exports.deleteUser = async (req, res) => {
+  const { _id } = req.body;
+  
   try {
-    const { _id } = req.body;
+    const userDB = await User.findOneAndDelete(_id);
 
-    const deletedUser = await User.findOneAndDelete({ _id });
-
-    if (deletedUser) {
-      return res.status(201).json({ message: "User deleted sucessfully" });
+    if (userDB) {
+      return res.status(204).send();
     } else {
       return res.status(404).json({ error: "User not found" });
     }
+
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
-//RESPONSE CODE LIST
-//201 Request Successful
-//500 Internal Server Error
-//404 Request Not Found
-//400 Failed Query

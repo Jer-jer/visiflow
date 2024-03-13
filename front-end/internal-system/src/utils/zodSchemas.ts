@@ -41,7 +41,7 @@ export interface WalkInFormInterfaceZod{
 	where: string[];
 	who: string[];
 	when: string;
-	check_in_out: string[];
+	check_in_out: [string, string];
 	visitor_type: VisitorType;
 	status: VisitorStatus;
 	id_pic: string;

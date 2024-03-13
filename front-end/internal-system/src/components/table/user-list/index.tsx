@@ -13,10 +13,15 @@ import "./styles.scss";
 
 interface UserListTableProps {
 	users: UserDataType[];
+	search: string;
 	addTab: (record: UserDataType) => void;
 }
 
-export default function UserListTable({ users, addTab }: UserListTableProps) {
+export default function UserListTable({
+	users,
+	search,
+	addTab,
+}: UserListTableProps) {
 	const columns: ColumnsType<UserDataType> = [
 		{
 			title: "Name",
@@ -61,6 +66,7 @@ export default function UserListTable({ users, addTab }: UserListTableProps) {
 		{
 			title: "Action",
 			key: "action",
+			fixed: "right",
 			render: (_, record) => (
 				<Button onClick={() => addTab(record)}>View Details</Button>
 			),
@@ -68,6 +74,29 @@ export default function UserListTable({ users, addTab }: UserListTableProps) {
 	];
 
 	return (
-		<Table columns={columns} dataSource={users} pagination={{ pageSize: 8 }} />
+		<Table
+			columns={columns}
+			dataSource={users.filter((user) => {
+				return search.toLowerCase() === ""
+					? user
+					: user.name.first_name.toLowerCase().includes(search.toLowerCase()) ||
+							user.name
+								.middle_name!.toLowerCase()
+								.includes(search.toLowerCase()) ||
+							user.name.last_name
+								.toLowerCase()
+								.includes(search.toLowerCase()) ||
+							`${user.name.last_name} ${user.name.first_name} ${user.name.middle_name}`
+								.toLowerCase()
+								.includes(search.toLowerCase()) ||
+							`${user.name.first_name}${
+								user.name.middle_name ? ` ${user.name.middle_name}` : ""
+							} ${user.name.last_name}`
+								.toLowerCase()
+								.includes(search.toLowerCase()) ||
+							user.phone.includes(search);
+			})}
+			pagination={{ pageSize: 8 }}
+		/>
 	);
 }

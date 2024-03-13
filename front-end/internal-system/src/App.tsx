@@ -14,6 +14,7 @@ import VisitorManagement from "./pages/admin/visitor-management";
 import UserManagement from "./pages/admin/user-management";
 import HomeEditor from "./pages/admin/home-editor";
 import Schedules from "./pages/admin/schedules";
+import UnknownPage from "./pages/404";
 
 //Guard
 import VisitorForm from "./pages/guard/visitor-form";
@@ -69,8 +70,7 @@ function App() {
 								<Route path="/visitor-status" element={<VisitorStatus />} />
 							</>
 						)}
-						{/*//TODO enchance error 404 page */}
-						<Route path="*" element={<span>Error</span>} />
+						<Route path="*" element={<UnknownPage />} />
 					</Routes>
 				</LoggedIn>
 			) : (
@@ -81,7 +81,7 @@ function App() {
 							<Login setIsLoggedIn={setIsLoggedIn} setIsAdmin={setIsAdmin} />
 						}
 					/>
-					<Route path="*" element={<span>Error</span>} />
+					<Route path="*" element={<UnknownPage />} />
 				</Routes>
 			)}
 		</div>
