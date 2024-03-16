@@ -7,6 +7,7 @@ import React, {
 	SetStateAction,
 	useEffect,
 } from "react";
+import { useParams } from "react-router-dom";
 
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,10 +26,11 @@ import type {
 	UseFormSetValue,
 	FieldErrors,
 } from "react-hook-form";
-import { VisitorDataType } from "../../../utils/interfaces";
+import { GuardVisitorDataType } from "../../../utils/interfaces";
 import type { RangePickerProps } from "antd/es/date-picker";
 import type { Dayjs } from "dayjs";
 import { VisitorStatus, VisitorType } from "../../../utils/enums";
+import type { DatePickerProps } from "antd";
 
 //Components
 import OuterContainer from "../../../components/container";
@@ -92,61 +94,44 @@ const whereOptions = [
 	{ label: "Department 2", value: "Department 2" },
 ];
 
+const now = () => {
+	const now = new Date();
+	const formattedDateTime = new Intl.DateTimeFormat("en-CA", {
+		hour12: true,
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit",
+		hour: "2-digit",
+		minute: "2-digit",
+	}).format(now);
+	const removeColumn = formattedDateTime.replace(/,\s*/, " ");
+	const timePart = removeColumn.split(" ");
+	const amPm = timePart[2];
+
+	let finalDateTime = removeColumn;
+
+	if (amPm === "a.m.") finalDateTime = finalDateTime.replace("a.m.", "AM");
+	else if (amPm === "p.m.") finalDateTime = finalDateTime.replace("p.m.", "PM");
+
+	return finalDateTime;
+};
+
 export default function VisitorFormLayout() {
+	const [status, setStatus] = useState(false);
+	const [alertOpen, setAlertOpen] = useState(false);
+	const [alertMsg, setAlertMsg] = useState("");
+
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
 		setValue,
-		clearErrors,
 	} = useForm<WalkInFormTypeZod>({
+		defaultValues: {
+			expected_time_out: formatDate(new Date()),
+		},
 		resolver: zodResolver(WalkInFormZod),
 	});
-
-	const [visitors, setVisitors] = useState<VisitorDataType>({
-		visitor_details: {
-			name: {
-				first_name: "",
-				middle_name: "",
-				last_name: "",
-			},
-
-			email: "",
-			phone: "",
-			address: {
-				house: "",
-				street: "",
-				brgy: "",
-				city: "",
-				province: "",
-				country: "",
-			},
-			time_in: "",
-			time_out: "",
-		},
-		companions_details: [],
-		expected_time_in: now(),
-		expected_time_out: now(),
-		purpose: {
-			what: [],
-			when: now(),
-			where: [],
-			who: [],
-		},
-		termsConditions: false,
-		plate_num: null,
-		id_picture: {
-			front: "",
-			back: "",
-			selfie: "",
-		},
-		status: VisitorStatus.InProgress,
-		visitor_type: VisitorType.PreRegistered,
-	});
-
-	const [status, setStatus] = useState(false);
-	const [alertOpen, setAlertOpen] = useState(false);
-	const [alertMsg, setAlertMsg] = useState("");
 
 	const updateInput = (
 		value: string | [string, string] | string[] | any,
@@ -180,29 +165,20 @@ export default function VisitorFormLayout() {
 			case "city":
 				setValue(property, value as string);
 				break;
-			case "province":
-				setValue(property, value as string);
-				break;
+			// case "province":
+			// 	setValue(property, value as string);
+			// 	break;
 			case "country":
 				setValue(property, value as string);
 				break;
-			case "check_in_out":
-				setValue(property, value as [string, string]);
+			case "expected_time_out":
+				setValue(property, value as string);
 				break;
 			case "plate_num":
 				setValue(property, value as string);
 				break;
-			case "visitor_type":
-				setValue(property, value);
-				break;
-			case "status":
-				setValue(property, value);
-				break;
 			case "what":
 				setValue(property, value as string[]);
-				break;
-			case "when":
-				setValue(property, value as string);
 				break;
 			case "where":
 				setValue(property, value as string[]);
@@ -216,43 +192,12 @@ export default function VisitorFormLayout() {
 	const handlePurpose = (purpose: string, value: string | string[]) => {
 		switch (purpose) {
 			case "what":
-				setVisitors((prevVisitors) => ({
-					...prevVisitors,
-					purpose: {
-						...prevVisitors.purpose,
-						what: value as string[],
-					},
-				}));
 				setValue("what", value as string[]);
 				break;
-			case "when":
-				setVisitors((prevVisitors) => ({
-					...prevVisitors,
-					purpose: {
-						...prevVisitors.purpose,
-						when: value as string,
-					},
-				}));
-				setValue("when", value as string);
-				break;
 			case "where":
-				setVisitors((prevVisitors) => ({
-					...prevVisitors,
-					purpose: {
-						...prevVisitors.purpose,
-						where: value as string[],
-					},
-				}));
 				setValue("where", value as string[]);
 				break;
 			case "who":
-				setVisitors((prevVisitors) => ({
-					...prevVisitors,
-					purpose: {
-						...prevVisitors.purpose,
-						who: value as string[],
-					},
-				}));
 				setValue("who", value as string[]);
 				break;
 			default:
@@ -260,35 +205,43 @@ export default function VisitorFormLayout() {
 		}
 	};
 
-	const onRangeChange = (
-		dates: null | (Dayjs | null)[],
-		dateStrings: string[],
-	) => {
-		if (dates) {
-			updateInput([dateStrings[0], dateStrings[1]], "check_in_out");
-		} else {
-			console.log("Clear");
-		}
-	};
+	const onChange: DatePickerProps["onChange"] = (date, dateString) => {};
+
+	const { qr } = useParams(); // QR ID, assuming it looks like this, this retrieves the value of qr
 
 	const saveAction = (zodData: WalkInFormInterfaceZod) => {
 		AxiosInstance.post("/visitor/new", {
-			first_name: zodData.first_name,
-			middle_name: zodData.middle_name,
-			last_name: zodData.last_name,
-			phone: zodData.phone,
-			email: zodData.email,
-			house_no: zodData.house,
-			street: zodData.street,
-			brgy: zodData.brgy,
-			city: zodData.city,
-			province: zodData.province,
-			country: zodData.country,
-			expected_time_in: zodData.check_in_out[0],
-			expected_time_out: zodData.check_in_out[1],
-			plate_num: zodData.plate_num,
-			//status: zodData.status,
-			visitor_type: VisitorType.WalkIn,
+			visitor_data: {
+				visitor_details: {
+					name: {
+						first_name: zodData.first_name,
+						middle_name: zodData.middle_name,
+						last_name: zodData.last_name,
+					},
+					address: {
+						house: zodData.house,
+						street: zodData.street,
+						brgy: zodData.brgy,
+						city: zodData.city,
+						// province: zodData.province, //INPUT PROVINCEEE
+						country: zodData.country,
+					},
+					email: zodData.email,
+					phone: zodData.phone,
+				},
+				expected_time_in: new Date(),
+				expected_time_out: new Date(zodData.expected_time_out),
+				plate_num: zodData.plate_num,
+				pupose: {
+					what: zodData.what,
+					when: formatDate(new Date()),
+					where: zodData.where,
+					who: zodData.who,
+				},
+				status: VisitorStatus.Approved,
+				visitor_type: VisitorType.WalkIn,
+			},
+			// Add QR variable here
 		})
 			.then((res) => {
 				setStatus(true);
@@ -302,7 +255,8 @@ export default function VisitorFormLayout() {
 	};
 
 	const onSubmit = handleSubmit((data) => {
-		saveAction(data);
+		console.log("HAAAAAAAKKKKKKDOGGG", data);
+		// saveAction(data);
 	});
 
 	return (
@@ -425,6 +379,24 @@ export default function VisitorFormLayout() {
 												{errors?.plate_num && (
 													<p className="mt-1 text-sm text-red-500">
 														{errors.plate_num.message}
+													</p>
+												)}
+											</div>
+
+											<div className="flex flex-col md:flex-row md:items-center">
+												<h1>Expected Out</h1>
+												<DatePicker
+													showTime
+													className="focus:!bg-[#e0ebf0]vm-placeholder w-[inherit] border-none !border-[#d9d9d9] bg-[#e0ebf0] focus-within:!bg-[#e0ebf0] hover:!border-primary-500 hover:!bg-[#e0ebf0] focus:!border-primary-500"
+													defaultValue={dayjs(
+														formatDate(new Date()),
+														"YYYY-MM-DD hh:mm A",
+													)}
+													onChange={onChange}
+												/>
+												{errors?.expected_time_out && (
+													<p className="mt-1 text-sm text-red-500">
+														{errors.expected_time_out.message}
 													</p>
 												)}
 											</div>
@@ -597,29 +569,6 @@ export default function VisitorFormLayout() {
 														{errors?.where && (
 															<p className="mt-1 text-sm text-red-500">
 																{errors.where.message}
-															</p>
-														)}
-													</div>
-
-													<div>
-														<DateTimePicker
-															globalStyling="w-[315px] md:w-[400px]"
-															rangePickerStyling="bg-[#e0ebf0] border-none w-[inherit]"
-															size="large"
-															visitorMngmnt
-															defaultVal={{
-																from: formatDate(new Date()),
-																to: formatDate(new Date()),
-															}}
-															// defaultValue={dayjs(
-															// 	visitors.purpose.when,
-															// 	"YYYY-MM-DD hh:mm A",
-															// )}
-															onRangeChange={onRangeChange}
-														/>
-														{errors?.check_in_out && (
-															<p className="mt-1 text-sm text-red-500">
-																{errors.check_in_out.message}
 															</p>
 														)}
 													</div>

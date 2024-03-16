@@ -45,8 +45,6 @@ export interface VisitorDetailsProps {
 	phone: string;
 	email: string;
 	address: AddressProps;
-	time_in: string;
-	time_out: string;
 }
 
 export interface PurposeProps {
@@ -65,8 +63,8 @@ export interface IDPictureProps {
 export interface VisitorDataType {
 	visitor_details: VisitorDetailsProps;
 	companions_details: VisitorDetailsProps[] | null;
-	expected_time_in: string;
-	expected_time_out: string;
+	expected_time_in: Date;
+	expected_time_out: Date;
 	purpose: PurposeProps;
 	plate_num: string | null;
 	status: VisitorStatus;

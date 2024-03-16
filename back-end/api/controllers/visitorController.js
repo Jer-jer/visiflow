@@ -64,29 +64,33 @@ exports.addVisitor = async (req, res) => {
       return res.status(409).json({ error: "Visitor already exists" });
     }
 
-    const [frontId, backId, selfieId] = [
-      uploadFileToGCS(
-        Buffer.from(
-          id_picture.front.replace(/^data:image\/\w+;base64,/, ""),
-          "base64"
+    let [frontId, backId, selfieId] = ["", "", ""];
+
+    if (id_picture === undefined) {
+      [frontId, backId, selfieId] = [
+        uploadFileToGCS(
+          Buffer.from(
+            id_picture.front.replace(/^data:image\/\w+;base64,/, ""),
+            "base64"
+          ),
+          `${Date.now()}_${last_name.toUpperCase()}_front.jpg`
         ),
-        `${Date.now()}_${last_name.toUpperCase()}_front.jpg`
-      ),
-      uploadFileToGCS(
-        Buffer.from(
-          id_picture.back.replace(/^data:image\/\w+;base64,/, ""),
-          "base64"
+        uploadFileToGCS(
+          Buffer.from(
+            id_picture.back.replace(/^data:image\/\w+;base64,/, ""),
+            "base64"
+          ),
+          `${Date.now()}_${last_name.toUpperCase()}_back.jpg`
         ),
-        `${Date.now()}_${last_name.toUpperCase()}_back.jpg`
-      ),
-      uploadFileToGCS(
-        Buffer.from(
-          id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""),
-          "base64"
+        uploadFileToGCS(
+          Buffer.from(
+            id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""),
+            "base64"
+          ),
+          `${Date.now()}_${last_name.toUpperCase()}_selfie.jpg`
         ),
-        `${Date.now()}_${last_name.toUpperCase()}_selfie.jpg`
-      ),
-    ];
+      ];
+    }
 
     const newVisitor = await Visitor.create({
       visitor_details: {

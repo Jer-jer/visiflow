@@ -15,6 +15,9 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 
+// Utils
+import { formatDate } from "../../../utils";
+
 // Styles
 import "./styles.scss";
 
@@ -39,6 +42,9 @@ export default function StepOne({
 }: StepOneProps) {
 	const [isTCOpen, setIsTCOpen] = useState(false);
 
+	console.log(visitors.expected_time_out)
+	console.log(formatDate(visitors.expected_time_out))
+
 	const {
 		register,
 		handleSubmit,
@@ -48,7 +54,7 @@ export default function StepOne({
 		resolver: zodResolver(StepOneZod),
 		defaultValues: {
 			visitorNo: visitorNo,
-			checkInOut: [visitors.expected_time_in, visitors.expected_time_out],
+			checkInOut: [formatDate(visitors.expected_time_in), formatDate(visitors.expected_time_out)],
 			what: visitors.purpose.what,
 			when: visitors.purpose.when,
 			where: visitors.purpose.where,

@@ -28,6 +28,9 @@ import localeData from "dayjs/plugin/localeData";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 import type { DatePickerProps } from "antd";
 
+// Utils
+import { formatDate } from "../../../utils";
+
 // Styles
 import "./styles.scss";
 
@@ -113,8 +116,8 @@ function StepOneForm({
 	) => {
 		setVisitors({
 			...visitors,
-			expected_time_in: dateString[0],
-			expected_time_out: dateString[1],
+			expected_time_in: new Date(dateString[0]),
+			expected_time_out: new Date(dateString[1]),
 		});
 		setValue("checkInOut", dateString);
 	};
@@ -238,8 +241,8 @@ function StepOneForm({
 							className="vm-placeholder w-[86%] !border-[#d9d9d9] hover:!border-primary-500 focus:!border-primary-500 md:w-auto"
 							size="middle"
 							defaultValue={[
-								dayjs(visitors.expected_time_in, `YYYY-MM-DD ${timeFormat}`),
-								dayjs(visitors.expected_time_out, `YYYY-MM-DD ${timeFormat}`),
+								dayjs(formatDate(visitors.expected_time_in), `YYYY-MM-DD ${timeFormat}`),
+								dayjs(formatDate(visitors.expected_time_out), `YYYY-MM-DD ${timeFormat}`),
 							]}
 							onChange={onChangeRange}
 							placeholder={["From", "To"]}
@@ -335,6 +338,7 @@ function StepOneForm({
 							showTime
 							className="vm-placeholder hover:bg-[#DFEAEF]!border-[#d9d9d9] h-[52px] border-none bg-[#e0ebf0] hover:!border-primary-500 hover:bg-[#DFEAEF] focus:!border-primary-500"
 							placeholder="When"
+							format={`YYYY-MM-DD ${timeFormat}`}
 							defaultValue={dayjs(visitors.purpose.when, "YYYY-MM-DD hh:mm A")}
 							onChange={onChangeDate}
 						/>

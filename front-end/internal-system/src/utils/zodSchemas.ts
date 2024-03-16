@@ -24,7 +24,7 @@ export const LoginZod: ZodType<LoginInterfaceZod> = z.object({
 		.min(1, { message: "Please enter a desired password." }),
 });
 
-export interface WalkInFormInterfaceZod{
+export interface WalkInFormInterfaceZod {
 	first_name: string;
 	middle_name?: string;
 	last_name: string;
@@ -34,18 +34,17 @@ export interface WalkInFormInterfaceZod{
 	street?: string;
 	city: string;
 	brgy: string;
-	province: string;
+	// province: string;
 	country: string;
 	plate_num?: string | null;
 	what: string[];
 	where: string[];
 	who: string[];
-	when: string;
-	check_in_out: [string, string];
-	visitor_type: VisitorType;
-	status: VisitorStatus;
-	id_pic: string;
-	plate_num_pic?: string;
+	expected_time_out: string;
+	// visitor_type: VisitorType;
+	// status: VisitorStatus;
+	// id_pic: string;
+	// plate_num_pic?: string;
 }
 
 export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
@@ -75,10 +74,7 @@ export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
 			message: "Must not be empty or contain any numerals.",
 		}),
 
-	email: z
-		.string()
-		.email({ message: "Invalid email address." })
-		.optional(),
+	email: z.string().email({ message: "Invalid email address." }).optional(),
 
 	phone: z.coerce
 		.string({
@@ -111,15 +107,15 @@ export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
 			message: "Must not contain any numerals.",
 		}),
 
-	province: z
-		.string({
-			required_error: "Province is required.",
-			invalid_type_error: "Province must not have a number.",
-		})
-		.regex(/^[a-zA-Z]+/, {
-			message: "Must not contain any numerals.",
-		}),
-		
+	// province: z
+	// 	.string({
+	// 		required_error: "Province is required.",
+	// 		invalid_type_error: "Province must not have a number.",
+	// 	})
+	// 	.regex(/^[a-zA-Z]+/, {
+	// 		message: "Must not contain any numerals.",
+	// 	}),
+
 	country: z
 		.string({
 			required_error: "Country is required.",
@@ -129,15 +125,15 @@ export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
 			message: "Must not contain any numerals.",
 		}),
 
-	check_in_out: z.custom<[string, string]>().refine((val) => val[0] < val[1], {
-		message: "Check in must be before the Check out date.",
+	expected_time_out: z.string({
+		required_error: "Expected time out is required.",
 	}),
 
 	plate_num: z.string().optional().nullable(),
 
-	visitor_type: z.nativeEnum(VisitorType),
+	// visitor_type: z.nativeEnum(VisitorType),
 
-	status: z.nativeEnum(VisitorStatus),
+	// status: z.nativeEnum(VisitorStatus),
 
 	what: z
 		.string({
@@ -147,12 +143,6 @@ export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
 		.nonempty({
 			message: '"What" is required.',
 		}),
-
-	when: z
-		.string({
-			required_error: '"When" is required.',
-		})
-		.min(1, '"When" is required.'),
 
 	where: z
 		.string({
@@ -172,18 +162,18 @@ export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
 			message: '"Who" is required.',
 		}),
 
-	id_pic: z
-		.string({
-			required_error: "ID picture is required.",
-			invalid_type_error: "ID picture must not have a number.",
-		})
-		.min(1, "ID picture is required."),
+	// id_pic: z
+	// 	.string({
+	// 		required_error: "ID picture is required.",
+	// 		invalid_type_error: "ID picture must not have a number.",
+	// 	})
+	// 	.min(1, "ID picture is required."),
 
-	plate_num_pic: z
-		.string({
-			invalid_type_error: "ID picture must not have a number.",
-		})
-		.optional(),
+	// plate_num_pic: z
+	// 	.string({
+	// 		invalid_type_error: "ID picture must not have a number.",
+	// 	})
+	// 	.optional(),
 });
 
 export interface VisitorDetailsInterfaceZod {

@@ -88,6 +88,8 @@ export default function VisitorDetails({
 	record,
 	setActiveKey,
 }: VisitorDeetsProps) {
+	const expected_in = formatDate(record.expected_time_in)
+	const expected_out = formatDate(record.expected_time_out)
 	//Alert State
 	const [status, setStatus] = useState(false);
 	const [alertOpen, setAlertOpen] = useState(false);
@@ -146,7 +148,7 @@ export default function VisitorDetails({
 			city: record.visitor_details.address.city,
 			province: record.visitor_details.address.province,
 			country: record.visitor_details.address.country,
-			check_in_out: [record.expected_time_in, record.expected_time_out],
+			check_in_out: [formatDate(record.expected_time_in), formatDate(record.expected_time_out)],
 			plate_num: record.plate_num,
 			status: record.status,
 			visitor_type: record.visitor_type,
@@ -331,10 +333,10 @@ export default function VisitorDetails({
 				: record.visitor_details.address.country,
 			expected_time_in: zodData
 				? zodData.check_in_out[0]
-				: record.expected_time_in,
+				: expected_in,
 			expected_time_out: zodData
 				? zodData.check_in_out[1]
-				: record.expected_time_out,
+				: expected_out,
 			plate_num: zodData ? zodData.plate_num : record.plate_num,
 			status: zodData
 				? zodData.status
@@ -736,8 +738,8 @@ export default function VisitorDetails({
 											rangePickerStyling="bg-[#e0ebf0] hover:!bg-[#e0ebf0] border-none w-[inherit] focus-within:!bg-[#e0ebf0] focus:!bg-[#e0ebf0]"
 											size="large"
 											defaultVal={{
-												from: record.expected_time_in || formatDate(new Date()),
-												to: record.expected_time_out || formatDate(new Date()),
+												from: expected_in || formatDate(new Date()),
+												to: expected_out || formatDate(new Date()),
 											}}
 											onRangeChange={onRangeChange}
 											visitorMngmnt
@@ -1063,8 +1065,8 @@ export default function VisitorDetails({
 											</Button>
 											<VisitorRecordContext.Provider value={record}>
 												<VisitorCompanions
-													expectedIn={record.expected_time_in}
-													expectedOut={record.expected_time_out}
+													expectedIn={expected_in}
+													expectedOut={expected_out}
 													open={vistorCompanionsOpen}
 													setOpen={setVisitorCompanionsOpen}
 												/>
