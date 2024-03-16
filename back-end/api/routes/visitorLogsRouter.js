@@ -1,19 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const bodyParser = require("body-parser");
-const VisitorLogsController = require('../controllers/visitorLogsController');
+const passport = require("passport");
+const VisitorLogsController = require("../controllers/visitorLogsController");
 
-//Middlware to parse JSON request bodies
-router.use(bodyParser.json());
+router.use(passport.authenticate("jwt", { session: false }));
 
-router.get("/all", VisitorLogsController.getLogs);
+router.get("/", VisitorLogsController.getLogs);
 
-router.get("/:id", VisitorLogsController.searchLog);
-
-router.post("/new", VisitorLogsController.addLog);
-
-router.put("/update/:id", VisitorLogsController.updateLog);
-
-router.delete("/delete/:id", VisitorLogsController.deleteLog);
+router.post("/find", VisitorLogsController.findLog);
 
 module.exports = router;

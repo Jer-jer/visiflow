@@ -22,7 +22,7 @@ function Toast({ status, toastInfo }: ToastProps) {
 		);
 	} else if (status === "error") {
 		toast = (
-			<div className="alert alert-error">
+			<div className="alert-error-500 alert">
 				<span>{toastInfo}</span>
 			</div>
 		);

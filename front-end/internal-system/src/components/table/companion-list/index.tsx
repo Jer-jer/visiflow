@@ -1,7 +1,8 @@
 import React, { useState, useContext, createContext } from "react";
 
 //Interfaces
-import { VisitorCompanionsContext } from "../../../layouts/admin/visitor-management/visitor-details";
+import { VisitorRecordContext } from "../../../layouts/admin/visitor-management/visitor-details";
+import { VisitorDetailsProps } from "../../../utils/interfaces";
 
 //Layouts
 import VisitorCompanionsModal from "../../../layouts/admin/visitor-management/companion-details";
@@ -11,59 +12,69 @@ import CompanionLogs from "../../../layouts/admin/visitor-management/companion-l
 import { Button, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-//Interface
-import { VisitorDetailsProps } from "../../../utils";
-
 //Styles
 import "../../../utils/variables.scss";
 import "./styles.scss";
+
+interface VisitorCompanionsProps {
+	search: string;
+}
 
 export const CompanionRecord = createContext<VisitorDetailsProps | undefined>(
 	undefined,
 );
 
-export default function VisitorCompanionsList() {
+export default function VisitorCompanionsList({
+	search,
+}: VisitorCompanionsProps) {
 	const [openDetails, setOpenDetails] = useState(false);
 	const [openLogs, setOpenLogs] = useState(false);
 	const [companionRecord, setCompanionRecord] = useState<VisitorDetailsProps>();
-	const companionsContext = useContext(VisitorCompanionsContext);
+	const [companionLastname, setCompanionLastname] = useState("");
 
-	const viewLogs = () => {
+	const recordContext = useContext(VisitorRecordContext);
+
+	const viewLogs = (lastName: string) => {
+		setCompanionLastname(lastName);
 		setOpenLogs(!openLogs);
 	};
 
 	const viewDetails = (record: VisitorDetailsProps) => {
-		setOpenDetails(!openDetails);
 		setCompanionRecord(record);
+		setOpenDetails(!openDetails);
 	};
 
 	const columns: ColumnsType<VisitorDetailsProps> = [
 		{
 			title: "ID",
-			dataIndex: "id",
-			key: "id",
+			dataIndex: "_id",
+			key: "_id",
 			className: "hidden",
 		},
 		{
 			title: "Name",
-			dataIndex: "fullName",
-			key: "fullName",
-			render: (_, { fullName }) => {
-				return `${fullName.lastName}, ${fullName.firstName} ${fullName.middleName}`;
+			key: "name",
+			render: (_, { name }) => {
+				return `${name.last_name}, ${name.first_name} ${name.middle_name}`;
 			},
-			sorter: (a, b) => a.fullName.lastName.localeCompare(b.fullName.lastName),
+			sorter: (a, b) => a.name.last_name.localeCompare(b.name.last_name),
 		},
 		{
 			title: "Email",
-			dataIndex: "email",
+			dataIndex: "companion_details",
 			key: "email",
+			render: (_, { email }) => {
+				return email;
+			},
 		},
 		{
 			title: "Actions",
 			key: "actions",
 			render: (_, record) => (
 				<div className="flex gap-[10px]">
-					<Button onClick={viewLogs}>View Logs</Button>
+					<Button onClick={() => viewLogs(record.name.last_name)}>
+						View Logs
+					</Button>
 					<Button onClick={() => viewDetails(record)}>View Details</Button>
 				</div>
 			),
@@ -74,12 +85,43 @@ export default function VisitorCompanionsList() {
 		<>
 			<Table
 				columns={columns}
-				dataSource={companionsContext}
+				dataSource={recordContext!.companion_details!.filter((companion) => {
+					return search.toLowerCase() === ""
+						? companion
+						: companion.name.first_name
+								.toLowerCase()
+								.includes(search.toLowerCase()) ||
+								companion.name
+									.middle_name!.toLowerCase()
+									.includes(search.toLowerCase()) ||
+								companion.name.last_name
+									.toLowerCase()
+									.includes(search.toLowerCase()) ||
+								`${companion.name.last_name} ${companion.name.first_name} ${companion.name.middle_name}`
+									.toLowerCase()
+									.includes(search.toLowerCase()) ||
+								`${companion.name.first_name}${
+									companion.name.middle_name
+										? ` ${companion.name.middle_name}`
+										: ""
+								} ${companion.name.last_name}`
+									.toLowerCase()
+									.includes(search.toLowerCase()) ||
+								companion.email.includes(search);
+				})}
 				pagination={{ pageSize: 5 }}
 			/>
 			<CompanionRecord.Provider value={companionRecord}>
-				<VisitorCompanionsModal open={openDetails} setOpen={setOpenDetails} />
-				<CompanionLogs open={openLogs} setOpen={setOpenLogs} />
+				<VisitorCompanionsModal
+					mainVisitorId={recordContext!._id}
+					open={openDetails}
+					setOpen={setOpenDetails}
+				/>
+				<CompanionLogs
+					open={openLogs}
+					setOpen={setOpenLogs}
+					lastname={companionLastname}
+				/>
 			</CompanionRecord.Provider>
 		</>
 	);

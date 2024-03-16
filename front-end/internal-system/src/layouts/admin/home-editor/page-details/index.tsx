@@ -1,7 +1,7 @@
 import React, { useState, Dispatch, SetStateAction } from "react";
 
 //Interfaces
-import { HomeEditor } from "../../../../utils";
+import { HomeEditor } from "../../../../utils/interfaces";
 
 //Layouts
 
@@ -16,9 +16,10 @@ import { ExclamationCircleFilled, LeftOutlined } from "@ant-design/icons";
 
 //Styles
 import "./styles.scss";
+import AxiosInstace from "../../../../lib/axios";
 
 interface PageDetailsProps {
-	record?: HomeEditor;
+	record?: {_id: string, title: string, message: string};
 	setOpenDetails: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -28,7 +29,7 @@ const showDeleteConfirm = () => {
 	confirm({
 		title: "Are you sure you want to delete this?",
 		className: "confirm-buttons",
-		icon: <ExclamationCircleFilled className="!text-error" />,
+		icon: <ExclamationCircleFilled className="!text-error-500" />,
 		okText: "Yes",
 		okType: "danger",
 		cancelText: "No",
@@ -46,8 +47,8 @@ export default function PageDetails({
 	setOpenDetails,
 }: PageDetailsProps) {
 	//Form States
-	const [title, setTitle] = useState("");
-	const [body, setBody] = useState("");
+	const [title, setTitle] = useState(record === undefined ? "" : record?.title);
+	const [body, setBody] = useState(record === undefined ? "" : record?.message);
 
 	//Alert State
 	const [alertOpen, setAlertOpen] = useState(false);
@@ -65,11 +66,37 @@ export default function PageDetails({
 		setDisabledInputs(!disabledInputs);
 	};
 
-	const saveAction = () => {
+	const saveAction = async() => {
 		//This needs to be customized to whatever the DB returns
+
+		// saving new record
+		if(record === undefined) {
+			try {
+				await AxiosInstace.post('/announcements/new', { 
+					title: title,
+					message: body
+				}); 
+			} catch (error) {
+			console.error('Error in adding announcement:', error);
+			}
+		} else { // updating record
+			console.log("hello data:", title === "" ? record?.title : title, body === "" ? record?.message : body, record?._id)
+			try {
+				await AxiosInstace.put('/announcements/update', { 
+					_id: record?._id,
+					title: title === "" ? record?.title : title,
+					message: body === "" ? record?.message : body
+				}); 
+			} catch (error) {
+			console.error('Error in updating announcement:', error);
+			}
+		}
+
 		setAlertOpen(!alertOpen);
 
 		setDisabledInputs(!disabledInputs);
+
+		window.location.reload();
 	};
 
 	return (
@@ -105,7 +132,8 @@ export default function PageDetails({
 							</Label>
 							<TextArea
 								className="custom-textarea input h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-								placeholder={record?.body}
+								placeholder={body}
+								defaultValue={body}
 								onChange={(e) => setBody(e.target.value)}
 								rows={8}
 								disabled={disabledInputs}
@@ -120,7 +148,7 @@ export default function PageDetails({
 								onClick={showDeleteConfirm}
 								type="primary"
 								size="large"
-								className="search-button !rounded-[18px] !bg-error"
+								className="search-button !bg-error-500 !rounded-[18px]"
 							>
 								Delete
 							</Button>

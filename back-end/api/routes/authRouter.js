@@ -1,13 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const bodyParser = require('body-parser');
-const authController = require('../controllers/authController');
+const passport = require('passport');
+const AuthController = require('../controllers/authController');
 
-//Middlware to parse JSON request bodies
-router.use(bodyParser.json());
+router.post('/login', passport.authenticate('local', {session: false}), AuthController.login);
 
-router.post('/register', authController.register);
-
-router.post('/login', authController.login);
+router.post('/refreshToken', AuthController.refreshToken);
 
 module.exports = router;

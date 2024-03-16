@@ -1,82 +1,259 @@
-import React, { useState, useContext } from "react";
+import React, {
+	useState,
+	useContext,
+	Dispatch,
+	SetStateAction,
+	useEffect,
+} from "react";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
 
 //Interfaces
-import { WidthContext } from "../../../logged-in";
 import { CompanionRecord } from "../../../../components/table/companion-list";
+import {
+	CompanionDetailZod,
+	CompanionDetailsInterfaceZod,
+} from "../../../../utils/zodSchemas";
+import type { Dayjs } from "dayjs";
+import type { RootState } from "../../../../store";
 
-//Layouts
+//Store
+import { update, deleteCompanion } from "../../../../states/visitors";
 
 //Components
-import { Button, Avatar, Dropdown } from "antd";
+import { Button, Form, Input, Modal } from "antd";
 import DateTimePicker from "../../../../components/datetime-picker";
-import Input from "../../../../components/fields/input/input";
 import Label from "../../../../components/fields/input/label";
-import Badge from "../../../../components/badge";
 import Alert from "../../../../components/alert";
 
+//Lib
+import AxiosInstance from "../../../../lib/axios";
+
+//Utils
+import { formatDate } from "../../../../utils";
+
 //Assets
-import { ExcelDownload, ArrowDown } from "../../../../assets/svg";
-import RyanReynolds from "../../../../assets/ryan_reynolds.jpg";
+import { ExcelDownload } from "../../../../assets/svg";
+import { ExclamationCircleFilled } from "@ant-design/icons";
 
 //Styles
 import "./styles.scss";
+interface CompanionDetailsProps {
+	mainVisitorId: string;
+	setOpen: Dispatch<SetStateAction<boolean>>;
+}
 
-const statusOptions = [
-	{
-		label: "In Progress",
-		key: "in-progress",
-	},
-	{
-		label: "Approved",
-		key: "approved",
-	},
-	{
-		label: "Declined",
-		key: "declined",
-	},
-];
+type CompanionDetailTypeZod = z.infer<typeof CompanionDetailZod>;
 
-export default function CompanionDetails() {
+const { confirm } = Modal;
+
+export default function CompanionDetails({
+	mainVisitorId,
+	setOpen,
+}: CompanionDetailsProps) {
 	const record = useContext(CompanionRecord);
-	//Form States
-	const [firstName, setFirstName] = useState("");
-	const [middleName, setMiddleName] = useState("");
-	const [lastName, setLastName] = useState("");
-	const [mobileInput, setMobileInput] = useState("");
-	const [emailAddress, setEmailAddress] = useState("");
-	const [house, setHouse] = useState("");
-	const [cityInput, setCityInput] = useState("");
-	const [streetInput, setStreeInput] = useState("");
-	const [provinceInput, setProvinceInput] = useState("");
-	const [brgyInput, setBrgyInput] = useState("");
-	const [countryInput, setCountryInput] = useState("");
+
+	const { data } = useSelector((state: RootState) => state.visitors);
+	const mainVisitorIndex = data.findIndex((item) => item._id === mainVisitorId);
 
 	//Alert State
 	const [alertOpen, setAlertOpen] = useState(false);
+	const [status, setStatus] = useState(false);
+	const [alertMsg, setAlertMsg] = useState("");
 
 	const [disabledInputs, setDisabledInputs] = useState<boolean>(true);
-	//setCurrentStatus is for changing the status of the visitor
-	const [currentStatus, setCurrentStatus] = useState(
-		statusOptions?.find((option) => option?.key === record?.status),
-	);
 
-	const width = useContext(WidthContext);
+	//Delete?
+	const [deleteComp, setDeleteComp] = useState(false);
 
-	const editOrCancel = () => {
-		!disabledInputs && setFirstName("");
+	const dispatch = useDispatch();
 
-		setDisabledInputs(!disabledInputs);
+	useEffect(() => {
+		if (deleteComp) {
+			deleteCompanionDB();
+			setDeleteComp(false);
+		}
+	}, [deleteComp]);
+
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+		setValue,
+		clearErrors,
+	} = useForm<CompanionDetailTypeZod>({
+		resolver: zodResolver(CompanionDetailZod),
+		defaultValues: {
+			first_name: record!.name.first_name,
+			middle_name: record!.name.middle_name,
+			last_name: record!.name.last_name,
+			phone: record!.phone,
+			email: record!.email,
+			house: record!.address.house,
+			street: record!.address.street,
+			brgy: record!.address.brgy,
+			city: record!.address.city,
+			province: record!.address.province,
+			country: record!.address.country,
+			check_in_out: [
+				data[mainVisitorIndex].expected_time_in,
+				data[mainVisitorIndex].expected_time_out,
+			],
+		},
+	});
+
+	const updateInput = (value: string | [string, string], property: string) => {
+		switch (property) {
+			case "first_name":
+				setValue(property, value as string);
+				break;
+			case "middle_name":
+				setValue(property, value as string);
+				break;
+			case "last_name":
+				setValue(property, value as string);
+				break;
+			case "phone":
+				setValue(property, value as string);
+				break;
+			case "email":
+				setValue(property, value as string);
+				break;
+			case "street":
+				setValue(property, value as string);
+				break;
+			case "brgy":
+				setValue(property, value as string);
+				break;
+			case "city":
+				setValue(property, value as string);
+				break;
+			case "province":
+				setValue(property, value as string);
+				break;
+			case "country":
+				setValue(property, value as string);
+				break;
+			case "check_in_out":
+				setValue(property, value as [string, string]);
+				break;
+		}
 	};
 
-	const saveAction = () => {
-		//This needs to be customized to whatever the DB returns
-		setAlertOpen(!alertOpen);
+	const onRangeChange = (
+		dates: null | (Dayjs | null)[],
+		dateStrings: string[],
+	) => {
+		if (dates) {
+			updateInput([dateStrings[0], dateStrings[1]], "check_in_out");
+		} else {
+			console.log("Clear");
+		}
+	};
 
+	const editOrCancel = () => {
 		setDisabledInputs(!disabledInputs);
+		clearErrors();
+	};
+
+	const saveAction = (zodData: CompanionDetailsInterfaceZod) => {
+		AxiosInstance.put("/visitor/update", {
+			_id: mainVisitorId,
+			companion_details: {
+				name: {
+					first_name: zodData.first_name,
+					middle_name: zodData.middle_name,
+					last_name: zodData.last_name,
+				},
+				address: {
+					house: zodData.house,
+					street: zodData.street,
+					brgy: zodData.brgy,
+					city: zodData.city,
+					province: zodData.province,
+					country: zodData.country,
+				},
+				phone: zodData.phone,
+				email: zodData.email,
+				time_in: zodData.check_in_out[0],
+				time_out: zodData.check_in_out[1],
+			},
+		})
+			.then((res) => {
+				dispatch(update(res.data.visitor));
+
+				setStatus(true);
+				setAlertMsg("Companion has been updated.");
+				setAlertOpen(true);
+				setDisabledInputs(!disabledInputs);
+			})
+			.catch((err) => {
+				setStatus(false);
+				setAlertOpen(true);
+				setAlertMsg(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
+			});
+	};
+
+	const onSubmit = handleSubmit((data) => {
+		saveAction(data);
+	});
+
+	const deleteCompanionDB = () => {
+		AxiosInstance.put("/visitor/update", {
+			_id: mainVisitorId,
+			first_name: data[mainVisitorIndex].visitor_details.name.first_name,
+			middle_name: data[mainVisitorIndex].visitor_details.name.middle_name,
+			last_name: data[mainVisitorIndex].visitor_details.name.last_name,
+			phone: data[mainVisitorIndex].visitor_details.phone,
+			email: data[mainVisitorIndex].visitor_details.email,
+			house_no: data[mainVisitorIndex].visitor_details.address.house,
+			street: data[mainVisitorIndex].visitor_details.address.street,
+			brgy: data[mainVisitorIndex].visitor_details.address.brgy,
+			city: data[mainVisitorIndex].visitor_details.address.city,
+			province: data[mainVisitorIndex].visitor_details.address.province,
+			country: data[mainVisitorIndex].visitor_details.address.country,
+			companion_details: data[mainVisitorIndex].companion_details,
+			plate_num: data[mainVisitorIndex].plate_num,
+			status: data[mainVisitorIndex].status,
+			visitor_type: data[mainVisitorIndex].visitor_type,
+		})
+			.then(() => {
+				setOpen(false);
+			})
+			.catch((err) => {
+				setStatus(false);
+				setAlertOpen(true);
+				setAlertMsg(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
+			});
+	};
+
+	const showDeleteConfirm = () => {
+		confirm({
+			title: "Are you sure you want to delete this visitor?",
+			className: "confirm-buttons",
+			icon: <ExclamationCircleFilled className="!text-error-500" />,
+			okText: "Yes",
+			okType: "danger",
+			cancelText: "No",
+			onOk() {
+				dispatch(deleteCompanion(record!._id!));
+				setDeleteComp(true);
+			},
+		});
 	};
 
 	return (
-		<>
+		<div className="companion-details">
 			<div
 				className={`transition-alert absolute right-0 z-[1] w-full scale-y-0 ease-in-out ${
 					alertOpen && "scale-y-100"
@@ -86,254 +263,374 @@ export default function CompanionDetails() {
 				<Alert
 					globalCustomStyling={`flex w-full overflow-hidden rounded-lg rounded-tl-none bg-white shadow-md`}
 					statusStyling="flex w-12 items-center justify-center"
-					statusColor="bg-primary-500"
+					statusColor={status ? "bg-primary-500" : "bg-error-500"}
 					spanStyling="font-semibold"
-					statusTextHeaderColor="text-primary-500"
+					statusTextHeaderColor={status ? "text-primary-500" : "text-error-500"}
 					descStyling="text-sm text-gray-600"
 					header="Information Box"
-					desc="Message successfully sent to Visitor via Email"
+					desc={alertMsg}
 					open={alertOpen}
 					setOpen={setAlertOpen}
 				/>
 			</div>
 
-			<div className="mr-[135px] flex flex-col gap-[35px]">
-				<div className="flex justify-end">
-					<ExcelDownload />
-				</div>
-				<div className="ml-[58px] flex flex-col gap-[25px]">
-					<div className="flex justify-between">
-						<div className="flex w-[782px] flex-col gap-[20px]">
-							<div className="flex gap-[60px]">
-								<div className="flex w-[360px] justify-between">
-									<Label spanStyling="text-black font-medium text-[16px]">
-										First Name
-									</Label>
-									<Input
-										inputType="text"
-										inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-										placeHolder={record?.fullName.firstName}
-										input={firstName}
-										setInput={setFirstName}
-										visitorMngmnt
-										disabled={disabledInputs}
-									/>
-								</div>
-								<div className="flex w-[360px] justify-between">
-									<Label spanStyling="text-black font-medium text-[16px]">
-										Middle Name
-									</Label>
-									<Input
-										inputType="text"
-										inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-										placeHolder={record?.fullName.middleName}
-										input={middleName}
-										setInput={setMiddleName}
-										visitorMngmnt
-										disabled={disabledInputs}
-									/>
-								</div>
-							</div>
-							<div className="flex gap-[60px]">
-								<div className="flex w-[360px] justify-between">
-									<Label spanStyling="text-black font-medium text-[16px]">
-										Last Name
-									</Label>
-									<Input
-										inputType="text"
-										inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-										placeHolder={record?.fullName.lastName}
-										input={lastName}
-										setInput={setLastName}
-										visitorMngmnt
-										disabled={disabledInputs}
-									/>
-								</div>
-								<div className="flex w-[360px] justify-between">
-									<Label spanStyling="text-black font-medium text-[16px]">
-										Mobile Number
-									</Label>
-									<Input
-										inputType="text"
-										inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-										placeHolder={record?.mobile}
-										input={mobileInput}
-										setInput={setMobileInput}
-										visitorMngmnt
-										disabled={disabledInputs}
-									/>
-								</div>
-							</div>
-							<div className="flex w-full gap-[33px]">
-								<Label
-									spanStyling="text-black font-medium text-[16px]"
-									labelStyling="w-[14.5%]"
-								>
-									Email Address
-								</Label>
-								<Input
-									inputType="text"
-									inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500 basis-[82%]"
-									placeHolder={record?.email}
-									input={emailAddress}
-									setInput={setEmailAddress}
-									visitorMngmnt
-									disabled={disabledInputs}
-								/>
-							</div>
-							<div className="flex gap-[60px]">
-								<div className="flex w-[360px] justify-between">
-									<Label spanStyling="text-black font-medium text-[16px]">
-										House No.
-									</Label>
-									<Input
-										inputType="text"
-										inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-										placeHolder={record?.houseNo}
-										input={house}
-										setInput={setHouse}
-										visitorMngmnt
-										disabled={disabledInputs}
-									/>
-								</div>
-								<div className="flex w-[360px] justify-between">
-									<Label spanStyling="text-black font-medium text-[16px]">
-										City
-									</Label>
-									<Input
-										inputType="text"
-										inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-										placeHolder={record?.city}
-										input={cityInput}
-										setInput={setCityInput}
-										visitorMngmnt
-										disabled={disabledInputs}
-									/>
-								</div>
-							</div>
-							<div className="flex gap-[60px]">
-								<div className="flex w-[360px] justify-between">
-									<Label spanStyling="text-black font-medium text-[16px]">
-										Street
-									</Label>
-									<Input
-										inputType="text"
-										inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-										placeHolder={record?.street}
-										input={streetInput}
-										setInput={setStreeInput}
-										visitorMngmnt
-										disabled={disabledInputs}
-									/>
-								</div>
-								<div className="flex w-[360px] justify-between">
-									<Label spanStyling="text-black font-medium text-[16px]">
-										Province
-									</Label>
-									<Input
-										inputType="text"
-										inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-										placeHolder={record?.province}
-										input={provinceInput}
-										setInput={setProvinceInput}
-										visitorMngmnt
-										disabled={disabledInputs}
-									/>
-								</div>
-							</div>
-							<div className="flex gap-[60px]">
-								<div className="flex w-[360px] justify-between">
-									<Label spanStyling="text-black font-medium text-[16px]">
-										Barangay
-									</Label>
-									<Input
-										inputType="text"
-										inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-										placeHolder={record?.brgy}
-										input={brgyInput}
-										setInput={setBrgyInput}
-										visitorMngmnt
-										disabled={disabledInputs}
-									/>
-								</div>
-								<div className="flex w-[360px] justify-between">
-									<Label spanStyling="text-black font-medium text-[16px]">
-										Country
-									</Label>
-									<Input
-										inputType="text"
-										inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-										placeHolder={record?.country}
-										input={countryInput}
-										setInput={setCountryInput}
-										visitorMngmnt
-										disabled={disabledInputs}
-									/>
-								</div>
-							</div>
-							<div className="flex w-full justify-between">
-								<Label
-									spanStyling="text-black font-medium text-[16px]"
-									labelStyling="w-[22.5%]"
-								>
-									Time In and Out
-								</Label>
-								<DateTimePicker
-									globalStyling="w-full"
-									rangePickerStyling="bg-[#e0ebf0] border-none w-[inherit]"
-									size="large"
-									defaultVal={{
-										from: record?.timeIn || "9999-99-99 99:90 PM",
-										to: record?.timeOut || "9999-99-99 99:99 PM",
-									}}
-									visitorMngmnt
-									disabled={disabledInputs}
-								/>
-							</div>
-						</div>
-						<div className="flex flex-col items-center gap-[30px]">
-							<Avatar size={width === 1210 ? 150 : 220} src={RyanReynolds} />
-							{disabledInputs ? (
-								<Badge status={record?.status} textSize="text-[20px]" />
-							) : (
-								<Dropdown
-									menu={{ items: statusOptions }}
-									placement="bottomRight"
-									trigger={["click"]}
-								>
-									<Button className="border-none bg-[#DFEAEF] font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]">
-										<div className="flex items-center justify-between gap-[10px]">
-											{currentStatus?.label}
-											<ArrowDown />
-										</div>
-									</Button>
-								</Dropdown>
-							)}
-						</div>
+			<Form
+				name="Visitor Companion Details"
+				onFinish={onSubmit}
+				autoComplete="off"
+			>
+				<div className="mr-[135px] flex flex-col gap-[35px]">
+					<div className="flex justify-end">
+						<ExcelDownload />
 					</div>
-					{/* <div className="divider" /> */}
-					<div className="flex justify-end gap-[15px]">
-						{!disabledInputs && (
+					<div className="ml-[58px] flex flex-col gap-[25px]">
+						<div className="flex justify-between">
+							<div className="flex w-[782px] flex-col gap-[20px]">
+								<div className="flex gap-[60px]">
+									<div
+										className={`flex w-[360px] ${
+											errors && "items-start"
+										} justify-between`}
+									>
+										<Label spanStyling="text-black font-medium text-[16px]">
+											First Name
+										</Label>
+										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
+											<Input
+												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
+												placeholder={record!.name.first_name}
+												{...register("first_name")}
+												onChange={(e) =>
+													updateInput(e.target.value, "first_name")
+												}
+												disabled={disabledInputs}
+											/>
+											{errors?.first_name && (
+												<p className="mt-1 text-sm text-red-500">
+													{errors.first_name.message}
+												</p>
+											)}
+										</div>
+									</div>
+									<div
+										className={`flex w-[360px] ${
+											errors && "items-start"
+										} justify-between`}
+									>
+										<Label spanStyling="text-black font-medium text-[16px]">
+											Middle Name
+										</Label>
+										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
+											<Input
+												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
+												placeholder={record!.name.middle_name}
+												{...register("middle_name")}
+												onChange={(e) =>
+													updateInput(e.target.value, "middle_name")
+												}
+												disabled={disabledInputs}
+											/>
+											{errors?.middle_name && (
+												<p className="mt-1 text-sm text-red-500">
+													{errors.middle_name.message}
+												</p>
+											)}
+										</div>
+									</div>
+								</div>
+								<div className="flex gap-[60px]">
+									<div
+										className={`flex w-[360px] ${
+											errors && "items-start"
+										} justify-between`}
+									>
+										<Label spanStyling="text-black font-medium text-[16px]">
+											Last Name
+										</Label>
+										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
+											<Input
+												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
+												placeholder={record!.name.last_name}
+												{...register("last_name")}
+												onChange={(e) =>
+													updateInput(e.target.value, "last_name")
+												}
+												disabled={disabledInputs}
+											/>
+											{errors?.last_name && (
+												<p className="mt-1 text-sm text-red-500">
+													{errors.last_name.message}
+												</p>
+											)}
+										</div>
+									</div>
+									<div
+										className={`flex w-[360px] ${
+											errors && "items-start"
+										} justify-between`}
+									>
+										<Label spanStyling="text-black font-medium text-[16px]">
+											Phone Number
+										</Label>
+										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
+											<Input
+												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
+												placeholder={record!.phone}
+												{...register("phone")}
+												onChange={(e) => updateInput(e.target.value, "phone")}
+												disabled={disabledInputs}
+											/>
+											{errors?.phone && (
+												<p className="mt-1 text-sm text-red-500">
+													{errors.phone.message}
+												</p>
+											)}
+										</div>
+									</div>
+								</div>
+								<div
+									className={`flex w-[782px] ${
+										errors && "items-start"
+									} justify-between`}
+								>
+									<Label
+										spanStyling="text-black font-medium text-[16px]"
+										labelStyling="w-[15%]"
+									>
+										Email Address
+									</Label>
+									<div className="flex flex-col">
+										<Input
+											className="vm-placeholder h-[38px] w-[640px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
+											placeholder={record!.email}
+											{...register("email")}
+											onChange={(e) => updateInput(e.target.value, "email")}
+											disabled={disabledInputs}
+										/>
+										{errors?.email && (
+											<p className="mt-1 text-sm text-red-500">
+												{errors.email.message}
+											</p>
+										)}
+									</div>
+								</div>
+								<div className="flex gap-[60px]">
+									<div
+										className={`flex w-[360px] ${
+											errors && "items-start"
+										} justify-between`}
+									>
+										<Label spanStyling="text-black font-medium text-[16px]">
+											House No.
+										</Label>
+										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
+											<Input
+												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
+												placeholder={record!.address.house}
+												{...register("house")}
+												onChange={(e) => updateInput(e.target.value, "house")}
+												disabled={disabledInputs}
+											/>
+											{errors?.house && (
+												<p className="mt-1 text-sm text-red-500">
+													{errors.house.message}
+												</p>
+											)}
+										</div>
+									</div>
+									<div
+										className={`flex w-[360px] ${
+											errors && "items-start"
+										} justify-between`}
+									>
+										<Label spanStyling="text-black font-medium text-[16px]">
+											City
+										</Label>
+										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
+											<Input
+												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
+												placeholder={record!.address.city}
+												{...register("city")}
+												onChange={(e) => updateInput(e.target.value, "city")}
+												disabled={disabledInputs}
+											/>
+											{errors?.city && (
+												<p className="mt-1 text-sm text-red-500">
+													{errors.city.message}
+												</p>
+											)}
+										</div>
+									</div>
+								</div>
+								<div className="flex gap-[60px]">
+									<div
+										className={`flex w-[360px] ${
+											errors && "items-start"
+										} justify-between`}
+									>
+										<Label spanStyling="text-black font-medium text-[16px]">
+											Street
+										</Label>
+										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
+											<Input
+												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
+												placeholder={record!.address.street}
+												{...register("street")}
+												onChange={(e) => updateInput(e.target.value, "street")}
+												disabled={disabledInputs}
+											/>
+											{errors?.street && (
+												<p className="mt-1 text-sm text-red-500">
+													{errors.street.message}
+												</p>
+											)}
+										</div>
+									</div>
+									<div
+										className={`flex w-[360px] ${
+											errors && "items-start"
+										} justify-between`}
+									>
+										<Label spanStyling="text-black font-medium text-[16px]">
+											Province
+										</Label>
+										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
+											<Input
+												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
+												placeholder={record!.address.province}
+												{...register("province")}
+												onChange={(e) =>
+													updateInput(e.target.value, "province")
+												}
+												disabled={disabledInputs}
+											/>
+											{errors?.province && (
+												<p className="mt-1 text-sm text-red-500">
+													{errors.province.message}
+												</p>
+											)}
+										</div>
+									</div>
+								</div>
+								<div className="flex gap-[60px]">
+									<div
+										className={`flex w-[360px] ${
+											errors && "items-start"
+										} justify-between`}
+									>
+										<Label spanStyling="text-black font-medium text-[16px]">
+											Brgy
+										</Label>
+										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
+											<Input
+												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
+												placeholder={record!.address.brgy}
+												{...register("brgy")}
+												onChange={(e) => updateInput(e.target.value, "brgy")}
+												disabled={disabledInputs}
+											/>
+											{errors?.brgy && (
+												<p className="mt-1 text-sm text-red-500">
+													{errors.brgy.message}
+												</p>
+											)}
+										</div>
+									</div>
+									<div
+										className={`flex w-[360px] ${
+											errors && "items-start"
+										} justify-between`}
+									>
+										<Label spanStyling="text-black font-medium text-[16px]">
+											Country
+										</Label>
+										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
+											<Input
+												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
+												placeholder={record!.address.country}
+												{...register("country")}
+												onChange={(e) => updateInput(e.target.value, "country")}
+												disabled={disabledInputs}
+											/>
+											{errors?.country && (
+												<p className="mt-1 text-sm text-red-500">
+													{errors.country.message}
+												</p>
+											)}
+										</div>
+									</div>
+								</div>
+								<div
+									className={`flex w-full ${
+										errors && "items-start"
+									} justify-between`}
+								>
+									<Label
+										spanStyling="text-black font-medium text-[16px]"
+										labelStyling="w-[22.5%]"
+									>
+										Time In and Out
+									</Label>
+									<div className="flex w-full flex-col">
+										<DateTimePicker
+											globalStyling="w-full"
+											rangePickerStyling="bg-[#e0ebf0] border-none w-[inherit] hover:!bg-[#e0ebf0] focus-within:!bg-[#e0ebf0] focus:!bg-[#e0ebf0]"
+											size="large"
+											defaultVal={{
+												from:
+													data[mainVisitorIndex].expected_time_in ||
+													formatDate(new Date()),
+												to:
+													data[mainVisitorIndex].expected_time_out ||
+													formatDate(new Date()),
+											}}
+											onRangeChange={onRangeChange}
+											visitorMngmnt
+											disabled={disabledInputs}
+										/>
+										{errors?.check_in_out && (
+											<p className="mt-1 text-sm text-red-500">
+												{errors.check_in_out.message}
+											</p>
+										)}
+									</div>
+								</div>
+							</div>
+						</div>
+						{/* <div className="divider" /> */}
+						<div className="flex justify-end gap-[15px]">
+							{!disabledInputs && (
+								<>
+									<Button
+										onClick={() => showDeleteConfirm()}
+										type="primary"
+										size="large"
+										className="search-button !rounded-[18px] !bg-error-500"
+									>
+										Delete
+									</Button>
+									<Button
+										type="primary"
+										size="large"
+										className="search-button !rounded-[18px] !bg-primary-500"
+										htmlType="submit"
+									>
+										Save
+									</Button>
+								</>
+							)}
 							<Button
-								onClick={saveAction}
+								onClick={editOrCancel}
 								type="primary"
 								size="large"
 								className="search-button !rounded-[18px] !bg-primary-500"
 							>
-								Save
+								{disabledInputs ? "Edit" : "Cancel"}
 							</Button>
-						)}
-						<Button
-							onClick={editOrCancel}
-							type="primary"
-							size="large"
-							className="search-button !rounded-[18px] !bg-primary-500"
-						>
-							{disabledInputs ? "Edit" : "Cancel"}
-						</Button>
+						</div>
 					</div>
 				</div>
-			</div>
-		</>
+			</Form>
+		</div>
 	);
 }

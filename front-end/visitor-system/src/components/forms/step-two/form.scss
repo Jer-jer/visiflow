@@ -1,0 +1,19 @@
+.form-item {
+    .ant-form-item-label {
+        display: flex;
+        align-items: center;
+
+        label {
+            display: block;
+        }
+    }
+}
+
+.upload {
+    border: 0;
+    background: "none";
+
+    div {
+        margin-top: 8;
+    }
+}

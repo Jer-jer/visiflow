@@ -2,14 +2,13 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import reportWebVitals from "./reportWebVitals";
 import { ConfigProvider } from "antd";
-import { createBrowserRouter, BrowserRouter } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
+import { Provider } from "react-redux";
+
+// Store
+import { store } from "./store";
 
 import App from "./App";
-
-/* Pages */
-//Admin
-import Dashboard from "./pages/admin/dashboard";
-import Statistics from "./pages/admin/statistics";
 
 //Guard
 
@@ -21,48 +20,32 @@ const root = ReactDOM.createRoot(
 	document.getElementById("root") as HTMLElement,
 );
 
-//? To be implemented soon
-const router = createBrowserRouter([
-	{
-		path: "/",
-		element: <Dashboard />,
-		// loader: rootLoader,
-		children: [
-			// Add routes here
-			{
-				path: "statistics",
-				element: <Statistics />,
-				// loader: teamLoader,
-			},
-		],
-	},
-]);
-
 root.render(
-	<React.StrictMode>
-		{/* <RouterProvider router={router} fallbackElement={<span>HUH?!</span>} /> */}
-		<BrowserRouter basename="/">
-			<ConfigProvider
-				theme={{
-					token: {
-						colorPrimary: "#0db284",
-						colorBorder: "#0db284",
+	// <React.StrictMode>
+	<BrowserRouter basename="/">
+		<ConfigProvider
+			theme={{
+				token: {
+					colorPrimary: "#0db284",
+					colorBorder: "#0db284",
+				},
+				components: {
+					Tabs: {
+						cardBg: "#fff",
 					},
-					components: {
-						Tabs: {
-							cardBg: "#fff",
-						},
-						Button: {
-							defaultBorderColor: "#0db284",
-							defaultColor: "#0db284",
-						},
+					Button: {
+						defaultBorderColor: "#0db284",
+						defaultColor: "#0db284",
 					},
-				}}
-			>
+				},
+			}}
+		>
+			<Provider store={store}>
 				<App />
-			</ConfigProvider>
-		</BrowserRouter>
-	</React.StrictMode>,
+			</Provider>
+		</ConfigProvider>
+	</BrowserRouter>,
+	// </React.StrictMode>,
 );
 
 // If you want to start measuring performance in your app, pass a function

@@ -1,19 +1,20 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const bodyParser = require('body-parser');
-const userController = require('../controllers/userController');
+const passport = require('passport');
+const UserController = require("../controllers/userController");
 
-//Middlware to parse JSON request bodies
-router.use(bodyParser.json());
+router.use(
+    passport.authenticate('jwt', {session: false})
+);
 
-router.get('/', userController.getAllUsers);
+router.get("/", UserController.getUsers);
 
-router.post('/', userController.createNewUser);
+router.post("/new", UserController.addUser);
 
-router.post('/search', userController.getUserById);
+router.post("/find", UserController.findUser);
 
-router.post('/update', userController.updateUser);
+router.put("/update", UserController.updateUser);
 
-router.post('/delete', userController.deleteUser);
+router.delete("/delete", UserController.deleteUser);
 
 module.exports = router;

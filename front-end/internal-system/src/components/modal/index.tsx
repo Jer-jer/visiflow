@@ -7,12 +7,14 @@ import { Modal } from "antd";
 import "./styles.scss";
 
 interface ModalProps {
-	header: string;
+	header: React.ReactNode;
 	size?: number;
 	centered?: boolean;
 	open: boolean;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 	footer?: false;
+	someCancelFunction?: () => void;
+	someOkFunction?: () => void;
 	children: React.ReactNode;
 }
 
@@ -23,17 +25,21 @@ export default function StandardModal({
 	open,
 	setOpen,
 	footer,
+	someCancelFunction,
+	someOkFunction,
 	children,
 }: ModalProps) {
 	return (
 		<Modal
-			title={<span className="text-[22px] text-[#0C0D0D]">{header}</span>}
+			title={header}
 			centered={centered}
 			open={open}
 			maskClosable
 			// style={{ top: topPos && topPos }}
-			onCancel={() => setOpen(!open)}
-			onOk={() => setOpen(!open)}
+			onCancel={() =>
+				someCancelFunction ? someCancelFunction() : setOpen(!open)
+			}
+			onOk={() => (someOkFunction ? someOkFunction() : setOpen(!open))}
 			width={size ? size : 1000}
 			footer={footer && false}
 		>

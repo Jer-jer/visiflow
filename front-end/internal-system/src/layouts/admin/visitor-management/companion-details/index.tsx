@@ -14,24 +14,28 @@ import "./styles.scss";
 //Assets
 
 interface VisitorCompanionsProps {
+	mainVisitorId: string;
 	open: boolean;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function VisitorCompanionsModal({
+	mainVisitorId,
 	open,
 	setOpen,
 }: VisitorCompanionsProps) {
 	return (
 		<StandardModal
-			header="Companion Details"
+			header={
+				<span className="text-[22px] text-[#0C0D0D]">Companion Details</span>
+			}
 			centered
-			size={2000}
+			size={1400}
 			open={open}
 			setOpen={setOpen}
 			footer={false}
 		>
-			<CompanionDetails />
+			<CompanionDetails mainVisitorId={mainVisitorId} setOpen={setOpen} />
 		</StandardModal>
 	);
 }

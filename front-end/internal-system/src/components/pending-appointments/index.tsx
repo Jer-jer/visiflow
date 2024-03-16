@@ -1,61 +1,107 @@
 import React from "react";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
+// Interfaces
+import { VisitorDataType } from "../../utils/interfaces";
+
+// Store
+import { AppDispatch } from "../../store";
+
+// Actions
+import { openVisitor } from "../../states/visitors";
+
+// Utils
+import { formatDate } from "../../utils";
 
 //Styles
 import "../../utils/variables.scss";
 import "./styles.scss";
 
-interface PendingAppointmentsDetails {
-	imgSrc: string;
-	date: string;
-	name: string;
-	desc: string;
-}
-
 interface PendingAppointmentsProps {
-	pendingAppointmentDetails: PendingAppointmentsDetails[];
+	pendingAppointments: VisitorDataType[];
 }
 
 export default function PendingAppointments({
-	pendingAppointmentDetails,
+	pendingAppointments,
 }: PendingAppointmentsProps) {
+	const navigate = useNavigate();
+	const dispatch = useDispatch<AppDispatch>();
+
+	const toVisitorManagement = (visitor: VisitorDataType) => {
+		navigate(`/visitor-management`);
+		dispatch(openVisitor(visitor));
+	};
 	return (
 		<div className="w-full">
-			{pendingAppointmentDetails.map((item, index) => (
+			{pendingAppointments.map((item, index) => (
 				<div
 					key={index}
-					className={`flex h-[117px] flex-col border-t border-[#D0D2CC] py-[15px] pl-[35px] pr-[15px] ${
-						index === pendingAppointmentDetails.length - 1 && "border-b"
+					className={`flex h-fit flex-col border-t border-[#D0D2CC] py-[15px] pl-[35px] pr-[15px] ${
+						index === pendingAppointments.length - 1 && "border-b"
 					}`}
 				>
 					<div className="flex justify-start gap-[12px]">
 						<div className="avatar">
 							<div className="h-[50px] w-[50px] rounded-full">
-								<img src={item.imgSrc} alt="" />
-								{/* {item.img} */}
+								<img src={item.id_picture.selfie} alt="" />
 							</div>
 						</div>
 						<div className="flex flex-col">
 							<span className="line-normal text-[12px] font-[100] text-black">
-								{item.date}
-								{/* April 16, 2023 2:00 PM */}
+								{formatDate(item.purpose.when)}
 							</span>
 							<span className="line-normal mt-[5px] text-[18px] font-[400] text-black">
-								{item.name}
-								{/* Dwayne Johnson */}
+								{item.visitor_details.name.last_name}
+								{", "}
+								{item.visitor_details.name.first_name}{" "}
+								{item.visitor_details.name.middle_name}
 							</span>
-							<span className="line-normal mt-[10px] text-[14px] font-[300] text-black">
-								{item.desc}
-								{/* Scheduled meeting with HR */}
+							<span className="line-normal mt-[8px] text-[14px] font-[300] text-black">
+								What:
+								{item.purpose.what.map((purpose, index) => {
+									return (
+										<span key={index}>
+											{" "}
+											{purpose}
+											{","}
+										</span>
+									);
+								})}
+							</span>
+							<span className="line-normal mt-[4px] text-[14px] font-[300] text-black">
+								Where:
+								{item.purpose.where.map((purpose, index) => {
+									return (
+										<span key={index}>
+											{" "}
+											{purpose}
+											{","}
+										</span>
+									);
+								})}
+							</span>
+							<span className="line-normal mt-[4px] text-[14px] font-[300] text-black">
+								Who:
+								{item.purpose.who.map((purpose, index) => {
+									return (
+										<span key={index}>
+											{" "}
+											{purpose}
+											{","}
+										</span>
+									);
+								})}
 							</span>
 						</div>
 					</div>
 					<div className="flex justify-end">
-						<a
-							href="/"
+						<button
 							className="line-normal read-more cursor-pointer text-[14px] font-[400] text-primary-500 hover:decoration-solid hover:underline-offset-2"
+							onClick={() => toVisitorManagement(item)}
 						>
 							Read more
-						</a>
+						</button>
 					</div>
 				</div>
 			))}

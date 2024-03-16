@@ -3,33 +3,42 @@ module.exports = {
 	content: ["./src/**/*.{html,js,jsx,tsx}"],
 	theme: {
 		extend: {
-			extend: {
-				colors: {
-					primary: {
-						50: "#E7F7F3",
-						100: "#B4E7D9",
-						200: "#90DCC6",
-						300: "#5DCBAD",
-						400: "#3DC19D",
-						500: "#0db284", // Main Primary
-						600: "#0CA278",
-						700: "#097E5E",
-						800: "#076249",
-						900: "#054B37",
-					},
-					accent: "#2C4C32",
-					neutral: "#D0D2CC",
-					success: "#0db284",
-					warning: "#ffce0a",
-					error: "#FD4A4A",
-					black: "#0C0D0D",
-					yellow: "#ffce0a",
-					orange: "#E88B23",
+			colors: {
+				primary: {
+					50: "#E7F7F3",
+					100: "#B4E7D9",
+					200: "#90DCC6",
+					300: "#5DCBAD",
+					400: "#3DC19D",
+					500: "#0db284", // Main Primary
+					600: "#0CA278",
+					700: "#097E5E",
+					800: "#076249",
+					900: "#054B37",
 				},
-				fontFamily: {
-					sans: ["Roboto", "sans-serif"],
-					serif: ["Roboto", "serif"],
+				accent: "#2C4C32",
+				neutral: {
+					50: "#fafbfa",
+					100: "#f0f1ef",
+					200: "#e9eae8",
+					300: "#e0e1dd",
+					400: "#d9dbd6",
+					500: "#d0d2cc",
+					600: "#bdbfba",
+					700: "#949591",
+					800: "#727470",
+					900: "#575856",
 				},
+				success: "#0db284",
+				warning: "#ffce0a",
+				error: "#FD4A4A",
+				black: "#0C0D0D",
+				yellow: "#ffce0a",
+				orange: "#E88B23",
+			},
+			fontFamily: {
+				sans: ["Roboto", "sans-serif"],
+				serif: ["Roboto", "serif"],
 			},
 		},
 	},

@@ -1,83 +1,76 @@
 /* Built using Ant Design */
 import React from "react";
+import { useSelector } from "react-redux";
 
 //Components
 import { Table } from "antd";
-import type { ColumnsType, TableProps } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 
 //Interfaces
-import { VisitorLogDetails } from "../../../utils";
+import { VisitorLogDetails } from "../../../utils/interfaces";
+import type { RootState } from "../../../store";
+
+// Utils
+import { formatDate } from "../../../utils";
 
 //Styles
 import "../../../utils/variables.scss";
 import "./styles.scss";
 
-const onChange: TableProps<VisitorLogDetails>["onChange"] = (
-	pagination: any,
-	filters: any,
-	sorter: any,
-	extra: any,
-) => {
-	console.log("params", pagination, filters, sorter, extra);
-};
+interface CompanionLogsTableProps {
+	filterWhen: boolean;
+	dateSearch: string[];
+}
 
-export default function CompanionLogsTable() {
-	const data: VisitorLogDetails[] = [
-		{
-			key: "1",
-			purpose: "Meeting with Client",
-			timeIn: "2023-09-15 09:30 AM",
-			timeOut: "2023-09-15 11:00 AM",
-		},
-		{
-			key: "2",
-			purpose: "Interview",
-			timeIn: "2023-09-16 02:45 PM",
-			timeOut: "2023-09-16 04:15 PM",
-		},
-		{
-			key: "3",
-			purpose: "Conference Call",
-			timeIn: "2023-09-17 10:15 AM",
-			timeOut: "2023-09-17 11:30 AM",
-		},
-		{
-			key: "4",
-			purpose: "Lunch Break",
-			timeIn: "2023-09-18 12:30 PM",
-			timeOut: "2023-09-18 01:30 PM",
-		},
-		{
-			key: "5",
-			purpose: "Training Session",
-			timeIn: "2023-09-19 03:00 PM",
-			timeOut: "2023-09-19 05:00 PM",
-		},
-		{
-			key: "6",
-			purpose: "Staff Meeting",
-			timeIn: "2023-09-20 09:00 AM",
-			timeOut: "2023-09-20 10:30 AM",
-		},
-		{
-			key: "7",
-			purpose: "Visitor Registration",
-			timeIn: "2023-09-21 11:15 AM",
-			timeOut: "2023-09-21 12:45 PM",
-		},
-		{
-			key: "8",
-			purpose: "Site Inspection",
-			timeIn: "2023-09-22 01:30 PM",
-			timeOut: "2023-09-22 03:00 PM",
-		},
-	];
+export default function CompanionLogsTable({
+	filterWhen,
+	dateSearch,
+}: CompanionLogsTableProps) {
+	const companionLogs = useSelector((state: RootState) => state.companionLogs);
+	const startDate = new Date(dateSearch[0]);
+	const endDate = new Date(dateSearch[1]);
 
 	const columns: ColumnsType<VisitorLogDetails> = [
 		{
 			title: "Purpose",
 			dataIndex: "purpose",
 			key: "purpose",
+			children: [
+				{
+					title: "What",
+					dataIndex: "what",
+					key: "what",
+					render(value, record, index) {
+						return record.purpose?.what.map((what: string) => what).join(", ");
+					},
+				},
+				{
+					title: "When",
+					dataIndex: "when",
+					key: "when",
+					render(value, record, index) {
+						return formatDate(record.purpose?.when);
+					},
+				},
+				{
+					title: "Where",
+					dataIndex: "where",
+					key: "where",
+					render(value, record, index) {
+						return record.purpose?.where
+							.map((where: string) => where)
+							.join(", ");
+					},
+				},
+				{
+					title: "Who",
+					dataIndex: "who",
+					key: "who",
+					render(value, record, index) {
+						return record.purpose?.who.map((who: string) => who).join(", ");
+					},
+				},
+			],
 		},
 		{
 			title: "Time In",
@@ -96,8 +89,15 @@ export default function CompanionLogsTable() {
 	return (
 		<Table
 			columns={columns}
-			dataSource={data}
-			onChange={onChange}
+			dataSource={companionLogs.filter((log) => {
+				return dateSearch.length === 0
+					? log
+					: filterWhen
+					? new Date(log.purpose!.when) >= startDate &&
+					  new Date(log.purpose!.when) <= endDate
+					: new Date(log.timeIn) >= startDate &&
+					  new Date(log.timeOut) <= endDate;
+			})}
 			pagination={{ pageSize: 5 }}
 		/>
 	);

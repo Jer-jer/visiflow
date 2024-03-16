@@ -1,4 +1,5 @@
-import React, { useState, createContext, useContext } from "react";
+import React, { Dispatch, SetStateAction } from "react";
+import { useNavigate } from "react-router-dom";
 
 //Assets
 import RyanReynolds from "../../assets/ryan_reynolds.jpg";
@@ -7,7 +8,28 @@ import TheRock from "../../assets/the_rock.jpg";
 //Styles
 import "./styles.scss";
 
-export default function Header() {
+interface HeaderProps {
+	isAdmin: boolean;
+	setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
+	setIsAdmin: Dispatch<SetStateAction<boolean>>;
+}
+
+export default function Header({
+	isAdmin,
+	setIsLoggedIn,
+	setIsAdmin,
+}: HeaderProps) {
+	const wasAdmin = localStorage.getItem("role");
+	const navigate = useNavigate();
+
+	const logout = () => {
+		wasAdmin && localStorage.removeItem("role");
+		localStorage.removeItem("token");
+		localStorage.removeItem("refreshToken");
+		setIsLoggedIn(false);
+		navigate("/");
+	};
+
 	return (
 		<div className="navbar bg-base-100">
 			<div className="flex-1">
@@ -82,7 +104,7 @@ export default function Header() {
 					</ul>
 				</div>
 
-				<div className="dropdown-end dropdown">
+				<div className="dropdown dropdown-end">
 					<label
 						tabIndex={0}
 						className="avatar btn btn-circle btn-ghost hover:bg-transparent"
@@ -96,9 +118,28 @@ export default function Header() {
 						className="menu dropdown-content rounded-box menu-sm z-[1] mt-3 w-52 bg-white p-2 shadow"
 					>
 						<li>
-							<a href="/" className="hover:bg-primary-500 hover:text-white">
+							{wasAdmin && (
+								<>
+									<button
+										className="hover:bg-primary-500 hover:text-white"
+										onClick={() => setIsAdmin(true)}
+									>
+										Admin System
+									</button>
+									<button
+										className="hover:bg-primary-500 hover:text-white"
+										onClick={() => setIsAdmin(false)}
+									>
+										Guard System
+									</button>
+								</>
+							)}
+							<button
+								className="hover:bg-primary-500 hover:text-white"
+								onClick={logout}
+							>
 								Logout
-							</a>
+							</button>
 						</li>
 					</ul>
 				</div>

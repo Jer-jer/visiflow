@@ -6,8 +6,8 @@ interface InputProps {
 	inputStyling?: string;
 	inputType: string;
 	placeHolder?: string;
-	input: string;
-	setInput: Dispatch<SetStateAction<string>>;
+	input?: string;
+	setInput?: Dispatch<SetStateAction<string>>;
 	visitorMngmnt?: boolean;
 	disabled?: boolean;
 }
@@ -28,7 +28,7 @@ function Input({
 			className={`${inputStyling} ${visitorMngmnt && "vm-placeholder"}`}
 			disabled={disabled}
 			value={input}
-			onChange={(e) => setInput(e.target.value)}
+			onChange={(e) => setInput!(e.target.value)}
 		></input>
 	);
 }
