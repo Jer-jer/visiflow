@@ -28,13 +28,14 @@ import type {
 import { VisitorDataType } from "../../../utils/interfaces";
 import type { RangePickerProps } from "antd/es/date-picker";
 import type { Dayjs } from "dayjs";
+import { VisitorStatus, VisitorType } from "../../../utils/enums";
 
 //Components
 import OuterContainer from "../../../components/container";
 import InnerContainer from "../../../components/container/inner-container";
 import StatisticsSummaryContent from "../../../components/stats-smmry-ctnt";
 import PendingAppointments from "../../../components/pending-appointments";
-import { Form, Button, Input, Image, Select } from "antd";
+import { Form, Button, Input, Image, Select, DatePicker } from "antd";
 import DateTimePicker from "../../../components/datetime-picker";
 import Label from "../../../components/fields/input/label";
 
@@ -100,6 +101,47 @@ export default function VisitorFormLayout() {
 		clearErrors,
 	} = useForm<WalkInFormTypeZod>({
 		resolver: zodResolver(WalkInFormZod),
+	});
+
+	const [visitors, setVisitors] = useState<VisitorDataType>({
+		visitor_details: {
+			name: {
+				first_name: "",
+				middle_name: "",
+				last_name: "",
+			},
+
+			email: "",
+			phone: "",
+			address: {
+				house: "",
+				street: "",
+				brgy: "",
+				city: "",
+				province: "",
+				country: "",
+			},
+			time_in: "",
+			time_out: "",
+		},
+		companions_details: [],
+		expected_time_in: now(),
+		expected_time_out: now(),
+		purpose: {
+			what: [],
+			when: now(),
+			where: [],
+			who: [],
+		},
+		termsConditions: false,
+		plate_num: null,
+		id_picture: {
+			front: "",
+			back: "",
+			selfie: "",
+		},
+		status: VisitorStatus.InProgress,
+		visitor_type: VisitorType.PreRegistered,
 	});
 
 	const [status, setStatus] = useState(false);
@@ -171,6 +213,53 @@ export default function VisitorFormLayout() {
 		}
 	};
 
+	const handlePurpose = (purpose: string, value: string | string[]) => {
+		switch (purpose) {
+			case "what":
+				setVisitors((prevVisitors) => ({
+					...prevVisitors,
+					purpose: {
+						...prevVisitors.purpose,
+						what: value as string[],
+					},
+				}));
+				setValue("what", value as string[]);
+				break;
+			case "when":
+				setVisitors((prevVisitors) => ({
+					...prevVisitors,
+					purpose: {
+						...prevVisitors.purpose,
+						when: value as string,
+					},
+				}));
+				setValue("when", value as string);
+				break;
+			case "where":
+				setVisitors((prevVisitors) => ({
+					...prevVisitors,
+					purpose: {
+						...prevVisitors.purpose,
+						where: value as string[],
+					},
+				}));
+				setValue("where", value as string[]);
+				break;
+			case "who":
+				setVisitors((prevVisitors) => ({
+					...prevVisitors,
+					purpose: {
+						...prevVisitors.purpose,
+						who: value as string[],
+					},
+				}));
+				setValue("who", value as string[]);
+				break;
+			default:
+				console.error("Something went wrong");
+		}
+	};
+
 	const onRangeChange = (
 		dates: null | (Dayjs | null)[],
 		dateStrings: string[],
@@ -198,8 +287,8 @@ export default function VisitorFormLayout() {
 			expected_time_in: zodData.check_in_out[0],
 			expected_time_out: zodData.check_in_out[1],
 			plate_num: zodData.plate_num,
-			status: zodData.status,
-			visitor_type: zodData.visitor_type,
+			//status: zodData.status,
+			visitor_type: VisitorType.WalkIn,
 		})
 			.then((res) => {
 				setStatus(true);
@@ -454,8 +543,8 @@ export default function VisitorFormLayout() {
 															listHeight={150}
 															options={whatOptions}
 															{...register("what")}
-															onChange={(e) =>
-																updateInput(e.target.value, "what")
+															onChange={(value: string[]) =>
+																handlePurpose("what", value)
 															}
 														></Select>
 														{errors?.what && (
@@ -477,8 +566,8 @@ export default function VisitorFormLayout() {
 															listHeight={150}
 															options={whoOptions}
 															{...register("who")}
-															onChange={(e) =>
-																updateInput(e.target.value, "who")
+															onChange={(value: string[]) =>
+																handlePurpose("who", value)
 															}
 														></Select>
 														{errors?.who && (
@@ -501,8 +590,8 @@ export default function VisitorFormLayout() {
 															listHeight={150}
 															options={whereOptions}
 															{...register("where")}
-															onChange={(e) =>
-																updateInput(e.target.value, "where")
+															onChange={(value: string[]) =>
+																handlePurpose("where", value)
 															}
 														></Select>
 														{errors?.where && (
@@ -522,7 +611,10 @@ export default function VisitorFormLayout() {
 																from: formatDate(new Date()),
 																to: formatDate(new Date()),
 															}}
-															{...register("check_in_out")}
+															// defaultValue={dayjs(
+															// 	visitors.purpose.when,
+															// 	"YYYY-MM-DD hh:mm A",
+															// )}
 															onRangeChange={onRangeChange}
 														/>
 														{errors?.check_in_out && (

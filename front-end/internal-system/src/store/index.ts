@@ -5,12 +5,16 @@ import VisitorReducer from "../states/visitors";
 import VisitorLogsReducer from "../states/logs/visitor";
 import CompanionLogsReducer from "../states/logs/companions";
 import UserLogsReducer from "../states/logs/user";
+import VisitorTabsReducer from "../states/visitors/tab";
+import UserTabsReducer from "../states/users/tab";
 
 export const store = configureStore({
 	reducer: {
+		visitorTabs: VisitorTabsReducer,
 		visitors: VisitorReducer,
 		visitorLogs: VisitorLogsReducer,
 		companionLogs: CompanionLogsReducer,
+		userTabs: UserTabsReducer,
 		userLogs: UserLogsReducer,
 	},
 });

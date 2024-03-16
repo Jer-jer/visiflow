@@ -8,15 +8,17 @@ import React, {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import AxiosInstance from "../../../../lib/axios";
+import { useDispatch, useSelector } from "react-redux";
 
 //Interfaces
 import { UserDataType } from "../../../../utils/interfaces";
-import { TabItems } from "..";
 import {
 	UserDetailsZod,
 	UserDetailsInterfaceZod,
 } from "../../../../utils/zodSchemas";
+import type { TabItems } from "../../../../states/users/tab";
+import type { RootState } from "../../../../store";
+import type { UnknownAction } from "redux";
 
 //Layouts
 import UserActionLogs from "../user-action-logs";
@@ -25,6 +27,12 @@ import UserActionLogs from "../user-action-logs";
 import { Button, Modal, Input, Select, Form } from "antd";
 import Label from "../../../../components/fields/input/label";
 import Alert from "../../../../components/alert";
+
+//Reducers
+import { updateUser, removeTab } from "../../../../states/users/tab";
+
+//Libs
+import AxiosInstance from "../../../../lib/axios";
 
 //Assets
 import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
@@ -35,9 +43,7 @@ import "./styles.scss";
 
 interface UserDetailsProps {
 	newTabIndex: MutableRefObject<number>;
-	items: TabItems[];
 	record?: UserDataType;
-	setItems: Dispatch<React.SetStateAction<TabItems[]>>;
 	setActiveKey: Dispatch<SetStateAction<number>>;
 }
 
@@ -48,16 +54,16 @@ const { confirm } = Modal;
 const closeTab = (
 	_id: string | undefined,
 	newTabIndex: MutableRefObject<number>,
-	items: TabItems[],
-	setItems: Dispatch<React.SetStateAction<TabItems[]>>,
+	tabs: TabItems[],
+	dispatch: Dispatch<UnknownAction>,
 	setActiveKey: Dispatch<SetStateAction<number>>,
 ) => {
 	const newActiveKey = --newTabIndex.current;
-	const newItems = [...items];
+	const newItems = [...tabs];
 	const index = newItems.map((e) => e.userData!._id).indexOf(_id!);
 	if (index !== -1) {
 		newItems.splice(index, 1);
-		setItems(newItems);
+		dispatch(removeTab(newItems));
 	}
 	setActiveKey(newActiveKey);
 };
@@ -65,9 +71,11 @@ const closeTab = (
 const showDeleteConfirm = (
 	_id: string | undefined,
 	newTabIndex: MutableRefObject<number>,
-	items: TabItems[],
-	setItems: Dispatch<React.SetStateAction<TabItems[]>>,
+	tabs: TabItems[],
+	dispatch: Dispatch<UnknownAction>,
 	setActiveKey: Dispatch<SetStateAction<number>>,
+	setAlertMsg: Dispatch<SetStateAction<string>>,
+	setAlertOpen: Dispatch<SetStateAction<boolean>>,
 ) => {
 	confirm({
 		title: "Are you sure you want to delete this user?",
@@ -83,10 +91,15 @@ const showDeleteConfirm = (
 				},
 			})
 				.then((res) => {
-					closeTab(_id, newTabIndex, items, setItems, setActiveKey);
+					closeTab(_id, newTabIndex, tabs, dispatch, setActiveKey);
 				})
 				.catch((err) => {
-					console.error(err.response.data.error || err.response.data.errors);
+					setAlertMsg(
+						err?.response?.data?.error ||
+							err?.response?.data?.errors ||
+							"Something went wrong.",
+					);
+					setAlertOpen(true);
 				});
 		},
 		onCancel() {
@@ -98,8 +111,6 @@ const showDeleteConfirm = (
 export default function UserDetails({
 	record,
 	newTabIndex,
-	items,
-	setItems,
 	setActiveKey,
 }: UserDetailsProps) {
 	// Alert State
@@ -111,6 +122,9 @@ export default function UserDetails({
 	const [actionLogsOpen, setActionLogsOpen] = useState(false);
 
 	const [disabledInputs, setDisabledInputs] = useState<boolean>(true);
+
+	const tabs = useSelector((state: RootState) => state.userTabs);
+	const dispatch = useDispatch();
 
 	useEffect(() => {}, [record]);
 
@@ -199,7 +213,11 @@ export default function UserDetails({
 			})
 			.catch((err) => {
 				setStatus(false);
-				setAlertMsg(err.response.data.error || err.response.data.errors);
+				setAlertMsg(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
 			});
 	};
 
@@ -481,9 +499,11 @@ export default function UserDetails({
 											showDeleteConfirm(
 												record!._id,
 												newTabIndex,
-												items,
-												setItems,
+												tabs,
+												dispatch,
 												setActiveKey,
+												setAlertMsg,
+												setAlertOpen,
 											)
 										}
 										type="primary"

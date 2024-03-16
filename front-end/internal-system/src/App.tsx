@@ -22,10 +22,14 @@ import QRScanner from "./pages/guard/qr-scanner";
 import PreregisteredQR from "./pages/guard/preregistered-qr";
 import VisitorStatus from "./pages/guard/visitor-status";
 
+//Assets
+import { LoadingOutlined } from "@ant-design/icons";
+
 //Styles
 import "./App.scss";
 
 function App() {
+	const [loading, setLoading] = useState(true);
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [isAdmin, setIsAdmin] = useState(false);
 
@@ -40,11 +44,16 @@ function App() {
 				setIsAdmin(true);
 			}
 		}
+		setLoading(false);
 	}, []);
 
 	return (
 		<div className="min-h-screen">
-			{isLoggedIn ? (
+			{loading ? (
+				<div className="flex h-[100vh] items-center justify-center">
+					<LoadingOutlined className="text-[128px] text-primary-500" />
+				</div>
+			) : isLoggedIn ? (
 				<LoggedIn
 					setIsLoggedIn={setIsLoggedIn}
 					isAdmin={isAdmin}

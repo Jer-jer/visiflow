@@ -5,7 +5,6 @@ import React, {
 	MutableRefObject,
 	Dispatch,
 	SetStateAction,
-	useEffect,
 } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,7 +13,7 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 //Interfaces
 import {
@@ -24,20 +23,17 @@ import {
 import { VisitorDataType, IDPictureProps } from "../../../../utils/interfaces";
 import { VisitorStatus, VisitorType } from "../../../../utils/enums";
 import { WidthContext } from "../../../logged-in";
-import { TabItems } from "..";
+import type { RootState } from "../../../../store";
 import type { Dayjs } from "dayjs";
 import type { DatePickerProps } from "antd";
 
 // Utils
 import { formatDate } from "../../../../utils";
 
-// Actions
-import { update, deleteVisitor } from "../../../../states/visitors";
-
 //Layouts
 import VisitorLogs from "../visitor-logs";
 import VisitorCompanions from "../visitor-companions";
-import NotifyPOI from "../notify-poi";
+import Notify from "../notify";
 import Identification from "../identification";
 
 //Components
@@ -55,6 +51,10 @@ import DateTimePicker from "../../../../components/datetime-picker";
 import Label from "../../../../components/fields/input/label";
 import Alert from "../../../../components/alert";
 
+//Reducers
+import { update, deleteVisitor } from "../../../../states/visitors";
+import { updateVisitor, removeTab } from "../../../../states/visitors/tab";
+
 //Assets
 import { ExclamationCircleFilled } from "@ant-design/icons";
 
@@ -63,6 +63,7 @@ import "./styles.scss";
 
 // Libraries
 import AxiosInstance from "../../../../lib/axios";
+import visitor from "../../../../states/logs/visitor";
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -71,8 +72,6 @@ dayjs.extend(customParseFormat);
 interface VisitorDeetsProps {
 	newTabIndex: MutableRefObject<number>;
 	record: VisitorDataType;
-	items: TabItems[];
-	setItems: Dispatch<SetStateAction<TabItems[]>>;
 	setActiveKey: Dispatch<SetStateAction<number>>;
 }
 
@@ -87,8 +86,6 @@ export const VisitorRecordContext = createContext<VisitorDataType | undefined>(
 export default function VisitorDetails({
 	newTabIndex,
 	record,
-	items,
-	setItems,
 	setActiveKey,
 }: VisitorDeetsProps) {
 	//Alert State
@@ -96,36 +93,37 @@ export default function VisitorDetails({
 	const [alertOpen, setAlertOpen] = useState(false);
 	const [alertMsg, setAlertMsg] = useState("");
 
+	const [visitorStatusUpdate, setVisitorStatusUpdate] = useState<VisitorStatus>(
+		VisitorStatus.InProgress,
+	);
+
 	//Modal States
 	const [visitLogsOpen, setVisitLogsOpen] = useState(false);
 	const [vistorCompanionsOpen, setVisitorCompanionsOpen] = useState(false);
-	const [notifyOpen, setNotifyOpen] = useState(false);
+	const [notifyPOIOpen, setNotifyPOIOpen] = useState(false);
+	const [notifyVisitorOpen, setNotifyVisitorOpen] = useState(false);
 	const [identificationOpen, setIdentificationOpen] = useState(false);
+	const [visitorMessage, setVisitorMessage] = useState<string>(
+		"Your pre-registration application has been approved. Please find the QR code attached. Thank you!",
+	);
 
 	const [disabledInputs, setDisabledInputs] = useState<boolean>(true);
+	const [disabledStatusInput, setDisabledStatusInput] = useState<boolean>(true);
 
-	const [idPicture, setIdPicture] = useState<IDPictureProps>({
-		front: "../../../../assets/no-image.svg",
-		back: "../../../../assets/no-image.svg",
-		selfie: "../../../../assets/no-image.svg",
+	const [idPicture] = useState<IDPictureProps>({
+		//? In case there are no pictures
+		front:
+			"https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2d0041db-96ab-4012-b808-2cf1a664da62/d4ci082-7c5296e1-da7e-4d78-bc19-09123ba8da8f.png/v1/fill/w_600,h_600/profile_unavailable_by_whledo_d4ci082-fullview.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NjAwIiwicGF0aCI6IlwvZlwvMmQwMDQxZGItOTZhYi00MDEyLWI4MDgtMmNmMWE2NjRkYTYyXC9kNGNpMDgyLTdjNTI5NmUxLWRhN2UtNGQ3OC1iYzE5LTA5MTIzYmE4ZGE4Zi5wbmciLCJ3aWR0aCI6Ijw9NjAwIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.qwXReMzAA7SgocVUaM4qjm8SLZTdyyNoiZ_mD-ZSH7o",
+		back: "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2d0041db-96ab-4012-b808-2cf1a664da62/d4ci082-7c5296e1-da7e-4d78-bc19-09123ba8da8f.png/v1/fill/w_600,h_600/profile_unavailable_by_whledo_d4ci082-fullview.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NjAwIiwicGF0aCI6IlwvZlwvMmQwMDQxZGItOTZhYi00MDEyLWI4MDgtMmNmMWE2NjRkYTYyXC9kNGNpMDgyLTdjNTI5NmUxLWRhN2UtNGQ3OC1iYzE5LTA5MTIzYmE4ZGE4Zi5wbmciLCJ3aWR0aCI6Ijw9NjAwIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.qwXReMzAA7SgocVUaM4qjm8SLZTdyyNoiZ_mD-ZSH7o",
+		selfie:
+			"https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2d0041db-96ab-4012-b808-2cf1a664da62/d4ci082-7c5296e1-da7e-4d78-bc19-09123ba8da8f.png/v1/fill/w_600,h_600/profile_unavailable_by_whledo_d4ci082-fullview.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NjAwIiwicGF0aCI6IlwvZlwvMmQwMDQxZGItOTZhYi00MDEyLWI4MDgtMmNmMWE2NjRkYTYyXC9kNGNpMDgyLTdjNTI5NmUxLWRhN2UtNGQ3OC1iYzE5LTA5MTIzYmE4ZGE4Zi5wbmciLCJ3aWR0aCI6Ijw9NjAwIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.qwXReMzAA7SgocVUaM4qjm8SLZTdyyNoiZ_mD-ZSH7o",
 	});
 
 	const width = useContext(WidthContext);
 
 	// Store Related variables
+	const tabs = useSelector((state: RootState) => state.visitorTabs);
 	const dispatch = useDispatch();
-
-	useEffect(() => {
-		AxiosInstance.post("/visitor/retrieve-image", {
-			_id: record._id,
-		})
-			.then((res) => {
-				setIdPicture(res.data.id_picture);
-			})
-			.catch((err) => {
-				console.log(err || err.data.error || err.data.errors);
-			});
-	}, []);
 
 	// Client-side Validation related data
 	const {
@@ -148,10 +146,7 @@ export default function VisitorDetails({
 			city: record.visitor_details.address.city,
 			province: record.visitor_details.address.province,
 			country: record.visitor_details.address.country,
-			check_in_out: [
-				record.expected_time_in,
-				record.expected_time_out,
-			],
+			check_in_out: [record.expected_time_in, record.expected_time_out],
 			plate_num: record.plate_num,
 			status: record.status,
 			visitor_type: record.visitor_type,
@@ -182,7 +177,7 @@ export default function VisitorDetails({
 			case "email":
 				setValue(property, value as string);
 				break;
-				case "house":
+			case "house":
 				setValue(property, value as string);
 				break;
 			case "street":
@@ -210,6 +205,7 @@ export default function VisitorDetails({
 				setValue(property, value);
 				break;
 			case "status":
+				setVisitorStatusUpdate(value);
 				setValue(property, value);
 				break;
 			case "what":
@@ -243,52 +239,135 @@ export default function VisitorDetails({
 	const handleChange = (property: string, value: string | string[]) =>
 		updateInput(value, property);
 
-	const editOrCancel = () => {
-		setDisabledInputs(!disabledInputs);
+	const cancel = () => {
+		setDisabledStatusInput(true);
+		setDisabledInputs(true);
 		clearErrors();
 	};
 
-	const saveAction = (zodData: VisitorDetailsInterfaceZod) => {
-		AxiosInstance.put("/visitor/update", {
+	const composeApproval = () => {
+		const approvedOrDeclined =
+			visitorStatusUpdate === VisitorStatus.Approved ||
+			visitorStatusUpdate === VisitorStatus.Declined;
+
+		cancel();
+		if (approvedOrDeclined) {
+			if (record.visitor_type === VisitorType.PreRegistered) {
+				if (visitorStatusUpdate === VisitorStatus.Declined) {
+					setVisitorMessage(
+						"Your pre-registration application has been declined. Below is the reason why your application has been rejected.",
+					);
+				}
+				setNotifyVisitorOpen(!notifyVisitorOpen);
+			} else {
+				saveAction(undefined, visitorStatusUpdate);
+			}
+		} else {
+			saveAction(undefined, visitorStatusUpdate);
+		}
+	};
+
+	const updateStatus = () => {
+		AxiosInstance.put("/visitor/update-status", {
 			_id: record._id,
-			first_name: zodData.first_name,
-			middle_name: zodData.middle_name,
-			last_name: zodData.last_name,
-			companion_details: record.companion_details,
-			phone: zodData.phone,
-			email: zodData.email,
-			house_no: zodData.house,
-			street: zodData.street,
-			brgy: zodData.brgy,
-			city: zodData.city,
-			province: zodData.province,
-			country: zodData.country,
-			expected_time_in: zodData.check_in_out[0],
-			expected_time_out: zodData.check_in_out[1],
-			plate_num: zodData.plate_num,
-			status: zodData.status,
-			visitor_type: zodData.visitor_type,
+			status: visitorStatusUpdate,
+			email: record.visitor_details.email,
+			companions: record.companion_details,
+			message: visitorMessage,
 		})
 			.then((res) => {
-				dispatch(update(res.data.updatedVisitor));
+				setStatus(true);
+				setAlertMsg(
+					`Successfully ${visitorStatusUpdate === VisitorStatus.Approved ? "Approved" : visitorStatusUpdate === VisitorStatus.Declined && "Declined"} and Sent Email`,
+				);
+				setAlertOpen(true);
+				dispatch(update({ ...record, status: visitorStatusUpdate }));
+				dispatch(
+					updateVisitor({
+						tabIndex: newTabIndex.current,
+						visitor: { ...record, status: visitorStatusUpdate },
+					}),
+				);
+				setNotifyVisitorOpen(false);
+			})
+			.catch((err) => {
+				setStatus(false);
+				setAlertOpen(true);
+				setAlertMsg(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
+			});
+	};
+
+	const saveAction = (
+		zodData?: VisitorDetailsInterfaceZod,
+		visitorStatus?: VisitorStatus,
+	) => {
+		AxiosInstance.put("/visitor/update", {
+			_id: record._id,
+			first_name: zodData
+				? zodData.first_name
+				: record.visitor_details.name.first_name,
+			middle_name: zodData
+				? zodData.middle_name
+				: record.visitor_details.name.middle_name,
+			last_name: zodData
+				? zodData.last_name
+				: record.visitor_details.name.last_name,
+			companion_details: record.companion_details,
+			phone: zodData ? zodData.phone : record.visitor_details.phone,
+			email: zodData ? zodData.email : record.visitor_details.email,
+			house_no: zodData ? zodData.house : record.visitor_details.address.house,
+			street: zodData ? zodData.street : record.visitor_details.address.street,
+			brgy: zodData ? zodData.brgy : record.visitor_details.address.brgy,
+			city: zodData ? zodData.city : record.visitor_details.address.city,
+			province: zodData
+				? zodData.province
+				: record.visitor_details.address.province,
+			country: zodData
+				? zodData.country
+				: record.visitor_details.address.country,
+			expected_time_in: zodData
+				? zodData.check_in_out[0]
+				: record.expected_time_in,
+			expected_time_out: zodData
+				? zodData.check_in_out[1]
+				: record.expected_time_out,
+			plate_num: zodData ? zodData.plate_num : record.plate_num,
+			status: zodData
+				? zodData.status
+				: visitorStatus
+					? visitorStatus
+					: record.status,
+			visitor_type: zodData ? zodData.visitor_type : record.visitor_type,
+		})
+			.then((res) => {
+				dispatch(update(res.data.visitor));
 
 				setStatus(true);
-				setAlertMsg(res.data.message);
-				setAlertOpen(!alertOpen);
-				setDisabledInputs(!disabledInputs);
+				setAlertMsg("Successfully Updated Visitor");
+				setAlertOpen(true);
+				visitorStatus
+					? setDisabledStatusInput(!disabledStatusInput)
+					: setDisabledInputs(!disabledInputs);
 
-				setItems((prev) =>
-					prev.map((item) => {
-						if (item.key === newTabIndex.current)
-							item.visitorData = res.data.updatedVisitor;
-
-						return item;
+				dispatch(
+					updateVisitor({
+						tabIndex: newTabIndex.current,
+						visitor: res.data.visitor,
 					}),
 				);
 			})
 			.catch((err) => {
 				setStatus(false);
-				setAlertMsg(err || err.response.data.error || err.response.data.errors);
+				setAlertOpen(true);
+				setAlertMsg(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
 			});
 	};
 
@@ -296,13 +375,13 @@ export default function VisitorDetails({
 		saveAction(data);
 	});
 
-	const closeTab = (_id: string | undefined) => {
-		const newActiveKey = --newTabIndex.current;
-		const newItems = [...items];
-		const index = newItems.map((e) => e.visitorData._id).indexOf(_id!);
+	const closeTab = (_id: string) => {
+		const newActiveKey = newTabIndex.current - 1;
+		const newItems = [...tabs];
+		const index = newItems.map((e) => e.visitorData._id).indexOf(_id);
 		if (index !== -1) {
 			newItems.splice(index, 1);
-			setItems(newItems);
+			dispatch(removeTab(newItems));
 		}
 		setActiveKey(newActiveKey);
 	};
@@ -326,7 +405,12 @@ export default function VisitorDetails({
 						closeTab(_id);
 					})
 					.catch((err) => {
-						console.error(err.response.data.error || err.response.data.errors);
+						setAlertOpen(!alertOpen);
+						setAlertMsg(
+							err?.response?.data?.error ||
+								err?.response?.data?.errors ||
+								"Something went wrong.",
+						);
 					});
 			},
 			onCancel() {
@@ -652,12 +736,8 @@ export default function VisitorDetails({
 											rangePickerStyling="bg-[#e0ebf0] hover:!bg-[#e0ebf0] border-none w-[inherit] focus-within:!bg-[#e0ebf0] focus:!bg-[#e0ebf0]"
 											size="large"
 											defaultVal={{
-												from:
-													record.expected_time_in ||
-													formatDate(new Date()),
-												to:
-													record.expected_time_out ||
-													formatDate(new Date()),
+												from: record.expected_time_in || formatDate(new Date()),
+												to: record.expected_time_out || formatDate(new Date()),
 											}}
 											onRangeChange={onRangeChange}
 											visitorMngmnt
@@ -817,12 +897,16 @@ export default function VisitorDetails({
 									className="cursor-pointer"
 									onClick={() => setIdentificationOpen(!identificationOpen)}
 									size={width === 1210 ? 150 : 220}
-									src="../../../../assets/no-image.svg"
+									src={
+										record.id_picture
+											? record.id_picture.selfie
+											: idPicture.selfie
+									}
 								/>
 								<Identification
 									open={identificationOpen}
 									setOpen={setIdentificationOpen}
-									image={idPicture}
+									image={record.id_picture ? record.id_picture : idPicture}
 								/>
 								<div
 									className={`flex flex-col items-center ${
@@ -888,53 +972,66 @@ export default function VisitorDetails({
 											{errors.plate_num.message}
 										</p>
 									)}
-									{disabledInputs ? (
-										<span
-											className={`${
-												record.status === VisitorStatus.Approved
-													? "text-primary-500"
-													: record.status === VisitorStatus.InProgress
-													? "text-neutral-500"
-													: "text-error-500"
-											} text-[30px] font-bold`}
-										>
-											{record?.status}
-										</span>
-									) : (
-										<Select
-											className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
-											{...register("status")}
-											defaultValue={
-												record.status === VisitorStatus.Approved
-													? "Approved"
-													: record.status === VisitorStatus.InProgress
-													? "In Progress"
-													: "Declined"
-											}
-											onChange={(value: string) =>
-												handleChange("status", value)
-											}
-											options={[
-												{ value: VisitorStatus.Approved, label: "Approved" },
-												{
-													value: VisitorStatus.InProgress,
-													label: "In Progress",
-												},
-												{ value: VisitorStatus.Declined, label: "Declined" },
-											]}
-										/>
-									)}
-									{errors?.status && (
-										<p className="mt-1 text-sm text-red-500">
-											{errors.status.message}
-										</p>
+									{disabledInputs && (
+										<>
+											{disabledStatusInput ? (
+												<span
+													className={`${
+														record.status === VisitorStatus.Approved
+															? "text-primary-500"
+															: record.status === VisitorStatus.InProgress
+																? "text-neutral-500"
+																: "text-error-500"
+													} text-[30px] font-bold`}
+													onClick={() =>
+														setDisabledStatusInput(!disabledStatusInput)
+													}
+												>
+													{record.status}
+												</span>
+											) : (
+												<Select
+													className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
+													{...register("status")}
+													defaultValue={
+														record.status === VisitorStatus.Approved
+															? "Approved"
+															: record.status === VisitorStatus.InProgress
+																? "In Progress"
+																: "Declined"
+													}
+													onChange={(value: string) =>
+														handleChange("status", value)
+													}
+													options={[
+														{
+															value: VisitorStatus.Approved,
+															label: "Approved",
+														},
+														{
+															value: VisitorStatus.InProgress,
+															label: "In Progress",
+														},
+														{
+															value: VisitorStatus.Declined,
+															label: "Declined",
+														},
+													]}
+												/>
+											)}
+											{errors?.status && (
+												<p className="mt-1 text-sm text-red-500">
+													{errors.status.message}
+												</p>
+											)}
+										</>
 									)}
 								</div>
 							</div>
 						</div>
 						{/* <div className="divider" /> */}
 						<div className="flex justify-end gap-[15px]">
-							{disabledInputs && (
+							{disabledInputs && disabledStatusInput && (
 								<>
 									<Button
 										type="primary"
@@ -974,53 +1071,102 @@ export default function VisitorDetails({
 											</VisitorRecordContext.Provider>
 										</>
 									)}
+									{record.visitor_type === VisitorType.PreRegistered && (
+										<>
+											<Button
+												type="primary"
+												size="large"
+												className="search-button !rounded-[18px] !bg-primary-500"
+												onClick={() => setNotifyPOIOpen(!notifyPOIOpen)}
+											>
+												Notify Person of Interest
+											</Button>
+											{/* Change Email Input to OIC of the Office */}
+											<Notify
+												emailInput={record.purpose.who}
+												open={notifyPOIOpen}
+												setOpen={setNotifyPOIOpen}
+												modalHeader="Notify Person of Interest"
+												subject="Meeting Appointment via Pre-Registration"
+												message={`You have a request appointment with a visitor. Please confirm the appointment. Thank you! 
 
-									<Button
-										type="primary"
-										size="large"
-										className="search-button !rounded-[18px] !bg-primary-500"
-										onClick={() => setNotifyOpen(!notifyOpen)}
-									>
-										Notify Person of Interest
-									</Button>
-									<NotifyPOI
-										emailInput={record.visitor_details.email}
-										companionRecords={record.companion_details}
-										open={notifyOpen}
-										setOpen={setNotifyOpen}
-									/>
+What: ${record.purpose.what.map((what) => what).join(", ")} 
+When: ${record.purpose.when}
+Where: ${record.purpose.where.map((where) => where).join(", ")}
+Who: ${record.purpose.who.map((who) => who).join(", ")}`}
+												disabled={true}
+											/>
+											<Notify
+												emailInput={record.visitor_details.email}
+												companionRecords={record.companion_details}
+												modalHeader="Notify Visitor"
+												subject="Pre-Registration Application Feedback"
+												message={visitorMessage}
+												open={notifyVisitorOpen}
+												setOpen={setNotifyVisitorOpen}
+												setVisitorMessage={setVisitorMessage}
+												onOk={updateStatus}
+											/>
+										</>
+									)}
 								</>
 							)}
 
-							{!disabledInputs && (
+							{(!disabledStatusInput || !disabledInputs) && (
 								<>
-									<Button
-										onClick={() => showDeleteConfirm(record._id)}
-										type="primary"
-										size="large"
-										className="search-button !rounded-[18px] !bg-error-500"
-									>
-										Delete
-									</Button>
-									<Button
-										// onClick={saveAction}
-										type="primary"
-										size="large"
-										className="search-button !rounded-[18px] !bg-primary-500"
-										htmlType="submit"
-									>
-										Save
-									</Button>
+									{!disabledInputs && (
+										<Button
+											onClick={() => showDeleteConfirm(record._id)}
+											type="primary"
+											size="large"
+											className="search-button !rounded-[18px] !bg-error-500"
+										>
+											Delete
+										</Button>
+									)}
+									{/* For Updating Visitor Status and Sending Email to Visitor and Companions */}
+									{!disabledStatusInput && (
+										<Button
+											onClick={composeApproval}
+											type="primary"
+											size="large"
+											className="search-button !rounded-[18px] !bg-primary-500"
+										>
+											Save
+										</Button>
+									)}
+									{/* For Updating Visitor Detail Information */}
+									{!disabledInputs && (
+										<Button
+											type="primary"
+											size="large"
+											className="search-button !rounded-[18px] !bg-primary-500"
+											htmlType="submit"
+										>
+											Save
+										</Button>
+									)}
 								</>
 							)}
-							<Button
-								onClick={editOrCancel}
-								type="primary"
-								size="large"
-								className="search-button !rounded-[18px] !bg-primary-500"
-							>
-								{disabledInputs ? "Edit" : "Cancel"}
-							</Button>
+							{disabledInputs && disabledStatusInput ? (
+								<Button
+									onClick={() => setDisabledInputs(!disabledInputs)}
+									type="primary"
+									size="large"
+									className="search-button !rounded-[18px] !bg-primary-500"
+								>
+									Edit
+								</Button>
+							) : (
+								<Button
+									onClick={cancel}
+									type="primary"
+									size="large"
+									className="search-button !rounded-[18px] !bg-primary-500"
+								>
+									Cancel
+								</Button>
+							)}
 						</div>
 					</div>
 				</div>

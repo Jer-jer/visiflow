@@ -97,7 +97,10 @@ export default function CompanionDetails({
 			city: record!.address.city,
 			province: record!.address.province,
 			country: record!.address.country,
-			check_in_out: [data[mainVisitorIndex].expected_time_in, data[mainVisitorIndex].expected_time_out],
+			check_in_out: [
+				data[mainVisitorIndex].expected_time_in,
+				data[mainVisitorIndex].expected_time_out,
+			],
 		},
 	});
 
@@ -179,18 +182,21 @@ export default function CompanionDetails({
 			},
 		})
 			.then((res) => {
-				console.log(res.data.updatedVisitor);
-				dispatch(update(res.data.updatedVisitor));
+				dispatch(update(res.data.visitor));
 
 				setStatus(true);
-				setAlertMsg(res.data.message);
+				setAlertMsg("Companion has been updated.");
 				setAlertOpen(true);
 				setDisabledInputs(!disabledInputs);
 			})
 			.catch((err) => {
 				setStatus(false);
 				setAlertOpen(true);
-				setAlertMsg(err.response.data.error || err.response.data.errors);
+				setAlertMsg(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
 			});
 	};
 
@@ -223,7 +229,11 @@ export default function CompanionDetails({
 			.catch((err) => {
 				setStatus(false);
 				setAlertOpen(true);
-				setAlertMsg(err.response.data.error || err.response.data.errors);
+				setAlertMsg(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
 			});
 	};
 
@@ -276,19 +286,6 @@ export default function CompanionDetails({
 					<div className="ml-[58px] flex flex-col gap-[25px]">
 						<div className="flex justify-between">
 							<div className="flex w-[782px] flex-col gap-[20px]">
-								<div className="flex w-full gap-[33px]">
-									<Label
-										spanStyling="text-black font-medium text-[16px]"
-										labelStyling="w-[13.8%]"
-									>
-										Visitor ID
-									</Label>
-									<Input
-										className="vm-placeholder h-[38px] w-[650px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-										placeholder={record!._id!}
-										disabled
-									/>
-								</div>
 								<div className="flex gap-[60px]">
 									<div
 										className={`flex w-[360px] ${
@@ -373,7 +370,7 @@ export default function CompanionDetails({
 										} justify-between`}
 									>
 										<Label spanStyling="text-black font-medium text-[16px]">
-											phone Number
+											Phone Number
 										</Label>
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
@@ -522,7 +519,7 @@ export default function CompanionDetails({
 										} justify-between`}
 									>
 										<Label spanStyling="text-black font-medium text-[16px]">
-											brgy
+											Brgy
 										</Label>
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
@@ -580,8 +577,12 @@ export default function CompanionDetails({
 											rangePickerStyling="bg-[#e0ebf0] border-none w-[inherit] hover:!bg-[#e0ebf0] focus-within:!bg-[#e0ebf0] focus:!bg-[#e0ebf0]"
 											size="large"
 											defaultVal={{
-												from: data[mainVisitorIndex].expected_time_in || formatDate(new Date()),
-												to: data[mainVisitorIndex].expected_time_out || formatDate(new Date()),
+												from:
+													data[mainVisitorIndex].expected_time_in ||
+													formatDate(new Date()),
+												to:
+													data[mainVisitorIndex].expected_time_out ||
+													formatDate(new Date()),
 											}}
 											onRangeChange={onRangeChange}
 											visitorMngmnt
