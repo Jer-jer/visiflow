@@ -353,7 +353,7 @@ export const Camera = () => {
 	return (
 		<svg 
 			xmlns="http://www.w3.org/2000/svg" 
-			viewBox="0 0 24 24" 
+			viewBox="0 0 31.5 30" 
 			fill="none"
 			strokeWidth={1.5}
 			stroke="currentColor"
@@ -373,28 +373,61 @@ export const Camera = () => {
 	);
 }
 
-export const WalkinQR = () => {
+export const QRScanner = () => {
 	return (
 		<svg 
-			xmlns="http://www.w3.org/2000/svg" 
-			viewBox="0 0 24 24" 
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox="4 4 39 39" 
 			fill="none"
 			strokeWidth={1.5}
 			stroke="currentColor"
 			className="h-5 w-5"
 		>
-  			<g clip-path="url(#clip0_666_22)">
-    			<path 
-					d="M-2.00194e-05 28.455C-2.00194e-05 29.0617 0.20998 29.575 0.62998 29.995C1.04998 30.415 1.57498 30.625 2.20498 30.625H32.83C33.4133 30.625 33.9266 30.415 34.37 29.995C34.8133 29.575 35.0233 29.0617 35 28.455V6.58C35 5.97333 34.79 5.46 34.37 5.04C33.95 4.62 33.4366 4.39833 32.83 4.375H2.20498C1.59831 4.375 1.07331 4.59667 0.62998 5.04C0.186647 5.48333 -0.0233534 5.99667 -2.00194e-05 6.58V28.455ZM2.20498 28.455V13.125H32.83V28.455H2.20498ZM2.20498 8.75V6.58H32.83V8.75H2.20498ZM4.37498 26.25H8.74998V24.08H4.37498V26.25ZM4.37498 21.875H10.955V15.33H4.37498V21.875ZM10.955 26.25H15.33V24.08H10.955V26.25ZM17.5 26.25H21.875V24.08H17.5V26.25ZM24.08 26.25H26.25V24.08H24.08V26.25ZM28.455 26.25H30.625V24.08H28.455V26.25Z" 
-					strokeLinecap="round"
-					strokeLinejoin="round"
-				/>
-  			</g>
-  			<defs>
-    			<clipPath id="clip0_666_22">
-      				<rect width="24" height="24" fill="white"/>
-    			</clipPath>
-  			</defs>
+			<path 
+				d="M13.78,5.5H5.5v8.28"
+				strokeLinecap="round"
+				strokeLinejoin="round" 
+			/>
+			<path 
+				d="M42.5,13.78V5.5H34.22"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+			<path 
+				d="M34.22,42.5H42.5V34.22"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+			<path 
+				d="M10.55,26.41v11h11v-11h-11Zm3.22,3.22h4.6v4.6h-4.6Z"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+			<path 
+				d="M10.55,10.55v11h11v-11h-11Zm3.22,3.22h4.6v4.6h-4.6Z"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+			<path 
+				d="M26.41,10.55v11h11v-11h-11Zm3.22,3.22h4.6v4.6h-4.6Z"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+			<path 
+				d="M31.93,37.45a5.79,5.79,0,0,0,3.47-2.1,8.37,8.37,0,0,0,2.05-5.72V26.41h-11v3.22h0a8.39,8.39,0,0,0,2.05,5.72A5.79,5.79,0,0,0,31.93,37.45Z"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+			<path 
+				d="M31.93,34.23a5.82,5.82,0,0,1-1.08-.86,5.4,5.4,0,0,1-1.22-3.74h4.6A5.4,5.4,0,0,1,33,33.37a5.82,5.82,0,0,1-1.08.86Z"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+			<path 
+				d="M5.5,34.22V42.5h8.28"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
 		</svg>
 	);
 }
@@ -403,89 +436,53 @@ export const PreregisterQR = () => {
 	return (
 		<svg 
 			xmlns="http://www.w3.org/2000/svg" 
-			viewBox="0 0 24 24" 
+			viewBox="4 4 39 39" 
+			fill="none"
+			strokeWidth={1.5}
+			stroke="currentColor"
+			className="h-5 w-5"
+		>
+			<path 
+				d="M40.5,5.5H7.5a2,2,0,0,0-2,2v33a2,2,0,0,0,2,2h33a2,2,0,0,0,2-2V7.5A2,2,0,0,0,40.5,5.5Z"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+			<path 
+				d="M15,37.5v-27H24a9.07,9.07,0,0,1,0,18.14H15"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+		</svg>
+	);
+}
+
+export const Form = () => {
+	return (
+		<svg 
+			xmlns="http://www.w3.org/2000/svg" 
+			viewBox="2 3 25 30" 
 			fill="none"
 			strokeWidth={1.5}
 			stroke="currentColor"
 			className="h-5 w-5"
 		>
   			<path 
-				d="M13.5 22.5H8.25V27.75H13.5V22.5Z" 
+				d="M5.33334 10.5C5.33334 7.67157 5.33334 6.25735 6.11439 5.37868C6.89543 4.5 8.15251 4.5 10.6667 4.5H21.3333C23.8475 4.5 25.1045 4.5 25.8856 5.37868C26.6667 6.25735 26.6667 7.67157 26.6667 10.5V22.5C26.6667 26.7426 26.6667 28.8639 25.4951 30.1819C24.3235 31.5 22.4379 31.5 18.6667 31.5H13.3333C9.5621 31.5 7.67648 31.5 6.50491 30.1819C5.33334 28.8639 5.33334 26.7426 5.33334 22.5V10.5Z" 
 				strokeLinecap="round"
 				strokeLinejoin="round"
 			/>
   			<path 
-				d="M27.75 8.25H22.5V13.5H27.75V8.25Z" 
+				d="M20 27V31.5M12 27V31.5" 
 				strokeLinecap="round"
 				strokeLinejoin="round"
 			/>
   			<path 
-				d="M13.5 8.25H8.25V13.5H13.5V8.25Z" 
+				d="M12 12H20" 
 				strokeLinecap="round"
 				strokeLinejoin="round"
 			/>
   			<path 
-				d="M18.375 8.25H17.625V9H18.375V8.25Z" 
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
-  			<path 
-				d="M18.375 12.9375H17.625V13.6875H18.375V12.9375Z" 
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
-  			<path 
-				d="M13.6875 17.625H12.9375V18.375H13.6875V17.625Z" 
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
-  			<path 
-				d="M18.375 22.3125H17.625V23.0625H18.375V22.3125Z" 
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
-  			<path 
-				d="M18.375 27H17.625V27.75H18.375V27Z" 
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
-  			<path 
-				d="M9 17.625H8.25V18.375H9V17.625Z" 
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
-  			<path 
-				d="M18.375 17.625H17.625V18.375H18.375V17.625Z" 
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
-  			<path 
-				d="M23.0625 17.625H22.3125V18.375H23.0625V17.625Z" 
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
-  			<path 
-				d="M27.75 17.625H27V18.375H27.75V17.625Z" 
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
-  			<path 
-				d="M23.0625 22.3125H22.3125V23.0625H23.0625V22.3125Z" 
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
-  			<path 
-				d="M27.75 22.3125H27V23.0625H27.75V22.3125Z" 
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
-  			<path 
-				d="M23.0625 27H22.3125V27.75H23.0625V27Z" 
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
-  			<path 
-				d="M27.75 27H27V27.75H27.75V27Z" 
+				d="M12 18H20" 
 				strokeLinecap="round"
 				strokeLinejoin="round"
 			/>

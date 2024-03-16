@@ -17,6 +17,10 @@ import Schedules from "./pages/admin/schedules";
 import UnknownPage from "./pages/404";
 
 //Guard
+import VisitorForm from "./pages/guard/visitor-form";
+import QRScanner from "./pages/guard/qr-scanner";
+import PreregisteredQR from "./pages/guard/preregistered-qr";
+import VisitorStatus from "./pages/guard/visitor-status";
 
 //Assets
 import { LoadingOutlined } from "@ant-design/icons";
@@ -66,14 +70,13 @@ function App() {
 								/>
 								<Route path="/manage-users" element={<UserManagement />} />
 								<Route path="/home-editor" element={<HomeEditor />} />
-								<Route path="/schedules" element={<Schedules />} />
 							</>
 						) : (
 							<>
-								<Route
-									path="/"
-									element={<span>Guard System Routes Here</span>}
-								/>
+								<Route path="/" element={<QRScanner />} />
+								<Route path="/visitor-form" element={<VisitorForm />} />
+								<Route path="/preregistered-qr" element={<PreregisteredQR />} />
+								<Route path="/visitor-status" element={<VisitorStatus />} />
 							</>
 						)}
 						<Route path="*" element={<UnknownPage />} />
