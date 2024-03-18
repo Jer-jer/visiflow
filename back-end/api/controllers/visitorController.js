@@ -9,6 +9,7 @@ const { Buffer } = require("node:buffer");
 const Notification = require('../models/notification');
 const moment = require('moment-timezone');
 
+
 exports.getVisitors = async (req, res) => {
   try {
     const visitors = await Visitor.find();
@@ -45,22 +46,22 @@ exports.addVisitor = async (req, res) => {
     await Promise.all(
       validateVisitor.map((validation) => validation.run(req.body.visitor_data))
     );
-  
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array()[0].msg });
     }
-  
+
     const visitorDB = await Visitor.findOne({
       "visitor_details.name.first_name": first_name,
       "visitor_details.name.middle_name": middle_name,
       "visitor_details.name.last_name": last_name,
     });
-  
+
     if (visitorDB) {
       return res.status(409).json({ error: "Visitor already exists" });
     }
-  
+
     const [frontId, backId, selfieId] = await Promise.all([
       uploadFileToGCS(Buffer.from(id_picture.front.replace(/^data:image\/\w+;base64,/, ""), "base64"), `${Date.now()}_${last_name.toUpperCase()}_front.jpg`),
       uploadFileToGCS(Buffer.from(id_picture.back.replace(/^data:image\/\w+;base64,/, ""), "base64"), `${Date.now()}_${last_name.toUpperCase()}_back.jpg`),
@@ -70,6 +71,7 @@ exports.addVisitor = async (req, res) => {
     const expectedTimeInPH = moment(expected_time_in).tz('Asia/Manila').toDate();
     const expectedTimeOutPH = moment(expected_time_out).tz('Asia/Manila').toDate();
   
+
     const newVisitor = await Visitor.create({
       visitor_details: {
         name: { first_name, middle_name, last_name },
@@ -220,7 +222,7 @@ exports.deleteVisitor = async (req, res) => {
 };
 
 exports.updateStatus = async (req, res) => {
-  const { _id, status } = req.body;
+  const { _id, status, message, email, companions } = req.body;
 
   try {
     const visitorDB = await Visitor.findById(_id);
@@ -230,6 +232,7 @@ exports.updateStatus = async (req, res) => {
     }
 
     visitorDB.status = status;
+
     await visitorDB.save();
 
     if (status === "Approved") {
@@ -262,6 +265,7 @@ exports.updateStatus = async (req, res) => {
         return res.status(500).json({ Error: 'Failed to send email' });
       }
     }  
+
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to update visitor status" });

@@ -200,7 +200,7 @@ async function generateQRCode(uri, filename, badgeId) {
         console.log(`QR code saved for badge ${badgeId}`);
         resolve();
       }
-    });
+    );
   });
 }
 
@@ -341,9 +341,7 @@ async function createNotification(visitor, type) {
       recipient: visitor.visitor_details?._id || visitor[0]._id,
       content: notificationContent
     });
-  
     console.log("Notification pushed");
-  
 }
 
 // change to */5 * * * * * for testing every 5 mins

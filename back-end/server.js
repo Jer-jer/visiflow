@@ -13,7 +13,8 @@ const connectDB = require("./api/config/db");
 const app = express();
 
 app.use(cors());
-app.use(bodyParser.json());
+// Increase the limit to 5mb (adjust as needed)
+app.use(bodyParser.json({ limit: "5mb" }));
 app.use(passport.initialize());
 // app.use(cookieParser());
 // app.use(createSession);
@@ -34,7 +35,7 @@ app.use('/notification', require('./api/routes/notificationRouter'));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send('Something went wrong!');
+  res.status(500).send("Something went wrong!");
 });
 
 const PORT = process.env.PORT || 5000;
