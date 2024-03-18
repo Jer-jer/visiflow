@@ -22,15 +22,16 @@ app.use(passport.initialize());
 
 connectDB();
 
-app.use("/user", require("./api/routes/userRouter"));
-app.use("/auth", require("./api/routes/authRouter"));
-app.use("/buildings", require("./api/routes/buildingRouter"));
-app.use("/visitor", require("./api/routes/visitorRouter"));
-app.use("/visitor/logs", require("./api/routes/visitorLogsRouter"));
-app.use("/visitor/companion/logs", require("./api/routes/visitorLogsRouter"));
-app.use("/badge", require("./api/routes/badgeRouter"));
-app.use("/events", require("./api/routes/eventsRouter"));
-app.use("/announcements", require("./api/routes/announcementsRouter"));
+app.use('/user', require('./api/routes/userRouter'));
+app.use('/auth', require('./api/routes/authRouter'));
+app.use('/buildings', require('./api/routes/buildingRouter'));
+app.use('/visitor', require('./api/routes/visitorRouter'));
+app.use('/visitor/logs', require('./api/routes/visitorLogsRouter'));
+app.use('/visitor/companion/logs', require('./api/routes/visitorLogsRouter'));
+app.use('/badge', require('./api/routes/badgeRouter'));
+app.use('/events',require('./api/routes/eventsRouter'));
+app.use('/announcements', require('./api/routes/announcementsRouter'));
+app.use('/notification', require('./api/routes/notificationRouter'));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
