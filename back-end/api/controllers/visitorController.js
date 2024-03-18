@@ -4,9 +4,10 @@ const {
   validateVisitor,
   validationResult,
 } = require("../middleware/dataValidation");
-const { generateSingleQRCode, uploadFileToGCS } = require("../utils/helper");
+const { generateVisitorQRAndEmail, uploadFileToGCS } = require("../utils/helper");
 const { Buffer } = require("node:buffer");
 const Notification = require('../models/notification');
+const moment = require('moment-timezone');
 
 exports.getVisitors = async (req, res) => {
   try {
@@ -60,29 +61,14 @@ exports.addVisitor = async (req, res) => {
       return res.status(409).json({ error: "Visitor already exists" });
     }
   
-    const [frontId, backId, selfieId] = [
-      uploadFileToGCS(
-        Buffer.from(
-          id_picture.front.replace(/^data:image\/\w+;base64,/, ""),
-          "base64"
-        ),
-        `${Date.now()}_${last_name.toUpperCase()}_front.jpg`
-      ),
-      uploadFileToGCS(
-        Buffer.from(
-          id_picture.back.replace(/^data:image\/\w+;base64,/, ""),
-          "base64"
-        ),
-        `${Date.now()}_${last_name.toUpperCase()}_back.jpg`
-      ),
-      uploadFileToGCS(
-        Buffer.from(
-          id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""),
-          "base64"
-        ),
-        `${Date.now()}_${last_name.toUpperCase()}_selfie.jpg`
-      ),
-    ];
+    const [frontId, backId, selfieId] = await Promise.all([
+      uploadFileToGCS(Buffer.from(id_picture.front.replace(/^data:image\/\w+;base64,/, ""), "base64"), `${Date.now()}_${last_name.toUpperCase()}_front.jpg`),
+      uploadFileToGCS(Buffer.from(id_picture.back.replace(/^data:image\/\w+;base64,/, ""), "base64"), `${Date.now()}_${last_name.toUpperCase()}_back.jpg`),
+      uploadFileToGCS(Buffer.from(id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""), "base64"), `${Date.now()}_${last_name.toUpperCase()}_selfie.jpg`),
+    ]);
+
+    const expectedTimeInPH = moment(expected_time_in).tz('Asia/Manila').toDate();
+    const expectedTimeOutPH = moment(expected_time_out).tz('Asia/Manila').toDate();
   
     const newVisitor = await Visitor.create({
       visitor_details: {
@@ -94,8 +80,8 @@ exports.addVisitor = async (req, res) => {
       companion_details: companion_details || [],
       plate_num: plate_num,
       purpose: purpose,
-      expected_time_in,
-      expected_time_out,
+      expected_time_in: expectedTimeInPH,
+      expected_time_out: expectedTimeOutPH,
       id_picture: {
         front: frontId,
         back: backId,
@@ -103,6 +89,20 @@ exports.addVisitor = async (req, res) => {
       },
       visitor_type: visitor_type,
       status: status,
+    });
+
+    // Pending Visitors
+    await Notification.create({
+      type: 'pending',
+      recipient: newVisitor.visitor_details._id,
+      content: {
+        visitor_name: newVisitor.visitor_details.name.first_name,
+        host_name: newVisitor.purpose.who[0],
+        date: newVisitor.purpose.when,
+        time: newVisitor.expected_time_in,
+        location: newVisitor.purpose.where[0],
+        purpose: newVisitor.purpose.what.join(', ')
+      }
     });
   
     return res.status(201).json({ visitor: newVisitor });
@@ -235,14 +235,15 @@ exports.updateStatus = async (req, res) => {
     if (status === "Approved") {
       try {
 
-        let result = generateSingleQRCode(visitorDB._id);
+        let result = generateVisitorQRAndEmail(visitorDB._id);
 
         if (!(await result).success) {
           return res.status(500).json({ Error: (await result).message});
         }
 
+        // Appointment Confirmation
         await Notification.create({
-          type: 'Appointment Confirmation',
+          type: 'confirmation',
           recipient: visitorDB.visitor_details._id,
           content: {
             visitor_name: visitorDB.visitor_details.name.first_name,
@@ -266,3 +267,4 @@ exports.updateStatus = async (req, res) => {
     return res.status(500).json({ error: "Failed to update visitor status" });
   }
 };
+

@@ -58,8 +58,8 @@ const VisitorSchema = new Schema({
     required: true,
   },
   id_picture: { type: IdPhoto, required: true },
-  expected_time_in: { type: String, sparse: true },
-  expected_time_out: { type: String, sparse: true },
+  expected_time_in: { type: Date, sparse: true },
+  expected_time_out: { type: Date, sparse: true },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
 });
