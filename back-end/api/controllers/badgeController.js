@@ -1,5 +1,5 @@
 const Badge = require('../models/badge');
-const { generateQRCode, updateLog } = require('../utils/helper');
+const { generateVisitorQRCode, updateLog } = require('../utils/helper');
 
 const badgeQty = 5;
 
@@ -31,16 +31,17 @@ exports.generateBadge = async (req, res) => {
   console.log(clientIP);
 
   for (let counter = 0; counter < badgeQty; counter++) {
-    await generateQRCode(counter);
+    await generateVisitorQRCode(counter);
   }
   res.status(200).json({ message: `Generated ${badgeQty} of badges` });
 };
 
+//still hard coded for testing purpose only
 exports.newBadge = async (req, res) => {
     const badge = new Badge({
-        visitor_id: '65dc01b46b9160d9bed89e81',
+        visitor_id: '65f7cb8e66b7fa6fc55fc85d',
         qr_id: '0',
-        is_active: true
+        is_active: false
     });
     await badge.save();
     res.send(200);
@@ -51,7 +52,7 @@ exports.checkBadge = async (req, res) => {
     let badge;
 
     if (qr_id !== undefined) {
-    badge = await Badge.findOne({qr_id: qr_id});
+      badge = await Badge.findOne({qr_id: qr_id});
     } else {
       badge = await Badge.findOne({ visitor_id: visitor_id });
     }
