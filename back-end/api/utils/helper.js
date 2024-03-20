@@ -97,7 +97,7 @@ async function verifyRefreshToken(token) {
 async function generateVisitorQRCode(badgeId) {
   return new Promise((resolve, reject) => {
     const filename = `api/resource/badge/badge${badgeId}.png`;
-    const uri = `http://192.168.1.5:5000/badge/checkBadge?qr_id=${badgeId}`;
+    const uri = `http://192.168.1.4:5000/badge/checkBadge?qr_id=${badgeId}`;
 
     QRCode.toFile(filename, uri, { errorCorrectionLevel: "H" }, function (error) {
       if (error) {
@@ -162,7 +162,7 @@ async function generateBadge(visitor) {
 
   await badge.save();
 
-  const uri = `http://192.168.1.5:5000/badge/checkBadge?visitor_id=${visitor._id}`;
+  const uri = `http://192.168.1.4:5000/badge/checkBadge?visitor_id=${visitor._id}`;
   const filename = `api/resource/badge/badge${badge._id}.png`;
   await generateQRCode(uri, filename, badge._id);
 
@@ -200,7 +200,7 @@ async function generateQRCode(uri, filename, badgeId) {
         console.log(`QR code saved for badge ${badgeId}`);
         resolve();
       }
-    );
+    });
   });
 }
 
@@ -218,11 +218,11 @@ async function sendEmail(mailOptions) {
   });
 }
 
-async function updateLog(badgeId, visitorId, res) {
+//will need to add qr_id to parameter
+async function updateLog(badgeId, _id, type, res) {
   const badge = await Badge.findById(badgeId);
-  console.log(badge);
-  if (badge.is_active) {
 
+  if (badge.is_active) {
     try {
       await VisitorLogs.updateOne({ badge_id: badge._id }, { $set: { check_out_time: new Date() }});
       await Badge.updateOne({ _id: badge._id }, { $set: { qr_id: null, is_active: false, is_valid: false }});
@@ -232,7 +232,7 @@ async function updateLog(badgeId, visitorId, res) {
       return res.status(500).json({ Error: "Failed to time-out visitor" });
     }
   } else {
-    if (visitorId !== undefined) {
+    if (type === 'pre-reg') {
       await VisitorLogs.create({ badge_id: badge._id, check_in_time: new Date() });
       await Badge.updateOne({ _id: badge._id }, { $set: { is_active: true }});
 
