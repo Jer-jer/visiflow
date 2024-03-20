@@ -54,7 +54,10 @@ exports.checkBadge = async (req, res) => {
 
     if (qr_id !== undefined) {
       badge = await Badge.findOne({qr_id: qr_id});
+<<<<<<< HEAD
       type = 'walk-in';
+=======
+>>>>>>> master
     } else {
       badge = await Badge.findOne({ visitor_id: visitor_id });
       type = 'pre-reg';
@@ -67,7 +70,12 @@ exports.checkBadge = async (req, res) => {
    if(!badge.is_valid) {
     return res.status(400).json({ message: `Invalid visitor badge`});
    }
+<<<<<<< HEAD
    
    const _id = (visitor_id !== undefined) ? visitor_id : qr_id;
    updateLog(badge._id, _id, type, res); 
+=======
+
+   updateLog(badge._id, visitor_id, res);
+>>>>>>> master
 }
