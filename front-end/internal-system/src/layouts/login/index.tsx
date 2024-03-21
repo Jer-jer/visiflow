@@ -89,12 +89,17 @@ function LoginLayout({ setIsAdmin, setIsLoggedIn }: LoginProps) {
 			})
 			.catch((err) => {
 				showModal();
-				if (err.response.status === 401) {
-					setModalMessage("Invalid Username/Password.");
+				if(err.response !== undefined && err.response) {
+					if (err.response.status === 401) {
+						setModalMessage("Invalid Username/Password.");
+					} else {
+						showModal();
+						setModalMessage("Login Request Failed. Please try again later.");
+					}
 				} else {
-					showModal();
-					setModalMessage("Login Request Failed. Please try again later.");
+					setModalMessage("Something went wrong with your request. Please try again later.");
 				}
+				
 			});
 	});
 

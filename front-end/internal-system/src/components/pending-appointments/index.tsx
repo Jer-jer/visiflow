@@ -12,7 +12,7 @@ import { AppDispatch } from "../../store";
 import { openVisitor } from "../../states/visitors";
 
 // Utils
-import { formatDate } from "../../utils";
+import { formatDateString } from "../../utils";
 
 //Styles
 import "../../utils/variables.scss";
@@ -49,7 +49,7 @@ export default function PendingAppointments({
 						</div>
 						<div className="flex flex-col">
 							<span className="line-normal text-[12px] font-[100] text-black">
-								{formatDate(item.purpose.when)}
+								{formatDateString(item.purpose.when)}
 							</span>
 							<span className="line-normal mt-[5px] text-[18px] font-[400] text-black">
 								{item.visitor_details.name.last_name}

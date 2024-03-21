@@ -72,10 +72,6 @@ export default function StepTwoForm({
 		}
 	}, [setValue, mainVisitor, increment, companions]);
 
-	// const mainOrCompanion = () => {
-	// 	return increment === 0 ? mainVisitor : companions[increment - 1];
-	// };
-
 	const updateData = (value: string, property: string) => {
 		const updatedVisitors = mainOrCompanion(increment, mainVisitor, companions);
 		let updatedCompanions = companions;

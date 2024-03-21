@@ -1,14 +1,15 @@
 const Visitor = require("../models/visitor");
-const { Storage } = require("@google-cloud/storage");
 const {
   validateVisitor,
   validationResult,
 } = require("../middleware/dataValidation");
-const { generateVisitorQRAndEmail, uploadFileToGCS } = require("../utils/helper");
+const {
+  generateVisitorQRAndEmail,
+  uploadFileToGCS,
+  sendEmail,
+} = require("../utils/helper");
 const { Buffer } = require("node:buffer");
-const Notification = require('../models/notification');
-const moment = require('moment-timezone');
-
+const Notification = require("../models/notification");
 
 exports.getVisitors = async (req, res) => {
   try {
@@ -63,14 +64,28 @@ exports.addVisitor = async (req, res) => {
     }
 
     const [frontId, backId, selfieId] = await Promise.all([
-      uploadFileToGCS(Buffer.from(id_picture.front.replace(/^data:image\/\w+;base64,/, ""), "base64"), `${Date.now()}_${last_name.toUpperCase()}_front.jpg`),
-      uploadFileToGCS(Buffer.from(id_picture.back.replace(/^data:image\/\w+;base64,/, ""), "base64"), `${Date.now()}_${last_name.toUpperCase()}_back.jpg`),
-      uploadFileToGCS(Buffer.from(id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""), "base64"), `${Date.now()}_${last_name.toUpperCase()}_selfie.jpg`),
+      uploadFileToGCS(
+        Buffer.from(
+          id_picture.front.replace(/^data:image\/\w+;base64,/, ""),
+          "base64"
+        ),
+        `${Date.now()}_${last_name.toUpperCase()}_front.jpg`
+      ),
+      uploadFileToGCS(
+        Buffer.from(
+          id_picture.back.replace(/^data:image\/\w+;base64,/, ""),
+          "base64"
+        ),
+        `${Date.now()}_${last_name.toUpperCase()}_back.jpg`
+      ),
+      uploadFileToGCS(
+        Buffer.from(
+          id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""),
+          "base64"
+        ),
+        `${Date.now()}_${last_name.toUpperCase()}_selfie.jpg`
+      ),
     ]);
-
-    const expectedTimeInPH = moment(expected_time_in).tz('Asia/Manila').toDate();
-    const expectedTimeOutPH = moment(expected_time_out).tz('Asia/Manila').toDate();
-  
 
     const newVisitor = await Visitor.create({
       visitor_details: {
@@ -82,8 +97,8 @@ exports.addVisitor = async (req, res) => {
       companion_details: companion_details || [],
       plate_num: plate_num,
       purpose: purpose,
-      expected_time_in: expectedTimeInPH,
-      expected_time_out: expectedTimeOutPH,
+      expected_time_in: expected_time_in,
+      expected_time_out: expected_time_out,
       id_picture: {
         front: frontId,
         back: backId,
@@ -95,18 +110,19 @@ exports.addVisitor = async (req, res) => {
 
     // Pending Visitors
     await Notification.create({
-      type: 'pending',
+      type: "pending",
       recipient: newVisitor.visitor_details._id,
       content: {
-        visitor_name: newVisitor.visitor_details.name.first_name,
-        host_name: newVisitor.purpose.who[0],
+        visitor_name: `${newVisitor.visitor_details.name.last_name}, ${newVisitor.visitor_details.name.first_name} ${newVisitor.visitor_details.name.middle_name}`,
+        host_name: newVisitor.purpose.who.join(", "),
         date: newVisitor.purpose.when,
         time: newVisitor.expected_time_in,
-        location: newVisitor.purpose.where[0],
-        purpose: newVisitor.purpose.what.join(', ')
-      }
+        location: newVisitor.purpose.where.join(", "),
+        purpose: newVisitor.purpose.what.join(", "),
+        visitor_type: newVisitor.visitor_type,
+      },
     });
-  
+
     return res.status(201).json({ visitor: newVisitor });
   } catch (error) {
     console.error(error);
@@ -237,38 +253,73 @@ exports.updateStatus = async (req, res) => {
 
     if (status === "Approved") {
       try {
+        let result = generateVisitorQRAndEmail(visitorDB._id, message);
 
-        let result = generateVisitorQRAndEmail(visitorDB._id);
-
-        if (!(await result).success) {
-          return res.status(500).json({ Error: (await result).message});
-        }
+        //TODO Causes to throw error to the FE
+        // if (!(await result).success) {
+        //   return res.status(500).json({ Error: (await result).message });
+        // }
 
         // Appointment Confirmation
         await Notification.create({
-          type: 'confirmation',
+          type: "confirmation",
           recipient: visitorDB.visitor_details._id,
           content: {
-            visitor_name: visitorDB.visitor_details.name.first_name,
-            host_name: visitorDB.purpose.who[0],
+            visitor_name: `${visitorDB.visitor_details.name.last_name}, ${visitorDB.visitor_details.name.first_name} ${visitorDB.visitor_details.name.middle_name}`,
+            host_name: visitorDB.purpose.who.join(", "),
             date: visitorDB.purpose.when,
             time: visitorDB.expected_time_in,
-            location: visitorDB.purpose.where[0],
-            purpose: visitorDB.purpose.what.join(', ')
-          }
+            location: visitorDB.purpose.where.join(", "),
+            purpose: visitorDB.purpose.what.join(", "),
+            visitor_type: visitorDB.visitor_type,
+          },
         });
 
         res.status(200).json({ message: `Visitor is now ${status}` });
-
       } catch (error) {
         console.error(error);
-        return res.status(500).json({ Error: 'Failed to send email' });
+        return res.status(500).json({ Error: "Failed to send email" });
       }
-    }  
+    } else if (status === "Declined") {
+      try {
+        sendEmail({
+          from: process.env.MAILER,
+          to: email,
+          subject: "Pre-Registration Declined",
+          text: message,
+        });
 
+        if (companions && companions.length > 0) {
+          for (const companion of companions) {
+            sendEmail({
+              from: process.env.MAILER,
+              to: companion.email,
+              subject: "Pre-Registration Declined",
+              text: message,
+            });
+          }
+        }
+
+        await Notification.create({
+          type: "declined",
+          recipient: visitorDB.visitor_details._id,
+          content: {
+            visitor_name: `${visitorDB.visitor_details.name.last_name}, ${visitorDB.visitor_details.name.first_name} ${visitorDB.visitor_details.name.middle_name}`,
+            host_name: visitorDB.purpose.who.join(", "),
+            date: visitorDB.purpose.when,
+            time: visitorDB.expected_time_in,
+            location: visitorDB.purpose.where.join(", "),
+            purpose: visitorDB.purpose.what.join(", "),
+            visitor_type: visitorDB.visitor_type,
+          },
+        });
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({ Error: "Failed to send email" });
+      }
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to update visitor status" });
   }
 };
-

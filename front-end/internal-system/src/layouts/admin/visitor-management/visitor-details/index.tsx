@@ -28,7 +28,7 @@ import type { Dayjs } from "dayjs";
 import type { DatePickerProps } from "antd";
 
 // Utils
-import { formatDate } from "../../../../utils";
+import { formatDateObjToString } from "../../../../utils";
 
 //Layouts
 import VisitorLogs from "../visitor-logs";
@@ -63,7 +63,6 @@ import "./styles.scss";
 
 // Libraries
 import AxiosInstance from "../../../../lib/axios";
-import visitor from "../../../../states/logs/visitor";
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -122,7 +121,7 @@ export default function VisitorDetails({
 	const width = useContext(WidthContext);
 
 	// Store Related variables
-	const tabs = useSelector((state: RootState) => state.visitorTabs);
+	const tabs: any = useSelector((state: RootState) => state.visitorTabs);
 	const dispatch = useDispatch();
 
 	// Client-side Validation related data
@@ -736,8 +735,12 @@ export default function VisitorDetails({
 											rangePickerStyling="bg-[#e0ebf0] hover:!bg-[#e0ebf0] border-none w-[inherit] focus-within:!bg-[#e0ebf0] focus:!bg-[#e0ebf0]"
 											size="large"
 											defaultVal={{
-												from: record.expected_time_in || formatDate(new Date()),
-												to: record.expected_time_out || formatDate(new Date()),
+												from:
+													record.expected_time_in ||
+													formatDateObjToString(new Date()),
+												to:
+													record.expected_time_out ||
+													formatDateObjToString(new Date()),
 											}}
 											onRangeChange={onRangeChange}
 											visitorMngmnt

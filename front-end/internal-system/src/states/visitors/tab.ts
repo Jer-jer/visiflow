@@ -12,7 +12,7 @@ export interface TabItems {
 
 const initialState: TabItems[] = [];
 
-export const tabSlice = createSlice({
+export const tabSlice: any = createSlice({
 	name: "tab",
 	initialState,
 	reducers: {

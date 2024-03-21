@@ -4,27 +4,26 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const QRCode = require("qrcode");
 const nodemailer = require("nodemailer");
-const cron = require('node-cron');
-const moment = require('moment-timezone');
+const cron = require("node-cron");
 
 const RefreshToken = require("../models/refreshToken");
 const Badge = require("../models/badge");
 const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
-const Notification = require('../models/notification');
+const Notification = require("../models/notification");
 
 const { Storage } = require("@google-cloud/storage");
 
 // Lazy load storage
 let storage;
 function getStorage() {
-    if (!storage) {
-        storage = new Storage({
-            keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-            projectId: process.env.GOOGLE_CLOUD_PROJECT,
-        });
-    }
-    return storage;
+  if (!storage) {
+    storage = new Storage({
+      keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+      projectId: process.env.GOOGLE_CLOUD_PROJECT,
+    });
+  }
+  return storage;
 }
 
 const transporter = nodemailer.createTransport({
@@ -99,51 +98,67 @@ async function generateVisitorQRCode(badgeId) {
     const filename = `api/resource/badge/badge${badgeId}.png`;
     const uri = `http://192.168.1.5:5000/badge/checkBadge?qr_id=${badgeId}`;
 
-    QRCode.toFile(filename, uri, { errorCorrectionLevel: "H" }, function (error) {
-      if (error) {
-        console.error(
-          `Error generating QR code for badge ${badgeId}: ${error.message}`
-        );
-        reject(error);
-      } else {
-        console.log(`QR code saved for badge ${badgeId}`);
-        resolve();
+    QRCode.toFile(
+      filename,
+      uri,
+      { errorCorrectionLevel: "H" },
+      function (error) {
+        if (error) {
+          console.error(
+            `Error generating QR code for badge ${badgeId}: ${error.message}`
+          );
+          reject(error);
+        } else {
+          console.log(`QR code saved for badge ${badgeId}`);
+          resolve();
+        }
       }
-    });
+    );
   });
 }
 
 // used in pre-registered visitor
-async function generateVisitorQRAndEmail(visitorId) {
+async function generateVisitorQRAndEmail(visitorId, message) {
   try {
     const visitor = await Visitor.findById(visitorId);
     if (!visitor) {
       throw new Error("Visitor not found");
-    } 
+    }
 
     const badges = [];
 
     // Generate QR Code for visitor
-    const visitorBadge = await generateQRAndEmail(visitor);
+    const visitorBadge = await generateQRAndEmail(visitor, message);
     badges.push(visitorBadge);
 
     // Generate QR Codes for companions
     if (visitor.companion_details.length > 0) {
-      const companionBadges = await Promise.all(visitor.companion_details.map(companion => generateQRAndEmail(companion)));
+      const companionBadges = await Promise.all(
+        visitor.companion_details.map((companion) =>
+          generateQRAndEmail(companion, message)
+        )
+      );
       badges.push(...companionBadges);
     }
 
-    return { success: true, message: "QR code and email sent successfully", badges };
+    return {
+      success: true,
+      message: "QR code and email sent successfully",
+      badges,
+    };
   } catch (error) {
     console.error("Error generating QR code and sending email:", error);
-    return { success: false, message: "Failed to generate QR code and send emails" };
+    return {
+      success: false,
+      message: "Failed to generate QR code and send emails",
+    };
   }
 }
 
-async function generateQRAndEmail(visitor) {
+async function generateQRAndEmail(visitor, message) {
   try {
     const badge = await generateBadge(visitor);
-    await sendBadgeEmail(badge, visitor);
+    await sendBadgeEmail(badge, visitor, message);
     console.log(`QR code and email sent for badge ${badge._id}`);
     return { visitorId: visitor._id, badgeId: badge._id };
   } catch (error) {
@@ -169,14 +184,17 @@ async function generateBadge(visitor) {
   return badge;
 }
 
-async function sendBadgeEmail(badge, visitor) {
-  const email = visitor.visitor_details && visitor.visitor_details.email ? visitor.visitor_details.email : visitor.email;
+async function sendBadgeEmail(badge, visitor, message) {
+  const email =
+    visitor.visitor_details && visitor.visitor_details.email
+      ? visitor.visitor_details.email
+      : visitor.email;
 
   const mailOptions = {
     from: process.env.MAILER,
     to: email,
     subject: "QR Code for Badge",
-    text: "Please find the QR code attached.",
+    text: message,
     attachments: [
       {
         filename: `badge${badge._id}.png`,
@@ -190,15 +208,20 @@ async function sendBadgeEmail(badge, visitor) {
 
 async function generateQRCode(uri, filename, badgeId) {
   return new Promise((resolve, reject) => {
-    QRCode.toFile(filename, uri, { errorCorrectionLevel: "H" }, function (error) {
-      if (error) {
-        console.error(
-          `Error generating QR code for badge ${badgeId}: ${error.message}`
-        );
-        reject(error);
-      } else {
-        console.log(`QR code saved for badge ${badgeId}`);
-        resolve();
+    QRCode.toFile(
+      filename,
+      uri,
+      { errorCorrectionLevel: "H" },
+      function (error) {
+        if (error) {
+          console.error(
+            `Error generating QR code for badge ${badgeId}: ${error.message}`
+          );
+          reject(error);
+        } else {
+          console.log(`QR code saved for badge ${badgeId}`);
+          resolve();
+        }
       }
     );
   });
@@ -222,19 +245,27 @@ async function updateLog(badgeId, visitorId, res) {
   const badge = await Badge.findById(badgeId);
   console.log(badge);
   if (badge.is_active) {
-
     try {
-      await VisitorLogs.updateOne({ badge_id: badge._id }, { $set: { check_out_time: new Date() }});
-      await Badge.updateOne({ _id: badge._id }, { $set: { qr_id: null, is_active: false, is_valid: false }});
-      
+      await VisitorLogs.updateOne(
+        { badge_id: badge._id },
+        { $set: { check_out_time: new Date() } }
+      );
+      await Badge.updateOne(
+        { _id: badge._id },
+        { $set: { qr_id: null, is_active: false, is_valid: false } }
+      );
+
       return res.status(200).json({ message: "time-out" });
     } catch (error) {
       return res.status(500).json({ Error: "Failed to time-out visitor" });
     }
   } else {
     if (visitorId !== undefined) {
-      await VisitorLogs.create({ badge_id: badge._id, check_in_time: new Date() });
-      await Badge.updateOne({ _id: badge._id }, { $set: { is_active: true }});
+      await VisitorLogs.create({
+        badge_id: badge._id,
+        check_in_time: new Date(),
+      });
+      await Badge.updateOne({ _id: badge._id }, { $set: { is_active: true } });
 
       return res.status(200).json({ message: "time-in" });
     } else {
@@ -263,35 +294,51 @@ async function timeOutReminder() {
   try {
     const currentTime = new Date();
 
-    const logs = await VisitorLogs.find({ check_out_time: null })
-    const visitors = await Promise.all(logs.map(async (log) => {
-      const badge = await Badge.findOne({ _id: log.badge_id, is_active: true, is_valid: true });
+    const logs = await VisitorLogs.find({ check_out_time: null });
+    const visitors = await Promise.all(
+      logs.map(async (log) => {
+        const badge = await Badge.findOne({
+          _id: log.badge_id,
+          is_active: true,
+          is_valid: true,
+        });
 
-      if (badge) {
-        const [visitor, companion] = await Promise.all([
-          Visitor.findOne({ _id: badge.visitor_id, expected_time_out: { $gte: currentTime } }),
-          Visitor.findOne({ 'companion_details._id': badge.visitor_id })
-        ]);
-      
-        if (visitor) {
-          return visitor;
+        if (badge) {
+          const [visitor, companion] = await Promise.all([
+            Visitor.findOne({
+              _id: badge.visitor_id,
+              expected_time_out: { $gte: currentTime },
+            }),
+            Visitor.findOne({ "companion_details._id": badge.visitor_id }),
+          ]);
+
+          if (visitor) {
+            return visitor;
+          }
+
+          if (companion) {
+            return companion.companion_details;
+          }
         }
+      })
+    );
 
-        if (companion) {
-          return companion.companion_details;
-        }
-      }
-      
-    }));
-
-    const validVisitors = visitors.filter(visitor => visitor !== undefined);
+    const validVisitors = visitors.filter((visitor) => visitor !== undefined);
 
     for (const visitor of validVisitors) {
-      await createNotification(visitor, 'time-out');
+      await createNotification(visitor, "time-out");
     }
   } catch (error) {
     console.error("Error in timeOutReminder:", error);
   }
+}
+
+function isThirtyMinutesBefore(appointmentDate, currentTime) {
+  const thirtyMinutesInMilliseconds = 30 * 60 * 1000; // 30 minutes in milliseconds
+  return (
+    currentTime.getTime() - appointmentDate.getTime() ===
+    thirtyMinutesInMilliseconds
+  );
 }
 
 async function timeInReminder() {
@@ -299,24 +346,22 @@ async function timeInReminder() {
     const currentDate = new Date();
     const visitors = await Visitor.find();
 
-    await Promise.all(visitors.map(async (visitor) => {
-      const expectedCheckInTime = moment(visitor.expected_time_in).tz('Asia/Manila').toDate();
-      const notificationTime = new Date(expectedCheckInTime);
-      notificationTime.setUTCHours(notificationTime.getUTCHours() - 1);
-      
-      if (currentDate >= notificationTime && currentDate < expectedCheckInTime) {
-        const mailOptions = {
-          from: process.env.MAILER,
-          to: visitor.visitor_details.email,
-          subject: "Appointment Reminder",
-          text: "Appointment reminder message.",
-        };
+    await Promise.all(
+      visitors.map(async (visitor) => {
+        if (isThirtyMinutesBefore(visitor.expected_time_in, currentDate)) {
+          const mailOptions = {
+            from: process.env.MAILER,
+            to: visitor.visitor_details.email,
+            subject: "Appointment Reminder",
+            text: "Appointment reminder message.",
+          };
 
-        await sendEmail(mailOptions);
+          await sendEmail(mailOptions);
 
-        await createNotification(visitor, 'time-in');
-      }
-    }));
+          await createNotification(visitor, "time-in");
+        }
+      })
+    );
   } catch (error) {
     console.error("Error in check-in reminder", error);
   }
@@ -325,34 +370,50 @@ async function timeInReminder() {
 async function createNotification(visitor, type) {
   let visitorDB;
   if (Array.isArray(visitor)) {
-    visitorDB = await Visitor.findOne({ 'companion_details._id': visitor[0]._id })
-  } 
-    const notificationContent = {
-      visitor_name: visitor.visitor_details? visitor.visitor_details.name.first_name : visitor[0].name.first_name,
-      host_name: (visitor.purpose?.who[0] || visitorDB?.purpose?.who[0] || ''),
-      date: visitor.purpose?.when || visitorDB?.when || '',
-      time: visitor.expected_time_in || visitorDB?.expected_time_in || '',
-      location: visitor.purpose?.where[0] || visitorDB?.purpose?.where[0] || '',
-      purpose: visitor.purpose?.what?.join(', ') ||  visitorDB.purpose?.what?.join(', ')
-    };
-  
-    await Notification.create({
-      type: type,
-      recipient: visitor.visitor_details?._id || visitor[0]._id,
-      content: notificationContent
+    visitorDB = await Visitor.findOne({
+      "companion_details._id": visitor[0]._id,
     });
-    console.log("Notification pushed");
+  }
+  const notificationContent = {
+    visitor_name: visitor.visitor_details
+      ? `${visitor.visitor_details.name.last_name}, ${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name}`
+      : `${visitor[0].name.last_name}, ${visitor[0].name.first_name} ${visitor[0].name.middle_name}`,
+    host_name:
+      visitor.purpose?.who.join(", ") ||
+      visitorDB?.purpose?.who.join(", ") ||
+      "",
+    date: visitor.purpose?.when || visitorDB?.when || "",
+    time: visitor.expected_time_in || visitorDB?.expected_time_in || "",
+    location:
+      visitor.purpose?.where.join(", ") ||
+      visitorDB?.purpose?.where.join(", ") ||
+      "",
+    purpose:
+      visitor.purpose?.what?.join(", ") || visitorDB.purpose?.what?.join(", "),
+    visitor_type: visitor.visitor_type,
+  };
+
+  await Notification.create({
+    type: type,
+    recipient: visitor.visitor_details?._id || visitor[0]._id,
+    content: notificationContent,
+  });
+  console.log("Notification pushed");
 }
 
 // change to */5 * * * * * for testing every 5 mins
 // 0 * * * * to every hour
-cron.schedule('0 * * * *', async () => {
-  await timeOutReminder();
-  await timeInReminder();
-}, {
-  scheduled: true,
-  timezone: "Asia/Manila"
-});
+cron.schedule(
+  "0 * * * *",
+  async () => {
+    await timeOutReminder();
+    await timeInReminder();
+  },
+  {
+    scheduled: true,
+    timezone: "Asia/Manila",
+  }
+);
 
 module.exports = {
   hashPassword,
@@ -364,5 +425,6 @@ module.exports = {
   generateVisitorQRCode,
   generateVisitorQRAndEmail,
   updateLog,
-  uploadFileToGCS
+  uploadFileToGCS,
+  sendEmail,
 };

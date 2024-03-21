@@ -13,28 +13,6 @@ import { VisitorStatus, VisitorType } from "../../utils/enums";
 // Styles
 import "./styles.scss";
 
-const now = () => {
-	const now = new Date();
-	const formattedDateTime = new Intl.DateTimeFormat("en-CA", {
-		hour12: true,
-		year: "numeric",
-		month: "2-digit",
-		day: "2-digit",
-		hour: "2-digit",
-		minute: "2-digit",
-	}).format(now);
-	const removeColumn = formattedDateTime.replace(/,\s*/, " ");
-	const timePart = removeColumn.split(" ");
-	const amPm = timePart[2];
-
-	let finalDateTime = removeColumn;
-
-	if (amPm === "a.m.") finalDateTime = finalDateTime.replace("a.m.", "AM");
-	else if (amPm === "p.m.") finalDateTime = finalDateTime.replace("p.m.", "PM");
-
-	return finalDateTime;
-};
-
 export default function PreRegister() {
 	const [progress, setProgress] = useState(1);
 	const [visitorNo, setVisitorNo] = useState(1);
@@ -60,11 +38,11 @@ export default function PreRegister() {
 			time_out: "",
 		},
 		companions_details: [],
-		expected_time_in: now(),
-		expected_time_out: now(),
+		expected_time_in: new Date(),
+		expected_time_out: new Date(),
 		purpose: {
 			what: [],
-			when: now(),
+			when: new Date(),
 			where: [],
 			who: [],
 		},

@@ -1,32 +1,38 @@
+@import url("../../App.scss");
+
 .header-name {
     color: #1B3B22;
 }
 
-.menu {
-    border-radius: 10px;
+.notification-dropdown {
+    .ant-dropdown-menu-root {
+        padding: 10px 10px 15px 10px !important;
+        height: auto !important;
+        max-height: 80vh;
+        overflow: scroll;
 
-    .notif {
-        .header {
-            font-size: 13px;
+        .ant-dropdown-menu-item {
+            cursor: auto;
         }
 
-        .desc {
-            font-size: 11px;
-        }
+        .ant-dropdown-menu-item-active {
+            background-color: var(--theme-primary) !important;
 
-        .time {
-            font-size: 10px;
+            .unread,
+            .time,
+            .notice,
+            .not-found {
+                color: white;
+
+            }
         }
     }
+}
 
-    .notif:hover {
-        .notice {
-            color: red;
-        }
-
-        .time {
-            color: white;
-        }
+.account-dropdown {
+    .ant-dropdown-menu-item-active {
+        background-color: var(--theme-primary) !important;
+        color: white !important;
     }
 }
 

@@ -11,7 +11,7 @@ import { VisitorLogDetails } from "../../../utils/interfaces";
 import type { RootState } from "../../../store";
 
 // Utils
-import { formatDate } from "../../../utils";
+import { formatDateString } from "../../../utils";
 
 //Styles
 import "../../../utils/variables.scss";
@@ -49,7 +49,7 @@ export default function CompanionLogsTable({
 					dataIndex: "when",
 					key: "when",
 					render(value, record, index) {
-						return formatDate(record.purpose?.when);
+						return formatDateString(record.purpose!.when);
 					},
 				},
 				{
@@ -93,10 +93,10 @@ export default function CompanionLogsTable({
 				return dateSearch.length === 0
 					? log
 					: filterWhen
-					? new Date(log.purpose!.when) >= startDate &&
-					  new Date(log.purpose!.when) <= endDate
-					: new Date(log.timeIn) >= startDate &&
-					  new Date(log.timeOut) <= endDate;
+						? new Date(log.purpose!.when) >= startDate &&
+							new Date(log.purpose!.when) <= endDate
+						: new Date(log.timeIn) >= startDate &&
+							new Date(log.timeOut) <= endDate;
 			})}
 			pagination={{ pageSize: 5 }}
 		/>
