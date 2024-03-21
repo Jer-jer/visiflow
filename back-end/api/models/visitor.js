@@ -36,7 +36,7 @@ const VisitorDetails = new Schema({
 
 const Purpose = new Schema({
   what: [{ type: String, required: true }],
-  when: { type: String, required: true },
+  when: { type: Date, required: true },
   where: [{ type: String, required: true }],
   who: [{ type: String, required: true }],
 });

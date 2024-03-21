@@ -116,11 +116,7 @@ function LoggedIn({
 				</Sidebar>
 				<div className="h-fit min-w-0 flex-1">
 					<div>
-						<Header
-							setIsLoggedIn={setIsLoggedIn}
-							isAdmin={isAdmin}
-							setIsAdmin={setIsAdmin}
-						/>
+						<Header setIsLoggedIn={setIsLoggedIn} setIsAdmin={setIsAdmin} />
 					</div>
 					{/* Main content Here */}
 					<div id="parentDiv" className="children" ref={ref}>

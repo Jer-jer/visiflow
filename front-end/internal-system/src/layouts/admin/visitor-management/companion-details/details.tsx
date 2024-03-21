@@ -32,7 +32,7 @@ import Alert from "../../../../components/alert";
 import AxiosInstance from "../../../../lib/axios";
 
 //Utils
-import { formatDate } from "../../../../utils";
+import { formatDateObjToString } from "../../../../utils";
 
 //Assets
 import { ExcelDownload } from "../../../../assets/svg";
@@ -579,10 +579,10 @@ export default function CompanionDetails({
 											defaultVal={{
 												from:
 													data[mainVisitorIndex].expected_time_in ||
-													formatDate(new Date()),
+													formatDateObjToString(new Date()),
 												to:
 													data[mainVisitorIndex].expected_time_out ||
-													formatDate(new Date()),
+													formatDateObjToString(new Date()),
 											}}
 											onRangeChange={onRangeChange}
 											visitorMngmnt

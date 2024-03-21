@@ -3,9 +3,9 @@ import { ZodType, z } from "zod";
 export type StepOneData = {
 	visitorNo: number;
 	plateNum?: string | null;
-	checkInOut: [string, string];
+	checkInOut: [Date, Date];
 	what: string[];
-	when: string;
+	when: Date;
 	where: string[];
 	who: string[];
 	termsConditions: boolean;
@@ -18,9 +18,11 @@ export const StepOneZod: ZodType<StepOneData> = z.object({
 		})
 		.min(1, { message: "Must be 1 or more visitor" }),
 	plateNum: z.string().nullable().optional(),
-	checkInOut: z.custom<[string, string]>().refine((val) => val[0] < val[1], {
-		message: "Check in must be before the Check out date.",
-	}),
+	checkInOut: z
+		.custom<[Date, Date]>()
+		.refine((val) => val[0].getTime() < val[1].getTime(), {
+			message: "Check in must be before the Check out date.",
+		}),
 	what: z
 		.string({
 			required_error: '"What" is required.',
@@ -30,10 +32,11 @@ export const StepOneZod: ZodType<StepOneData> = z.object({
 			message: '"What" is required.',
 		}),
 	when: z
-		.string({
-			required_error: '"When" is required.',
+		.date({
+			required_error: "Please select a date and time",
+			invalid_type_error: "That's not a date.",
 		})
-		.min(1, '"When" is required.'),
+		.min(new Date(), { message: "Choosen date is in the past." }),
 	where: z
 		.string({
 			required_error: '"Where" is required.',
