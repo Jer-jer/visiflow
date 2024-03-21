@@ -223,7 +223,7 @@ async function generateQRCode(uri, filename, badgeId) {
           resolve();
         }
       }
-    });
+    );
   });
 }
 
@@ -247,17 +247,26 @@ async function updateLog(badgeId, _id, type, res) {
 
   if (badge.is_active) {
     try {
-      await VisitorLogs.updateOne({ badge_id: badge._id }, { $set: { check_out_time: new Date() }});
-      await Badge.updateOne({ _id: badge._id }, { $set: { qr_id: null, is_active: false, is_valid: false }});
-      
+      await VisitorLogs.updateOne(
+        { badge_id: badge._id },
+        { $set: { check_out_time: new Date() } }
+      );
+      await Badge.updateOne(
+        { _id: badge._id },
+        { $set: { qr_id: null, is_active: false, is_valid: false } }
+      );
+
       return res.status(200).json({ message: "time-out" });
     } catch (error) {
       return res.status(500).json({ Error: "Failed to time-out visitor" });
     }
   } else {
-    if (type === 'pre-reg') {
-      await VisitorLogs.create({ badge_id: badge._id, check_in_time: new Date() });
-      await Badge.updateOne({ _id: badge._id }, { $set: { is_active: true }});
+    if (type === "pre-reg") {
+      await VisitorLogs.create({
+        badge_id: badge._id,
+        check_in_time: new Date(),
+      });
+      await Badge.updateOne({ _id: badge._id }, { $set: { is_active: true } });
 
       return res.status(200).json({ message: "time-in" });
     } else {
