@@ -1,5 +1,5 @@
-const Badge = require('../models/badge');
-const { generateVisitorQRCode, updateLog } = require('../utils/helper');
+const Badge = require("../models/badge");
+const { generateVisitorQRCode, updateLog } = require("../utils/helper");
 
 const badgeQty = 5;
 
@@ -38,44 +38,35 @@ exports.generateBadge = async (req, res) => {
 
 //still hard coded for testing purpose only
 exports.newBadge = async (req, res) => {
-    const badge = new Badge({
-        visitor_id: '65f7cb8e66b7fa6fc55fc85d',
-        qr_id: '0',
-        is_active: false
-    });
-    await badge.save();
-    res.send(200);
-}
+  const badge = new Badge({
+    visitor_id: "65f7cb8e66b7fa6fc55fc85d",
+    qr_id: "0",
+    is_active: false,
+  });
+  await badge.save();
+  res.send(200);
+};
 
 exports.checkBadge = async (req, res) => {
-    const { qr_id, visitor_id } = req.query;
-    let badge;
-    let type;
+  const { qr_id, visitor_id } = req.query;
+  let badge;
+  let type;
 
-    if (qr_id !== undefined) {
-      badge = await Badge.findOne({qr_id: qr_id});
-<<<<<<< HEAD
-      type = 'walk-in';
-=======
->>>>>>> master
-    } else {
-      badge = await Badge.findOne({ visitor_id: visitor_id });
-      type = 'pre-reg';
-    }
+  if (qr_id !== undefined) {
+    badge = await Badge.findOne({ qr_id: qr_id });
+    type = "walk-in";
+  } else {
+    badge = await Badge.findOne({ visitor_id: visitor_id });
+    type = "pre-reg";
+  }
 
-   if(!badge) {
-    return res.status(400).json({ message: `No visitor assigned to badge`});
-   }
+  if (!badge) {
+    return res.status(400).json({ message: `No visitor assigned to badge` });
+  }
 
-   if(!badge.is_valid) {
-    return res.status(400).json({ message: `Invalid visitor badge`});
-   }
-<<<<<<< HEAD
-   
-   const _id = (visitor_id !== undefined) ? visitor_id : qr_id;
-   updateLog(badge._id, _id, type, res); 
-=======
+  if (!badge.is_valid) {
+    return res.status(400).json({ message: `Invalid visitor badge` });
+  }
 
-   updateLog(badge._id, visitor_id, res);
->>>>>>> master
-}
+  updateLog(badge._id, visitor_id, res);
+};
