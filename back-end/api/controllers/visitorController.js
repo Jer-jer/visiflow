@@ -10,6 +10,7 @@ const {
 } = require("../utils/helper");
 const { Buffer } = require("node:buffer");
 const Notification = require("../models/notification");
+const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 
 exports.getVisitors = async (req, res) => {
