@@ -26,7 +26,7 @@ import DateTimePicker from "../../../../components/datetime-picker";
 import { addLog } from "../../../../states/logs/companions";
 
 //Utils
-import { formatDate } from "../../../../utils";
+import { formatDateString } from "../../../../utils";
 
 //Styles
 import "./styles.scss";
@@ -172,7 +172,7 @@ export default function CompanionLogs({
 	const companionLogsData = companionLogs.map((logs) => {
 		return {
 			what: logs.purpose?.what.join(", "),
-			when: formatDate(logs.purpose?.when),
+			when: formatDateString(logs.purpose!.when),
 			where: logs.purpose?.where.join(", "),
 			who: logs.purpose?.who.join(", "),
 			timeIn: logs.timeIn,
