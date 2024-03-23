@@ -13,3 +13,11 @@ export enum UserRole {
 	Admin = "admin",
 	Security = "security",
 }
+
+export enum NotificationType {
+	TimeIn = "time-in",
+	TimeOut = "time-out",
+	Confirmation = "confirmation",
+	Pending = "pending",
+	Declined = "declined",
+}

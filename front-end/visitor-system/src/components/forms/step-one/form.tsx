@@ -29,7 +29,7 @@ import { CheckboxChangeEvent } from "antd/es/checkbox";
 import type { DatePickerProps } from "antd";
 
 // Utils
-import { formatDate } from "../../../utils";
+import { formatDateObjToString } from "../../../utils";
 
 // Styles
 import "./styles.scss";
@@ -72,8 +72,8 @@ function StepOneForm({
 
 	const addVisitor = (value: any) => {
 		setVisitorNo(value);
-		setValue("visitorNo", visitorNo);
-		if (value > visitors.companions_details!.length) {
+		setValue("visitorNo", value);
+		if (value > visitorNo) {
 			setVisitors((prevVisitors) => ({
 				...prevVisitors,
 				companions_details: [
@@ -99,7 +99,7 @@ function StepOneForm({
 					},
 				],
 			}));
-		} else if (value < visitors.companions_details!.length) {
+		} else if (value < visitorNo) {
 			const indexToRemove = visitors.companions_details!.length - 1;
 			setVisitors((prevVisitors) => ({
 				...prevVisitors,
@@ -119,7 +119,7 @@ function StepOneForm({
 			expected_time_in: new Date(dateString[0]),
 			expected_time_out: new Date(dateString[1]),
 		});
-		setValue("checkInOut", dateString);
+		setValue("checkInOut", [new Date(dateString[0]), new Date(dateString[1])]);
 	};
 
 	const onChange = (e: CheckboxChangeEvent) => {
@@ -128,7 +128,10 @@ function StepOneForm({
 		setValue("termsConditions", e.target.checked);
 	};
 
-	const handlePurpose = (purpose: string, value: string | string[]) => {
+	const handlePurpose = (
+		purpose: string,
+		value: string | string[] | Date[] | Date,
+	) => {
 		switch (purpose) {
 			case "what":
 				setVisitors((prevVisitors) => ({
@@ -145,10 +148,10 @@ function StepOneForm({
 					...prevVisitors,
 					purpose: {
 						...prevVisitors.purpose,
-						when: value as string,
+						when: value as Date,
 					},
 				}));
-				setValue("when", value as string);
+				setValue("when", value as Date);
 				break;
 			case "where":
 				setVisitors((prevVisitors) => ({
@@ -176,7 +179,7 @@ function StepOneForm({
 	};
 
 	const onChangeDate: DatePickerProps["onChange"] = (date, dateString) =>
-		handlePurpose("when", dateString);
+		handlePurpose("when", new Date(dateString as string));
 
 	return (
 		<>
@@ -241,12 +244,21 @@ function StepOneForm({
 							className="vm-placeholder w-[86%] !border-[#d9d9d9] hover:!border-primary-500 focus:!border-primary-500 md:w-auto"
 							size="middle"
 							defaultValue={[
-								dayjs(formatDate(visitors.expected_time_in), `YYYY-MM-DD ${timeFormat}`),
-								dayjs(formatDate(visitors.expected_time_out), `YYYY-MM-DD ${timeFormat}`),
+								dayjs(
+									formatDateObjToString(visitors.expected_time_in),
+									`YYYY-MM-DD ${timeFormat}`,
+								),
+								dayjs(
+									formatDateObjToString(visitors.expected_time_out),
+									`YYYY-MM-DD ${timeFormat}`,
+								),
 							]}
+							minDate={dayjs(
+								formatDateObjToString(visitors.expected_time_in),
+								`YYYY-MM-DD ${timeFormat}`,
+							)}
 							onChange={onChangeRange}
 							placeholder={["From", "To"]}
-							changeOnBlur={false}
 							format={`YYYY-MM-DD ${timeFormat}`}
 							showTime={{ format: timeFormat }}
 							style={{
@@ -276,9 +288,7 @@ function StepOneForm({
 							allowClear
 							placeholder="What"
 							listHeight={128}
-							defaultValue={
-								visitors.purpose.what ? undefined : visitors.purpose.what
-							}
+							defaultValue={visitors.purpose.what}
 							onChange={(value: string[]) => handlePurpose("what", value)}
 							options={[
 								{
@@ -307,10 +317,8 @@ function StepOneForm({
 							mode="multiple"
 							allowClear
 							placeholder="Where"
-							defaultValue={
-								visitors.purpose.what ? undefined : visitors.purpose.what
-							}
-							onChange={(value: string) => handlePurpose("where", value)}
+							defaultValue={visitors.purpose.where}
+							onChange={(value: string[]) => handlePurpose("where", value)}
 							options={[
 								{
 									value: "gym",
@@ -338,9 +346,16 @@ function StepOneForm({
 							showTime
 							className="vm-placeholder hover:bg-[#DFEAEF]!border-[#d9d9d9] h-[52px] border-none bg-[#e0ebf0] hover:!border-primary-500 hover:bg-[#DFEAEF] focus:!border-primary-500"
 							placeholder="When"
-							format={`YYYY-MM-DD ${timeFormat}`}
-							defaultValue={dayjs(visitors.purpose.when, "YYYY-MM-DD hh:mm A")}
+							defaultValue={dayjs(
+								formatDateObjToString(visitors.purpose.when),
+								`YYYY-MM-DD ${timeFormat}`,
+							)}
+							minDate={dayjs(
+								formatDateObjToString(visitors.purpose.when),
+								`YYYY-MM-DD ${timeFormat}`,
+							)}
 							onChange={onChangeDate}
+							format={`YYYY-MM-DD ${timeFormat}`}
 						/>
 						{errors?.when && (
 							<p className="mt-1 text-sm text-red-500">{errors.when.message}</p>
@@ -354,10 +369,8 @@ function StepOneForm({
 							mode="multiple"
 							allowClear
 							placeholder="Who"
-							defaultValue={
-								visitors.purpose.what ? undefined : visitors.purpose.what
-							}
-							onChange={(value: string) => handlePurpose("who", value)}
+							defaultValue={visitors.purpose.who}
+							onChange={(value: string[]) => handlePurpose("who", value)}
 							options={[
 								{
 									value: "john_doe",

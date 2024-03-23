@@ -1,32 +1,41 @@
 require("dotenv").config();
 
+// Imports
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const QRCode = require("qrcode");
 const nodemailer = require("nodemailer");
-const cron = require('node-cron');
-const moment = require('moment-timezone');
 
+// Models
 const RefreshToken = require("../models/refreshToken");
 const Badge = require("../models/badge");
 const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
-const Notification = require('../models/notification');
+const Notification = require("../models/notification");
 
+// Google Cloud Storage
 const { Storage } = require("@google-cloud/storage");
 
-// Lazy load storage
+// Constants
+const ACCESS_TOKEN_EXPIRATION = "20m";
+const REFRESH_TOKEN_EXPIRATION = "7d";
+const bucketName = "visiflow";
+
+// Lazy-loaded storage
 let storage;
+
+// Initialize Google Cloud Storage
 function getStorage() {
-    if (!storage) {
-        storage = new Storage({
-            keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-            projectId: process.env.GOOGLE_CLOUD_PROJECT,
-        });
-    }
-    return storage;
+  if (!storage) {
+    storage = new Storage({
+      keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+      projectId: process.env.GOOGLE_CLOUD_PROJECT,
+    });
+  }
+  return storage;
 }
 
+// Nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: "Gmail",
   auth: {
@@ -34,11 +43,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.MAILER_PASSWORD,
   },
 });
-
-// Constants
-const ACCESS_TOKEN_EXPIRATION = "20m";
-const REFRESH_TOKEN_EXPIRATION = "7d";
-const bucketName = "visiflow";
 
 // Environtment Variables
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
@@ -97,53 +101,69 @@ async function verifyRefreshToken(token) {
 async function generateVisitorQRCode(badgeId) {
   return new Promise((resolve, reject) => {
     const filename = `api/resource/badge/badge${badgeId}.png`;
-    const uri = `http://192.168.1.4:5000/badge/checkBadge?qr_id=${badgeId}`;
+    const uri = `http://192.168.1.122:5000/badge/checkBadge?qr_id=${badgeId}`;
 
-    QRCode.toFile(filename, uri, { errorCorrectionLevel: "H" }, function (error) {
-      if (error) {
-        console.error(
-          `Error generating QR code for badge ${badgeId}: ${error.message}`
-        );
-        reject(error);
-      } else {
-        console.log(`QR code saved for badge ${badgeId}`);
-        resolve();
+    QRCode.toFile(
+      filename,
+      uri,
+      { errorCorrectionLevel: "H" },
+      function (error) {
+        if (error) {
+          console.error(
+            `Error generating QR code for badge ${badgeId}: ${error.message}`
+          );
+          reject(error);
+        } else {
+          console.log(`QR code saved for badge ${badgeId}`);
+          resolve();
+        }
       }
-    });
+    );
   });
 }
 
 // used in pre-registered visitor
-async function generateVisitorQRAndEmail(visitorId) {
+async function generateVisitorQRAndEmail(visitorId, message) {
   try {
     const visitor = await Visitor.findById(visitorId);
     if (!visitor) {
       throw new Error("Visitor not found");
-    } 
+    }
 
     const badges = [];
 
     // Generate QR Code for visitor
-    const visitorBadge = await generateQRAndEmail(visitor);
+    const visitorBadge = await generateQRAndEmail(visitor, message);
     badges.push(visitorBadge);
 
     // Generate QR Codes for companions
     if (visitor.companion_details.length > 0) {
-      const companionBadges = await Promise.all(visitor.companion_details.map(companion => generateQRAndEmail(companion)));
+      const companionBadges = await Promise.all(
+        visitor.companion_details.map((companion) =>
+          generateQRAndEmail(companion, message)
+        )
+      );
       badges.push(...companionBadges);
     }
 
-    return { success: true, message: "QR code and email sent successfully", badges };
+    return {
+      success: true,
+      message: "QR code and email sent successfully",
+      badges,
+    };
   } catch (error) {
     console.error("Error generating QR code and sending email:", error);
-    return { success: false, message: "Failed to generate QR code and send emails" };
+    return {
+      success: false,
+      message: "Failed to generate QR code and send emails",
+    };
   }
 }
 
-async function generateQRAndEmail(visitor) {
+async function generateQRAndEmail(visitor, message) {
   try {
     const badge = await generateBadge(visitor);
-    await sendBadgeEmail(badge, visitor);
+    await sendBadgeEmail(badge, visitor, message);
     console.log(`QR code and email sent for badge ${badge._id}`);
     return { visitorId: visitor._id, badgeId: badge._id };
   } catch (error) {
@@ -162,21 +182,24 @@ async function generateBadge(visitor) {
 
   await badge.save();
 
-  const uri = `http://192.168.1.4:5000/badge/checkBadge?visitor_id=${visitor._id}`;
+  const uri = `http://192.168.1.122:5000/badge/checkBadge?visitor_id=${visitor._id}`;
   const filename = `api/resource/badge/badge${badge._id}.png`;
   await generateQRCode(uri, filename, badge._id);
 
   return badge;
 }
 
-async function sendBadgeEmail(badge, visitor) {
-  const email = visitor.visitor_details && visitor.visitor_details.email ? visitor.visitor_details.email : visitor.email;
+async function sendBadgeEmail(badge, visitor, message) {
+  const email =
+    visitor.visitor_details && visitor.visitor_details.email
+      ? visitor.visitor_details.email
+      : visitor.email;
 
   const mailOptions = {
     from: process.env.MAILER,
     to: email,
     subject: "QR Code for Badge",
-    text: "Please find the QR code attached.",
+    text: message,
     attachments: [
       {
         filename: `badge${badge._id}.png`,
@@ -190,17 +213,17 @@ async function sendBadgeEmail(badge, visitor) {
 
 async function generateQRCode(uri, filename, badgeId) {
   return new Promise((resolve, reject) => {
-    QRCode.toFile(filename, uri, { errorCorrectionLevel: "H" }, function (error) {
-      if (error) {
-        console.error(
-          `Error generating QR code for badge ${badgeId}: ${error.message}`
-        );
-        reject(error);
-      } else {
-        console.log(`QR code saved for badge ${badgeId}`);
-        resolve();
-      }
-    });
+      QRCode.toFile(filename, uri, { errorCorrectionLevel: "H" }, function (error) {
+          if (error) {
+              console.error(
+                  `Error generating QR code for badge ${badgeId}: ${error.message}`
+              );
+              reject(error);
+          } else {
+              console.log(`QR code saved for badge ${badgeId}`);
+              resolve();
+          }
+      });
   });
 }
 
@@ -224,9 +247,15 @@ async function updateLog(badgeId, _id, type, res) {
 
   if (badge.is_active) {
     try {
-      await VisitorLogs.updateOne({ badge_id: badge._id }, { $set: { check_out_time: new Date() }});
-      await Badge.updateOne({ _id: badge._id }, { $set: { qr_id: null, is_active: false, is_valid: false }});
-      
+      await VisitorLogs.updateOne(
+        { badge_id: badge._id },
+        { $set: { check_out_time: new Date() } }
+      );
+      await Badge.updateOne(
+        { _id: badge._id },
+        { $set: { qr_id: null, is_active: false, is_valid: false } }
+      );
+
       return res.status(200).json({ message: "time-out" });
     } catch (error) {
       return res.status(500).json({ Error: "Failed to time-out visitor" });
@@ -239,8 +268,9 @@ async function updateLog(badgeId, _id, type, res) {
       return res.status(200).json({ message: "time-in" });
     } else {
       //redirect to registration page
-      res.redirect(`http://192.168.55.102:3000/?qr_id=${qr_id}`);
-      return res.status(200).json({ message: "redirecting to register page" }); //temporary just to check
+      const link = `http://localhost:3000/visitor-form/?qr_id=${_id}`
+      res.redirect(link);
+      return res.status(200).json({ id: 0, message: "redirecting to register page" }); //temporary just to check
     }
   }
 }
@@ -259,62 +289,75 @@ function uploadFileToGCS(bufferData, fileName) {
   return publicUrl;
 }
 
-async function timeOutReminder() {
+function isThirtyMinutesBefore(appointmentDate, currentTime) {
+  const thirtyMinutesInMilliseconds = 30 * 60 * 1000; // 30 minutes in milliseconds
+  return (
+    currentTime.getTime() - appointmentDate.getTime() ===
+    thirtyMinutesInMilliseconds
+  );
+}
+
+async function timeOutReminder(io) {
   try {
     const currentTime = new Date();
 
-    const logs = await VisitorLogs.find({ check_out_time: null })
-    const visitors = await Promise.all(logs.map(async (log) => {
-      const badge = await Badge.findOne({ _id: log.badge_id, is_active: true, is_valid: true });
+    const logs = await VisitorLogs.find({ check_out_time: null });
+    const visitors = await Promise.all(
+      logs.map(async (log) => {
+        const badge = await Badge.findOne({
+          _id: log.badge_id,
+          is_active: true,
+          is_valid: true,
+        });
 
-      if (badge) {
-        const [visitor, companion] = await Promise.all([
-          Visitor.findOne({ _id: badge.visitor_id, expected_time_out: { $gte: currentTime } }),
-          Visitor.findOne({ 'companion_details._id': badge.visitor_id })
-        ]);
-      
-        if (visitor) {
-          return visitor;
+        if (badge) {
+          const [visitor, companion] = await Promise.all([
+            Visitor.findOne({
+              _id: badge.visitor_id,
+              expected_time_out: { $gte: currentTime },
+            }),
+            Visitor.findOne({ "companion_details._id": badge.visitor_id }),
+          ]);
+
+          if (visitor) {
+            return visitor;
+          }
+
+          if (companion) {
+            return companion.companion_details;
+          }
         }
+      })
+    );
 
-        if (companion) {
-          return companion.companion_details;
-        }
-      }
-      
-    }));
-
-    const validVisitors = visitors.filter(visitor => visitor !== undefined);
+    const validVisitors = visitors.filter((visitor) => visitor !== undefined);
 
     for (const visitor of validVisitors) {
-      await createNotification(visitor, 'time-out');
+      await createNotification(visitor, 'time-out', io);
     }
   } catch (error) {
     console.error("Error in timeOutReminder:", error);
   }
 }
 
-async function timeInReminder() {
+async function timeInReminder(io) {
   try {
     const currentDate = new Date();
     const visitors = await Visitor.find();
 
-    await Promise.all(visitors.map(async (visitor) => {
-      const expectedCheckInTime = moment(visitor.expected_time_in).tz('Asia/Manila').toDate();
-      const notificationTime = new Date(expectedCheckInTime);
-      notificationTime.setUTCHours(notificationTime.getUTCHours() - 1);
-      
-      if (currentDate >= notificationTime && currentDate < expectedCheckInTime) {
-        const mailOptions = {
-          from: process.env.MAILER,
-          to: visitor.visitor_details.email,
-          subject: "Appointment Reminder",
-          text: "Appointment reminder message.",
-        };
+    await Promise.all(
+      visitors.map(async (visitor) => {
+        if (isThirtyMinutesBefore(visitor.expected_time_in, currentDate)) {
+          const mailOptions = {
+            from: process.env.MAILER,
+            to: visitor.visitor_details.email,
+            subject: "Appointment Reminder",
+            text: "Appointment reminder message.",
+          };
 
-        await sendEmail(mailOptions);
+          await sendEmail(mailOptions);
 
-        await createNotification(visitor, 'time-in');
+        await createNotification(visitor, 'time-in', io);
       }
     }));
   } catch (error) {
@@ -322,37 +365,46 @@ async function timeInReminder() {
   }
 }
 
-async function createNotification(visitor, type) {
+async function createNotification(visitor, type, io) {
   let visitorDB;
   if (Array.isArray(visitor)) {
-    visitorDB = await Visitor.findOne({ 'companion_details._id': visitor[0]._id })
-  } 
-    const notificationContent = {
-      visitor_name: visitor.visitor_details? visitor.visitor_details.name.first_name : visitor[0].name.first_name,
-      host_name: (visitor.purpose?.who[0] || visitorDB?.purpose?.who[0] || ''),
-      date: visitor.purpose?.when || visitorDB?.when || '',
-      time: visitor.expected_time_in || visitorDB?.expected_time_in || '',
-      location: visitor.purpose?.where[0] || visitorDB?.purpose?.where[0] || '',
-      purpose: visitor.purpose?.what?.join(', ') ||  visitorDB.purpose?.what?.join(', ')
-    };
-  
-    await Notification.create({
+      visitorDB = await Visitor.findOne({
+          "companion_details._id": visitor[0]._id,
+      });
+  }
+
+  const visitorName = visitor.visitor_details
+      ? `${visitor.visitor_details.name.last_name}, ${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name}`
+      : `${visitor[0].name.last_name}, ${visitor[0].name.first_name} ${visitor[0].name.middle_name}`;
+
+  const hostName = visitor.purpose?.who.join(", ") || visitorDB?.purpose?.who.join(", ") || "";
+  const date = visitor.purpose?.when || visitorDB?.when || "";
+  const time = visitor.expected_time_in || visitorDB?.expected_time_in || "";
+  const location = visitor.purpose?.where.join(", ") || visitorDB?.purpose?.where.join(", ") || "";
+  const purpose = visitor.purpose?.what?.join(", ") || visitorDB.purpose?.what?.join(", ");
+  const visitorType = visitor.visitor_type;
+
+  const notificationContent = {
+      visitor_name: visitorName,
+      host_name: hostName,
+      date: date,
+      time: time,
+      location: location,
+      purpose: purpose,
+      visitor_type: visitorType,
+  };
+
+  await Notification.create({
       type: type,
       recipient: visitor.visitor_details?._id || visitor[0]._id,
-      content: notificationContent
-    });
-    console.log("Notification pushed");
+      content: notificationContent,
+  });
+
+  io.emit(type, notificationContent);
+
+  console.log("Notification pushed");
 }
 
-// change to */5 * * * * * for testing every 5 mins
-// 0 * * * * to every hour
-cron.schedule('0 * * * *', async () => {
-  await timeOutReminder();
-  await timeInReminder();
-}, {
-  scheduled: true,
-  timezone: "Asia/Manila"
-});
 
 module.exports = {
   hashPassword,
@@ -364,5 +416,8 @@ module.exports = {
   generateVisitorQRCode,
   generateVisitorQRAndEmail,
   updateLog,
-  uploadFileToGCS
+  uploadFileToGCS,
+  timeInReminder,
+  timeOutReminder,
+  sendEmail
 };

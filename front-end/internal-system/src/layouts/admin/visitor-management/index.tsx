@@ -160,7 +160,7 @@ export default function VisitorManagementLayout() {
 		(state: RootState) => state.visitors,
 	);
 
-	const tabs = useSelector((state: RootState) => state.visitorTabs);
+	const tabs: any = useSelector((state: RootState) => state.visitorTabs);
 
 	const dispatch = useDispatch<AppDispatch>();
 
@@ -189,9 +189,11 @@ export default function VisitorManagementLayout() {
 
 	const remove = (targetKey: TargetKey) => {
 		const targetIndex = tabs.findIndex(
-			(pane) => pane.key.toString() === targetKey,
+			(pane: any) => pane.key.toString() === targetKey,
 		);
-		const newPanes = tabs.filter((pane) => pane.key.toString() !== targetKey);
+		const newPanes = tabs.filter(
+			(pane: any) => pane.key.toString() !== targetKey,
+		);
 
 		if (newPanes.length && targetKey === activeKey.toString()) {
 			const newActiveKey =
@@ -226,7 +228,7 @@ export default function VisitorManagementLayout() {
 				<Tabs.TabPane closable={false} tab="Visitor List" key="1">
 					<VisitorList addTab={add} />
 				</Tabs.TabPane>
-				{tabs.map((tab) => (
+				{tabs.map((tab: any) => (
 					<Tabs.TabPane
 						tab="Visitor Details"
 						key={tab.key.toString()}

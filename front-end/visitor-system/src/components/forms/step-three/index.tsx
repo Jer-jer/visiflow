@@ -9,7 +9,12 @@ import { VisitorStatus, VisitorType } from "../../../utils/enums";
 import { Tabs, Divider, Button, Form, Modal } from "antd";
 
 // Utils
-import { mainOrCompanion, tabName } from "../../../utils";
+import {
+	mainOrCompanion,
+	tabName,
+	formatDateObjToString,
+	formatDateObjToISO,
+} from "../../../utils";
 
 // Assets
 import { ExclamationCircleFilled, LoadingOutlined } from "@ant-design/icons";
@@ -44,9 +49,12 @@ export default function StepThree({
 		defaultValues: {
 			visitor_details: visitors.visitor_details,
 			companion_details: visitors.companions_details,
-			expected_time_in: visitors.expected_time_in,
-			expected_time_out: visitors.expected_time_out,
-			purpose: visitors.purpose,
+			expected_time_in: `${formatDateObjToISO(visitors.expected_time_in)}Z`,
+			expected_time_out: `${formatDateObjToISO(visitors.expected_time_out)}Z`,
+			purpose: {
+				...visitors.purpose,
+				when: `${formatDateObjToISO(visitors.purpose.when)}Z`,
+			},
 			plate_num: null,
 			id_picture: visitors.id_picture,
 			status: VisitorStatus.InProgress,
@@ -105,7 +113,7 @@ export default function StepThree({
 					})
 						.then((res: any) => {
 							setLoading(false);
-							// successMessage(res.data.message);
+							successMessage("Sucessfully Pre-registered");
 						})
 						.catch((err: any) => {
 							setLoading(false);
@@ -133,7 +141,7 @@ export default function StepThree({
 			This form will close after ${secondsToGo} second.`,
 			onOk() {
 				clearInterval(timer);
-				window.location.reload();
+				// window.location.reload();
 			},
 		});
 
@@ -148,7 +156,7 @@ export default function StepThree({
 		setTimeout(() => {
 			clearInterval(timer);
 			instance.destroy();
-			window.location.reload();
+			// window.location.reload();
 		}, secondsToGo * 1000);
 	};
 
@@ -360,6 +368,37 @@ export default function StepThree({
 						};
 					})}
 				/>
+				<div className="flex flex-col gap-2">
+					<div className="flex gap-3">
+						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
+							Expected Time In:
+						</label>
+						<span className="text-lg">
+							{formatDateObjToString(visitors.expected_time_in)}
+						</span>
+					</div>
+					<div className="flex gap-3">
+						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
+							Expected Time Out:
+						</label>
+						<span className="text-lg">
+							{formatDateObjToString(visitors.expected_time_out)}
+						</span>
+					</div>
+					<div className="flex flex-col">
+						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
+							Purpose:
+						</label>
+						<div className="flex">
+							<span className="text-lg">
+								{visitors.purpose.what.join(", ")} at the following:{" "}
+								{visitors.purpose.where.join(", ")} with the following:{" "}
+								{visitors.purpose.who.join(", ")} on{" "}
+								{formatDateObjToString(visitors.purpose.when)}
+							</span>
+						</div>
+					</div>
+				</div>
 				<div className="mr-[30px] flex items-center justify-center gap-2 lg:mr-0 lg:w-[80%] lg:justify-end">
 					<div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row">
 						<Button

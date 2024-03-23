@@ -49,7 +49,7 @@ export interface VisitorDetailsProps {
 
 export interface PurposeProps {
 	what: string[];
-	when: string;
+	when: Date;
 	where: string[];
 	who: string[];
 }

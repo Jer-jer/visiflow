@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import { VisitorDetailsProps } from "./interfaces";
 
 export function formatDateTimeRange(startDate: Date, endDate: Date) {
@@ -43,27 +44,44 @@ export const mainOrCompanion = (
 export const tabName = (id: string) => {
 	return id === "1" ? "Main Visitor" : `Companion ${parseInt(id) - 1}`;
 };
+/*
+ * Convert ISO8601 date string to date object
+ * @param {string} date - ISO8601 date string
+ * @returns {string} - Formatted date string
+ */
+export const formatDateString = (date: string) => {
+	//? Convert ISO8601 date string to date object
+	const dateObject = DateTime.fromISO(date, {
+		zone: "utc",
+	});
 
-export const formatDate = (date: any) => {
-	const convertDate = typeof date === "string" ? new Date(date) : date;
+	const formattedDateTime = dateObject.toFormat("yyyy-MM-dd hh:mm:ss a");
 
-	const formattedDateTime = new Intl.DateTimeFormat("en-CA", {
-		hour12: true,
-		year: "numeric",
-		month: "2-digit",
-		day: "2-digit",
-		hour: "2-digit",
-		minute: "2-digit",
-	}).format(convertDate);
-	const removeColumn = formattedDateTime.replace(/,\s*/, " ");
-	const timePart = removeColumn.split(" ");
-	const amPm = timePart[2];
-
-	let finalDateTime = removeColumn;
-
-	if (amPm === "a.m.") finalDateTime = finalDateTime.replace("a.m.", "AM");
-	else if (amPm === "p.m.") finalDateTime = finalDateTime.replace("p.m.", "PM");
-
-	return finalDateTime;
+	return formattedDateTime;
 };
+/*
+ * Convert date object to date string
+ * @param {Date} dateObj - Date object
+ * @returns {string} - Date string
+ */
+export const formatDateObjToString = (dateObj: Date) => {
+	//? Convert date object to date string
+	const DateObject = DateTime.fromJSDate(dateObj);
 
+	const formattedDateTime = DateObject.toFormat("yyyy-MM-dd hh:mm:ss a");
+
+	return formattedDateTime;
+};
+/*
+ * Convert date object to ISO8601 date string
+ * @param dateObj
+ * @returns {string} - ISO8601 date string
+ */
+export const formatDateObjToISO = (dateObj: Date) => {
+	//? Convert date object to date string
+	const DateObject = DateTime.fromJSDate(dateObj);
+
+	const formattedDateTime = DateObject.toISO({ includeOffset: false });
+
+	return formattedDateTime;
+};

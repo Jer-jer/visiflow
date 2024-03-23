@@ -32,7 +32,7 @@ import Alert from "../../../../components/alert";
 import AxiosInstance from "../../../../lib/axios";
 
 //Utils
-import { formatDate } from "../../../../utils";
+import { formatDateObjToString } from "../../../../utils";
 
 //Assets
 import { ExcelDownload } from "../../../../assets/svg";
@@ -57,9 +57,13 @@ export default function CompanionDetails({
 
 	const { data } = useSelector((state: RootState) => state.visitors);
 	const mainVisitorIndex = data.findIndex((item) => item._id === mainVisitorId);
-	
-	const expected_in = formatDate(data[mainVisitorIndex].expected_time_in)
-	const expected_out = formatDate(data[mainVisitorIndex].expected_time_out)
+
+	const expected_in = formatDateObjToString(
+		data[mainVisitorIndex].expected_time_in,
+	);
+	const expected_out = formatDateObjToString(
+		data[mainVisitorIndex].expected_time_out,
+	);
 
 	//Alert State
 	const [alertOpen, setAlertOpen] = useState(false);
@@ -100,10 +104,7 @@ export default function CompanionDetails({
 			city: record!.address.city,
 			province: record!.address.province,
 			country: record!.address.country,
-			check_in_out: [
-				expected_in,
-				expected_out,
-			],
+			check_in_out: [expected_in, expected_out],
 		},
 	});
 
@@ -581,11 +582,13 @@ export default function CompanionDetails({
 											size="large"
 											defaultVal={{
 												from:
-												expected_in ||
-													formatDate(new Date()),
+													formatDateObjToString(
+														data[mainVisitorIndex].expected_time_out,
+													) || formatDateObjToString(new Date()),
 												to:
-												expected_out ||
-													formatDate(new Date()),
+													formatDateObjToString(
+														data[mainVisitorIndex].expected_time_out,
+													) || formatDateObjToString(new Date()),
 											}}
 											onRangeChange={onRangeChange}
 											visitorMngmnt

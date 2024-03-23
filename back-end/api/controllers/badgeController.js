@@ -1,5 +1,5 @@
-const Badge = require('../models/badge');
-const { generateVisitorQRCode, updateLog } = require('../utils/helper');
+const Badge = require("../models/badge");
+const { generateVisitorQRCode, updateLog } = require("../utils/helper");
 
 const badgeQty = 5;
 
@@ -50,26 +50,26 @@ exports.newBadge = async (req, res) => {
 }
 
 exports.checkBadge = async (req, res) => {
-    const { qr_id, visitor_id } = req.query;
-    let badge;
-    let type;
+  const { qr_id, visitor_id } = req.query;
+  let badge;
+  let type;
 
-    if (qr_id !== undefined) {
-      badge = await Badge.findOne({qr_id: qr_id});
-      type = 'walk-in';
-    } else {
-      badge = await Badge.findOne({ visitor_id: visitor_id });
-      type = 'pre-reg';
-    }
+  if (qr_id !== undefined) {
+    badge = await Badge.findOne({ qr_id: qr_id });
+    type = "walk-in";
+  } else {
+    badge = await Badge.findOne({ visitor_id: visitor_id });
+    type = "pre-reg";
+  }
 
-   if(!badge) {
-    return res.status(400).json({ message: `No visitor assigned to badge`});
-   }
+  if (!badge) {
+    return res.status(400).json({ message: `No visitor assigned to badge` });
+  }
 
-   if(!badge.is_valid) {
-    return res.status(400).json({ message: `Invalid visitor badge`});
-   }
-   
+  if (!badge.is_valid) {
+    return res.status(400).json({ message: `Invalid visitor badge` });
+  }
+
    const _id = (visitor_id !== undefined) ? visitor_id : qr_id;
    updateLog(badge._id, _id, type, res); 
 }

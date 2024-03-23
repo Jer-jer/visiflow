@@ -20,7 +20,7 @@ import VisitorLogsTable from "../../../../components/table/visitor-logs";
 import DateTimePicker from "../../../../components/datetime-picker";
 
 // Utils
-import { formatDate } from "../../../../utils/";
+import { formatDateObjToString, formatDateString } from "../../../../utils/";
 
 // Lib
 import AxiosInstance from "../../../../lib/axios";
@@ -83,7 +83,7 @@ export default function VisitorLogs({
 	const visitorLogsData = visitorLogs.map((logs) => {
 		return {
 			what: logs.purpose?.what.join(", "),
-			when: formatDate(logs.purpose?.when),
+			when: formatDateString(logs.purpose!.when),
 			where: logs.purpose?.where.join(", "),
 			who: logs.purpose?.who.join(", "),
 			timeIn: logs.timeIn,
@@ -116,8 +116,8 @@ export default function VisitorLogs({
 										addLog({
 											key: (indx + 1).toString(),
 											purpose: purpose,
-											timeIn: formatDate(log.check_in_time),
-											timeOut: formatDate(log.check_out_time),
+											timeIn: formatDateObjToString(log.check_in_time),
+											timeOut: formatDateObjToString(log.check_out_time),
 										}),
 									),
 								);
@@ -126,8 +126,8 @@ export default function VisitorLogs({
 									addLog({
 										key: "1",
 										purpose: purpose,
-										timeIn: formatDate(logs.check_in_time),
-										timeOut: formatDate(logs.check_out_time),
+										timeIn: formatDateObjToString(logs.check_in_time),
+										timeOut: formatDateObjToString(logs.check_out_time),
 									}),
 								);
 							}
@@ -137,7 +137,7 @@ export default function VisitorLogs({
 							error(
 								err?.response?.data?.error ||
 									err?.response?.data?.errors ||
-									"Something went wrong.",
+									"Something went wrong with displaying visitor logs.",
 							);
 						});
 				}

@@ -2,7 +2,12 @@
 	?	GENERALLY USED TO HANDLE DATA SENT FROM THE DATABASE AND SEND DATA TO THE DATABASE
 */
 
-import { VisitorStatus, VisitorType, UserRole } from "./enums";
+import {
+	VisitorStatus,
+	VisitorType,
+	UserRole,
+	NotificationType,
+} from "./enums";
 
 export interface PurposeProps {
 	what: string[];
@@ -41,7 +46,7 @@ export interface CompanionListProps {
 }
 
 export interface VisitorDetailsProps {
-	_id?: string;
+	_id: string;
 	name: FullNameProps;
 	phone: string;
 	email: string;
@@ -123,4 +128,23 @@ export interface EventsSchedule {
 	end: string;
 	location: string;
 	description: string;
+}
+
+export interface NotificationContent {
+	visitor_name: string;
+	host_name: string;
+	date: Date;
+	time: Date;
+	location: string;
+	purpose: string;
+	visitor_type: VisitorType;
+}
+
+export interface Notification {
+	_id: string;
+	type: NotificationType;
+	recipient: string;
+	content: NotificationContent;
+	is_read: boolean;
+	created_at: Date;
 }

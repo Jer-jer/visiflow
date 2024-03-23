@@ -12,7 +12,7 @@ import type { ColumnsType } from "antd/es/table";
 import type { RootState } from "../../../store";
 
 // Utils
-import { formatDate } from "../../../utils";
+import { formatDateString, formatDateObjToString } from "../../../utils";
 
 // Assets
 import { LoadingOutlined } from "@ant-design/icons";
@@ -90,11 +90,11 @@ export default function VisitorListTable({
 			dataIndex: "expected_time_in",
 			key: "expected_time_in",
 			sorter: (a, b) =>
-				formatDate(a.expected_time_in).localeCompare(
-					formatDate(b.expected_time_in),
+				formatDateObjToString(a.expected_time_in).localeCompare(
+					formatDateObjToString(b.expected_time_in),
 				),
 			render: (_, { expected_time_in }) => {
-				return formatDate(expected_time_in);
+				return formatDateObjToString(expected_time_in);
 			},
 			hidden: hideInOut,
 		},
@@ -103,11 +103,11 @@ export default function VisitorListTable({
 			dataIndex: "expected_time_out",
 			key: "expected_time_out",
 			sorter: (a, b) =>
-				formatDate(a.expected_time_out).localeCompare(
-					formatDate(b.expected_time_out),
+				formatDateObjToString(a.expected_time_out).localeCompare(
+					formatDateObjToString(b.expected_time_out),
 				),
 			render: (_, { expected_time_out }) => {
-				return formatDate(expected_time_out);
+				return formatDateObjToString(expected_time_out);
 			},
 			hidden: hideInOut,
 		},
@@ -117,9 +117,11 @@ export default function VisitorListTable({
 			dataIndex: "created_at",
 			key: "created_at",
 			sorter: (a, b) =>
-				formatDate(a.created_at).localeCompare(formatDate(b.created_at)),
+				formatDateObjToString(a.created_at).localeCompare(
+					formatDateObjToString(b.created_at),
+				),
 			render: (_, { created_at }) => {
-				return formatDate(created_at);
+				return formatDateObjToString(created_at);
 			},
 		},
 		{
@@ -199,16 +201,18 @@ export default function VisitorListTable({
 										.toLowerCase()
 										.includes(search.toLowerCase()) ||
 									visitor.visitor_details.phone.includes(search) ||
-									formatDate(visitor.created_at).includes(search);
+									formatDateObjToString(visitor.created_at).includes(search);
 					})
 					.filter((visitor) => {
 						return dateSearch.length === 0
 							? visitor
 							: hideInOut
-							? new Date(visitor.expected_time_in) >= startDate &&
-							  new Date(visitor.expected_time_out) <= endDate
-							: new Date(formatDate(visitor.created_at)) >= startDate &&
-							  new Date(formatDate(visitor.created_at)) <= endDate;
+								? new Date(visitor.expected_time_in) >= startDate &&
+									new Date(visitor.expected_time_out) <= endDate
+								: new Date(formatDateObjToString(visitor.created_at)) >=
+										startDate &&
+									new Date(formatDateObjToString(visitor.created_at)) <=
+										endDate;
 					})}
 				pagination={{ pageSize: 8 }}
 			/>

@@ -28,7 +28,7 @@ import type { Dayjs } from "dayjs";
 import type { DatePickerProps } from "antd";
 
 // Utils
-import { formatDate } from "../../../../utils";
+import { formatDateObjToString } from "../../../../utils";
 
 //Layouts
 import VisitorLogs from "../visitor-logs";
@@ -63,7 +63,6 @@ import "./styles.scss";
 
 // Libraries
 import AxiosInstance from "../../../../lib/axios";
-import visitor from "../../../../states/logs/visitor";
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -88,8 +87,8 @@ export default function VisitorDetails({
 	record,
 	setActiveKey,
 }: VisitorDeetsProps) {
-	const expected_in = formatDate(record.expected_time_in)
-	const expected_out = formatDate(record.expected_time_out)
+	const expected_in = formatDateObjToString(record.expected_time_in);
+	const expected_out = formatDateObjToString(record.expected_time_out);
 	//Alert State
 	const [status, setStatus] = useState(false);
 	const [alertOpen, setAlertOpen] = useState(false);
@@ -124,7 +123,7 @@ export default function VisitorDetails({
 	const width = useContext(WidthContext);
 
 	// Store Related variables
-	const tabs = useSelector((state: RootState) => state.visitorTabs);
+	const tabs: any = useSelector((state: RootState) => state.visitorTabs);
 	const dispatch = useDispatch();
 
 	// Client-side Validation related data
@@ -148,7 +147,10 @@ export default function VisitorDetails({
 			city: record.visitor_details.address.city,
 			province: record.visitor_details.address.province,
 			country: record.visitor_details.address.country,
-			check_in_out: [formatDate(record.expected_time_in), formatDate(record.expected_time_out)],
+			check_in_out: [
+				formatDateObjToString(record.expected_time_in),
+				formatDateObjToString(record.expected_time_out),
+			],
 			plate_num: record.plate_num,
 			status: record.status,
 			visitor_type: record.visitor_type,
@@ -331,12 +333,8 @@ export default function VisitorDetails({
 			country: zodData
 				? zodData.country
 				: record.visitor_details.address.country,
-			expected_time_in: zodData
-				? zodData.check_in_out[0]
-				: expected_in,
-			expected_time_out: zodData
-				? zodData.check_in_out[1]
-				: expected_out,
+			expected_time_in: zodData ? zodData.check_in_out[0] : expected_in,
+			expected_time_out: zodData ? zodData.check_in_out[1] : expected_out,
 			plate_num: zodData ? zodData.plate_num : record.plate_num,
 			status: zodData
 				? zodData.status
@@ -738,8 +736,12 @@ export default function VisitorDetails({
 											rangePickerStyling="bg-[#e0ebf0] hover:!bg-[#e0ebf0] border-none w-[inherit] focus-within:!bg-[#e0ebf0] focus:!bg-[#e0ebf0]"
 											size="large"
 											defaultVal={{
-												from: expected_in || formatDate(new Date()),
-												to: expected_out || formatDate(new Date()),
+												from:
+													formatDateObjToString(record.expected_time_in) ||
+													formatDateObjToString(new Date()),
+												to:
+													formatDateObjToString(record.expected_time_out) ||
+													formatDateObjToString(new Date()),
 											}}
 											onRangeChange={onRangeChange}
 											visitorMngmnt

@@ -24,7 +24,7 @@ import { AppDispatch, RootState } from "../../../store";
 import { addTab, removeTab } from "../../../states/users/tab";
 
 //Utils
-import { formatDate } from "../../../utils";
+import { formatDateObjToString } from "../../../utils";
 
 //Libs
 import AxiosInstance from "../../../lib/axios";
@@ -70,7 +70,7 @@ const UserList = ({ loading, users, addTab, createUser }: UserListProps) => {
 			email: user.email,
 			phone: user.phone,
 			role: user.role,
-			date_created: formatDate(user.created_at),
+			date_created: formatDateObjToString(user.created_at),
 		};
 	});
 
