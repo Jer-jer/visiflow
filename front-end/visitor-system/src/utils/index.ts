@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import { VisitorDetailsProps } from "./interfaces";
 
 export function formatDateTimeRange(startDate: Date, endDate: Date) {
@@ -42,4 +43,45 @@ export const mainOrCompanion = (
 
 export const tabName = (id: string) => {
 	return id === "1" ? "Main Visitor" : `Companion ${parseInt(id) - 1}`;
+};
+/*
+ * Convert ISO8601 date string to date object
+ * @param {string} date - ISO8601 date string
+ * @returns {string} - Formatted date string
+ */
+export const formatDateString = (date: string) => {
+	//? Convert ISO8601 date string to date object
+	const dateObject = DateTime.fromISO(date, {
+		zone: "utc",
+	});
+
+	const formattedDateTime = dateObject.toFormat("yyyy-MM-dd hh:mm:ss a");
+
+	return formattedDateTime;
+};
+/*
+ * Convert date object to date string
+ * @param {Date} dateObj - Date object
+ * @returns {string} - Date string
+ */
+export const formatDateObjToString = (dateObj: Date) => {
+	//? Convert date object to date string
+	const DateObject = DateTime.fromJSDate(dateObj);
+
+	const formattedDateTime = DateObject.toFormat("yyyy-MM-dd hh:mm:ss a");
+
+	return formattedDateTime;
+};
+/*
+ * Convert date object to ISO8601 date string
+ * @param dateObj
+ * @returns {string} - ISO8601 date string
+ */
+export const formatDateObjToISO = (dateObj: Date) => {
+	//? Convert date object to date string
+	const DateObject = DateTime.fromJSDate(dateObj);
+
+	const formattedDateTime = DateObject.toISO({ includeOffset: false });
+
+	return formattedDateTime;
 };

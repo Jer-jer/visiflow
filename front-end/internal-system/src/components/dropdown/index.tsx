@@ -1,10 +1,32 @@
 /* Created Using Ant Design */
-import React from "react";
+import React, { ReactNode } from "react";
+
+//Components
+import { Dropdown } from "antd";
+import type { MenuProps } from "antd";
 
 //Styles
 import "../../utils/variables.scss";
-import "styles";
+import "./styles.scss";
 
-export default function Dropdown() {
-	return <div>Dropdown</div>;
+interface CustomDropdownProps {
+	overlayClassName?: string;
+	items: MenuProps["items"];
+	children: ReactNode;
+}
+
+export default function CustomDropdown({
+	overlayClassName,
+	items,
+	children,
+}: CustomDropdownProps) {
+	return (
+		<Dropdown
+			overlayClassName={`${overlayClassName}`}
+			menu={{ items }}
+			trigger={["click"]}
+		>
+			{children}
+		</Dropdown>
+	);
 }

@@ -1,26 +1,63 @@
-import React, { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+
+//Components
+import { Dropdown, Modal } from "antd";
+import CustomDropdown from "../dropdown";
+
+//Interfaces
+import { NotificationType } from "../../utils/enums";
+import { Notification, VisitorDataType } from "../../utils/interfaces";
+import type { RootState } from "../../store";
+import type { MenuProps } from "antd";
+
+//Utils
+import { formatDateObjToString, formatDateString } from "../../utils";
+
+//Lib
+import AxiosInstance from "../../lib/axios";
 
 //Assets
-import RyanReynolds from "../../assets/ryan_reynolds.jpg";
-import TheRock from "../../assets/the_rock.jpg";
+import { Account } from "../../assets/svg";
 
 //Styles
 import "./styles.scss";
 
 interface HeaderProps {
-	isAdmin: boolean;
 	setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
 	setIsAdmin: Dispatch<SetStateAction<boolean>>;
 }
 
-export default function Header({
-	isAdmin,
-	setIsLoggedIn,
-	setIsAdmin,
-}: HeaderProps) {
+export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
+	const [notifications, setNotifications] = useState<Notification[]>([]);
+
+	const { data } = useSelector((state: RootState) => state.visitors);
+
 	const wasAdmin = localStorage.getItem("role");
 	const navigate = useNavigate();
+
+	const error = (message: string) => {
+		Modal.error({
+			title: `Error`,
+			content: message,
+		});
+	};
+
+	//TODO Try using real-time data
+	useEffect(() => {
+		AxiosInstance.get("/notification")
+			.then((res) => {
+				setNotifications(res.data.notifications);
+			})
+			.catch((err) => {
+				error(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong with displaying notifications.",
+				);
+			});
+	}, []);
 
 	const logout = () => {
 		wasAdmin && localStorage.removeItem("role");
@@ -29,6 +66,190 @@ export default function Header({
 		setIsLoggedIn(false);
 		navigate("/");
 	};
+
+	const findVisitor = (id: string) => {
+		//? Search in the data array
+		for (let index = 0; index < data.length; index++) {
+			const element = data[index];
+			//? Check if the element id matches
+			if (element.visitor_details._id === id) {
+				return index;
+			}
+			//? Search in the pals array of the element
+			const companionIndex = element.companion_details!.findIndex(
+				(p) => p._id === id,
+			);
+			if (companionIndex !== -1) {
+				return index; //? Return a modified element with type VisitorDetailsProps
+			}
+		}
+		return -1; //? Return -1 if not found
+	};
+
+	const getVisitorName = (id: string, visitor: VisitorDataType) => {
+		//? Check if the visitor id matches the id
+		if (visitor.visitor_details._id === id) {
+			return visitor.visitor_details.name;
+		} else {
+			return visitor.companion_details!.find((p) => p._id === id)!.name;
+		}
+	};
+
+	const hasUnread = () => {
+		//? Check if there is an unread notification
+		const hasAtLeastOneUnread = notifications.some(
+			(notif) => notif.is_read === false,
+		);
+
+		if (hasAtLeastOneUnread) return true;
+
+		return false;
+	};
+
+	const notificationType = (type: NotificationType) => {
+		let message: string = "";
+		switch (type) {
+			case NotificationType.Confirmation:
+				message = "Visitor Confirmation";
+				break;
+			case NotificationType.Declined:
+				message = "Visitor Declined";
+				break;
+			case NotificationType.Pending:
+				message = "New Visitor";
+				break;
+			case NotificationType.TimeIn:
+				message = "Nearing Scheduled Time In";
+				break;
+			case NotificationType.TimeOut:
+				message = "Exceeded Scheduled Time Out";
+				break;
+		}
+		return message;
+	};
+
+	const notificationMessage = (type: NotificationType, visitor: number) => {
+		let message: string = "An error occurred. Please try again.";
+		if (data[visitor]) {
+			switch (type) {
+				case NotificationType.Confirmation:
+					message = "has been confirmed at";
+					break;
+				case NotificationType.Declined:
+					message = "has been declined at";
+					break;
+				case NotificationType.Pending:
+					message = `has planned an appointment with the following: ${data[visitor].purpose.who.join(", ")} at the following: ${data[visitor].purpose.where.join(", ")} on ${formatDateString(data[visitor].purpose.when)}`;
+					break;
+				case NotificationType.TimeIn:
+					message = "has yet to time in at";
+					break;
+				case NotificationType.TimeOut:
+					message = "has exceeded their scheduled time out at";
+					break;
+			}
+		}
+		return message;
+	};
+
+	const notifTime = (
+		type: NotificationType,
+		visitor: VisitorDataType,
+		created_at: Date,
+	) => {
+		let time: string = "";
+
+		switch (type) {
+			case NotificationType.Confirmation:
+				time = formatDateObjToString(created_at);
+				break;
+			case NotificationType.Declined:
+				time = formatDateObjToString(created_at);
+				break;
+			case NotificationType.Pending:
+				time = formatDateObjToString(created_at);
+				break;
+			case NotificationType.TimeIn:
+				time = formatDateString(visitor.expected_time_in);
+				break;
+			case NotificationType.TimeOut:
+				time = formatDateString(visitor.expected_time_out);
+				break;
+		}
+		return time;
+	};
+
+	const readNotification = (x: number, notif: Notification) => {
+		//? Check if the notification is already read
+		if (notifications[x].is_read) return;
+		setNotifications((prev) => {
+			return prev.map((n, y) => {
+				if (y === x) {
+					return { ...n, is_read: true };
+				}
+				return n;
+			});
+		});
+		AxiosInstance.put("/notification/update", {
+			_id: notif._id,
+			is_read: true,
+		});
+	};
+
+	const notificationMenuItems: MenuProps["items"] = notifications.map(
+		(notif, x) => {
+			const key = x + 1;
+			return {
+				label: (
+					<div
+						className="flex flex-row items-center justify-between"
+						onMouseEnter={() => readNotification(x, notif)}
+					>
+						<div className="flex w-[90%] flex-col justify-center">
+							<span className="text-lg font-bold">
+								{notificationType(notif.type)}
+							</span>
+							<span className="text-[15px]">
+								{data[findVisitor(notif.recipient)] ? (
+									<>
+										<span className="font-bold">
+											{`${getVisitorName(notif.recipient, data[findVisitor(notif.recipient)]).last_name}, ${getVisitorName(notif.recipient, data[findVisitor(notif.recipient)]).first_name} ${getVisitorName(notif.recipient, data[findVisitor(notif.recipient)]).middle_name}`}
+										</span>{" "}
+										{notificationMessage(
+											notif.type,
+											findVisitor(notif.recipient),
+										)}{" "}
+										{notif.type !== NotificationType.Pending && (
+											<span className="notice font-bold text-red-400">
+												{notifTime(
+													notif.type,
+													data[findVisitor(notif.recipient)],
+													notif.created_at,
+												)}
+											</span>
+										)}
+									</>
+								) : (
+									<span className="not-found font-bold text-error-500">
+										[Visitor has been deleted]
+									</span>
+								)}
+							</span>
+							<span className="time fon mt-3 text-[14px] font-semibold text-primary-500">
+								{formatDateObjToString(notif.created_at)}
+							</span>
+						</div>
+						{!notif.is_read && (
+							<span className=" unread inline text-xs font-semibold text-primary-500">
+								NEW
+							</span>
+						)}
+					</div>
+				),
+				key: key.toString(),
+			};
+		},
+	);
 
 	return (
 		<div className="navbar bg-base-100">
@@ -41,8 +262,11 @@ export default function Header({
 				</a>
 			</div>
 			<div className="flex-none">
-				<div className="mobile-dropdown dropdown dropdown-end">
-					<label
+				<CustomDropdown
+					overlayClassName="notification-dropdown"
+					items={notificationMenuItems}
+				>
+					<div
 						tabIndex={0}
 						className="btn btn-circle btn-ghost hover:bg-transparent hover:text-primary-500"
 					>
@@ -61,88 +285,59 @@ export default function Header({
 									d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
 								/>
 							</svg>
-							<span className="badge indicator-item badge-sm bg-red-500"></span>
+							{hasUnread() && (
+								<span className="badge indicator-item badge-sm bg-red-500"></span>
+							)}
 						</div>
-					</label>
-					<ul
-						tabIndex={0}
-						className="h-inherit menu dropdown-content menu-sm z-[1] mt-3 bg-white p-2 shadow md:w-96"
-					>
-						<li>
-							<div className="notif flex flex-row hover:bg-primary-500">
-								<div className="avatar">
-									<div className="w-14 rounded-full">
-										<img src={TheRock} alt="" />
-									</div>
-								</div>
-								<div className="flex flex-col justify-center">
-									<span className="header font-medium">Dwayne Johnson</span>
-									<span className="desc">
-										Hasn't checkout yet and is beyond estimated check out time:{" "}
-										<span className="notice text-red-400">
-											9:20 AM @ HR Office in Medicine Building
-										</span>
-									</span>
-									<span className="time text-primary mt-3">10 mins ago</span>
-								</div>
-							</div>
-						</li>
-						<li>
-							<div className="notif flex flex-row hover:bg-primary-500">
-								<div className="avatar">
-									<div className="w-14 rounded-full">
-										<img src={TheRock} alt="" />
-									</div>
-								</div>
-								<div className="flex flex-col justify-center">
-									<span className="header font-medium">Dwayne Johnson</span>
-									<span className="desc">Meeting with HR @ 9:00 AM</span>
-									<span className="time text-primary mt-3">10 mins ago</span>
-								</div>
-							</div>
-						</li>
-					</ul>
-				</div>
+					</div>
+				</CustomDropdown>
 
-				<div className="dropdown dropdown-end">
-					<label
+				<CustomDropdown
+					overlayClassName="account-dropdown"
+					items={[
+						{
+							key: "1",
+							label: (
+								<button
+									onClick={() => {
+										setIsAdmin(true);
+										navigate("/");
+									}}
+									disabled={!wasAdmin}
+								>
+									Admin System
+								</button>
+							),
+							disabled: !wasAdmin,
+						},
+						{
+							key: "2",
+							label: (
+								<button
+									onClick={() => {
+										setIsAdmin(false);
+										navigate("/");
+									}}
+									disabled={!wasAdmin}
+								>
+									Guard System
+								</button>
+							),
+							disabled: !wasAdmin,
+						},
+						{
+							key: "3",
+							label: <button onClick={logout}>Logout</button>,
+						},
+					]}
+				>
+					<div
 						tabIndex={0}
 						className="avatar btn btn-circle btn-ghost hover:bg-transparent"
 					>
-						<div className="w-10 rounded-full">
-							<img src={RyanReynolds} alt="Profile Picture" />
-						</div>
-					</label>
-					<ul
-						tabIndex={0}
-						className="menu dropdown-content rounded-box menu-sm z-[1] mt-3 w-52 bg-white p-2 shadow"
-					>
-						<li>
-							{wasAdmin && (
-								<>
-									<button
-										className="hover:bg-primary-500 hover:text-white"
-										onClick={() => setIsAdmin(true)}
-									>
-										Admin System
-									</button>
-									<button
-										className="hover:bg-primary-500 hover:text-white"
-										onClick={() => setIsAdmin(false)}
-									>
-										Guard System
-									</button>
-								</>
-							)}
-							<button
-								className="hover:bg-primary-500 hover:text-white"
-								onClick={logout}
-							>
-								Logout
-							</button>
-						</li>
-					</ul>
-				</div>
+						<Account />
+					</div>
+				</CustomDropdown>
 			</div>
 		</div>
 	);
