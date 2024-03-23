@@ -13,6 +13,8 @@ interface ModalProps {
 	open: boolean;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 	footer?: false;
+	someCancelFunction?: () => void;
+	someOkFunction?: () => void;
 	children: React.ReactNode;
 }
 
@@ -23,6 +25,8 @@ export default function StandardModal({
 	open,
 	setOpen,
 	footer,
+	someCancelFunction,
+	someOkFunction,
 	children,
 }: ModalProps) {
 	return (
@@ -32,8 +36,10 @@ export default function StandardModal({
 			open={open}
 			maskClosable
 			// style={{ top: topPos && topPos }}
-			onCancel={() => setOpen(!open)}
-			onOk={() => setOpen(!open)}
+			onCancel={() =>
+				someCancelFunction ? someCancelFunction() : setOpen(!open)
+			}
+			onOk={() => (someOkFunction ? someOkFunction() : setOpen(!open))}
 			width={size ? size : 1000}
 			footer={footer && false}
 		>

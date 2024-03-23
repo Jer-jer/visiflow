@@ -48,7 +48,7 @@ export default function Navbar({ children }: NavbarProps) {
 					className="lg:ml-[140px] lg:mr-[42px]"
 					defaultValue="english"
 					style={{ width: 90 }}
-					bordered={false}
+					variant="borderless"
 					options={[
 						{ value: "english", label: "English" },
 						{ value: "hindi", label: "Hindi" },
