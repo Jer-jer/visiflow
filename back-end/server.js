@@ -79,8 +79,7 @@ server.listen(PORT, () => {
 
 // change to */5 * * * * * for testing every 5 mins
 // 0 * * * * to every hour
-cron.schedule('*/5 * * * * *', async () => {
-  console.log('cron reminder');
+cron.schedule('0 * * * *', async () => {
   await timeOutReminder(io);
   await timeInReminder(io);
 }, {

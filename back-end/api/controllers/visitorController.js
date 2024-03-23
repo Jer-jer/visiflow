@@ -10,6 +10,7 @@ const {
 } = require("../utils/helper");
 const { Buffer } = require("node:buffer");
 const Notification = require("../models/notification");
+const ObjectId = mongoose.Types.ObjectId;
 
 exports.getVisitors = async (req, res) => {
   try {
@@ -90,6 +91,7 @@ exports.addVisitor = async (req, res) => {
     ]);
 
     const newVisitor = await Visitor.create({
+      _id: new ObjectId(),
       visitor_details: {
         name: { first_name, middle_name, last_name },
         address: { street, house, brgy, city, province, country },
