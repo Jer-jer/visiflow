@@ -1,21 +1,30 @@
 require("dotenv").config();
 
+// Imports
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const QRCode = require("qrcode");
 const nodemailer = require("nodemailer");
-const cron = require("node-cron");
 
+// Models
 const RefreshToken = require("../models/refreshToken");
 const Badge = require("../models/badge");
 const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
 const Notification = require("../models/notification");
 
+// Google Cloud Storage
 const { Storage } = require("@google-cloud/storage");
 
-// Lazy load storage
+// Constants
+const ACCESS_TOKEN_EXPIRATION = "20m";
+const REFRESH_TOKEN_EXPIRATION = "7d";
+const bucketName = "visiflow";
+
+// Lazy-loaded storage
 let storage;
+
+// Initialize Google Cloud Storage
 function getStorage() {
   if (!storage) {
     storage = new Storage({
@@ -26,6 +35,7 @@ function getStorage() {
   return storage;
 }
 
+// Nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: "Gmail",
   auth: {
@@ -33,11 +43,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.MAILER_PASSWORD,
   },
 });
-
-// Constants
-const ACCESS_TOKEN_EXPIRATION = "20m";
-const REFRESH_TOKEN_EXPIRATION = "7d";
-const bucketName = "visiflow";
 
 // Environtment Variables
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
@@ -208,22 +213,17 @@ async function sendBadgeEmail(badge, visitor, message) {
 
 async function generateQRCode(uri, filename, badgeId) {
   return new Promise((resolve, reject) => {
-    QRCode.toFile(
-      filename,
-      uri,
-      { errorCorrectionLevel: "H" },
-      function (error) {
-        if (error) {
-          console.error(
-            `Error generating QR code for badge ${badgeId}: ${error.message}`
-          );
-          reject(error);
-        } else {
-          console.log(`QR code saved for badge ${badgeId}`);
-          resolve();
-        }
-      }
-    );
+      QRCode.toFile(filename, uri, { errorCorrectionLevel: "H" }, function (error) {
+          if (error) {
+              console.error(
+                  `Error generating QR code for badge ${badgeId}: ${error.message}`
+              );
+              reject(error);
+          } else {
+              console.log(`QR code saved for badge ${badgeId}`);
+              resolve();
+          }
+      });
   });
 }
 
@@ -261,12 +261,9 @@ async function updateLog(badgeId, _id, type, res) {
       return res.status(500).json({ Error: "Failed to time-out visitor" });
     }
   } else {
-    if (type === "pre-reg") {
-      await VisitorLogs.create({
-        badge_id: badge._id,
-        check_in_time: new Date(),
-      });
-      await Badge.updateOne({ _id: badge._id }, { $set: { is_active: true } });
+    if (type === 'pre-reg') {
+      await VisitorLogs.create({ badge_id: badge._id, check_in_time: new Date() });
+      await Badge.updateOne({ _id: badge._id }, { $set: { is_active: true }});
 
       return res.status(200).json({ message: "time-in" });
     } else {
@@ -291,7 +288,15 @@ function uploadFileToGCS(bufferData, fileName) {
   return publicUrl;
 }
 
-async function timeOutReminder() {
+function isThirtyMinutesBefore(appointmentDate, currentTime) {
+  const thirtyMinutesInMilliseconds = 30 * 60 * 1000; // 30 minutes in milliseconds
+  return (
+    currentTime.getTime() - appointmentDate.getTime() ===
+    thirtyMinutesInMilliseconds
+  );
+}
+
+async function timeOutReminder(io) {
   try {
     const currentTime = new Date();
 
@@ -327,22 +332,14 @@ async function timeOutReminder() {
     const validVisitors = visitors.filter((visitor) => visitor !== undefined);
 
     for (const visitor of validVisitors) {
-      await createNotification(visitor, "time-out");
+      await createNotification(visitor, 'time-out', io);
     }
   } catch (error) {
     console.error("Error in timeOutReminder:", error);
   }
 }
 
-function isThirtyMinutesBefore(appointmentDate, currentTime) {
-  const thirtyMinutesInMilliseconds = 30 * 60 * 1000; // 30 minutes in milliseconds
-  return (
-    currentTime.getTime() - appointmentDate.getTime() ===
-    thirtyMinutesInMilliseconds
-  );
-}
-
-async function timeInReminder() {
+async function timeInReminder(io) {
   try {
     const currentDate = new Date();
     const visitors = await Visitor.find();
@@ -359,62 +356,54 @@ async function timeInReminder() {
 
           await sendEmail(mailOptions);
 
-          await createNotification(visitor, "time-in");
-        }
-      })
-    );
+        await createNotification(visitor, 'time-in', io);
+      }
+    }));
   } catch (error) {
     console.error("Error in check-in reminder", error);
   }
 }
 
-async function createNotification(visitor, type) {
+async function createNotification(visitor, type, io) {
   let visitorDB;
   if (Array.isArray(visitor)) {
-    visitorDB = await Visitor.findOne({
-      "companion_details._id": visitor[0]._id,
-    });
+      visitorDB = await Visitor.findOne({
+          "companion_details._id": visitor[0]._id,
+      });
   }
-  const notificationContent = {
-    visitor_name: visitor.visitor_details
+
+  const visitorName = visitor.visitor_details
       ? `${visitor.visitor_details.name.last_name}, ${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name}`
-      : `${visitor[0].name.last_name}, ${visitor[0].name.first_name} ${visitor[0].name.middle_name}`,
-    host_name:
-      visitor.purpose?.who.join(", ") ||
-      visitorDB?.purpose?.who.join(", ") ||
-      "",
-    date: visitor.purpose?.when || visitorDB?.when || "",
-    time: visitor.expected_time_in || visitorDB?.expected_time_in || "",
-    location:
-      visitor.purpose?.where.join(", ") ||
-      visitorDB?.purpose?.where.join(", ") ||
-      "",
-    purpose:
-      visitor.purpose?.what?.join(", ") || visitorDB.purpose?.what?.join(", "),
-    visitor_type: visitor.visitor_type,
+      : `${visitor[0].name.last_name}, ${visitor[0].name.first_name} ${visitor[0].name.middle_name}`;
+
+  const hostName = visitor.purpose?.who.join(", ") || visitorDB?.purpose?.who.join(", ") || "";
+  const date = visitor.purpose?.when || visitorDB?.when || "";
+  const time = visitor.expected_time_in || visitorDB?.expected_time_in || "";
+  const location = visitor.purpose?.where.join(", ") || visitorDB?.purpose?.where.join(", ") || "";
+  const purpose = visitor.purpose?.what?.join(", ") || visitorDB.purpose?.what?.join(", ");
+  const visitorType = visitor.visitor_type;
+
+  const notificationContent = {
+      visitor_name: visitorName,
+      host_name: hostName,
+      date: date,
+      time: time,
+      location: location,
+      purpose: purpose,
+      visitor_type: visitorType,
   };
 
   await Notification.create({
-    type: type,
-    recipient: visitor.visitor_details?._id || visitor[0]._id,
-    content: notificationContent,
+      type: type,
+      recipient: visitor.visitor_details?._id || visitor[0]._id,
+      content: notificationContent,
   });
+
+  io.emit(type, notificationContent);
+
   console.log("Notification pushed");
 }
 
-// change to */5 * * * * * for testing every 5 mins
-// 0 * * * * to every hour
-cron.schedule(
-  "0 * * * *",
-  async () => {
-    await timeOutReminder();
-    await timeInReminder();
-  },
-  {
-    scheduled: true,
-    timezone: "Asia/Manila",
-  }
-);
 
 module.exports = {
   hashPassword,
@@ -427,5 +416,7 @@ module.exports = {
   generateVisitorQRAndEmail,
   updateLog,
   uploadFileToGCS,
-  sendEmail,
+  timeInReminder,
+  timeOutReminder,
+  sendEmail
 };
