@@ -1,5 +1,5 @@
 const Badge = require('../models/badge');
-const { generateQRCode, updateLog } = require('../utils/helper');
+const { generateVisitorQRCode, updateLog } = require('../utils/helper');
 
 const badgeQty = 5;
 
@@ -31,15 +31,18 @@ exports.generateBadge = async (req, res) => {
   console.log(clientIP);
 
   for (let counter = 0; counter < badgeQty; counter++) {
-    await generateQRCode(counter);
+    await generateVisitorQRCode(counter);
   }
   res.status(200).json({ message: `Generated ${badgeQty} of badges` });
 };
 
+//still hard coded for testing purpose only
 exports.newBadge = async (req, res) => {
+    const { visitor_id, qr_id } = req.body;
+
     const badge = new Badge({
-        visitor_id: '65dc01b46b9160d9bed89e81',
-        qr_id: '0',
+        visitor_id: visitor_id,
+        qr_id: qr_id,
         is_active: true
     });
     await badge.save();
@@ -49,11 +52,14 @@ exports.newBadge = async (req, res) => {
 exports.checkBadge = async (req, res) => {
     const { qr_id, visitor_id } = req.query;
     let badge;
+    let type;
 
     if (qr_id !== undefined) {
-    badge = await Badge.findOne({qr_id: qr_id});
+      badge = await Badge.findOne({qr_id: qr_id});
+      type = 'walk-in';
     } else {
       badge = await Badge.findOne({ visitor_id: visitor_id });
+      type = 'pre-reg';
     }
 
    if(!badge) {
@@ -63,6 +69,7 @@ exports.checkBadge = async (req, res) => {
    if(!badge.is_valid) {
     return res.status(400).json({ message: `Invalid visitor badge`});
    }
-
-   updateLog(badge._id, visitor_id, res);
+   
+   const _id = (visitor_id !== undefined) ? visitor_id : qr_id;
+   updateLog(badge._id, _id, type, res); 
 }
