@@ -12,6 +12,7 @@ const Badge = require("../models/badge");
 const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
 const Notification = require("../models/notification");
+const User = require('../models/user');
 const SystemLog = require('../models/systemLogs');
 
 // Google Cloud Storage
@@ -243,7 +244,7 @@ async function sendEmail(mailOptions) {
 }
 
 //will need to add qr_id to parameter
-async function updateLog(badgeId, _id, type, res) {
+async function updateLog(badgeId, _id, type, user_id, res) {
   const badge = await Badge.findById(badgeId);
 
   if (badge.is_active) {
@@ -257,8 +258,10 @@ async function updateLog(badgeId, _id, type, res) {
         { $set: { qr_id: null, is_active: false, is_valid: false } }
       );
 
+      await createSystemLog(user_id, 'time_out', 'success');
       return res.status(200).json({ message: "time-out" });
     } catch (error) {
+      await createSystemLog(user_id, 'time_out', 'failed');
       return res.status(500).json({ Error: "Failed to time-out visitor" });
     }
   } else {
@@ -267,9 +270,16 @@ async function updateLog(badgeId, _id, type, res) {
         badge_id: badge._id,
         check_in_time: new Date(),
       });
-      await Badge.updateOne({ _id: badge._id }, { $set: { is_active: true } });
 
-      return res.status(200).json({ message: "time-in" });
+      try {
+        await Badge.updateOne({ _id: badge._id }, { $set: { is_active: true } });
+        await createSystemLog(user_id, 'time_in', 'success');
+        return res.status(200).json({ message: "time-in" });
+      } catch (error) {
+        console.error(error);
+        await createSystemLog(user_id, 'time_in', 'failed');
+        return res.status(500).json({ Error: 'failed to time-in visitor' });
+      }
     } 
   }
 }
@@ -409,13 +419,25 @@ async function createNotification(visitor, type, io) {
   console.log(`${type} notification pushed`);
 }
 
-
-async function createSystemLog(_id, type) {
+async function createSystemLog(id, type, status) {
   try {
-    const log = await SystemLog.create({
-      user: _id,
-      type: type
+    const userDB = await User.findById(id);
+
+    if (!userDB) {
+      return false;
+    } 
+
+    await SystemLog.create({
+      user_id: userDB._id,
+      name: {
+        first_name: userDB.name.first_name,
+        last_name: userDB.name.last_name
+      },
+      role: userDB.role,
+      type: type,
+      status: status
     });
+
   } catch (error) {
     console.error(error);
     return false;
