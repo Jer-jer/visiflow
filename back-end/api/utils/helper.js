@@ -444,6 +444,18 @@ async function createSystemLog(id, type, status) {
   }
 }
 
+async function createSystemLog(_id, type) {
+  try {
+    const log = await SystemLog.create({
+      user: _id,
+      type: type
+    });
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
+
 module.exports = {
   hashPassword,
   comparePassword,
