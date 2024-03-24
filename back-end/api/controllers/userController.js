@@ -1,6 +1,9 @@
 const mongoose = require("mongoose");
 const User = require("../models/user");
-const { hashPassword } = require('../utils/helper');
+const { 
+  hashPassword,
+  createSystemLog 
+} = require('../utils/helper');
 const { filterData } = require("../middleware/filterData");
 const { 
   validateUser, 
@@ -21,6 +24,8 @@ exports.getUsers = async (req, res) => {
 exports.addUser = async (req, res) => {
   const { first_name, middle_name, last_name, username, email, password, phone, role } = req.body;
   const ObjectId = mongoose.Types.ObjectId;
+  const user_id = req.user._id;
+  const log_type = 'add_user';
 
   await Promise.all(validateUser.map((validation) => validation.run(req)));
 
@@ -52,10 +57,11 @@ exports.addUser = async (req, res) => {
       role,
     });
 
+    await createSystemLog(user_id, log_type, 'success');
     res.status(201).json({ User: filterData(newUser), id: _id });
-    
   } catch (error) {
     console.error(error);
+    await createSystemLog(user_id, log_type, 'failed');
     return res.status(500).json({ error: "Failed to create a new user" });
   }
 };
@@ -80,6 +86,8 @@ exports.findUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   const { _id, first_name, middle_name, last_name, username, email, phone, role } = req.body;
+  const user_id = req.user._id;
+  const log_type = 'update_user';
 
   try {
     const userDB = await User.findById(_id);
@@ -113,28 +121,34 @@ exports.updateUser = async (req, res) => {
       { new: true }
     );
 
+    await createSystemLog(user_id, log_type, 'success');
     res.status(201).json({ User: filterData(updatedUser) });
-    
   } catch (error) {
     console.error(error);
+    await createSystemLog(user_id, log_type, 'failed');
     return res.status(500).json({ error: "Failed to update user" });
   }
 };
 
 exports.deleteUser = async (req, res) => {
   const { _id } = req.body;
+  const user_id = req.user._id;
+  const log_type = 'delete_user';
   
   try {
     const userDB = await User.findOneAndDelete(_id);
 
     if (userDB) {
+      await createSystemLog(user_id, log_type, 'success');
       return res.status(204).send();
     } else {
+      await createSystemLog(user_id, log_type, 'failed');
       return res.status(404).json({ error: "User not found" });
     }
 
   } catch (error) {
     console.error(error);
+    await createSystemLog(user_id, log_type, 'failed');
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };

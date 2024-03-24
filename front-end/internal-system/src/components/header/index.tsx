@@ -47,7 +47,7 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 	//? Determine if the user is an admin
 	const wasAdmin = localStorage.getItem("role");
 
-	const [play] = useSound(NotificationSound);
+	const [play] = useSound(NotificationSound, { volume: 1, soundEnabled: true });
 
 	const navigate = useNavigate();
 
