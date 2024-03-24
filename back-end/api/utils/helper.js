@@ -101,7 +101,7 @@ async function verifyRefreshToken(token) {
 async function generateVisitorQRCode(badgeId) {
   return new Promise((resolve, reject) => {
     const filename = `api/resource/badge/badge${badgeId}.png`;
-    const uri = `http://192.168.1.71:5000/badge/checkBadge?qr_id=${badgeId}`;
+    const uri = `http://localhost:5000/badge/checkBadge?qr_id=${badgeId}`;
 
     QRCode.toFile(
       filename,
@@ -182,7 +182,7 @@ async function generateBadge(visitor) {
 
   await badge.save();
 
-  const uri = `http://192.168.1.71:5000/badge/checkBadge?visitor_id=${visitor._id}`;
+  const uri = `http://localhost:5000/badge/checkBadge?visitor_id=${visitor._id}`;
   const filename = `api/resource/badge/badge${badge._id}.png`;
   await generateQRCode(uri, filename, badge._id);
 

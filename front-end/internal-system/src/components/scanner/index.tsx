@@ -33,9 +33,7 @@ export default function Scanner() {
 			window.location.href = result;
 		}
 
-		function error(err: any) {
-			console.warn(err);
-		}
+		function error(err: any) {}
 	}, []);
 
 	return (
