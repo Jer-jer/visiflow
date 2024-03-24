@@ -30,6 +30,9 @@ export const visitorSlice = createSlice({
 	name: "visitors",
 	initialState,
 	reducers: {
+		add: (state, action: PayloadAction<VisitorDataType>) => {
+			state.data.push(action.payload);
+		},
 		update: (state, action: PayloadAction<VisitorDataType>) => {
 			state.data = state.data.map((visitor) => {
 				if (visitor._id === action.payload._id) {
@@ -73,6 +76,6 @@ export const visitorSlice = createSlice({
 	},
 });
 
-export const { update, deleteVisitor, deleteCompanion, openVisitor } =
+export const { add, update, deleteVisitor, deleteCompanion, openVisitor } =
 	visitorSlice.actions;
 export default visitorSlice.reducer;
