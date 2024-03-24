@@ -7,11 +7,11 @@ const {
   generateVisitorQRAndEmail,
   uploadFileToGCS,
   sendEmail,
-  createSystemLog
+  createSystemLog,
 } = require("../utils/helper");
 const { Buffer } = require("node:buffer");
 const Notification = require("../models/notification");
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 
 exports.getVisitors = async (req, res) => {
@@ -185,7 +185,6 @@ exports.updateVisitor = async (req, res) => {
     expected_time_in,
     expected_time_out,
     visitor_type,
-    status,
     id_picture,
   } = req.body;
 
@@ -217,7 +216,6 @@ exports.updateVisitor = async (req, res) => {
       expected_time_in: expected_time_in,
       expected_time_out: expected_time_out,
       visitor_type: visitor_type,
-      status: status,
       id_picture: id_picture,
     };
 
@@ -268,6 +266,7 @@ exports.deleteVisitor = async (req, res) => {
 
 exports.updateStatus = async (req, res) => {
   const { _id, status, message, email, companions } = req.body;
+  const io = req.io;
 
   const user_id = req.user._id;
 
@@ -292,7 +291,7 @@ exports.updateStatus = async (req, res) => {
         // }
 
         // Appointment Confirmation
-        await Notification.create({
+        const approvalNotif = await Notification.create({
           type: "confirmation",
           recipient: visitorDB.visitor_details._id,
           content: {
@@ -307,6 +306,9 @@ exports.updateStatus = async (req, res) => {
         });
        
         await createSystemLog(user_id, 'approve_status', 'success');
+
+        io.emit("newNotification", approvalNotif);
+
         res.status(200).json({ message: `Visitor is now ${status}` });
       } catch (error) {
         console.error(error);
@@ -333,7 +335,7 @@ exports.updateStatus = async (req, res) => {
           }
         }
 
-        await Notification.create({
+        const declinedNotif = await Notification.create({
           type: "declined",
           recipient: visitorDB.visitor_details._id,
           content: {
@@ -348,6 +350,10 @@ exports.updateStatus = async (req, res) => {
         });
 
         await createSystemLog(user_id, 'decline_status', 'success');
+
+        io.emit("newNotification", declinedNotif);
+
+        res.status(200).json({ message: `Visitor is now ${status}` });
       } catch (error) {
         console.error(error);
         await createSystemLog(user_id, 'decline_status', 'failed');
