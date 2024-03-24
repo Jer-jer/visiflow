@@ -3,6 +3,10 @@ const Notification = require("../models/notification");
 exports.getNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find({});
+    const io = req.io;
+
+    io.emit('allNotifs', notifications);
+
     return res.status(200).json({ notifications: notifications });
   } catch (error) {
     console.error(error);
