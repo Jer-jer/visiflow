@@ -7,6 +7,7 @@ const {
   generateVisitorQRAndEmail,
   uploadFileToGCS,
   sendEmail,
+  createSystemLog
 } = require("../utils/helper");
 const { Buffer } = require("node:buffer");
 const Notification = require("../models/notification");
@@ -226,6 +227,9 @@ exports.updateVisitor = async (req, res) => {
       { new: true }
     );
       
+    
+    createSystemLog(req.user._id, 'update');
+
     res.status(201).json({ visitor: updatedVisitor });
   } catch (error) {
     console.error(error);
