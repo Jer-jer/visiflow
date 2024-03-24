@@ -12,6 +12,7 @@ const Badge = require("../models/badge");
 const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
 const Notification = require("../models/notification");
+const SystemLog = require('../models/systemLogs');
 
 // Google Cloud Storage
 const { Storage } = require("@google-cloud/storage");
@@ -409,6 +410,18 @@ async function createNotification(visitor, type, io) {
 }
 
 
+async function createSystemLog(_id, type) {
+  try {
+    const log = await SystemLog.create({
+      user: _id,
+      type: type
+    });
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
+
 module.exports = {
   hashPassword,
   comparePassword,
@@ -422,5 +435,6 @@ module.exports = {
   uploadFileToGCS,
   timeInReminder,
   timeOutReminder,
-  sendEmail
+  sendEmail,
+  createSystemLog
 };
