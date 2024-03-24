@@ -40,7 +40,7 @@ export interface WalkInFormInterfaceZod {
 	what: string[];
 	where: string[];
 	who: string[];
-	expected_time_out: string;
+	expected_time_out: Date;
 	// visitor_type: VisitorType;
 	// status: VisitorStatus;
 	// id_pic: string;
@@ -125,8 +125,9 @@ export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
 			message: "Must not contain any numerals.",
 		}),
 
-	expected_time_out: z.string({
-		required_error: "Expected time out is required.",
+	expected_time_out: z.date({
+		required_error: "Please select a date and time",
+		invalid_type_error: "That's not a date.",
 	}),
 
 	plate_num: z.string().optional().nullable(),

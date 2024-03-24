@@ -213,17 +213,22 @@ async function sendBadgeEmail(badge, visitor, message) {
 
 async function generateQRCode(uri, filename, badgeId) {
   return new Promise((resolve, reject) => {
-      QRCode.toFile(filename, uri, { errorCorrectionLevel: "H" }, function (error) {
-          if (error) {
-              console.error(
-                  `Error generating QR code for badge ${badgeId}: ${error.message}`
-              );
-              reject(error);
-          } else {
-              console.log(`QR code saved for badge ${badgeId}`);
-              resolve();
-          }
-      });
+    QRCode.toFile(
+      filename,
+      uri,
+      { errorCorrectionLevel: "H" },
+      function (error) {
+        if (error) {
+          console.error(
+            `Error generating QR code for badge ${badgeId}: ${error.message}`
+          );
+          reject(error);
+        } else {
+          console.log(`QR code saved for badge ${badgeId}`);
+          resolve();
+        }
+      }
+    );
   });
 }
 
@@ -269,8 +274,10 @@ async function updateLog(badgeId, _id, type, res) {
       await Badge.updateOne({ _id: badge._id }, { $set: { is_active: true } });
 
       return res.status(200).json({ message: "time-in" });
-    } 
+    }
   }
+
+  callback();
 }
 
 function uploadFileToGCS(bufferData, fileName) {
@@ -291,11 +298,8 @@ function isThirtyMinutesBefore(appointmentDate, currentTime) {
   const current = new Date();
   const currentInUTC = current.toISOString();
   console.log(currentInUTC);
- 
 
-  return (
-    (currentTime.getTime() - appointmentDate.getTime())
-  );
+  return currentTime.getTime() - appointmentDate.getTime();
 }
 
 async function timeOutReminder(io) {
@@ -334,7 +338,7 @@ async function timeOutReminder(io) {
     const validVisitors = visitors.filter((visitor) => visitor !== undefined);
 
     for (const visitor of validVisitors) {
-      await createNotification(visitor, 'time-out', io);
+      await createNotification(visitor, "time-out", io);
     }
   } catch (error) {
     console.error("Error in timeOutReminder:", error);
@@ -350,8 +354,6 @@ async function timeInReminder(io) {
       visitors.map(async (visitor) => {
         console.log(visitor.visitor_details.name.first_name);
         if (isThirtyMinutesBefore(visitor.expected_time_in, currentDate)) {
-          
-
           const mailOptions = {
             from: process.env.MAILER,
             to: visitor.visitor_details.email,
@@ -361,10 +363,10 @@ async function timeInReminder(io) {
 
           await sendEmail(mailOptions);
 
-        await createNotification(visitor, 'time-in', io);
-      }
-      
-    }));
+          await createNotification(visitor, "time-in", io);
+        }
+      })
+    );
   } catch (error) {
     console.error("Error in check-in reminder", error);
   }
@@ -373,43 +375,47 @@ async function timeInReminder(io) {
 async function createNotification(visitor, type, io) {
   let visitorDB;
   if (Array.isArray(visitor)) {
-      visitorDB = await Visitor.findOne({
-          "companion_details._id": visitor[0]._id,
-      });
+    visitorDB = await Visitor.findOne({
+      "companion_details._id": visitor[0]._id,
+    });
   }
 
   const visitorName = visitor.visitor_details
-      ? `${visitor.visitor_details.name.last_name}, ${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name}`
-      : `${visitor[0].name.last_name}, ${visitor[0].name.first_name} ${visitor[0].name.middle_name}`;
+    ? `${visitor.visitor_details.name.last_name}, ${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name}`
+    : `${visitor[0].name.last_name}, ${visitor[0].name.first_name} ${visitor[0].name.middle_name}`;
 
-  const hostName = visitor.purpose?.who.join(", ") || visitorDB?.purpose?.who.join(", ") || "";
+  const hostName =
+    visitor.purpose?.who.join(", ") || visitorDB?.purpose?.who.join(", ") || "";
   const date = visitor.purpose?.when || visitorDB?.when || "";
   const time = visitor.expected_time_in || visitorDB?.expected_time_in || "";
-  const location = visitor.purpose?.where.join(", ") || visitorDB?.purpose?.where.join(", ") || "";
-  const purpose = visitor.purpose?.what?.join(", ") || visitorDB.purpose?.what?.join(", ");
+  const location =
+    visitor.purpose?.where.join(", ") ||
+    visitorDB?.purpose?.where.join(", ") ||
+    "";
+  const purpose =
+    visitor.purpose?.what?.join(", ") || visitorDB.purpose?.what?.join(", ");
   const visitorType = visitor.visitor_type;
 
   const notificationContent = {
-      visitor_name: visitorName,
-      host_name: hostName,
-      date: date,
-      time: time,
-      location: location,
-      purpose: purpose,
-      visitor_type: visitorType,
+    visitor_name: visitorName,
+    host_name: hostName,
+    date: date,
+    time: time,
+    location: location,
+    purpose: purpose,
+    visitor_type: visitorType,
   };
 
   await Notification.create({
-      type: type,
-      recipient: visitor.visitor_details?._id || visitor[0]._id,
-      content: notificationContent,
+    type: type,
+    recipient: visitor.visitor_details?._id || visitor[0]._id,
+    content: notificationContent,
   });
 
   io.emit(type, notificationContent);
 
   console.log("Notification pushed");
 }
-
 
 module.exports = {
   hashPassword,
@@ -424,5 +430,5 @@ module.exports = {
   uploadFileToGCS,
   timeInReminder,
   timeOutReminder,
-  sendEmail
+  sendEmail,
 };
