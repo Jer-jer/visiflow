@@ -23,6 +23,7 @@ const badgeRouter = require('./api/routes/badgeRouter');
 const eventsRouter = require('./api/routes/eventsRouter');
 const announcementsRouter = require('./api/routes/announcementsRouter');
 const notificationRouter = require('./api/routes/notificationRouter');
+const officesRouter = require('./api/routes/officesRouter');
 const { timeInReminder, timeOutReminder } = require("./api/utils/helper");
 
 // Create Express app
@@ -55,6 +56,7 @@ app.use('/badge', badgeRouter);
 app.use('/events', eventsRouter);
 app.use('/announcements', announcementsRouter);
 app.use('/notification', notificationRouter);
+app.use('/offices', officesRouter);
 
 // Socket.io events
 io.on('connection', socket => {

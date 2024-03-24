@@ -3,19 +3,22 @@ const {
     validateOffices, 
     validationResult 
 } = require('../middleware/dataValidation');
+const {
+    uploadFileToGCS,
+  } = require("../utils/helper");
 
 //Get list of offices
-exports.getAlloffices = async (req, res) => {
+exports.getAllOffices = async (req, res) => {
     try {
-        const off = await offices.find();
-        return res.json({ announce });
+        const office = await Offices.find();
+        return res.json({ office });
     } catch (error) {
         return res.status(500).json({ error: "Internal Server Error "});
     }
 };
 
 //Create new office
-exports.createNewOffices = async (req, res) => {
+exports.addOffices = async (req, res) => {
     // Run validation middleware
     await Promise.all(validateOffices.map(validation => validation.run(req)));
 
@@ -34,13 +37,24 @@ exports.createNewOffices = async (req, res) => {
             opentime,
             closetime,
             openday,
+            officeImg
         } = req.body;
-        
-        //check if the officec already exists
+   
+        //check if the office already exists
         const existingOffice = await Offices.findOne({ name, roomNo });
         if (existingOffice) {
             return res.status(400).json({ error: 'Office already exists' });
         }
+
+        const [officepic] = await Promise.all([
+        uploadFileToGCS(
+            Buffer.from(
+            officeImg.replace(/^data:image\/\w+;base64,/, ""),
+            "base64"
+            ),
+            `${Date.now()}_${name.toUpperCase()}_office.jpg`
+        ),
+        ]);
 
         const newOffice = new Offices({ 
             name, 
@@ -51,23 +65,24 @@ exports.createNewOffices = async (req, res) => {
             opentime,
             closetime,
             openday,
+            officepic
         });
 
-        const createdOffices = await newOffice.save();
+        const createdOffice = await newOffice.save();
 
-        if (createdOffices) {
-            return res.status(201).json({message:createdOffices});
-        } else {
-            return res.status(400).json({ error: 'Failed to Create new User' });
-        }
-    } catch (err) {
-        return res.status(500).json({ error: 'Internal Server Error'});
+        res.status(201).json({ Message: createdOffice });
+        
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Failed to create new office" });
     }
 };
 
+//Update Office
 exports.updateOffices = async (req, res) => {
     try {
-        const { _id, name, 
+        const { _id, 
+            name, 
             roomNo,
             pic,
             contact,
@@ -76,7 +91,9 @@ exports.updateOffices = async (req, res) => {
             closetime,
             openday,} = req.body;
 
-        const office = await Announcements.findById(_id);
+        const office = await Offices.findById(_id);
+
+        
 
         if(!office) {
             return res.status(404).json({ error: 'Office not found'});
@@ -101,11 +118,41 @@ exports.updateOffices = async (req, res) => {
             return res.status(400).json({ error: "No valid fields to update" });
         }
 
-        const updatedAnnouncements = await Announcements.findByIdAndUpdate(_id, filteredUpdateFields, { new: true });
+        const updatedOffices = await Offices.findByIdAndUpdate(_id, filteredUpdateFields, { new: true });
 
-        return res.status(201).json({ announce: sanitizeData(updatedAnnouncements)});
+        return res.status(201).json({ message: updatedOffices});
     } catch (error) {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 
+exports.deleteOffices = async (req, res) => {
+    try {
+      const {_id} = req.body;
+
+      const deletedData = await Offices.findByIdAndDelete(_id);
+
+      if (deletedData) {
+          return res.status(201).json({ message: 'Data deleted successfully'});
+      } else {
+          return res.status(404).json({ error: "Office not found"});
+      }
+    } catch (error) {
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
+exports.getOffices = async (req, res) => {
+    try {
+        const {query} = req.body;
+        const regex = new RegExp(query, 'i');
+        const searchOffices = await Offices.find({$or:[{name: regex},{roomNo: regex},{pic: regex}]});
+        if(searchOffices) {
+            return res.status(201).json({ office: searchOffices });
+        } else {
+            return res.status(404).json({ error: 'Office not found'});
+        }
+    } catch (error) {
+        return res.status(500).json({ error: 'Internal Server Error '});
+    }
+};

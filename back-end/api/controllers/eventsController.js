@@ -8,7 +8,7 @@ const {
 exports.getEvents = async (req, res) => {
     try {
         const events = await Event.find();
-        return res.status(200).json({ events });
+        return res.status(200).json({ event: events });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "Failed to retrieve events from the database" });
@@ -16,7 +16,7 @@ exports.getEvents = async (req, res) => {
 };
 
 exports.addEvent = async (req, res) => {
-    const { name, startDate, endDate, locationID, userID } = req.body;
+    const { name, startDate, endDate,startTime, endTime, locationID, description } = req.body;
 
     await Promise.all(validateEvents.map(validation => validation.run(req)));
 
@@ -30,11 +30,13 @@ exports.addEvent = async (req, res) => {
             name,
             startDate,
             endDate,
+            startTime,
+            endTime,
             locationID,
-            userID
+            description
         });
 
-        res.status(201).json({ Event: newEvent });
+        res.status(201).json({ event: newEvent });
         
     } catch (error) {
         console.error(error);
@@ -49,7 +51,7 @@ exports.findEvent = async (req, res) => {
         const eventDB = await Event.findById(_id);
         
         if (eventDB) {
-            return res.status(200).json({ Event: eventDB });
+            return res.status(200).json({ event: eventDB });
         } else {
             return res.status(404).json({ error: 'Event not found'});
         }
@@ -61,7 +63,7 @@ exports.findEvent = async (req, res) => {
 };
 
 exports.updateEvent = async (req, res) => {
-    const { _id, name, startDate, endDate, locationID, userID} = req.body;
+    const { _id, name, startDate, endDate, startTime, endTime, locationID, description} = req.body;
 
     try {
         const eventDB = await Event.findById(_id);
@@ -73,8 +75,11 @@ exports.updateEvent = async (req, res) => {
             name: name || event.name,
             startDate: startDate || event.startDate,
             endDate: endDate || event.endDate,
+            startTime: startTime || event.startTime,
+            endTime: endTime || event.endTime,
             locationID: locationID || event.locationID,
-            userID: userID || event.userID
+            description: description || event.description
+
         }
         
         const filteredUpdateFields = Object.fromEntries(

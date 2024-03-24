@@ -31,9 +31,10 @@ const validateAnnouncements = [
 const validateEvents = [
     body('name').notEmpty().withMessage('Event name is required').isString().withMessage('Event name must be a string'),
     body('locationID').isString().withMessage('Location ID must be a string').notEmpty().withMessage('Location ID is required'),
-    body('userID').isString().withMessage('User ID must be a string').notEmpty().withMessage('User ID is required'),
     body('startDate').isISO8601().withMessage('Date is not the right format').notEmpty().withMessage('Data is required'),
     body('endDate').isISO8601().withMessage('Date is not the right format').notEmpty().withMessage('Data is required'),
+    body('startTime').isISO8601().withMessage('Date is not the right format').notEmpty().withMessage('Data is required'),
+    body('endTime').isISO8601().withMessage('Date is not the right format').notEmpty().withMessage('Data is required'),
 ];
 
 const validateVisitor = [

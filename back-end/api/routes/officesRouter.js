@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const announcementsController = require("../controllers/officesController");
+const officesController = require("../controllers/officesController");
 
 // router.use((req, res, next) => {
 //   if (req.user && req.user.role.includes("admin")) next();

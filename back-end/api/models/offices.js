@@ -3,16 +3,18 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const OfficesSchema = new Schema({
     name: { type: String, require: true },
-    roomNo: { type: String  },
+    roomNo: { type: String, require: true },
     //person in charge
     pic: { type: String, require: true },
     contact: { type: String, require: true },
     email: { type: String, require: true },
     //operating hours
-    opentime: { type: Date, default: Date.now },
-    closetime: { type: Date, default: Date.now },
+    opentime: { type: Date, require: true },
+    closetime: { type: Date, require: true },
     openday: { type: [Boolean], default: [false,false,false,false,false,false,false]},
-    // availability:{type: Boolean, default: false},
+    //image
+    officeImg: { type: String, require: true },
+
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });
