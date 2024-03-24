@@ -1,6 +1,7 @@
-import React, { useState, Dispatch, SetStateAction } from "react";
+import React, { useState, Dispatch, SetStateAction, useEffect } from "react";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import AxiosInstace from "../../../../lib/axios";
 
 //Interfaces
 import { EventsSchedule } from "../../../../utils/interfaces";
@@ -38,7 +39,7 @@ import "./styles.scss";
 dayjs.extend(customParseFormat);
 
 interface EventsSchedDetailsProps {
-	record?: EventsSchedule;
+	record?: any;
 	setOpenDetails: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -85,12 +86,13 @@ export default function EventsSchedDetails({
 	setOpenDetails,
 }: EventsSchedDetailsProps) {
 	//Form States
-	const [eventName, setEventName] = useState("");
-	const [date, setDate] = useState("");
-	const [start, setStart] = useState("");
-	const [end, setEnd] = useState("");
-	const [location, setLocation] = useState("");
-	const [desc, setDesc] = useState("");
+	const [name, setName] = useState("");
+	const [startDate, setStartDate] = useState(record?.startDate || Date.now);
+	const [endDate, setEndDate] = useState(record?.endDate || Date.now);
+	const [startTime, setStartTime] = useState(record?.startTime || Date.now);
+	const [endTime, setEndTime] = useState(record?.endTime || Date.now);
+	const [locationId, setLocationId] = useState("");
+	const [description, setDescription] = useState("");
 
 	//Image States
 	const [loading, setLoading] = useState(false);
@@ -129,19 +131,51 @@ export default function EventsSchedDetails({
 
 	const editOrCancel = () => {
 		if (!disabledInputs) {
-			setEventName("");
-			setDate("");
-			setStart("");
-			setLocation("");
-			setEnd("");
-			setDesc("");
+			setName("");
+			setLocationId("");
+			setDescription("");
 		}
 
 		setDisabledInputs(!disabledInputs);
 	};
 
-	const saveAction = () => {
+	useEffect(() => {
+		console.log(record)
+	}, [])
+
+	const saveAction = async() => {
 		//This needs to be customized to whatever the DB returns
+		if(record === undefined) {
+			try {
+				await AxiosInstace.post('/events/new', { 
+					name: name,
+					startDate: startDate,
+					endDate: endDate,
+					startTime: startTime,
+					endTime: endTime,
+					locationID: locationId,
+            		description: description
+				}); 
+			} catch (error) {
+			console.error('Error in adding event:', error);
+			}
+		} else { // updating record
+			try {
+				await AxiosInstace.put('/events/update', { 
+					_id: record?._id,
+					name: name === "" ? record?.name : name,
+					startDate: startDate,
+					endDate: endDate,
+					startTime: startTime,
+					endTime: endTime,
+					locationID: locationId,
+            		// userID: userID
+				}); 
+			} catch (error) {
+			console.error('Error in updating event:', error);
+			}
+		}
+
 		setAlertOpen(!alertOpen);
 
 		setDisabledInputs(!disabledInputs);
@@ -154,36 +188,67 @@ export default function EventsSchedDetails({
 		</div>
 	);
 
+	const handleChangeRange = (date: any) => {
+		setStartTime(date[0]);
+		setEndTime(date[1]);
+	}
+
+	const handleChangeStartDate = (date: any) => {
+		setStartDate(date);
+	}
+
+	const handleChangeEndDate = (date: any) => {
+		setEndDate(date);
+	}
+
 	return (
 		<div className="mr-[135px] flex flex-col gap-[35px] pt-[25px]">
 			<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
 				<div className="flex justify-start">
 					<div className="mr-[106px] flex w-[73%] flex-col gap-[20px]">
 						<div className="flex gap-[30px]">
-							<div className="flex w-full gap-[26px]">
+							<div className="flex w-full gap-[32px]">
 								<Label spanStyling="text-black font-medium text-[16px]">
 									Event Name
 								</Label>
 								<Input
 									inputType="text"
-									inputStyling="input w-[68%] h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
+									inputStyling="input w-full h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
 									placeHolder={record?.name}
-									input={eventName}
-									setInput={setEventName}
+									input={name}
+									setInput={setName}
 									visitorMngmnt
 									disabled={disabledInputs}
 								/>
 							</div>
-							<div className="flex w-full gap-[83px]">
+						</div>
+						<div className="flex gap-[30px]">
+							<div className="flex w-full gap-[36px]">
 								<Label spanStyling="text-black font-medium text-[16px]">
-									Date
+									Start Date
 								</Label>
 								<DatePicker
 									className={`vm-placeholder w-[68%] border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500 focus:!border-primary-500 ${
 										disabledInputs && "picker-disabled"
 									}`}
 									size="middle"
-									defaultValue={dayjs(record?.date || dayjs(), "YYYY-MM-DD")}
+									value={dayjs(startDate)}
+									onChange={handleChangeStartDate}
+									format="MMMM DD, YYYY"
+									disabled={disabledInputs}
+								/>
+							</div>
+							<div className="flex w-full gap-[36px]">
+								<Label spanStyling="text-black font-medium text-[16px]">
+									End Date
+								</Label>
+								<DatePicker
+									className={`vm-placeholder w-[68%] border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500 focus:!border-primary-500 ${
+										disabledInputs && "picker-disabled"
+									}`}
+									size="middle"
+									value={dayjs(endDate)}
+									onChange={handleChangeEndDate}
 									format="MMMM DD, YYYY"
 									disabled={disabledInputs}
 								/>
@@ -199,10 +264,11 @@ export default function EventsSchedDetails({
 								}`}
 								size="middle"
 								picker="time"
-								defaultValue={[
-									dayjs(record?.start || dayjs(), "hh:mm A"),
-									dayjs(record?.end || dayjs(), "hh:mm A"),
+								value={[
+									dayjs(startTime),
+									dayjs(endTime),
 								]}
+								onChange={handleChangeRange}
 								placeholder={["From", "To"]}
 								changeOnBlur={false}
 								format="hh:mm A"
@@ -219,9 +285,9 @@ export default function EventsSchedDetails({
 							<Input
 								inputType="text"
 								inputStyling="input w-full h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-								placeHolder={record?.location}
-								input={location}
-								setInput={setLocation}
+								placeHolder={record?.locationID}
+								input={locationId}
+								setInput={setLocationId}
 								visitorMngmnt
 								disabled={disabledInputs}
 							/>
@@ -233,7 +299,7 @@ export default function EventsSchedDetails({
 							<TextArea
 								className="custom-textarea input h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
 								placeholder={record?.description}
-								onChange={(e) => setDesc(e.target.value)}
+								onChange={(e) => setDescription(e.target.value)}
 								rows={8}
 								disabled={disabledInputs}
 							/>
