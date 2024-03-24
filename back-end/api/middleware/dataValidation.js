@@ -51,9 +51,6 @@ const validateVisitor = [
     body('expected_time_in').isDate().withMessage('Expected Time In must be a date').notEmpty().withMessage('Expected Time In is required'),
     body('expected_time_out').isDate().withMessage('Expected Time Out must be a date').notEmpty().withMessage('Expected Time Out is required'),
     body('id_picture').isObject().withMessage('ID Picture must be an object').notEmpty().withMessage('ID Picture is required'),
-    body('id_picture.front').isString().withMessage('Front must be a string').notEmpty().withMessage('Front is required'),
-    body('id_picture.back').isString().withMessage('Back must be a string').notEmpty().withMessage('Back is required'),
-    body('id_picture.selfie').isString().withMessage('Selfie must be a string').notEmpty().withMessage('Selfie is required'),
 
 ];
 

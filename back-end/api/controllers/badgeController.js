@@ -38,16 +38,18 @@ exports.generateBadge = async (req, res) => {
 
 //still hard coded for testing purpose only
 exports.newBadge = async (req, res) => {
-    const { visitor_id, qr_id } = req.body;
+  const { visitor_id, qr_id } = req.body;
 
-    const badge = new Badge({
-        visitor_id: visitor_id,
-        qr_id: qr_id,
-        is_active: true
-    });
-    await badge.save();
-    res.send(200);
-}
+  console.log("NEW WALK-IN", visitor_id, qr_id);
+
+  const badge = new Badge({
+    visitor_id: visitor_id,
+    qr_id: qr_id,
+    is_active: true,
+  });
+  await badge.save();
+  res.send(200);
+};
 
 exports.checkBadge = async (req, res) => {
   const { qr_id, visitor_id } = req.query;
@@ -56,9 +58,8 @@ exports.checkBadge = async (req, res) => {
 
   if (qr_id !== undefined) {
     badge = await Badge.findOne({ qr_id: qr_id });
-    // type = "walk-in";
     if (!badge) {
-      res.redirect(`http://192.168.1.71:3000/visitor-form?qr_id=${qr_id}`);
+      return res.redirect(`http://localhost:3000/visitor-form?qr_id=${qr_id}`);
     }
   } else {
     badge = await Badge.findOne({ visitor_id: visitor_id });
@@ -73,6 +74,6 @@ exports.checkBadge = async (req, res) => {
     return res.status(400).json({ message: `Invalid visitor badge` });
   }
 
-   const _id = (visitor_id !== undefined) ? visitor_id : qr_id;
-   updateLog(badge._id, _id, type, res); 
-}
+  const _id = visitor_id !== undefined ? visitor_id : qr_id;
+  updateLog(badge._id, _id, type, res);
+};

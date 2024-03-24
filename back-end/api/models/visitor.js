@@ -5,6 +5,7 @@ const processConnection = mongoose.createConnection(
 );
 
 const Schema = mongoose.Schema;
+const ObjectId = mongoose.Types.ObjectId;
 
 const Name = new Schema({
   first_name: { type: String, require: true },
@@ -22,9 +23,9 @@ const Address = new Schema({
 });
 
 const IdPhoto = new Schema({
-  front: { type: String, require: true },
-  back: { type: String, require: true },
-  selfie: { type: String, require: true },
+  front: { type: String },
+  back: { type: String },
+  selfie: { type: String },
 });
 
 const VisitorDetails = new Schema({
@@ -42,6 +43,7 @@ const Purpose = new Schema({
 });
 
 const VisitorSchema = new Schema({
+  _id: { type: ObjectId },
   visitor_details: { type: VisitorDetails, required: true },
   companion_details: [{ type: VisitorDetails, required: true, default: [] }],
   plate_num: { type: String, sparse: true },

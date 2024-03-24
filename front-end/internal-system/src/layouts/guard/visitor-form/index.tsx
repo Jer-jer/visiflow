@@ -16,6 +16,7 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
+import queryString from "query-string";
 import { useDispatch } from "react-redux";
 import {
 	WalkInFormZod,
@@ -136,13 +137,13 @@ export default function VisitorFormLayout() {
 		setValue,
 	} = useForm<WalkInFormTypeZod>({
 		defaultValues: {
-			expected_time_out: formatDateObjToString(new Date()),
+			expected_time_out: new Date(),
 		},
 		resolver: zodResolver(WalkInFormZod),
 	});
 
 	const updateInput = (
-		value: string | [string, string] | string[] | any,
+		value: string | [string, string] | string[] | Date | any,
 		property: string,
 	) => {
 		switch (property) {
@@ -180,7 +181,7 @@ export default function VisitorFormLayout() {
 				setValue(property, value as string);
 				break;
 			case "expected_time_out":
-				setValue(property, value as string);
+				setValue(property, value as Date);
 				break;
 			case "plate_num":
 				setValue(property, value as string);
@@ -213,9 +214,13 @@ export default function VisitorFormLayout() {
 		}
 	};
 
-	const onChange: DatePickerProps["onChange"] = (date, dateString) => {};
+	const onChange: DatePickerProps["onChange"] = (date, dateString) => {
+		updateInput(new Date(dateString as string), "expected_time_out");
+	};
 
-	const { qr_id } = useParams() || null; // QR ID, assuming it looks like this, this retrieves the value of qr
+	// eslint-disable-next-line no-restricted-globals
+	const parsed = queryString.parse(location.search);
+	const qr_id = parsed.qr_id;
 
 	const saveAction = (zodData: WalkInFormInterfaceZod) => {
 		AxiosInstance.post("/visitor/new", {
@@ -240,41 +245,56 @@ export default function VisitorFormLayout() {
 				expected_time_in: new Date(),
 				expected_time_out: new Date(zodData.expected_time_out),
 				plate_num: zodData.plate_num,
-				pupose: {
+				purpose: {
 					what: zodData.what,
-					when: formatDateObjToString(new Date()),
+					when: new Date(),
 					where: zodData.where,
 					who: zodData.who,
+				},
+				id_picture: {
+					front: "",
+					back: "",
+					selfie: "",
 				},
 				status: VisitorStatus.Approved,
 				visitor_type: VisitorType.WalkIn,
 			},
 			// Add QR variable here
-		}).then((res) => {
-			setVisitorId(res.data.visitor._id);
-		});
-
-		AxiosInstance.post("/badge/newBadge", {
-			visitor_id: visitor_id,
-			qr_id: qr_id,
 		})
 			.then((res) => {
-				setStatus(true);
-				setAlertMsg(res.data.message);
-				setAlertOpen(!alertOpen);
+				setVisitorId(res.data.visitor._id);
+
+				AxiosInstance.post("/badge/newBadge", {
+					visitor_id: res.data.visitor._id,
+					qr_id: parseInt(qr_id as string),
+				})
+					.then((res) => {
+						setStatus(true);
+						setAlertMsg(res.data.message);
+						setAlertOpen(!alertOpen);
+					})
+					.catch((err) => {
+						setStatus(false);
+						setAlertMsg(
+							err || err.response.data.error || err.response.data.errors,
+						);
+					});
 			})
 			.catch((err) => {
-				setStatus(false);
-				setAlertMsg(err || err.response.data.error || err.response.data.errors);
+				// setStatus(false);
+				// setAlertMsg(err || err.response.data.error || err.response.data.errors);
+				// setAlertOpen(!alertOpen);
+
+				console.log(err || err.response.data.error || err.response.data.errors);
 			});
 	};
 
 	const onSubmit = handleSubmit((data) => {
-		console.log("HAAAAAAAKKKKKKDOGGG", data);
-		// saveAction(data);
+		// console.log("HAAAAAAAKKKKKKDOGGG", data);
+		saveAction(data);
 	});
 
-	if (qr_id == null) {
+	if (qr_id === undefined) {
 		return (
 			<div className="mb-[35px] ml-2 mt-3 flex">
 				<div className="w-[380px] flex-auto md:w-[761px]">
@@ -416,14 +436,12 @@ export default function VisitorFormLayout() {
 												</div>
 
 												<div className="flex flex-col md:flex-row md:items-center">
-													<h1>Expected Out</h1>
+													<h1>Expected Time Out</h1>
 													<DatePicker
 														showTime
 														className="focus:!bg-[#e0ebf0]vm-placeholder w-[inherit] border-none !border-[#d9d9d9] bg-[#e0ebf0] focus-within:!bg-[#e0ebf0] hover:!border-primary-500 hover:!bg-[#e0ebf0] focus:!border-primary-500"
-														defaultValue={dayjs(
-															formatDateObjToString(new Date()),
-															"YYYY-MM-DD hh:mm A",
-														)}
+														defaultValue={dayjs(dayjs(), "YYYY-MM-DD hh:mm A")}
+														format="YYYY-MM-DD hh:mm A"
 														onChange={onChange}
 													/>
 													{errors?.expected_time_out && (
