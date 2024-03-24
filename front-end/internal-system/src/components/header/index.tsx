@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { socket } from "./../../lib/socket";
+import useSound from "use-sound";
 
 //Components
 import { Modal } from "antd";
@@ -9,37 +9,46 @@ import CustomDropdown from "../dropdown";
 
 //Interfaces
 import { NotificationType } from "../../utils/enums";
-import { Notification, VisitorDataType } from "../../utils/interfaces";
+import { VisitorDataType } from "../../utils/interfaces";
+import { NotificationProps } from "../../states/notifications";
 import type { AppDispatch, RootState } from "../../store";
 import type { MenuProps } from "antd";
 
 //Reducers
 import { add } from "../../states/visitors";
+import { fetchNotifs, addNotif, readNotif } from "../../states/notifications";
 
 //Utils
 import { formatDateObjToString, formatDateString } from "../../utils";
 
 //Lib
 import AxiosInstance from "../../lib/axios";
+import { socket } from "./../../lib/socket";
 
 //Assets
 import { Account } from "../../assets/svg";
+import NotificationSound from "../../assets/notification.wav";
 
 //Styles
 import "./styles.scss";
-
 interface HeaderProps {
 	setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
 	setIsAdmin: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
-	const [notifications, setNotifications] = useState<Notification[]>([]);
+	//? Socket Connection
 	const [isConnected, setIsConnected] = useState(socket.connected);
 
+	//? Redux
 	const { data } = useSelector((state: RootState) => state.visitors);
+	const notifications = useSelector((state: RootState) => state.notifications);
 
+	//? Determine if the user is an admin
 	const wasAdmin = localStorage.getItem("role");
+
+	const [play] = useSound(NotificationSound);
+
 	const navigate = useNavigate();
 
 	const dispatch = useDispatch<AppDispatch>();
@@ -54,7 +63,7 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 	const initialNotificaions = () => {
 		AxiosInstance.get("/notification")
 			.then((res) => {
-				setNotifications(res.data.notifications);
+				dispatch(fetchNotifs(res.data.notifications));
 			})
 			.catch((err) => {
 				error(
@@ -79,8 +88,9 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 			dispatch(add(value));
 		}
 
-		function onNewNotification(value: any) {
-			setNotifications((prevNotifs) => [...prevNotifs, value]);
+		function onNewNotification(value: NotificationProps) {
+			dispatch(addNotif(value));
+			play();
 		}
 
 		initialNotificaions();
@@ -218,17 +228,10 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 		return time;
 	};
 
-	const readNotification = (x: number, notif: Notification) => {
+	const readNotification = (x: number, notif: NotificationProps) => {
 		//? Check if the notification is already read
 		if (notifications[x].is_read) return;
-		setNotifications((prev) => {
-			return prev.map((n, y) => {
-				if (y === x) {
-					return { ...n, is_read: true };
-				}
-				return n;
-			});
-		});
+		dispatch(readNotif(notif._id));
 		AxiosInstance.put("/notification/update", {
 			_id: notif._id,
 			is_read: true,

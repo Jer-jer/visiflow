@@ -10,12 +10,14 @@ import "../../utils/variables.scss";
 import "./styles.scss";
 
 interface CustomDropdownProps {
+	ref?: React.RefObject<HTMLDivElement>;
 	overlayClassName?: string;
 	items: MenuProps["items"];
 	children: ReactNode;
 }
 
 export default function CustomDropdown({
+	ref,
 	overlayClassName,
 	items,
 	children,

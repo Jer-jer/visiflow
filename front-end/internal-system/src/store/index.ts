@@ -7,6 +7,7 @@ import CompanionLogsReducer from "../states/logs/companions";
 import UserLogsReducer from "../states/logs/user";
 import VisitorTabsReducer from "../states/visitors/tab";
 import UserTabsReducer from "../states/users/tab";
+import NotificationsReducer from "../states/notifications";
 
 export const store = configureStore({
 	reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
 		companionLogs: CompanionLogsReducer,
 		userTabs: UserTabsReducer,
 		userLogs: UserLogsReducer,
+		notifications: NotificationsReducer,
 	},
 });
 

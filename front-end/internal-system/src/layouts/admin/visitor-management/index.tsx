@@ -160,7 +160,7 @@ export default function VisitorManagementLayout() {
 		(state: RootState) => state.visitors,
 	);
 
-	const tabs: any = useSelector((state: RootState) => state.visitorTabs);
+	const tabs = useSelector((state: RootState) => state.visitorTabs);
 
 	const dispatch = useDispatch<AppDispatch>();
 
