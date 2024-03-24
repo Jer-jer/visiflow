@@ -15,7 +15,7 @@ import type { AppDispatch, RootState } from "../../store";
 import type { MenuProps } from "antd";
 
 //Reducers
-import { add } from "../../states/visitors";
+import { add, fetchVisitors } from "../../states/visitors";
 import { fetchNotifs, addNotif, readNotif } from "../../states/notifications";
 
 //Utils
@@ -93,6 +93,7 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 			play();
 		}
 
+		dispatch(fetchVisitors());
 		initialNotificaions();
 
 		socket.on("connect", onConnect);
@@ -188,7 +189,7 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 					message = "has been declined at";
 					break;
 				case NotificationType.Pending:
-					message = `has planned an appointment with the following: ${data[visitor].purpose.who.join(", ")} at the following: ${data[visitor].purpose.where.join(", ")} on ${formatDateString(data[visitor].purpose.when)}`;
+					message = `has planned an appointment with the following: ${data[visitor].purpose.who.join(", ")} at the following: ${data[visitor].purpose.where.join(", ")} on ${formatDateObjToString(data[visitor].purpose.when)}`;
 					break;
 				case NotificationType.TimeIn:
 					message = "has yet to time in at";

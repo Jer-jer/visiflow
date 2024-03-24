@@ -26,7 +26,7 @@ import DateTimePicker from "../../../../components/datetime-picker";
 import { addLog } from "../../../../states/logs/companions";
 
 //Utils
-import { formatDateString } from "../../../../utils";
+import { formatDateObjToString, formatDateString } from "../../../../utils";
 
 //Styles
 import "./styles.scss";
@@ -71,89 +71,89 @@ export default function CompanionLogs({
 				key: "1",
 				purpose: {
 					what: ["Meeting with Client"],
-					when: "2023-09-15 09:30 AM",
+					when: new Date("2023-09-15 09:30 AM"),
 					where: ["Client's Office"],
 					who: ["John Doe"],
 				},
-				timeIn: "2023-09-15 09:30 AM",
-				timeOut: "2023-09-15 11:00 AM",
+				check_in_time: new Date("2023-09-15 09:30 AM"),
+				check_out_time: new Date("2023-09-15 11:00 AM"),
 			},
 			{
 				key: "2",
 				purpose: {
 					what: ["Interview"],
-					when: "2023-09-16 02:45 PM",
+					when: new Date("2023-09-16 02:45 PM"),
 					where: ["HR Office"],
 					who: ["Jane Doe"],
 				},
-				timeIn: "2023-09-16 02:45 PM",
-				timeOut: "2023-09-16 04:15 PM",
+				check_in_time: new Date("2023-09-16 02:45 PM"),
+				check_out_time: new Date("2023-09-16 04:15 PM"),
 			},
 			{
 				key: "3",
 				purpose: {
 					what: ["Conference Call"],
-					when: "2023-09-17 10:15 AM",
+					when: new Date("2023-09-17 10:15 AM"),
 					where: ["Home Office"],
 					who: ["John Doe", "Jane Doe"],
 				},
-				timeIn: "2023-09-17 10:15 AM",
-				timeOut: "2023-09-17 11:30 AM",
+				check_in_time: new Date("2023-09-17 10:15 AM"),
+				check_out_time: new Date("2023-09-17 11:30 AM"),
 			},
 			{
 				key: "4",
 				purpose: {
 					what: ["Intramurals"],
-					when: "2023-09-18 12:30 PM",
+					when: new Date("2023-09-18 12:30 PM"),
 					where: ["Football Field"],
 					who: ["John Doe", "Jane Doe"],
 				},
-				timeIn: "2023-09-18 12:30 PM",
-				timeOut: "2023-09-18 01:30 PM",
+				check_in_time: new Date("2023-09-18 12:30 PM"),
+				check_out_time: new Date("2023-09-18 01:30 PM"),
 			},
 			{
 				key: "5",
 				purpose: {
 					what: ["Training Session"],
-					when: "2023-09-19 03:00 PM",
+					when: new Date("2023-09-19 03:00 PM"),
 					where: ["Training Room"],
 					who: ["John Doe", "Jane Doe"],
 				},
-				timeIn: "2023-09-19 03:00 PM",
-				timeOut: "2023-09-19 05:00 PM",
+				check_in_time: new Date("2023-09-19 03:00 PM"),
+				check_out_time: new Date("2023-09-19 05:00 PM"),
 			},
 			{
 				key: "6",
 				purpose: {
 					what: ["Staff Meeting"],
-					when: "2023-09-20 09:00 AM",
+					when: new Date("2023-09-20 09:00 AM"),
 					where: ["Conference Room"],
 					who: ["John Doe", "Jane Doe"],
 				},
-				timeIn: "2023-09-20 09:00 AM",
-				timeOut: "2023-09-20 10:30 AM",
+				check_in_time: new Date("2023-09-20 09:00 AM"),
+				check_out_time: new Date("2023-09-20 10:30 AM"),
 			},
 			{
 				key: "7",
 				purpose: {
 					what: ["Visitor Registration"],
-					when: "2023-09-21 11:15 AM",
+					when: new Date("2023-09-21 11:15 AM"),
 					where: ["Reception Area"],
 					who: ["John Doe"],
 				},
-				timeIn: "2023-09-21 11:15 AM",
-				timeOut: "2023-09-21 12:45 PM",
+				check_in_time: new Date("2023-09-21 11:15 AM"),
+				check_out_time: new Date("2023-09-21 12:45 PM"),
 			},
 			{
 				key: "8",
 				purpose: {
 					what: ["Site Inspection"],
-					when: "2023-09-22 01:30 PM",
+					when: new Date("2023-09-22 01:30 PM"),
 					where: ["Construction Site"],
 					who: ["John Doe"],
 				},
-				timeIn: "2023-09-22 01:30 PM",
-				timeOut: "2023-09-22 03:00 PM",
+				check_in_time: new Date("2023-09-22 01:30 PM"),
+				check_out_time: new Date("2023-09-22 03:00 PM"),
 			},
 		];
 
@@ -165,18 +165,18 @@ export default function CompanionLogs({
 		{ label: "When", key: "when" },
 		{ label: "Where", key: "where" },
 		{ label: "Who", key: "who" },
-		{ label: "Time In", key: "timeIn" },
-		{ label: "Time Out", key: "timeOut" },
+		{ label: "Time In", key: "check_in_time" },
+		{ label: "Time Out", key: "check_out_time" },
 	];
 
 	const companionLogsData = companionLogs.map((logs) => {
 		return {
 			what: logs.purpose?.what.join(", "),
-			when: formatDateString(logs.purpose!.when),
+			when: formatDateObjToString(logs.purpose!.when),
 			where: logs.purpose?.where.join(", "),
 			who: logs.purpose?.who.join(", "),
-			timeIn: logs.timeIn,
-			timeOut: logs.timeOut,
+			check_in_time: formatDateObjToString(logs.check_in_time),
+			check_out_time: formatDateObjToString(logs.check_out_time),
 		};
 	});
 
@@ -185,6 +185,7 @@ export default function CompanionLogs({
 			header={
 				<span className="text-[22px] text-[#0C0D0D]">Companion Logs</span>
 			}
+			size={1500}
 			open={open}
 			setOpen={setOpen}
 			footer={false}

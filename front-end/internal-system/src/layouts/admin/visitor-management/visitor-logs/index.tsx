@@ -29,7 +29,7 @@ import AxiosInstance from "../../../../lib/axios";
 import { AppDispatch } from "../../../../store";
 
 // Reducers
-import { addLog } from "../../../../states/logs/visitor";
+import { fetchLogs, addLog } from "../../../../states/logs/visitor";
 
 //Styles
 import "./styles.scss";
@@ -76,20 +76,27 @@ export default function VisitorLogs({
 		{ label: "When", key: "when" },
 		{ label: "Where", key: "where" },
 		{ label: "Who", key: "who" },
-		{ label: "Time In", key: "timeIn" },
-		{ label: "Time Out", key: "timeOut" },
+		{ label: "Time In", key: "check_in_time" },
+		{ label: "Time Out", key: "check_out_time" },
 	];
 
 	const visitorLogsData = visitorLogs.map((logs) => {
 		return {
 			what: logs.purpose?.what.join(", "),
-			when: formatDateString(logs.purpose!.when),
+			when: formatDateObjToString(logs.purpose!.when),
 			where: logs.purpose?.where.join(", "),
 			who: logs.purpose?.who.join(", "),
-			timeIn: logs.timeIn,
-			timeOut: logs.timeOut,
+			check_in_time: formatDateObjToString(logs.check_in_time),
+			check_out_time: formatDateObjToString(logs.check_out_time),
 		};
 	});
+
+	const warning = (message: string) => {
+		Modal.warning({
+			title: `Warning`,
+			content: message,
+		});
+	};
 
 	const error = (message: string) => {
 		Modal.error({
@@ -98,49 +105,34 @@ export default function VisitorLogs({
 		});
 	};
 
-	//TODO Must be updated real-time
 	useEffect(() => {
 		AxiosInstance.post(`/badge/findBadge`, { visitor_id: visitorId })
 			.then((res) => {
-				if (res.data.badges.length > 0) {
-					AxiosInstance.post("/visitor/logs/find", {
-						_id: res.data.badges[0].badge_id,
+				const badge = res.data.badge;
+				AxiosInstance.post("/visitor/logs/find-visitor-logs", {
+					badge_id: badge._id,
+				})
+					.then((res) => {
+						const logs = res.data.visitorLogs;
+						logs.map((log: any, indx: number) =>
+							dispatch(
+								addLog({
+									key: (indx + 1).toString(),
+									purpose: purpose,
+									check_in_time: log.check_in_time,
+									check_out_time: log.check_out_time,
+								}),
+							),
+						);
+						// dispatch(fetchLogs(logs));
 					})
-						.then((res) => {
-							const logs = res.data.Log;
-							const isArray = Array.isArray(logs);
-
-							if (isArray) {
-								logs.map((log: any, indx: number) =>
-									dispatch(
-										addLog({
-											key: (indx + 1).toString(),
-											purpose: purpose,
-											timeIn: formatDateObjToString(log.check_in_time),
-											timeOut: formatDateObjToString(log.check_out_time),
-										}),
-									),
-								);
-							} else {
-								dispatch(
-									addLog({
-										key: "1",
-										purpose: purpose,
-										timeIn: formatDateObjToString(logs.check_in_time),
-										timeOut: formatDateObjToString(logs.check_out_time),
-									}),
-								);
-							}
-						})
-						.catch((err) => {
-							console.log(err);
-							error(
-								err?.response?.data?.error ||
-									err?.response?.data?.errors ||
-									"Something went wrong with displaying visitor logs.",
-							);
-						});
-				}
+					.catch((err) => {
+						warning(
+							err?.response?.data?.error ||
+								err?.response?.data?.errors ||
+								"Something went wrong with displaying visitor logs.",
+						);
+					});
 			})
 			.catch((err) => {
 				error(

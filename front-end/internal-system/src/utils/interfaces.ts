@@ -6,12 +6,12 @@ import {
 	VisitorStatus,
 	VisitorType,
 	UserRole,
-	NotificationType,
+	UserActionLogType,
 } from "./enums";
 
 export interface PurposeProps {
 	what: string[];
-	when: string;
+	when: Date;
 	where: string[];
 	who: string[];
 	// why?: string;
@@ -20,8 +20,8 @@ export interface PurposeProps {
 export interface VisitorLogDetails {
 	key: string;
 	purpose?: PurposeProps;
-	timeIn: string;
-	timeOut: string;
+	check_in_time: Date;
+	check_out_time: Date;
 }
 
 export interface FullNameProps {
@@ -81,10 +81,12 @@ export interface IDPictureProps {
 }
 
 export interface UserActionLogsDetails {
-	logId: string;
-	action: string;
-	logDate: string;
-	system: string;
+	user_id: string;
+	name: FullNameProps;
+	role: string;
+	type: UserActionLogType;
+	status: string;
+	created_at: Date;
 }
 
 export interface UserDataType {

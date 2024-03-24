@@ -4,18 +4,13 @@ import React from "react";
 import "../../utils/variables.scss";
 import "./styles.scss";
 
-//Assets
-import { ExcelDownload } from "../../assets/svg";
-
 interface OuterContainerProps {
 	header: string;
 	headerStyling?: string;
 	children: React.ReactNode;
-	exportFile?: boolean;
 }
 
 export default function OuterContainer({
-	exportFile,
 	header,
 	headerStyling,
 	children,
@@ -30,11 +25,6 @@ export default function OuterContainer({
 				>
 					{header}
 				</span>
-				{exportFile && (
-					<span className="line-normal">
-						<ExcelDownload />
-					</span>
-				)}
 			</div>
 			{children}
 		</div>

@@ -164,7 +164,7 @@ export default function VisitorDetails({
 	});
 
 	const updateInput = (
-		value: string | [string, string] | string[] | any,
+		value: string | [string, string] | string[] | Date | any,
 		property: string,
 	) => {
 		switch (property) {
@@ -218,7 +218,7 @@ export default function VisitorDetails({
 				setValue(property, value as string[]);
 				break;
 			case "when":
-				setValue(property, value as string);
+				setValue(property, value as Date);
 				break;
 			case "where":
 				setValue(property, value as string[]);
@@ -240,7 +240,9 @@ export default function VisitorDetails({
 		}
 	};
 
-	const onChange: DatePickerProps["onChange"] = (date, dateString) => {};
+	const onChange: DatePickerProps["onChange"] = (date, dateString) => {
+		updateInput(new Date(dateString as string), "when");
+	};
 
 	const handleChange = (property: string, value: string | string[]) =>
 		updateInput(value, property);
@@ -817,6 +819,7 @@ export default function VisitorDetails({
 														record.purpose.when,
 														"YYYY-MM-DD hh:mm A",
 													)}
+													format={"YYYY-MM-DD hh:mm A"}
 													onChange={onChange}
 													disabled={disabledInputs}
 												/>

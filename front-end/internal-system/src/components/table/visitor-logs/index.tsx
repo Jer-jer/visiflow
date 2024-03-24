@@ -11,7 +11,11 @@ import { VisitorLogDetails } from "../../../utils/interfaces";
 import type { RootState } from "../../../store";
 
 // Utils
-import { formatDateString } from "../../../utils";
+import {
+	formatDateToISO,
+	formatDateObjToString,
+	formatDateString,
+} from "../../../utils";
 
 //Styles
 import "../../../utils/variables.scss";
@@ -49,7 +53,7 @@ export default function VisitorLogsTable({
 					dataIndex: "when",
 					key: "when",
 					render(value, record, index) {
-						return formatDateString(record.purpose!.when);
+						return formatDateObjToString(record.purpose!.when);
 					},
 				},
 				{
@@ -76,13 +80,19 @@ export default function VisitorLogsTable({
 			title: "Time In",
 			dataIndex: "timeIn",
 			key: "timeIn",
-			sorter: (a, b) => a.timeIn.localeCompare(b.timeIn),
+			sorter: (a, b) =>
+				formatDateToISO(a.check_in_time)!.localeCompare(
+					formatDateToISO(b.check_in_time)!,
+				),
 		},
 		{
 			title: "Time Out",
 			dataIndex: "timeOut",
 			key: "timeOut",
-			sorter: (a, b) => a.timeOut.localeCompare(b.timeOut),
+			sorter: (a, b) =>
+				formatDateToISO(a.check_out_time)!.localeCompare(
+					formatDateToISO(b.check_out_time)!,
+				),
 		},
 	];
 
@@ -95,8 +105,8 @@ export default function VisitorLogsTable({
 					: filterWhen
 						? new Date(log.purpose!.when) >= startDate &&
 							new Date(log.purpose!.when) <= endDate
-						: new Date(log.timeIn) >= startDate &&
-							new Date(log.timeOut) <= endDate;
+						: new Date(log.check_in_time) >= startDate &&
+							new Date(log.check_out_time) <= endDate;
 			})}
 			bordered
 			pagination={{ pageSize: 5 }}

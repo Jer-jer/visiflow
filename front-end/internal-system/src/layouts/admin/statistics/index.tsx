@@ -88,7 +88,7 @@ export default function StatisticsLayout() {
 	return (
 		<div className="mb-[35px] ml-2 mt-3 flex flex-col gap-[35px]">
 			<div className="w-full">
-				<OuterContainer header="Summary" exportFile>
+				<OuterContainer header="Summary">
 					<InnerContainer additionalStyles="rounded-[10px] border border-[#D0D2CC]">
 						<StatisticsSummaryContent
 							title="total visitors for today"
@@ -145,7 +145,7 @@ export default function StatisticsLayout() {
 				</OuterContainer>
 			</div>
 			<div className="w-full">
-				<OuterContainer header="Summary" exportFile>
+				<OuterContainer header="Summary">
 					<InnerContainer additionalStyles="rounded-[10px] border border-[#D0D2CC]">
 						<StatisticsSummaryContentAlt
 							title="most visited"
@@ -194,7 +194,6 @@ export default function StatisticsLayout() {
 				<OuterContainer
 					header={"WALK-IN VS PRE-REGISTERED VISITORS PER YEAR"}
 					headerStyling="text-lg tracking-[1.47px]"
-					exportFile
 				>
 					<div className="mb-[10px] w-[95%]">
 						<ResponsiveContainer aspect={2}>
@@ -232,7 +231,6 @@ export default function StatisticsLayout() {
 				<OuterContainer
 					header={"WALK-IN VS PRE-REGISTERED VISITORS PER MONTH"}
 					headerStyling="text-lg tracking-[1.47px]"
-					exportFile
 				>
 					<div className="mb-[10px] w-[95%]">
 						<ResponsiveContainer aspect={2}>

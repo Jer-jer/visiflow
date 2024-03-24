@@ -11,7 +11,11 @@ import { VisitorLogDetails } from "../../../utils/interfaces";
 import type { RootState } from "../../../store";
 
 // Utils
-import { formatDateString } from "../../../utils";
+import {
+	formatDateObjToString,
+	formatDateString,
+	formatDateToISO,
+} from "../../../utils";
 
 //Styles
 import "../../../utils/variables.scss";
@@ -49,7 +53,7 @@ export default function CompanionLogsTable({
 					dataIndex: "when",
 					key: "when",
 					render(value, record, index) {
-						return formatDateString(record.purpose!.when);
+						return formatDateObjToString(record.purpose!.when);
 					},
 				},
 				{
@@ -74,15 +78,31 @@ export default function CompanionLogsTable({
 		},
 		{
 			title: "Time In",
-			dataIndex: "timeIn",
-			key: "timeIn",
-			sorter: (a, b) => a.timeIn.localeCompare(b.timeIn),
+			dataIndex: "check_in_time",
+			key: "check_in_time",
+			sorter: (a, b) =>
+				formatDateToISO(a.check_in_time)!.localeCompare(
+					formatDateToISO(b.check_in_time)!,
+				),
+			render: (value, record, index) => {
+				return record.check_out_time
+					? formatDateObjToString(record.check_in_time)
+					: "N/A";
+			},
 		},
 		{
 			title: "Time Out",
-			dataIndex: "timeOut",
-			key: "timeOut",
-			sorter: (a, b) => a.timeOut.localeCompare(b.timeOut),
+			dataIndex: "check_out_time",
+			key: "check_out_time",
+			sorter: (a, b) =>
+				formatDateToISO(a.check_out_time)!.localeCompare(
+					formatDateToISO(b.check_out_time)!,
+				),
+			render: (value, record, index) => {
+				return record.check_out_time
+					? formatDateObjToString(record.check_out_time)
+					: "N/A";
+			},
 		},
 	];
 
@@ -95,8 +115,8 @@ export default function CompanionLogsTable({
 					: filterWhen
 						? new Date(log.purpose!.when) >= startDate &&
 							new Date(log.purpose!.when) <= endDate
-						: new Date(log.timeIn) >= startDate &&
-							new Date(log.timeOut) <= endDate;
+						: new Date(log.check_in_time) >= startDate &&
+							new Date(log.check_out_time) <= endDate;
 			})}
 			pagination={{ pageSize: 5 }}
 		/>

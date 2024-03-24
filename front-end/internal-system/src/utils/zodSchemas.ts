@@ -41,7 +41,7 @@ export interface VisitorDetailsInterfaceZod {
 	visitor_type: VisitorType;
 	status: VisitorStatus;
 	what: string[];
-	when: string;
+	when: Date;
 	where: string[];
 	who: string[];
 }
@@ -132,10 +132,11 @@ export const VisitorDetailZod: ZodType<VisitorDetailsInterfaceZod> = z.object({
 			message: '"What" is required.',
 		}),
 	when: z
-		.string({
-			required_error: '"When" is required.',
+		.date({
+			required_error: "Please select a date and time",
+			invalid_type_error: "That's not a date.",
 		})
-		.min(1, '"When" is required.'),
+		.min(new Date(), { message: "Choosen date is in the past." }),
 	where: z
 		.string({
 			required_error: '"Where" is required.',
