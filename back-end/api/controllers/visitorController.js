@@ -115,9 +115,10 @@ exports.addVisitor = async (req, res) => {
       status: status,
     });
 
-    if (visitor_type === 'Pre-Registered') {
-      // Pending Visitors
-      await Notification.create({
+    io.emit("newVisitor", newVisitor);
+
+    if (visitor_type === "Pre-Registered") {
+      const pendingVisitor = await Notification.create({
         type: "pending",
         recipient: newVisitor.visitor_details._id,
         content: {
@@ -130,8 +131,10 @@ exports.addVisitor = async (req, res) => {
           visitor_type: newVisitor.visitor_type,
         },
       });
+
+      io.emit("newNotification", pendingVisitor);
     }
-  
+
     return res.status(201).json({ visitor: newVisitor });
   } catch (error) {
     console.error(error);

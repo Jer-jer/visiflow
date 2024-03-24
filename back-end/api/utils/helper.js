@@ -261,9 +261,12 @@ async function updateLog(badgeId, _id, type, res) {
       return res.status(500).json({ Error: "Failed to time-out visitor" });
     }
   } else {
-    if (type === 'pre-reg') {
-      await VisitorLogs.create({ badge_id: badge._id, check_in_time: new Date() });
-      await Badge.updateOne({ _id: badge._id }, { $set: { is_active: true }});
+    if (type === "pre-reg") {
+      await VisitorLogs.create({
+        badge_id: badge._id,
+        check_in_time: new Date(),
+      });
+      await Badge.updateOne({ _id: badge._id }, { $set: { is_active: true } });
 
       return res.status(200).json({ message: "time-in" });
     } 

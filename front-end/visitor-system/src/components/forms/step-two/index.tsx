@@ -11,7 +11,7 @@ import Webcam from "react-webcam";
 import { isMobile } from "react-device-detect";
 
 // Components
-import { Form, Tabs, Image, Button, Modal } from "antd";
+import { Form, Tabs, Image, Button, Modal, Tooltip } from "antd";
 
 // Interfaces
 import { VisitorDataType } from "../../../utils/interfaces";
@@ -153,15 +153,30 @@ export default function StepTwo({
 			/>
 			<div className="mr-[30px] flex items-center justify-center gap-2 lg:mr-0 lg:w-[80%] lg:justify-end">
 				<div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row">
-					<Button
-						className={`w-[inherit] ${
-							errors?.selfie ? "!bg-error" : "!bg-primary-500"
-						}`}
-						type="primary"
-						onClick={showModalPhoto}
-					>
-						Upload ID
-					</Button>
+					{errors?.front && errors.back && errors.selfie ? (
+						<Tooltip title="Required ID Upload">
+							<Button
+								className={`w-[inherit] ${
+									errors.front && errors.back && errors.selfie
+										? "!bg-error"
+										: "!bg-primary-500"
+								}`}
+								type="primary"
+								onClick={showModalPhoto}
+							>
+								Upload ID
+							</Button>
+						</Tooltip>
+					) : (
+						<Button
+							className="!bg-primary-500"
+							type="primary"
+							onClick={showModalPhoto}
+						>
+							Upload ID
+						</Button>
+					)}
+
 					<Modal
 						title={
 							<>
