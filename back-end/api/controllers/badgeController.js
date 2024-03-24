@@ -1,5 +1,9 @@
 const Badge = require("../models/badge");
-const { generateVisitorQRCode, updateLog } = require("../utils/helper");
+const { 
+  generateVisitorQRCode, 
+  updateLog,
+  createSystemLog
+} = require("../utils/helper");
 
 const badgeQty = 5;
 
@@ -26,27 +30,44 @@ exports.findBadge = async (req, res) => {
 };
 
 exports.generateBadge = async (req, res) => {
-  const clientIP = req.ip;
+  try {
+    // const clientIP = req.ip;
+    const user_id = req.user._id;
+    const log_type = 'generate_badge';
 
-  console.log(clientIP);
+    for (let counter = 0; counter < badgeQty; counter++) {
+      await generateVisitorQRCode(counter);
+    }
 
-  for (let counter = 0; counter < badgeQty; counter++) {
-    await generateVisitorQRCode(counter);
+    await createSystemLog(user_id, log_type, 'success');
+    return res.status(200).json({ message: `Generated ${badgeQty} of badges` });
+  } catch (error) {
+    console.error(error);
+    await createSystemLog(user_id, log_type, 'failed');
+    return res.status(500).json({ Error: error });
   }
-  res.status(200).json({ message: `Generated ${badgeQty} of badges` });
 };
 
 //still hard coded for testing purpose only
 exports.newBadge = async (req, res) => {
     const { visitor_id, qr_id } = req.body;
+    const user_id = req.user._id;
+    const log_type = 'time_in';
 
-    const badge = new Badge({
+    try {
+      const badge = await Badge.create({
         visitor_id: visitor_id,
         qr_id: qr_id,
         is_active: true
-    });
-    await badge.save();
-    res.send(200);
+      });
+      
+      createSystemLog(user_id, log_type, 'success');
+      return res.send(200).json({ Badge: badge});
+    } catch (error) {
+      console.error(error);
+      createSystemLog(user_id, log_type, 'success');
+      return res.send(500).json({ Error: error });
+    }
 }
 
 exports.checkBadge = async (req, res) => {
@@ -74,5 +95,5 @@ exports.checkBadge = async (req, res) => {
   }
 
    const _id = (visitor_id !== undefined) ? visitor_id : qr_id;
-   updateLog(badge._id, _id, type, res); 
+   updateLog(badge._id, _id, type, req.user._id, res); 
 }
