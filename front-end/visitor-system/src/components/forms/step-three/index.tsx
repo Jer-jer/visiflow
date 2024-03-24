@@ -50,7 +50,7 @@ export default function StepThree({
 			expected_time_out: new Date(visitors.expected_time_out),
 			purpose: {
 				...visitors.purpose,
-				when: new Date(visitors.expected_time_out),
+				when: new Date(visitors.purpose.when),
 			},
 			plate_num: null,
 			id_picture: visitors.id_picture,

@@ -16,6 +16,8 @@ const ObjectId = mongoose.Types.ObjectId;
 exports.getVisitors = async (req, res) => {
   try {
     const visitors = await Visitor.find();
+    const io = req.io;
+
     return res.status(200).json({ visitors });
   } catch (error) {
     console.error(error);
@@ -181,6 +183,8 @@ exports.updateVisitor = async (req, res) => {
     id_picture,
   } = req.body;
 
+  const io = req.io;
+
   try {
     const visitorDB = await Visitor.findById(_id);
     if (!visitorDB) {
@@ -222,7 +226,7 @@ exports.updateVisitor = async (req, res) => {
       filteredUpdateFields,
       { new: true }
     );
-
+      
     res.status(201).json({ visitor: updatedVisitor });
   } catch (error) {
     console.error(error);
