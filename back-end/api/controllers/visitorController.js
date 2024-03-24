@@ -43,6 +43,8 @@ exports.addVisitor = async (req, res) => {
     },
   } = req.body;
 
+  const io = req.io;
+
   try {
     await Promise.all(
       validateVisitor.map((validation) => validation.run(req.body.visitor_data))
@@ -108,20 +110,25 @@ exports.addVisitor = async (req, res) => {
       status: status,
     });
 
-    // Pending Visitors
-    await Notification.create({
-      type: "pending",
-      recipient: newVisitor.visitor_details._id,
-      content: {
-        visitor_name: `${newVisitor.visitor_details.name.last_name}, ${newVisitor.visitor_details.name.first_name} ${newVisitor.visitor_details.name.middle_name}`,
-        host_name: newVisitor.purpose.who.join(", "),
-        date: newVisitor.purpose.when,
-        time: newVisitor.expected_time_in,
-        location: newVisitor.purpose.where.join(", "),
-        purpose: newVisitor.purpose.what.join(", "),
-        visitor_type: newVisitor.visitor_type,
-      },
-    });
+    io.emit("newVisitor", newVisitor);
+
+    if (visitor_type === "Pre-Registered") {
+      const pendingVisitor = await Notification.create({
+        type: "pending",
+        recipient: newVisitor.visitor_details._id,
+        content: {
+          visitor_name: `${newVisitor.visitor_details.name.last_name}, ${newVisitor.visitor_details.name.first_name} ${newVisitor.visitor_details.name.middle_name}`,
+          host_name: newVisitor.purpose.who.join(", "),
+          date: newVisitor.purpose.when,
+          time: newVisitor.expected_time_in,
+          location: newVisitor.purpose.where.join(", "),
+          purpose: newVisitor.purpose.what.join(", "),
+          visitor_type: newVisitor.visitor_type,
+        },
+      });
+
+      io.emit("newNotification", pendingVisitor);
+    }
 
     return res.status(201).json({ visitor: newVisitor });
   } catch (error) {

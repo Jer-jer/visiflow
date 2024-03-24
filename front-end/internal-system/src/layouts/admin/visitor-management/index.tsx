@@ -27,6 +27,9 @@ import { addTab, removeTab } from "../../../states/visitors/tab";
 import "../../../utils/variables.scss";
 import "./styles.scss";
 
+//Utils
+import { socket } from "../../../lib/socket";
+
 //Assets
 import { ExcelDownload, Search, TabClose } from "../../../assets/svg";
 

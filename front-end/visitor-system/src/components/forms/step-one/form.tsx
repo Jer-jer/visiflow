@@ -11,6 +11,7 @@ import {
 	Form,
 	DatePicker,
 	Input,
+	Tooltip,
 } from "antd";
 
 // Interfaces
@@ -342,21 +343,24 @@ function StepOneForm({
 					</div>
 
 					<div className="flex w-full flex-col">
-						<DatePicker
-							showTime
-							className="vm-placeholder hover:bg-[#DFEAEF]!border-[#d9d9d9] h-[52px] border-none bg-[#e0ebf0] hover:!border-primary-500 hover:bg-[#DFEAEF] focus:!border-primary-500"
-							placeholder="When"
-							defaultValue={dayjs(
-								formatDateObjToString(visitors.purpose.when),
-								`YYYY-MM-DD ${timeFormat}`,
-							)}
-							minDate={dayjs(
-								formatDateObjToString(visitors.purpose.when),
-								`YYYY-MM-DD ${timeFormat}`,
-							)}
-							onChange={onChangeDate}
-							format={`YYYY-MM-DD ${timeFormat}`}
-						/>
+						<Tooltip title="When">
+							<DatePicker
+								showTime
+								className="vm-placeholder hover:bg-[#DFEAEF]!border-[#d9d9d9] h-[52px] border-none bg-[#e0ebf0] hover:!border-primary-500 hover:bg-[#DFEAEF] focus:!border-primary-500"
+								placeholder="When"
+								defaultValue={dayjs(
+									formatDateObjToString(visitors.purpose.when),
+									`YYYY-MM-DD ${timeFormat}`,
+								)}
+								minDate={dayjs(
+									formatDateObjToString(visitors.purpose.when),
+									`YYYY-MM-DD ${timeFormat}`,
+								)}
+								onChange={onChangeDate}
+								format={`YYYY-MM-DD ${timeFormat}`}
+							/>
+						</Tooltip>
+
 						{errors?.when && (
 							<p className="mt-1 text-sm text-red-500">{errors.when.message}</p>
 						)}

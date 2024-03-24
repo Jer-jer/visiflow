@@ -13,7 +13,6 @@ import {
 	mainOrCompanion,
 	tabName,
 	formatDateObjToString,
-	formatDateObjToISO,
 } from "../../../utils";
 
 // Assets
@@ -41,19 +40,17 @@ export default function StepThree({
 	visitorNo,
 }: StepThreeProps) {
 	const [loading, setLoading] = useState(false);
-
-	//TODO Create a validation that would make sure the companions (if there are any) are filled
 	const [modal, contextHolder] = Modal.useModal();
 
 	const { handleSubmit } = useForm({
 		defaultValues: {
 			visitor_details: visitors.visitor_details,
 			companion_details: visitors.companions_details,
-			expected_time_in: `${formatDateObjToISO(visitors.expected_time_in)}Z`,
-			expected_time_out: `${formatDateObjToISO(visitors.expected_time_out)}Z`,
+			expected_time_in: new Date(visitors.expected_time_in),
+			expected_time_out: new Date(visitors.expected_time_out),
 			purpose: {
 				...visitors.purpose,
-				when: `${formatDateObjToISO(visitors.purpose.when)}Z`,
+				when: new Date(visitors.expected_time_out),
 			},
 			plate_num: null,
 			id_picture: visitors.id_picture,

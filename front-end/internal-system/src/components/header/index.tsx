@@ -1,16 +1,20 @@
 import React, { Dispatch, SetStateAction, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { socket } from "./../../lib/socket";
 
 //Components
-import { Dropdown, Modal } from "antd";
+import { Modal } from "antd";
 import CustomDropdown from "../dropdown";
 
 //Interfaces
 import { NotificationType } from "../../utils/enums";
 import { Notification, VisitorDataType } from "../../utils/interfaces";
-import type { RootState } from "../../store";
+import type { AppDispatch, RootState } from "../../store";
 import type { MenuProps } from "antd";
+
+//Reducers
+import { add } from "../../states/visitors";
 
 //Utils
 import { formatDateObjToString, formatDateString } from "../../utils";
@@ -31,11 +35,14 @@ interface HeaderProps {
 
 export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 	const [notifications, setNotifications] = useState<Notification[]>([]);
+	const [isConnected, setIsConnected] = useState(socket.connected);
 
 	const { data } = useSelector((state: RootState) => state.visitors);
 
 	const wasAdmin = localStorage.getItem("role");
 	const navigate = useNavigate();
+
+	const dispatch = useDispatch<AppDispatch>();
 
 	const error = (message: string) => {
 		Modal.error({
@@ -44,8 +51,7 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 		});
 	};
 
-	//TODO Try using real-time data
-	useEffect(() => {
+	const initialNotificaions = () => {
 		AxiosInstance.get("/notification")
 			.then((res) => {
 				setNotifications(res.data.notifications);
@@ -57,6 +63,39 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 						"Something went wrong with displaying notifications.",
 				);
 			});
+	};
+
+	useEffect(() => {
+		//? Real-Time Watcher
+		function onConnect() {
+			setIsConnected(true);
+		}
+
+		function onDisconnect() {
+			setIsConnected(false);
+		}
+
+		function onNewVisitor(value: VisitorDataType) {
+			dispatch(add(value));
+		}
+
+		function onNewNotification(value: any) {
+			setNotifications((prevNotifs) => [...prevNotifs, value]);
+		}
+
+		initialNotificaions();
+
+		socket.on("connect", onConnect);
+		socket.on("disconnect", onDisconnect);
+		socket.on("newVisitor", onNewVisitor);
+		socket.on("newNotification", onNewNotification);
+
+		return () => {
+			socket.off("connect", onConnect);
+			socket.off("disconnect", onDisconnect);
+			socket.off("newVisitor", onNewVisitor);
+			socket.off("newNotification", onNewNotification);
+		};
 	}, []);
 
 	const logout = () => {
@@ -193,6 +232,12 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 		AxiosInstance.put("/notification/update", {
 			_id: notif._id,
 			is_read: true,
+		}).catch((err) => {
+			error(
+				err?.response?.data?.error ||
+					err?.response?.data?.errors ||
+					"Something went wrong with updating the notification.",
+			);
 		});
 	};
 
@@ -236,7 +281,7 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 								)}
 							</span>
 							<span className="time fon mt-3 text-[14px] font-semibold text-primary-500">
-								{formatDateObjToString(notif.created_at)}
+								{notif.created_at && formatDateObjToString(notif.created_at)}
 							</span>
 						</div>
 						{!notif.is_read && (
