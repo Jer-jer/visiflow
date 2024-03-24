@@ -101,7 +101,7 @@ async function verifyRefreshToken(token) {
 async function generateVisitorQRCode(badgeId) {
   return new Promise((resolve, reject) => {
     const filename = `api/resource/badge/badge${badgeId}.png`;
-    const uri = `http://192.168.1.122:5000/badge/checkBadge?qr_id=${badgeId}`;
+    const uri = `http://192.168.1.71:5000/badge/checkBadge?qr_id=${badgeId}`;
 
     QRCode.toFile(
       filename,
@@ -182,7 +182,7 @@ async function generateBadge(visitor) {
 
   await badge.save();
 
-  const uri = `http://192.168.1.122:5000/badge/checkBadge?visitor_id=${visitor._id}`;
+  const uri = `http://192.168.1.71:5000/badge/checkBadge?visitor_id=${visitor._id}`;
   const filename = `api/resource/badge/badge${badge._id}.png`;
   await generateQRCode(uri, filename, badge._id);
 
@@ -266,12 +266,7 @@ async function updateLog(badgeId, _id, type, res) {
       await Badge.updateOne({ _id: badge._id }, { $set: { is_active: true }});
 
       return res.status(200).json({ message: "time-in" });
-    } else {
-      //redirect to registration page
-      const link = `http://localhost:3000/visitor-form/?qr_id=${_id}`
-      res.redirect(link);
-      return res.status(200).json({ id: 0, message: "redirecting to register page" }); //temporary just to check
-    }
+    } 
   }
 }
 
@@ -290,10 +285,13 @@ function uploadFileToGCS(bufferData, fileName) {
 }
 
 function isThirtyMinutesBefore(appointmentDate, currentTime) {
-  const thirtyMinutesInMilliseconds = 30 * 60 * 1000; // 30 minutes in milliseconds
+  const current = new Date();
+  const currentInUTC = current.toISOString();
+  console.log(currentInUTC);
+ 
+
   return (
-    currentTime.getTime() - appointmentDate.getTime() ===
-    thirtyMinutesInMilliseconds
+    (currentTime.getTime() - appointmentDate.getTime())
   );
 }
 
@@ -347,7 +345,10 @@ async function timeInReminder(io) {
 
     await Promise.all(
       visitors.map(async (visitor) => {
+        console.log(visitor.visitor_details.name.first_name);
         if (isThirtyMinutesBefore(visitor.expected_time_in, currentDate)) {
+          
+
           const mailOptions = {
             from: process.env.MAILER,
             to: visitor.visitor_details.email,
@@ -359,6 +360,7 @@ async function timeInReminder(io) {
 
         await createNotification(visitor, 'time-in', io);
       }
+      
     }));
   } catch (error) {
     console.error("Error in check-in reminder", error);

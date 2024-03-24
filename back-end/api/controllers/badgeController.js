@@ -56,7 +56,10 @@ exports.checkBadge = async (req, res) => {
 
   if (qr_id !== undefined) {
     badge = await Badge.findOne({ qr_id: qr_id });
-    type = "walk-in";
+    // type = "walk-in";
+    if (!badge) {
+      res.redirect(`http://192.168.1.71:3000/visitor-form?qr_id=${qr_id}`);
+    }
   } else {
     badge = await Badge.findOne({ visitor_id: visitor_id });
     type = "pre-reg";
