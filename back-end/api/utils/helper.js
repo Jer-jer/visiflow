@@ -287,22 +287,20 @@ function uploadFileToGCS(bufferData, fileName) {
   return publicUrl;
 }
 
-function isThirtyMinutesBefore(appointmentDate, currentTime) {
-  const current = new Date();
-  const currentInUTC = current.toISOString();
-  console.log(currentInUTC);
- 
-
-  return (
-    (currentTime.getTime() - appointmentDate.getTime())
-  );
+function isThirtyMinutesBefore(time_in) {
+  const currentDate = new Date();
+  const appointment = new Date(time_in);
+  
+  const thirtyMinutesBefore = new Date(appointment.getTime() - 30 * 60 * 1000);
+  
+  return currentDate >= thirtyMinutesBefore && currentDate < appointment;
 }
 
 async function timeOutReminder(io) {
   try {
     const currentTime = new Date();
-
     const logs = await VisitorLogs.find({ check_out_time: null });
+
     const visitors = await Promise.all(
       logs.map(async (log) => {
         const badge = await Badge.findOne({
@@ -315,7 +313,7 @@ async function timeOutReminder(io) {
           const [visitor, companion] = await Promise.all([
             Visitor.findOne({
               _id: badge.visitor_id,
-              expected_time_out: { $gte: currentTime },
+              expected_time_out: { $lte: currentTime - 15 * 60000},
             }),
             Visitor.findOne({ "companion_details._id": badge.visitor_id }),
           ]);
@@ -325,6 +323,7 @@ async function timeOutReminder(io) {
           }
 
           if (companion) {
+            console.log(companion);
             return companion.companion_details;
           }
         }
@@ -333,8 +332,10 @@ async function timeOutReminder(io) {
 
     const validVisitors = visitors.filter((visitor) => visitor !== undefined);
 
-    for (const visitor of validVisitors) {
-      await createNotification(visitor, 'time-out', io);
+    if (validVisitors.length > 0) {
+      for (const visitor of validVisitors) {
+        await createNotification(visitor, 'time-out', io);
+      }
     }
   } catch (error) {
     console.error("Error in timeOutReminder:", error);
@@ -343,14 +344,11 @@ async function timeOutReminder(io) {
 
 async function timeInReminder(io) {
   try {
-    const currentDate = new Date();
-    const visitors = await Visitor.find();
+    const visitors = await Visitor.find({ status: 'Approved' });
 
     await Promise.all(
       visitors.map(async (visitor) => {
-        console.log(visitor.visitor_details.name.first_name);
-        if (isThirtyMinutesBefore(visitor.expected_time_in, currentDate)) {
-          
+        if (isThirtyMinutesBefore(visitor.expected_time_in)) {
 
           const mailOptions = {
             from: process.env.MAILER,
@@ -407,7 +405,7 @@ async function createNotification(visitor, type, io) {
 
   io.emit(type, notificationContent);
 
-  console.log("Notification pushed");
+  console.log(`${type} notification pushed`);
 }
 
 

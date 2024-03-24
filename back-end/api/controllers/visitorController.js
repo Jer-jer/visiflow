@@ -134,7 +134,6 @@ exports.addVisitor = async (req, res) => {
 
       io.emit("newNotification", pendingVisitor);
     }
-
     return res.status(201).json({ visitor: newVisitor });
   } catch (error) {
     console.error(error);
