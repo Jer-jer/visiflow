@@ -97,8 +97,7 @@ export default function EventsScheduleList() {
 
 	const handleSearch = async() => {
 		try {
-			const response = await AxiosInstace.post('/events/search', {query: searchValue})
-			console.log('hello',response);
+			const response = await AxiosInstace.post('/events/search', {name: searchValue})
 			const data = response.data.event;
 			const convertedData: EventsSchedule[] = data.map((event: any) => ({
 				name: event.name,
@@ -220,7 +219,10 @@ export default function EventsScheduleList() {
 						className="w-[366px]"
 						size="large"
 						placeholder="Search"
+						onPressEnter={handleSearch}
 						prefix={<Search />}
+						value={searchValue}
+						onChange={e => setSearchValue(e.target.value)}
 					/>
 					<Button type="primary" className="search-button !bg-primary-500">
 						Search

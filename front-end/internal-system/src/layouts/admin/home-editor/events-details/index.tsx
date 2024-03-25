@@ -87,10 +87,10 @@ export default function EventsSchedDetails({
 }: EventsSchedDetailsProps) {
 	//Form States
 	const [name, setName] = useState("");
-	const [startDate, setStartDate] = useState(record?.startDate || Date.now);
-	const [endDate, setEndDate] = useState(record?.endDate || Date.now);
-	const [startTime, setStartTime] = useState(record?.startTime || Date.now);
-	const [endTime, setEndTime] = useState(record?.endTime || Date.now);
+	const [startDate, setStartDate] = useState(record === undefined ? new Date() : record?.startDate);
+	const [endDate, setEndDate] = useState(record === undefined ? new Date() : record?.endDate);
+	const [startTime, setStartTime] = useState(record === undefined ? new Date() : record?.startTime);
+	const [endTime, setEndTime] = useState(record === undefined ? new Date() : record?.endTime);
 	const [locationId, setLocationId] = useState("");
 	const [description, setDescription] = useState("");
 
@@ -141,10 +141,24 @@ export default function EventsSchedDetails({
 
 	useEffect(() => {
 		console.log(record)
+		console.log("name:", name)
+		console.log("startDate:", startDate)
+		console.log("endDate:", endDate)
+		console.log("startTime:", startTime)
+		console.log("endTime:", endTime)
+		console.log("locationID:", locationId)
+		console.log("description:", description)
 	}, [])
 
 	const saveAction = async() => {
 		//This needs to be customized to whatever the DB returns
+		console.log("name:", name)
+		console.log("startDate:", startDate)
+		console.log("endDate:", endDate)
+		console.log("startTime:", startTime)
+		console.log("endTime:", endTime)
+		console.log("locationID:", locationId)
+		console.log("description:", description)
 		if(record === undefined) {
 			try {
 				await AxiosInstace.post('/events/new', { 
@@ -169,6 +183,7 @@ export default function EventsSchedDetails({
 					startTime: startTime,
 					endTime: endTime,
 					locationID: locationId,
+					description: description
             		// userID: userID
 				}); 
 			} catch (error) {

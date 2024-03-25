@@ -85,8 +85,8 @@ export default function OfficeSchedDetails({
 	const [pic, setPic] = useState("");
 	const [contact, setContact] = useState("");
 	const [email, setEmail] = useState("");
-	const [opentime, setOpentime] = useState(record?.opentime === undefined ? Date.now : record?.opentime);
-	const [closetime, setClosetime] = useState(record?.closetime === undefined ? Date.now : record?.closetime);
+	const [opentime, setOpentime] = useState(record?.opentime === undefined ? new Date() : record?.opentime);
+	const [closetime, setClosetime] = useState(record?.closetime === undefined ? new Date() : record?.closetime);
 	const [openday, setOpenday] = useState(record?.openday === undefined ? new Array(7).fill(false) : record?.openday);
 	const [loading, setLoading] = useState(false);
 	const [imageUrl, setImageUrl] = useState<string>();

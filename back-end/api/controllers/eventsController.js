@@ -72,13 +72,13 @@ exports.updateEvent = async (req, res) => {
         }
 
         const updateFields = {
-            name: name || event.name,
-            startDate: startDate || event.startDate,
-            endDate: endDate || event.endDate,
-            startTime: startTime || event.startTime,
-            endTime: endTime || event.endTime,
-            locationID: locationID || event.locationID,
-            description: description || event.description
+            name: name || eventDB.name,
+            startDate: startDate || eventDB.startDate,
+            endDate: endDate || eventDB.endDate,
+            startTime: startTime || eventDB.startTime,
+            endTime: endTime || eventDB.endTime,
+            locationID: locationID || eventDB.locationID,
+            description: description || eventDB.description
 
         }
         
@@ -103,6 +103,21 @@ exports.updateEvent = async (req, res) => {
     }
 };
 
+//for search bar
+exports.getEventsByName = async (req, res) => {
+    try {
+        const {name} = req.body;
+        const regex = new RegExp(name, 'i');
+        const searchEvents = await Event.find({name: regex});
+        if(searchEvents) {
+            return res.status(201).json({ event: searchEvents });
+        } else {
+            return res.status(404).json({ error: 'Event not found'});
+        }
+    } catch (error) {
+        return res.status(500).json({ error: 'Internal Server Error '});
+    }
+};
 //Delete Events
 exports.deleteEvent = async (req, res) => {
     const {_id} = req.body;

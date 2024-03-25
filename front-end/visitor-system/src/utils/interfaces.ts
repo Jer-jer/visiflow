@@ -18,11 +18,12 @@ export interface EventsPropsAggregate {
 export interface OfficesProps {
 	title?: String;
 	op: String; // Operating Hours
+	dayOp: String;
 	pic: String; // Personnel in charge
+	email: String;
 	location: String;
 	contact: String;
 	img?: string;
-	availability: Boolean;
 }
 
 export interface FullNameProps {
