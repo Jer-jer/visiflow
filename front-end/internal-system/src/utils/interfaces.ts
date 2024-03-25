@@ -104,19 +104,17 @@ export interface HomeEditor {
 }
 
 export interface OfficeSchedule {
-	officeName: string;
-	operatingHours: string;
-	inCharge: string;
-	location: string;
+	name: string;
+	roomNo: string;
+	pic: string;
 	contact: string;
-	availability: string;
+	email: string;
 }
 
 export interface EventsSchedule {
 	name: string;
-	date: string;
-	start: string;
-	end: string;
-	location: string;
-	description: string;
+	startDate: string;
+	endDate: string;
+	startTime: string;
+	endTime: string;
 }

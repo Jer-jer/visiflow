@@ -8,7 +8,7 @@ const {
 exports.getEvents = async (req, res) => {
     try {
         const events = await Event.find();
-        return res.status(200).json({ events });
+        return res.status(200).json({ event: events });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "Failed to retrieve events from the database" });
@@ -16,7 +16,7 @@ exports.getEvents = async (req, res) => {
 };
 
 exports.addEvent = async (req, res) => {
-    const { name, startDate, endDate, locationID, userID } = req.body;
+    const { name, startDate, endDate,startTime, endTime, locationID, description } = req.body;
 
     await Promise.all(validateEvents.map(validation => validation.run(req)));
 
@@ -30,11 +30,13 @@ exports.addEvent = async (req, res) => {
             name,
             startDate,
             endDate,
+            startTime,
+            endTime,
             locationID,
-            userID
+            description
         });
 
-        res.status(201).json({ Event: newEvent });
+        res.status(201).json({ event: newEvent });
         
     } catch (error) {
         console.error(error);
@@ -49,7 +51,7 @@ exports.findEvent = async (req, res) => {
         const eventDB = await Event.findById(_id);
         
         if (eventDB) {
-            return res.status(200).json({ Event: eventDB });
+            return res.status(200).json({ event: eventDB });
         } else {
             return res.status(404).json({ error: 'Event not found'});
         }
@@ -61,7 +63,7 @@ exports.findEvent = async (req, res) => {
 };
 
 exports.updateEvent = async (req, res) => {
-    const { _id, name, startDate, endDate, locationID, userID} = req.body;
+    const { _id, name, startDate, endDate, startTime, endTime, locationID, description} = req.body;
 
     try {
         const eventDB = await Event.findById(_id);
@@ -70,11 +72,14 @@ exports.updateEvent = async (req, res) => {
         }
 
         const updateFields = {
-            name: name || event.name,
-            startDate: startDate || event.startDate,
-            endDate: endDate || event.endDate,
-            locationID: locationID || event.locationID,
-            userID: userID || event.userID
+            name: name || eventDB.name,
+            startDate: startDate || eventDB.startDate,
+            endDate: endDate || eventDB.endDate,
+            startTime: startTime || eventDB.startTime,
+            endTime: endTime || eventDB.endTime,
+            locationID: locationID || eventDB.locationID,
+            description: description || eventDB.description
+
         }
         
         const filteredUpdateFields = Object.fromEntries(
@@ -98,6 +103,21 @@ exports.updateEvent = async (req, res) => {
     }
 };
 
+//for search bar
+exports.getEventsByName = async (req, res) => {
+    try {
+        const {name} = req.body;
+        const regex = new RegExp(name, 'i');
+        const searchEvents = await Event.find({name: regex});
+        if(searchEvents) {
+            return res.status(201).json({ event: searchEvents });
+        } else {
+            return res.status(404).json({ error: 'Event not found'});
+        }
+    } catch (error) {
+        return res.status(500).json({ error: 'Internal Server Error '});
+    }
+};
 //Delete Events
 exports.deleteEvent = async (req, res) => {
     const {_id} = req.body;

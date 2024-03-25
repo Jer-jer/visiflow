@@ -29,7 +29,7 @@ export function formatDateTimeRange(startDate: Date, endDate: Date) {
 	});
 
 	return `${startd} ${
-		startd !== endd && `to ${endd}`
+		startd === endd ? ` ` : `to ${endd}`
 	} | ${startTime} to ${endTime}`;
 }
 
