@@ -12,6 +12,8 @@
         overflow: scroll;
         display: flex;
         flex-direction: column-reverse;
+        scroll-behavior: smooth;
+        -webkit-scroll-behavior: smooth;
 
         .ant-dropdown-menu-item {
             cursor: auto;

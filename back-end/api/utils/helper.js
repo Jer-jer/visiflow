@@ -12,6 +12,8 @@ const Badge = require("../models/badge");
 const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
 const Notification = require("../models/notification");
+const User = require('../models/user');
+const SystemLog = require('../models/systemLogs');
 
 // Google Cloud Storage
 const { Storage } = require("@google-cloud/storage");
@@ -101,7 +103,7 @@ async function verifyRefreshToken(token) {
 async function generateVisitorQRCode(badgeId) {
   return new Promise((resolve, reject) => {
     const filename = `api/resource/badge/badge${badgeId}.png`;
-    const uri = `http://192.168.1.4:5000/badge/checkBadge?qr_id=${badgeId}`;
+    const uri = `http://192.168.1.71:5000/badge/checkBadge?qr_id=${badgeId}`;
 
     QRCode.toFile(
       filename,
@@ -182,7 +184,7 @@ async function generateBadge(visitor) {
 
   await badge.save();
 
-  const uri = `http://192.168.1.4:5000/badge/checkBadge?visitor_id=${visitor._id}`;
+  const uri = `http://192.168.1.71:5000/badge/checkBadge?visitor_id=${visitor._id}`;
   const filename = `api/resource/badge/badge${badge._id}.png`;
   await generateQRCode(uri, filename, badge._id);
 
@@ -213,17 +215,22 @@ async function sendBadgeEmail(badge, visitor, message) {
 
 async function generateQRCode(uri, filename, badgeId) {
   return new Promise((resolve, reject) => {
-      QRCode.toFile(filename, uri, { errorCorrectionLevel: "H" }, function (error) {
-          if (error) {
-              console.error(
-                  `Error generating QR code for badge ${badgeId}: ${error.message}`
-              );
-              reject(error);
-          } else {
-              console.log(`QR code saved for badge ${badgeId}`);
-              resolve();
-          }
-      });
+    QRCode.toFile(
+      filename,
+      uri,
+      { errorCorrectionLevel: "H" },
+      function (error) {
+        if (error) {
+          console.error(
+            `Error generating QR code for badge ${badgeId}: ${error.message}`
+          );
+          reject(error);
+        } else {
+          console.log(`QR code saved for badge ${badgeId}`);
+          resolve();
+        }
+      }
+    );
   });
 }
 
@@ -242,7 +249,7 @@ async function sendEmail(mailOptions) {
 }
 
 //will need to add qr_id to parameter
-async function updateLog(badgeId, _id, type, res) {
+async function updateLog(badgeId, _id, type, user_id, res) {
   const badge = await Badge.findById(badgeId);
 
   if (badge.is_active) {
@@ -256,21 +263,29 @@ async function updateLog(badgeId, _id, type, res) {
         { $set: { qr_id: null, is_active: false, is_valid: false } }
       );
 
+      await createSystemLog(user_id, 'time_out', 'success');
       return res.status(200).json({ message: "time-out" });
     } catch (error) {
+      await createSystemLog(user_id, 'time_out', 'failed');
       return res.status(500).json({ Error: "Failed to time-out visitor" });
     }
   } else {
-    if (type === 'pre-reg') {
-      await VisitorLogs.create({ badge_id: badge._id, check_in_time: new Date() });
-      await Badge.updateOne({ _id: badge._id }, { $set: { is_active: true }});
+    if (type === "pre-reg") {
+      await VisitorLogs.create({
+        badge_id: badge._id,
+        check_in_time: new Date(),
+      });
 
-      return res.status(200).json({ message: "time-in" });
-    } else {
-      //redirect to registration page
-      // res.redirect(`http://192.168.1.3:3000/?qr_id=${qr_id}`);
-      return res.status(200).json({ message: "redirecting to register page" }); //temporary just to check
-    }
+      try {
+        await Badge.updateOne({ _id: badge._id }, { $set: { is_active: true } });
+        await createSystemLog(user_id, 'time_in', 'success');
+        return res.status(200).json({ message: "time-in" });
+      } catch (error) {
+        console.error(error);
+        await createSystemLog(user_id, 'time_in', 'failed');
+        return res.status(500).json({ Error: 'failed to time-in visitor' });
+      }
+    } 
   }
 }
 
@@ -288,19 +303,20 @@ function uploadFileToGCS(bufferData, fileName) {
   return publicUrl;
 }
 
-function isThirtyMinutesBefore(appointmentDate, currentTime) {
-  const thirtyMinutesInMilliseconds = 30 * 60 * 1000; // 30 minutes in milliseconds
-  return (
-    currentTime.getTime() - appointmentDate.getTime() ===
-    thirtyMinutesInMilliseconds
-  );
+function isThirtyMinutesBefore(time_in) {
+  const currentDate = new Date();
+  const appointment = new Date(time_in);
+
+  const thirtyMinutesBefore = new Date(appointment.getTime() - 30 * 60 * 1000);
+
+  return currentDate >= thirtyMinutesBefore && currentDate < appointment;
 }
 
 async function timeOutReminder(io) {
   try {
     const currentTime = new Date();
-
     const logs = await VisitorLogs.find({ check_out_time: null });
+
     const visitors = await Promise.all(
       logs.map(async (log) => {
         const badge = await Badge.findOne({
@@ -313,7 +329,7 @@ async function timeOutReminder(io) {
           const [visitor, companion] = await Promise.all([
             Visitor.findOne({
               _id: badge.visitor_id,
-              expected_time_out: { $gte: currentTime },
+              expected_time_out: { $lte: currentTime - 15 * 60000 },
             }),
             Visitor.findOne({ "companion_details._id": badge.visitor_id }),
           ]);
@@ -323,6 +339,7 @@ async function timeOutReminder(io) {
           }
 
           if (companion) {
+            console.log(companion);
             return companion.companion_details;
           }
         }
@@ -331,8 +348,10 @@ async function timeOutReminder(io) {
 
     const validVisitors = visitors.filter((visitor) => visitor !== undefined);
 
-    for (const visitor of validVisitors) {
-      await createNotification(visitor, 'time-out', io);
+    if (validVisitors.length > 0) {
+      for (const visitor of validVisitors) {
+        await createNotification(visitor, "time-out", io);
+      }
     }
   } catch (error) {
     console.error("Error in timeOutReminder:", error);
@@ -341,12 +360,11 @@ async function timeOutReminder(io) {
 
 async function timeInReminder(io) {
   try {
-    const currentDate = new Date();
-    const visitors = await Visitor.find();
+    const visitors = await Visitor.find({ status: "Approved" });
 
     await Promise.all(
       visitors.map(async (visitor) => {
-        if (isThirtyMinutesBefore(visitor.expected_time_in, currentDate)) {
+        if (isThirtyMinutesBefore(visitor.expected_time_in)) {
           const mailOptions = {
             from: process.env.MAILER,
             to: visitor.visitor_details.email,
@@ -356,9 +374,10 @@ async function timeInReminder(io) {
 
           await sendEmail(mailOptions);
 
-        await createNotification(visitor, 'time-in', io);
-      }
-    }));
+          await createNotification(visitor, "time-in", io);
+        }
+      })
+    );
   } catch (error) {
     console.error("Error in check-in reminder", error);
   }
@@ -367,43 +386,74 @@ async function timeInReminder(io) {
 async function createNotification(visitor, type, io) {
   let visitorDB;
   if (Array.isArray(visitor)) {
-      visitorDB = await Visitor.findOne({
-          "companion_details._id": visitor[0]._id,
-      });
+    visitorDB = await Visitor.findOne({
+      "companion_details._id": visitor[0]._id,
+    });
   }
 
   const visitorName = visitor.visitor_details
-      ? `${visitor.visitor_details.name.last_name}, ${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name}`
-      : `${visitor[0].name.last_name}, ${visitor[0].name.first_name} ${visitor[0].name.middle_name}`;
+    ? `${visitor.visitor_details.name.last_name}, ${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name}`
+    : `${visitor[0].name.last_name}, ${visitor[0].name.first_name} ${visitor[0].name.middle_name}`;
 
-  const hostName = visitor.purpose?.who.join(", ") || visitorDB?.purpose?.who.join(", ") || "";
+  const hostName =
+    visitor.purpose?.who.join(", ") || visitorDB?.purpose?.who.join(", ") || "";
   const date = visitor.purpose?.when || visitorDB?.when || "";
   const time = visitor.expected_time_in || visitorDB?.expected_time_in || "";
-  const location = visitor.purpose?.where.join(", ") || visitorDB?.purpose?.where.join(", ") || "";
-  const purpose = visitor.purpose?.what?.join(", ") || visitorDB.purpose?.what?.join(", ");
+  const location =
+    visitor.purpose?.where.join(", ") ||
+    visitorDB?.purpose?.where.join(", ") ||
+    "";
+  const purpose =
+    visitor.purpose?.what?.join(", ") || visitorDB.purpose?.what?.join(", ");
   const visitorType = visitor.visitor_type;
 
   const notificationContent = {
-      visitor_name: visitorName,
-      host_name: hostName,
-      date: date,
-      time: time,
-      location: location,
-      purpose: purpose,
-      visitor_type: visitorType,
+    visitor_name: visitorName,
+    host_name: hostName,
+    date: date,
+    time: time,
+    location: location,
+    purpose: purpose,
+    visitor_type: visitorType,
   };
 
   await Notification.create({
-      type: type,
-      recipient: visitor.visitor_details?._id || visitor[0]._id,
-      content: notificationContent,
+    type: type,
+    recipient: visitor.visitor_details?._id || visitor[0]._id,
+    content: notificationContent,
   });
 
-  io.emit(type, notificationContent);
+  io.emit("newNotification", notificationContent);
 
-  console.log("Notification pushed");
+  console.log(`${type} notification pushed`);
 }
 
+async function createSystemLog(id, type, status) {
+  try {
+    const userDB = await User.findById(id);
+
+    console.log(userDB);
+
+    if (!userDB) {
+      return false;
+    } 
+
+    await SystemLog.create({
+      user_id: userDB._id,
+      name: {
+        first_name: userDB.name.first_name,
+        last_name: userDB.name.last_name
+      },
+      role: userDB.role,
+      type: type,
+      status: status
+    });
+
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
 
 module.exports = {
   hashPassword,
@@ -418,5 +468,6 @@ module.exports = {
   uploadFileToGCS,
   timeInReminder,
   timeOutReminder,
-  sendEmail
+  sendEmail,
+  createSystemLog,
 };

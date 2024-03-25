@@ -6,31 +6,36 @@ const express = require("express");
 const passport = require("passport");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const http = require('http');
-const socketIo = require('socket.io');
-const cron = require('node-cron');
+const http = require("http");
+// const socketIo = require("socket.io");
+const { Server } = require("socket.io");
+const cron = require("node-cron");
 
 //Middleware for Database
 const connectDB = require("./api/config/db");
 
 //Route Modules
-const userRouter = require('./api/routes/userRouter');
-const authRouter = require('./api/routes/authRouter');
-const buildingRouter = require('./api/routes/buildingRouter');
-const visitorRouter = require('./api/routes/visitorRouter');
-const visitorLogsRouter = require('./api/routes/visitorLogsRouter');
-const badgeRouter = require('./api/routes/badgeRouter');
-const eventsRouter = require('./api/routes/eventsRouter');
-const announcementsRouter = require('./api/routes/announcementsRouter');
-const notificationRouter = require('./api/routes/notificationRouter');
+const userRouter = require("./api/routes/userRouter");
+const authRouter = require("./api/routes/authRouter");
+const buildingRouter = require("./api/routes/buildingRouter");
+const visitorRouter = require("./api/routes/visitorRouter");
+const visitorLogsRouter = require("./api/routes/visitorLogsRouter");
+const badgeRouter = require("./api/routes/badgeRouter");
+const eventsRouter = require("./api/routes/eventsRouter");
+const announcementsRouter = require("./api/routes/announcementsRouter");
+const notificationRouter = require("./api/routes/notificationRouter");
+const systemLogRouter = require('./api/routes/systemLogRouter');
 const { timeInReminder, timeOutReminder } = require("./api/utils/helper");
 
 // Create Express app
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, { cors: origin="*"});
+// const io = socketIo(server, { cors: (origin = "*") });
+// const io = socketIo(server, { cors: { origin: "*" } });
+// const io = new Server(server, { cors: { origin: "*" } });
+const io = new Server(server, { cors: { origin: "http://localhost:3000" } });
 
-app.set('io', io);
+app.set("io", io);
 
 // Configure app
 app.use(cors());
@@ -45,22 +50,23 @@ app.use((req, res, next) => {
 connectDB();
 
 // Routes
-app.use('/user', userRouter);
-app.use('/auth', authRouter);
-app.use('/buildings', buildingRouter);
-app.use('/visitor', visitorRouter);
-app.use('/visitor/logs', visitorLogsRouter);
-app.use('/visitor/companion/logs', visitorLogsRouter);
-app.use('/badge', badgeRouter);
-app.use('/events', eventsRouter);
-app.use('/announcements', announcementsRouter);
-app.use('/notification', notificationRouter);
+app.use("/user", userRouter);
+app.use("/auth", authRouter);
+app.use("/buildings", buildingRouter);
+app.use("/visitor", visitorRouter);
+app.use("/visitor/logs", visitorLogsRouter);
+app.use("/visitor/companion/logs", visitorLogsRouter);
+app.use("/badge", badgeRouter);
+app.use("/events", eventsRouter);
+app.use("/announcements", announcementsRouter);
+app.use("/notification", notificationRouter);
+app.use("/system-logs", systemLogRouter);
 
 // Socket.io events
-io.on('connection', socket => {
+io.on("connection", (socket) => {
   console.log(`Client: ${socket.id} connected!`);
 
-  socket.on('disconnect', () => {
+  socket.on("disconnect", () => {
     console.log(`Client: ${socket.id} disconnected`);
   });
 });
@@ -79,6 +85,7 @@ server.listen(PORT, () => {
 
 // change to */5 * * * * * for testing every 5 mins
 // 0 * * * * to every hour
+
 cron.schedule('0 * * * *', async () => {
   await timeOutReminder(io);
   await timeInReminder(io);
