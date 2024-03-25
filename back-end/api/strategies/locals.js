@@ -61,7 +61,7 @@ passport.use(new JwtStrategy({
         if (!user) {
             return done(null, false);
         }
-        console.log(jwtPayload.role);
+        // console.log(jwtPayload.role);
         return done(null, user);
     } catch (error) {
         return done(error, false);

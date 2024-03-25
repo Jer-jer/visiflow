@@ -118,22 +118,3 @@ export interface EventsSchedule {
 	startTime: string;
 	endTime: string;
 }
-
-export interface NotificationContent {
-	visitor_name: string;
-	host_name: string;
-	date: Date;
-	time: Date;
-	location: string;
-	purpose: string;
-	visitor_type: VisitorType;
-}
-
-export interface Notification {
-	_id: string;
-	type: NotificationType;
-	recipient: string;
-	content: NotificationContent;
-	is_read: boolean;
-	created_at: Date;
-}

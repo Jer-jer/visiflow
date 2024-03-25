@@ -1,41 +1,57 @@
 import React, { Dispatch, SetStateAction, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import useSound from "use-sound";
 
 //Components
-import { Dropdown, Modal } from "antd";
+import { Modal } from "antd";
 import CustomDropdown from "../dropdown";
 
 //Interfaces
 import { NotificationType } from "../../utils/enums";
-import { Notification, VisitorDataType } from "../../utils/interfaces";
-import type { RootState } from "../../store";
+import { VisitorDataType } from "../../utils/interfaces";
+import { NotificationProps } from "../../states/notifications";
+import type { AppDispatch, RootState } from "../../store";
 import type { MenuProps } from "antd";
+
+//Reducers
+import { add } from "../../states/visitors";
+import { fetchNotifs, addNotif, readNotif } from "../../states/notifications";
 
 //Utils
 import { formatDateObjToString, formatDateString } from "../../utils";
 
 //Lib
 import AxiosInstance from "../../lib/axios";
+import { socket } from "./../../lib/socket";
 
 //Assets
 import { Account } from "../../assets/svg";
+import NotificationSound from "../../assets/notification.wav";
 
 //Styles
 import "./styles.scss";
-
 interface HeaderProps {
 	setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
 	setIsAdmin: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
-	const [notifications, setNotifications] = useState<Notification[]>([]);
+	//? Socket Connection
+	const [isConnected, setIsConnected] = useState(socket.connected);
 
+	//? Redux
 	const { data } = useSelector((state: RootState) => state.visitors);
+	const notifications = useSelector((state: RootState) => state.notifications);
 
+	//? Determine if the user is an admin
 	const wasAdmin = localStorage.getItem("role");
+
+	const [play] = useSound(NotificationSound, { volume: 1, soundEnabled: true });
+
 	const navigate = useNavigate();
+
+	const dispatch = useDispatch<AppDispatch>();
 
 	const error = (message: string) => {
 		Modal.error({
@@ -44,11 +60,10 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 		});
 	};
 
-	//TODO Try using real-time data
-	useEffect(() => {
+	const initialNotificaions = () => {
 		AxiosInstance.get("/notification")
 			.then((res) => {
-				setNotifications(res.data.notifications);
+				dispatch(fetchNotifs(res.data.notifications));
 			})
 			.catch((err) => {
 				error(
@@ -57,6 +72,40 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 						"Something went wrong with displaying notifications.",
 				);
 			});
+	};
+
+	useEffect(() => {
+		//? Real-Time Watcher
+		function onConnect() {
+			setIsConnected(true);
+		}
+
+		function onDisconnect() {
+			setIsConnected(false);
+		}
+
+		function onNewVisitor(value: VisitorDataType) {
+			dispatch(add(value));
+		}
+
+		function onNewNotification(value: NotificationProps) {
+			dispatch(addNotif(value));
+			play();
+		}
+
+		initialNotificaions();
+
+		socket.on("connect", onConnect);
+		socket.on("disconnect", onDisconnect);
+		socket.on("newVisitor", onNewVisitor);
+		socket.on("newNotification", onNewNotification);
+
+		return () => {
+			socket.off("connect", onConnect);
+			socket.off("disconnect", onDisconnect);
+			socket.off("newVisitor", onNewVisitor);
+			socket.off("newNotification", onNewNotification);
+		};
 	}, []);
 
 	const logout = () => {
@@ -179,20 +228,19 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 		return time;
 	};
 
-	const readNotification = (x: number, notif: Notification) => {
+	const readNotification = (x: number, notif: NotificationProps) => {
 		//? Check if the notification is already read
 		if (notifications[x].is_read) return;
-		setNotifications((prev) => {
-			return prev.map((n, y) => {
-				if (y === x) {
-					return { ...n, is_read: true };
-				}
-				return n;
-			});
-		});
+		dispatch(readNotif(notif._id));
 		AxiosInstance.put("/notification/update", {
 			_id: notif._id,
 			is_read: true,
+		}).catch((err) => {
+			error(
+				err?.response?.data?.error ||
+					err?.response?.data?.errors ||
+					"Something went wrong with updating the notification.",
+			);
 		});
 	};
 
@@ -236,7 +284,7 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 								)}
 							</span>
 							<span className="time fon mt-3 text-[14px] font-semibold text-primary-500">
-								{formatDateObjToString(notif.created_at)}
+								{notif.created_at && formatDateObjToString(notif.created_at)}
 							</span>
 						</div>
 						{!notif.is_read && (
