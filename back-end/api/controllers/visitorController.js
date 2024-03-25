@@ -49,8 +49,6 @@ exports.addVisitor = async (req, res) => {
   } = req.body;
 
   const io = req.io;
-  const user_id = req.user._id;
-  const log_type = 'add_visitor';
 
   try {
     await Promise.all(
@@ -136,14 +134,17 @@ exports.addVisitor = async (req, res) => {
       });
 
       io.emit("newNotification", pendingVisitor);
+    } else {
+      //For walk in
+      const user_id = req.user._id;
+      const log_type = 'add_visitor';
+      createSystemLog(user_id, log_type, 'success');
     }
-    
-    createSystemLog(user_id, log_type, 'success');
+  
     return res.status(201).json({ visitor: newVisitor });
   } catch (error) {
     console.error(error);
-    createSystemLog(user_id, log_type, 'failed');
-    return res.status(500).json({ error: "Failed to create a new visitor" });
+    return res.status(201).json({ visitor: newVisitor });
   }
   
 };
@@ -188,7 +189,6 @@ exports.updateVisitor = async (req, res) => {
     id_picture,
   } = req.body;
 
-  const io = req.io;
   const user_id = req.user._id;
   const log_type = 'update_visitor';
 
@@ -232,7 +232,7 @@ exports.updateVisitor = async (req, res) => {
       filteredUpdateFields,
       { new: true }
     );
-      
+    
     await createSystemLog(user_id, log_type, 'success');
     res.status(201).json({ visitor: updatedVisitor });
   } catch (error) {
