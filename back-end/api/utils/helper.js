@@ -423,6 +423,8 @@ async function createSystemLog(id, type, status) {
   try {
     const userDB = await User.findById(id);
 
+    console.log(userDB);
+
     if (!userDB) {
       return false;
     } 
@@ -438,18 +440,6 @@ async function createSystemLog(id, type, status) {
       status: status
     });
 
-  } catch (error) {
-    console.error(error);
-    return false;
-  }
-}
-
-async function createSystemLog(_id, type) {
-  try {
-    const log = await SystemLog.create({
-      user: _id,
-      type: type
-    });
   } catch (error) {
     console.error(error);
     return false;
