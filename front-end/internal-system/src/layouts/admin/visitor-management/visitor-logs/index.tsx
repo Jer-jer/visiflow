@@ -1,7 +1,7 @@
 /* Components designed using Ant Design */
 
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { Dispatch, SetStateAction, useState } from "react";
+import { useSelector } from "react-redux";
 import { CSVLink } from "react-csv";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -14,22 +14,13 @@ import { RootState } from "../../../../store";
 import type { Dayjs } from "dayjs";
 
 //Components
-import { Tooltip, Checkbox, Modal } from "antd";
+import { Tooltip, Checkbox } from "antd";
 import StandardModal from "../../../../components/modal";
 import VisitorLogsTable from "../../../../components/table/visitor-logs";
 import DateTimePicker from "../../../../components/datetime-picker";
 
 // Utils
-import { formatDateObjToString, formatDateString } from "../../../../utils/";
-
-// Lib
-import AxiosInstance from "../../../../lib/axios";
-
-// Store
-import { AppDispatch } from "../../../../store";
-
-// Reducers
-import { fetchLogs, addLog } from "../../../../states/logs/visitor";
+import { formatDateObjToString } from "../../../../utils/";
 
 //Styles
 import "./styles.scss";
@@ -61,7 +52,6 @@ export default function VisitorLogs({
 
 	// Store Related variables
 	const visitorLogs = useSelector((state: RootState) => state.visitorLogs);
-	const dispatch = useDispatch<AppDispatch>();
 
 	const onRangeChange = (dates: Dayjs[], dateStrings: string[]) => {
 		if (dates) {
@@ -90,58 +80,6 @@ export default function VisitorLogs({
 			check_out_time: formatDateObjToString(logs.check_out_time),
 		};
 	});
-
-	const warning = (message: string) => {
-		Modal.warning({
-			title: `Warning`,
-			content: message,
-		});
-	};
-
-	const error = (message: string) => {
-		Modal.error({
-			title: `Error`,
-			content: message,
-		});
-	};
-
-	useEffect(() => {
-		AxiosInstance.post(`/badge/findBadge`, { visitor_id: visitorId })
-			.then((res) => {
-				const badge = res.data.badge;
-				AxiosInstance.post("/visitor/logs/find-visitor-logs", {
-					badge_id: badge._id,
-				})
-					.then((res) => {
-						const logs = res.data.visitorLogs;
-						logs.map((log: any, indx: number) =>
-							dispatch(
-								addLog({
-									key: (indx + 1).toString(),
-									purpose: purpose,
-									check_in_time: log.check_in_time,
-									check_out_time: log.check_out_time,
-								}),
-							),
-						);
-						// dispatch(fetchLogs(logs));
-					})
-					.catch((err) => {
-						warning(
-							err?.response?.data?.error ||
-								err?.response?.data?.errors ||
-								"Something went wrong with displaying visitor logs.",
-						);
-					});
-			})
-			.catch((err) => {
-				error(
-					err?.response?.data?.error ||
-						err?.response?.data?.errors ||
-						"Something went wrong.",
-				);
-			});
-	}, []);
 
 	return (
 		<StandardModal

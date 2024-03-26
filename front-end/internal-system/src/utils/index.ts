@@ -4,9 +4,7 @@ import { UserActionLogType } from "./enums";
 
 export const formatDateString = (date: string) => {
 	//? Convert ISO8601 date string to date object
-	const dateObject = DateTime.fromISO(date, {
-		zone: "utc",
-	});
+	const dateObject = DateTime.fromISO(date);
 
 	const formattedDateTime = dateObject.toFormat("yyyy-MM-dd hh:mm:ss a");
 
@@ -16,6 +14,15 @@ export const formatDateString = (date: string) => {
 export const formatDateObjToString = (dateObj: Date) => {
 	//? Convert date object to date string
 	const DateObject = DateTime.fromISO(dateObj.toString());
+
+	const formattedDateTime = DateObject.toFormat("yyyy-MM-dd hh:mm:ss a");
+
+	return formattedDateTime;
+};
+
+export const formatDateObjToString2 = (dateObj: Date) => {
+	//? Convert date object to date string
+	const DateObject = DateTime.fromJSDate(dateObj);
 
 	const formattedDateTime = DateObject.toFormat("yyyy-MM-dd hh:mm:ss a");
 

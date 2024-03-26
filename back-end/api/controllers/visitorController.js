@@ -49,8 +49,6 @@ exports.addVisitor = async (req, res) => {
   } = req.body;
 
   const io = req.io;
-  const user_id = req.user._id;
-  const log_type = 'add_visitor';
 
   try {
     await Promise.all(
@@ -137,15 +135,12 @@ exports.addVisitor = async (req, res) => {
 
       io.emit("newNotification", pendingVisitor);
     }
-    
-    createSystemLog(user_id, log_type, 'success');
+
     return res.status(201).json({ visitor: newVisitor });
   } catch (error) {
     console.error(error);
-    createSystemLog(user_id, log_type, 'failed');
     return res.status(500).json({ error: "Failed to create a new visitor" });
   }
-  
 };
 
 exports.findVisitor = async (req, res) => {
@@ -190,7 +185,7 @@ exports.updateVisitor = async (req, res) => {
 
   const io = req.io;
   const user_id = req.user._id;
-  const log_type = 'update_visitor';
+  const log_type = "update_visitor";
 
   try {
     const visitorDB = await Visitor.findById(_id);
@@ -232,12 +227,12 @@ exports.updateVisitor = async (req, res) => {
       filteredUpdateFields,
       { new: true }
     );
-      
-    await createSystemLog(user_id, log_type, 'success');
+
+    await createSystemLog(user_id, log_type, "success");
     res.status(201).json({ visitor: updatedVisitor });
   } catch (error) {
     console.error(error);
-    await createSystemLog(user_id, log_type, 'failed');
+    await createSystemLog(user_id, log_type, "failed");
     return res.status(500).json({ error: "Failed to update user" });
   }
 };
@@ -245,21 +240,21 @@ exports.updateVisitor = async (req, res) => {
 exports.deleteVisitor = async (req, res) => {
   const { _id } = req.body;
   const user_id = req.user._id;
-  const log_type = 'delete_visitor';
+  const log_type = "delete_visitor";
 
   try {
     const visitorDB = await Visitor.findByIdAndDelete(_id);
 
     if (visitorDB) {
-      await createSystemLog(user_id, log_type, 'success');
+      await createSystemLog(user_id, log_type, "success");
       return res.status(204).send();
     } else {
-      await createSystemLog(user_id, log_type, 'failed');
+      await createSystemLog(user_id, log_type, "failed");
       return res.status(404).json({ error: "Visitor not found" });
     }
   } catch (error) {
     console.error(error);
-    await createSystemLog(user_id, log_type, 'failed');
+    await createSystemLog(user_id, log_type, "failed");
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -304,15 +299,15 @@ exports.updateStatus = async (req, res) => {
             visitor_type: visitorDB.visitor_type,
           },
         });
-       
-        await createSystemLog(user_id, 'approve_status', 'success');
+
+        await createSystemLog(user_id, "approve_status", "success");
 
         io.emit("newNotification", approvalNotif);
 
         res.status(200).json({ message: `Visitor is now ${status}` });
       } catch (error) {
         console.error(error);
-        await createSystemLog(user_id, 'approve_status', 'failed');
+        await createSystemLog(user_id, "approve_status", "failed");
         return res.status(500).json({ Error: "Failed to send email" });
       }
     } else if (status === "Declined") {
@@ -349,16 +344,18 @@ exports.updateStatus = async (req, res) => {
           },
         });
 
-        await createSystemLog(user_id, 'decline_status', 'success');
+        await createSystemLog(user_id, "decline_status", "success");
 
         io.emit("newNotification", declinedNotif);
 
         res.status(200).json({ message: `Visitor is now ${status}` });
       } catch (error) {
         console.error(error);
-        await createSystemLog(user_id, 'decline_status', 'failed');
+        await createSystemLog(user_id, "decline_status", "failed");
         return res.status(500).json({ Error: "Failed to send email" });
       }
+    } else if (status === "In Progress") {
+      res.status(200).json({ message: `Visitor status has been changed` });
     }
   } catch (error) {
     console.error(error);

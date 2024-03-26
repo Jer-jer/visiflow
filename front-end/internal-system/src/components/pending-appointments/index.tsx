@@ -33,7 +33,7 @@ export default function PendingAppointments({
 		dispatch(openVisitor(visitor));
 	};
 	return (
-		<div className="w-full">
+		<div className="h-full w-full overflow-scroll">
 			{pendingAppointments.map((item, index) => (
 				<div
 					key={index}

@@ -138,7 +138,7 @@ export default function StepThree({
 			This form will close after ${secondsToGo} second.`,
 			onOk() {
 				clearInterval(timer);
-				// window.location.reload();
+				window.location.reload();
 			},
 		});
 
@@ -153,7 +153,7 @@ export default function StepThree({
 		setTimeout(() => {
 			clearInterval(timer);
 			instance.destroy();
-			// window.location.reload();
+			window.location.reload();
 		}, secondsToGo * 1000);
 	};
 

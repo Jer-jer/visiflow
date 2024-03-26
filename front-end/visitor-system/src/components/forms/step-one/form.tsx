@@ -254,10 +254,7 @@ function StepOneForm({
 									`YYYY-MM-DD ${timeFormat}`,
 								),
 							]}
-							minDate={dayjs(
-								formatDateObjToString(visitors.expected_time_in),
-								`YYYY-MM-DD ${timeFormat}`,
-							)}
+							minDate={dayjs(dayjs(), `YYYY-MM-DD ${timeFormat}`)}
 							onChange={onChangeRange}
 							placeholder={["From", "To"]}
 							format={`YYYY-MM-DD ${timeFormat}`}
@@ -352,10 +349,7 @@ function StepOneForm({
 									formatDateObjToString(visitors.purpose.when),
 									`YYYY-MM-DD ${timeFormat}`,
 								)}
-								minDate={dayjs(
-									formatDateObjToString(visitors.purpose.when),
-									`YYYY-MM-DD ${timeFormat}`,
-								)}
+								minDate={dayjs(dayjs(), `YYYY-MM-DD ${timeFormat}`)}
 								onChange={onChangeDate}
 								format={`YYYY-MM-DD ${timeFormat}`}
 							/>

@@ -26,7 +26,7 @@ import DateTimePicker from "../../../../components/datetime-picker";
 import { addLog } from "../../../../states/logs/companions";
 
 //Utils
-import { formatDateObjToString, formatDateString } from "../../../../utils";
+import { formatDateObjToString2 } from "../../../../utils";
 
 //Styles
 import "./styles.scss";
@@ -172,11 +172,11 @@ export default function CompanionLogs({
 	const companionLogsData = companionLogs.map((logs) => {
 		return {
 			what: logs.purpose?.what.join(", "),
-			when: formatDateObjToString(logs.purpose!.when),
+			when: formatDateObjToString2(logs.purpose!.when),
 			where: logs.purpose?.where.join(", "),
 			who: logs.purpose?.who.join(", "),
-			check_in_time: formatDateObjToString(logs.check_in_time),
-			check_out_time: formatDateObjToString(logs.check_out_time),
+			check_in_time: formatDateObjToString2(logs.check_in_time),
+			check_out_time: formatDateObjToString2(logs.check_out_time),
 		};
 	});
 

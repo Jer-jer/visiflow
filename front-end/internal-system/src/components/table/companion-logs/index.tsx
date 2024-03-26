@@ -12,7 +12,7 @@ import type { RootState } from "../../../store";
 
 // Utils
 import {
-	formatDateObjToString,
+	formatDateObjToString2,
 	formatDateString,
 	formatDateToISO,
 } from "../../../utils";
@@ -53,7 +53,7 @@ export default function CompanionLogsTable({
 					dataIndex: "when",
 					key: "when",
 					render(value, record, index) {
-						return formatDateObjToString(record.purpose!.when);
+						return formatDateObjToString2(record.purpose!.when);
 					},
 				},
 				{
@@ -85,9 +85,7 @@ export default function CompanionLogsTable({
 					formatDateToISO(b.check_in_time)!,
 				),
 			render: (value, record, index) => {
-				return record.check_out_time
-					? formatDateObjToString(record.check_in_time)
-					: "N/A";
+				return formatDateObjToString2(record.check_in_time);
 			},
 		},
 		{
@@ -99,9 +97,7 @@ export default function CompanionLogsTable({
 					formatDateToISO(b.check_out_time)!,
 				),
 			render: (value, record, index) => {
-				return record.check_out_time
-					? formatDateObjToString(record.check_out_time)
-					: "N/A";
+				return formatDateObjToString2(record.check_out_time);
 			},
 		},
 	];

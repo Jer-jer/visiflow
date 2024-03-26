@@ -131,12 +131,10 @@ export const VisitorDetailZod: ZodType<VisitorDetailsInterfaceZod> = z.object({
 		.nonempty({
 			message: '"What" is required.',
 		}),
-	when: z
-		.date({
-			required_error: "Please select a date and time",
-			invalid_type_error: "That's not a date.",
-		})
-		.min(new Date(), { message: "Choosen date is in the past." }),
+	when: z.date({
+		required_error: "Please select a date and time",
+		invalid_type_error: "That's not a date.",
+	}),
 	where: z
 		.string({
 			required_error: '"Where" is required.',
