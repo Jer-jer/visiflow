@@ -37,7 +37,7 @@ exports.addOffices = async (req, res) => {
             opentime,
             closetime,
             openday,
-            // officeImg
+            officeImg
         } = req.body;
    
         //check if the office already exists
@@ -65,7 +65,7 @@ exports.addOffices = async (req, res) => {
             opentime,
             closetime,
             openday,
-            // officepic
+            officeImg
         });
 
         const createdOffice = await newOffice.save();

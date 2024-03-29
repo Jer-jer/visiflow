@@ -89,7 +89,7 @@ export default function OfficeSchedDetails({
 	const [closetime, setClosetime] = useState(record?.closetime === undefined ? new Date() : record?.closetime);
 	const [openday, setOpenday] = useState(record?.openday === undefined ? new Array(7).fill(false) : record?.openday);
 	const [loading, setLoading] = useState(false);
-	const [imageUrl, setImageUrl] = useState<string>();
+	const [imageUrl, setImageUrl] = useState<string>(record === undefined ? "" : record?.officeImg);
 	const [fileList, setFileList] = useState<UploadFile[]>([
 		{
 			uid: "-1",
@@ -121,14 +121,9 @@ export default function OfficeSchedDetails({
 		setDisabledInputs(!disabledInputs);
 	};
 
-	useEffect(() => {
-		console.log("test", record?.opentime, record?.closetime, record?.openday)
-		console.log("hello", opentime, closetime, openday)
-	})
-
 	const saveAction = async() => {
 		//This needs to be customized to whatever the DB returns
-
+		console.log("check:", imageUrl);
 		// saving new record
 		if(record === undefined) {
 			try {
@@ -186,9 +181,11 @@ export default function OfficeSchedDetails({
 	) => {
 		if (info.file.status === "uploading") {
 			setLoading(true);
+			console.log("uploading")
 			return;
 		}
 		if (info.file.status === "done") {
+			console.log("done uploading")
 			// Get this url from response in real world.
 			getBase64(info.file.originFileObj as RcFile, (url) => {
 				setLoading(false);
@@ -196,6 +193,27 @@ export default function OfficeSchedDetails({
 			});
 		}
 	};
+	
+	const handleUpload = (e: any) => {
+		const selectedFiles = e.target.files;
+	  
+		if (selectedFiles.length > 0) {
+		  const areAllFilesImages = Array.from(selectedFiles).every((file: any) =>
+			/\.(jpg|jpeg|png|gif)$/i.test(file.name)
+		  );
+	  
+		  if (areAllFilesImages) {
+			// setLogo(selectedFiles);
+			setImageUrl(URL.createObjectURL(selectedFiles[0]))
+			setFileList(selectedFiles);
+		  } else {
+			alert('Please select only image files (JPEG, PNG, GIF, etc.).');
+			e.target.value = null;
+		  }
+		} else {
+		  alert('Please select at least one file.');
+		}
+	  };
 
 	const uploadButton = (
 		<div>
@@ -372,25 +390,33 @@ export default function OfficeSchedDetails({
 						{disabledInputs ? (
 							<Image
 								width={200}
-								src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"
+								src={imageUrl}
 							/>
 						) : (
-							<Upload
-								name="avatar"
-								listType="picture-card"
-								className="avatar-uploader w-[353px]"
-								showUploadList={false}
-								action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
-								beforeUpload={beforeUpload}
-								onChange={handleImage}
-								fileList={fileList}
-							>
-								{imageUrl ? (
-									<img src={imageUrl} alt="avatar" style={{ width: "100%" }} />
-								) : (
-									uploadButton
-								)}
-							</Upload>
+							// <Upload
+							// 	name="avatar"
+							// 	listType="picture-card"
+							// 	className="avatar-uploader w-[353px]"
+							// 	showUploadList={false}
+							// 	// action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
+							// 	beforeUpload={beforeUpload}
+							// 	onChange={handleImage}
+							// 	fileList={fileList}
+							// >
+							// 	{imageUrl ? (
+							// 		<img src={imageUrl} alt="avatar" style={{ width: "100%" }} />
+							// 	) : (
+							// 		uploadButton
+							// 	)}
+							// </Upload>
+							<input 
+								type="file"
+								onChange={(e) => {
+								handleUpload(e);
+								}}
+								value=""
+								multiple={false}  
+							/>
 						)}
 					</div>
 				</div>
