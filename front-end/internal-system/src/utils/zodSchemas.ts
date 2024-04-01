@@ -34,7 +34,7 @@ export interface WalkInFormInterfaceZod {
 	street?: string;
 	city: string;
 	brgy: string;
-	// province: string;
+	province: string;
 	country: string;
 	plate_num?: string | null;
 	what: string[];
@@ -107,14 +107,14 @@ export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
 			message: "Must not contain any numerals.",
 		}),
 
-	// province: z
-	// 	.string({
-	// 		required_error: "Province is required.",
-	// 		invalid_type_error: "Province must not have a number.",
-	// 	})
-	// 	.regex(/^[a-zA-Z]+/, {
-	// 		message: "Must not contain any numerals.",
-	// 	}),
+	province: z
+		.string({
+			required_error: "Province is required.",
+			invalid_type_error: "Province must not have a number.",
+		})
+		.regex(/^[a-zA-Z]+/, {
+			message: "Must not contain any numerals.",
+		}),
 
 	country: z
 		.string({

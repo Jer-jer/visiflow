@@ -4,6 +4,7 @@ import { NavLink } from "react-router-dom";
 //Components
 import Header from "../../components/header";
 import Sidebar, { SidebarItem } from "../../components/sidebar";
+import { qrPath } from "../guard/visitor-form";
 
 //Interfaces
 
@@ -45,6 +46,10 @@ function LoggedIn({
 	const [expanded, setExpanded] = useState(false);
 	const [width, setWidth] = useState(0);
 	const ref = useRef<HTMLDivElement>(null);
+
+	const qrURL = qrPath;
+	const visitorFormURL =
+		qrURL === "" ? "/visitor-form" : "/visitor-form/${qrURL}";
 
 	useLayoutEffect(() => {
 		if (ref.current) {
@@ -125,7 +130,7 @@ function LoggedIn({
 									/>
 								)}
 							</NavLink>
-							<NavLink to="/visitor-form">
+							<NavLink to={visitorFormURL}>
 								{({ isActive }) => (
 									<SidebarItem
 										icon={<Form />}

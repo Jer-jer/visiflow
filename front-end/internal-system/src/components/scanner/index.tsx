@@ -28,7 +28,6 @@ export default function Scanner() {
 		function success(result: any) {
 			scanner.clear();
 			setScanResult(result);
-			console.log("IVE BEEN CALLED");
 			// Redirect to the scanned link
 			window.location.href = result;
 		}
