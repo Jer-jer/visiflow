@@ -9,6 +9,7 @@ import "hamburgers/dist/hamburgers.css";
 
 // Assets
 import LogoImage from "../../assets/logo.png";
+import GoogleTranslateComponent from "../google-translate";
 
 interface NavbarProps {
 	children: React.ReactNode;
@@ -16,6 +17,7 @@ interface NavbarProps {
 
 export default function Navbar({ children }: NavbarProps) {
 	const [expand, setExpand] = useState(false);
+
 
 	return (
 		<div
@@ -44,7 +46,7 @@ export default function Navbar({ children }: NavbarProps) {
 				}`}
 			>
 				{children}
-				<Select
+				{/* <Select
 					className="lg:ml-[140px] lg:mr-[42px]"
 					defaultValue="english"
 					style={{ width: 90 }}
@@ -53,7 +55,8 @@ export default function Navbar({ children }: NavbarProps) {
 						{ value: "english", label: "English" },
 						{ value: "hindi", label: "Hindi" },
 					]}
-				/>
+				/> */}
+				<GoogleTranslateComponent/>
 			</div>
 		</div>
 	);

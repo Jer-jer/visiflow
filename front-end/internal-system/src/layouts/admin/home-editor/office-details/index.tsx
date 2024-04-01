@@ -89,6 +89,7 @@ export default function OfficeSchedDetails({
 	const [closetime, setClosetime] = useState(record?.closetime === undefined ? new Date() : record?.closetime);
 	const [openday, setOpenday] = useState(record?.openday === undefined ? new Array(7).fill(false) : record?.openday);
 	const [loading, setLoading] = useState(false);
+	const [image, setImage] = useState<string | ArrayBuffer | null>('');
 	const [imageUrl, setImageUrl] = useState<string>(record === undefined ? "" : record?.officeImg);
 	const [fileList, setFileList] = useState<UploadFile[]>([
 		{
@@ -123,7 +124,7 @@ export default function OfficeSchedDetails({
 
 	const saveAction = async() => {
 		//This needs to be customized to whatever the DB returns
-		console.log("check:", imageUrl);
+		console.log("check:", image);
 		// saving new record
 		if(record === undefined) {
 			try {
@@ -136,7 +137,7 @@ export default function OfficeSchedDetails({
 					opentime: opentime,
 					closetime: closetime,
 					openday: openday,
-					officeImg: imageUrl
+					officeImg: image
 				}); 
 			} catch (error) {
 			console.error('Error in adding office:', error);
@@ -153,7 +154,7 @@ export default function OfficeSchedDetails({
 					opentime: opentime,
 					closetime: closetime,
 					openday: openday,
-					officeImg: imageUrl === undefined ? record?.officeImg : imageUrl,
+					officeImg: image === undefined ? record?.officeImg : image,
 				}); 
 			} catch (error) {
 			console.error('Error in updating office:', error);
@@ -189,7 +190,7 @@ export default function OfficeSchedDetails({
 			// Get this url from response in real world.
 			getBase64(info.file.originFileObj as RcFile, (url) => {
 				setLoading(false);
-				setImageUrl(url);
+				setImage(url);
 			});
 		}
 	};
@@ -204,7 +205,7 @@ export default function OfficeSchedDetails({
 	  
 		  if (areAllFilesImages) {
 			// setLogo(selectedFiles);
-			setImageUrl(URL.createObjectURL(selectedFiles[0]))
+			setImage(URL.createObjectURL(selectedFiles[0]))
 			setFileList(selectedFiles);
 		  } else {
 			alert('Please select only image files (JPEG, PNG, GIF, etc.).');
@@ -226,7 +227,20 @@ export default function OfficeSchedDetails({
 
 	const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
+	  
+	const handleImageUpload = (event: any) => {
+		const file = event.target.files[0];
+		const reader = new FileReader();
 	
+		reader.onloadend = () => {
+		const base64String = reader.result;
+		setImage(base64String);
+		};
+	
+		if (file) {
+		reader.readAsDataURL(file);
+		}
+	};
 
 	return (
 		<div className="mr-[135px] flex flex-col gap-[35px] pt-[25px]">
@@ -409,14 +423,15 @@ export default function OfficeSchedDetails({
 							// 		uploadButton
 							// 	)}
 							// </Upload>
-							<input 
-								type="file"
-								onChange={(e) => {
-								handleUpload(e);
-								}}
-								value=""
-								multiple={false}  
-							/>
+							<div>
+								<input type="file" accept="image/*" onChange={handleImageUpload} />
+								{image && (
+									<div>
+									<h2>Uploaded Image:</h2>
+									<img src={image.toString()} alt="Uploaded" style={{ maxWidth: '100%' }} />
+									</div>
+								)}
+							</div>
 						)}
 					</div>
 				</div>

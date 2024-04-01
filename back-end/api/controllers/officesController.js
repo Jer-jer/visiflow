@@ -7,6 +7,8 @@ const {
     uploadFileToGCS,
   } = require("../utils/helper");
 
+  
+
 //Get list of offices
 exports.getAllOffices = async (req, res) => {
     try {
@@ -46,15 +48,15 @@ exports.addOffices = async (req, res) => {
             return res.status(400).json({ error: 'Office already exists' });
         }
 
-        // const [officepic] = await Promise.all([
-        // uploadFileToGCS(
-        //     Buffer.from(
-        //     officeImg.replace(/^data:image\/\w+;base64,/, ""),
-        //     "base64"
-        //     ),
-        //     `${Date.now()}_${name.toUpperCase()}_office.jpg`
-        // ),
-        // ]);
+        const [officepic] = await Promise.all([
+        uploadFileToGCS(
+            Buffer.from(
+            officeImg.replace(/^data:image\/\w+;base64,/, ""),
+            "base64"
+            ),
+            `${Date.now()}_${name.toUpperCase()}_office.jpg`
+        ),
+        ]);
 
         const newOffice = new Offices({ 
             name, 
@@ -65,7 +67,7 @@ exports.addOffices = async (req, res) => {
             opentime,
             closetime,
             openday,
-            officeImg
+            officepic
         });
 
         const createdOffice = await newOffice.save();
