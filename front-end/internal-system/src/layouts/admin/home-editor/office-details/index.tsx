@@ -214,7 +214,7 @@ export default function OfficeSchedDetails({
 		} else {
 		  alert('Please select at least one file.');
 		}
-	  };
+	};
 
 	const uploadButton = (
 		<div>
