@@ -113,38 +113,17 @@ export interface HomeEditor {
 }
 
 export interface OfficeSchedule {
-	officeName: string;
-	operatingHours: string;
-	inCharge: string;
-	location: string;
+	name: string;
+	roomNo: string;
+	pic: string;
 	contact: string;
-	availability: string;
+	email: string;
 }
 
 export interface EventsSchedule {
 	name: string;
-	date: string;
-	start: string;
-	end: string;
-	location: string;
-	description: string;
-}
-
-export interface NotificationContent {
-	visitor_name: string;
-	host_name: string;
-	date: Date;
-	time: Date;
-	location: string;
-	purpose: string;
-	visitor_type: VisitorType;
-}
-
-export interface Notification {
-	_id: string;
-	type: NotificationType;
-	recipient: string;
-	content: NotificationContent;
-	is_read: boolean;
-	created_at: Date;
+	startDate: string;
+	endDate: string;
+	startTime: string;
+	endTime: string;
 }

@@ -14,7 +14,7 @@ import "./styles.scss";
 
 export default function UpcomingEvents({ events }: EventsPropsAggregate) {
 	return (
-		<>
+		<div className="grid grid-cols-2 gap-4">
 			{events.map((event, key) => (
 				<EventCard
 					key={key}
@@ -31,6 +31,6 @@ export default function UpcomingEvents({ events }: EventsPropsAggregate) {
 					<img className="max-h-[233px]" alt="example" src={event.img} />
 				</EventCard>
 			))}
-		</>
+		</div>
 	);
 }

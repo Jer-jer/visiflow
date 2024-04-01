@@ -7,6 +7,7 @@ const {
   generateVisitorQRAndEmail,
   uploadFileToGCS,
   sendEmail,
+  createSystemLog,
 } = require("../utils/helper");
 const { Buffer } = require("node:buffer");
 const Notification = require("../models/notification");
@@ -141,13 +142,19 @@ exports.addVisitor = async (req, res) => {
       });
 
       io.emit("newNotification", pendingVisitor);
+    } else {
+      //For walk in
+      const user_id = req.user._id;
+      const log_type = 'add_visitor';
+      createSystemLog(user_id, log_type, 'success');
     }
-
+  
     return res.status(201).json({ visitor: newVisitor });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Failed to create a new visitor" });
+    return res.status(201).json({ visitor: newVisitor });
   }
+  
 };
 
 exports.findVisitor = async (req, res) => {
@@ -187,11 +194,11 @@ exports.updateVisitor = async (req, res) => {
     expected_time_in,
     expected_time_out,
     visitor_type,
-    status,
     id_picture,
   } = req.body;
 
-  const io = req.io;
+  const user_id = req.user._id;
+  const log_type = 'update_visitor';
 
   try {
     const visitorDB = await Visitor.findById(_id);
@@ -217,7 +224,6 @@ exports.updateVisitor = async (req, res) => {
       expected_time_in: expected_time_in,
       expected_time_out: expected_time_out,
       visitor_type: visitor_type,
-      status: status,
       id_picture: id_picture,
     };
 
@@ -234,33 +240,43 @@ exports.updateVisitor = async (req, res) => {
       filteredUpdateFields,
       { new: true }
     );
-
+    
+    await createSystemLog(user_id, log_type, 'success');
     res.status(201).json({ visitor: updatedVisitor });
   } catch (error) {
     console.error(error);
+    await createSystemLog(user_id, log_type, 'failed');
     return res.status(500).json({ error: "Failed to update user" });
   }
 };
 
 exports.deleteVisitor = async (req, res) => {
   const { _id } = req.body;
+  const user_id = req.user._id;
+  const log_type = 'delete_visitor';
 
   try {
     const visitorDB = await Visitor.findByIdAndDelete(_id);
 
     if (visitorDB) {
+      await createSystemLog(user_id, log_type, 'success');
       return res.status(204).send();
     } else {
+      await createSystemLog(user_id, log_type, 'failed');
       return res.status(404).json({ error: "Visitor not found" });
     }
   } catch (error) {
     console.error(error);
+    await createSystemLog(user_id, log_type, 'failed');
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
 exports.updateStatus = async (req, res) => {
   const { _id, status, message, email, companions } = req.body;
+  const io = req.io;
+
+  const user_id = req.user._id;
 
   try {
     const visitorDB = await Visitor.findById(_id);
@@ -283,7 +299,7 @@ exports.updateStatus = async (req, res) => {
         // }
 
         // Appointment Confirmation
-        await Notification.create({
+        const approvalNotif = await Notification.create({
           type: "confirmation",
           recipient: visitorDB.visitor_details._id,
           content: {
@@ -296,10 +312,15 @@ exports.updateStatus = async (req, res) => {
             visitor_type: visitorDB.visitor_type,
           },
         });
+       
+        await createSystemLog(user_id, 'approve_status', 'success');
+
+        io.emit("newNotification", approvalNotif);
 
         res.status(200).json({ message: `Visitor is now ${status}` });
       } catch (error) {
         console.error(error);
+        await createSystemLog(user_id, 'approve_status', 'failed');
         return res.status(500).json({ Error: "Failed to send email" });
       }
     } else if (status === "Declined") {
@@ -322,7 +343,7 @@ exports.updateStatus = async (req, res) => {
           }
         }
 
-        await Notification.create({
+        const declinedNotif = await Notification.create({
           type: "declined",
           recipient: visitorDB.visitor_details._id,
           content: {
@@ -335,8 +356,15 @@ exports.updateStatus = async (req, res) => {
             visitor_type: visitorDB.visitor_type,
           },
         });
+
+        await createSystemLog(user_id, 'decline_status', 'success');
+
+        io.emit("newNotification", declinedNotif);
+
+        res.status(200).json({ message: `Visitor is now ${status}` });
       } catch (error) {
         console.error(error);
+        await createSystemLog(user_id, 'decline_status', 'failed');
         return res.status(500).json({ Error: "Failed to send email" });
       }
     }

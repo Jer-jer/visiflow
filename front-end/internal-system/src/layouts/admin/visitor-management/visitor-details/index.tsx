@@ -5,6 +5,7 @@ import React, {
 	MutableRefObject,
 	Dispatch,
 	SetStateAction,
+	useEffect,
 } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,6 +27,9 @@ import { WidthContext } from "../../../logged-in";
 import type { RootState } from "../../../../store";
 import type { Dayjs } from "dayjs";
 import type { DatePickerProps } from "antd";
+
+// Reducers
+import { NotificationProps, addNotif } from "../../../../states/notifications";
 
 // Utils
 import { formatDateObjToString } from "../../../../utils";
@@ -63,6 +67,7 @@ import "./styles.scss";
 
 // Libraries
 import AxiosInstance from "../../../../lib/axios";
+import { socket } from "../../../../lib/socket";
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -108,6 +113,7 @@ export default function VisitorDetails({
 		"Your pre-registration application has been approved. Please find the QR code attached. Thank you!",
 	);
 
+	//? Disabled Inputs
 	const [disabledInputs, setDisabledInputs] = useState<boolean>(true);
 	const [disabledStatusInput, setDisabledStatusInput] = useState<boolean>(true);
 
@@ -120,6 +126,7 @@ export default function VisitorDetails({
 			"https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2d0041db-96ab-4012-b808-2cf1a664da62/d4ci082-7c5296e1-da7e-4d78-bc19-09123ba8da8f.png/v1/fill/w_600,h_600/profile_unavailable_by_whledo_d4ci082-fullview.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NjAwIiwicGF0aCI6IlwvZlwvMmQwMDQxZGItOTZhYi00MDEyLWI4MDgtMmNmMWE2NjRkYTYyXC9kNGNpMDgyLTdjNTI5NmUxLWRhN2UtNGQ3OC1iYzE5LTA5MTIzYmE4ZGE4Zi5wbmciLCJ3aWR0aCI6Ijw9NjAwIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.qwXReMzAA7SgocVUaM4qjm8SLZTdyyNoiZ_mD-ZSH7o",
 	});
 
+	//? Width Context
 	const width = useContext(WidthContext);
 
 	// Store Related variables

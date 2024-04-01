@@ -16,6 +16,13 @@ const validateBldgLoc = [
     body('roomNo').notEmpty().withMessage('Room Number is required').isString().withMessage("Room Number must be a String")
 ];
 
+const validateOffices = [
+    body('name').notEmpty().withMessage('Building Name is required').isString().withMessage("Building name must be a String"),
+    body('roomNo').notEmpty().withMessage('Room Number is required').isString().withMessage("Room Number must be a String"),
+    body('pic').notEmpty().withMessage('Personnel in charge is required').isString().withMessage("Personnel's name must be a String"),
+    body('contact').notEmpty().withMessage('Contact Number is required').isString().withMessage("Contact Number must be a String")
+];
+
 const validateAnnouncements = [
     body('title').notEmpty().withMessage('Title is required').isString().withMessage("Title must be a String"),
     body('message').notEmpty().withMessage('Message is required').isString().withMessage("Message must be a String")
@@ -24,9 +31,10 @@ const validateAnnouncements = [
 const validateEvents = [
     body('name').notEmpty().withMessage('Event name is required').isString().withMessage('Event name must be a string'),
     body('locationID').isString().withMessage('Location ID must be a string').notEmpty().withMessage('Location ID is required'),
-    body('userID').isString().withMessage('User ID must be a string').notEmpty().withMessage('User ID is required'),
     body('startDate').isISO8601().withMessage('Date is not the right format').notEmpty().withMessage('Data is required'),
     body('endDate').isISO8601().withMessage('Date is not the right format').notEmpty().withMessage('Data is required'),
+    body('startTime').isISO8601().withMessage('Date is not the right format').notEmpty().withMessage('Data is required'),
+    body('endTime').isISO8601().withMessage('Date is not the right format').notEmpty().withMessage('Data is required'),
 ];
 
 const validateVisitor = [
@@ -68,6 +76,7 @@ module.exports = {
     validateBldgLoc,
     validateEvents,
     validateAnnouncements,
+    validateOffices,
     handleValidationErrors, 
     validationResult 
 };
