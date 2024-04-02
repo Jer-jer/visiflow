@@ -2,6 +2,7 @@ import React, { Dispatch, SetStateAction, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import useSound from "use-sound";
+import Notifications from "react-notifications-menu";
 
 //Components
 import { Modal } from "antd";
@@ -9,17 +10,23 @@ import CustomDropdown from "../dropdown";
 
 //Interfaces
 import { NotificationType } from "../../utils/enums";
-import { VisitorDataType } from "../../utils/interfaces";
-import { NotificationProps } from "../../states/notifications";
+import { VisitorDataType, NotificationProps } from "../../utils/interfaces";
+import {
+	NotificationStoreProps,
+	fetchNotifs,
+} from "../../states/notifications";
 import type { AppDispatch, RootState } from "../../store";
-import type { MenuProps } from "antd";
 
 //Reducers
-import { add, fetchVisitors } from "../../states/visitors";
-import { fetchNotifs, addNotif, readNotif } from "../../states/notifications";
+import { add } from "../../states/visitors";
+import { addNotif, readNotif } from "../../states/notifications";
 
 //Utils
-import { formatDateObjToString, formatDateString } from "../../utils";
+import {
+	formatDateObjToString,
+	notificationType,
+	notificationMessage,
+} from "../../utils";
 
 //Lib
 import AxiosInstance from "../../lib/axios";
@@ -36,12 +43,19 @@ interface HeaderProps {
 	setIsAdmin: Dispatch<SetStateAction<boolean>>;
 }
 
+const error = (message: string) => {
+	Modal.error({
+		title: `Error`,
+		content: message,
+		className: "error-modal",
+	});
+};
+
 export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 	//? Socket Connection
 	const [isConnected, setIsConnected] = useState(socket.connected);
 
 	//? Redux
-	const { data } = useSelector((state: RootState) => state.visitors);
 	const notifications = useSelector((state: RootState) => state.notifications);
 
 	//? Determine if the user is an admin
@@ -53,23 +67,33 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 
 	const dispatch = useDispatch<AppDispatch>();
 
-	const error = (message: string) => {
-		Modal.error({
-			title: `Error`,
-			content: message,
-		});
-	};
-
 	const initialNotificaions = () => {
 		AxiosInstance.get("/notification")
 			.then((res) => {
-				dispatch(fetchNotifs(res.data.notifications));
+				const unreadNotifications = res.data.notifications.filter(
+					(notif: NotificationProps) => !notif.is_read,
+				);
+				const notifications: NotificationStoreProps[] = unreadNotifications.map(
+					(notif: NotificationProps) => {
+						return {
+							key: notif._id,
+							name: notif.content.visitor_name,
+							message: `${notif.content.visitor_name} ${notificationMessage(notif.type, notif.content)}`,
+							time_in: notif.content.time_in,
+							time_out: notif.content.time_out,
+							receivedTime: formatDateObjToString(notif.created_at),
+							type: notif.type,
+							is_read: notif.is_read,
+						};
+					},
+				);
+				dispatch(fetchNotifs(notifications));
 			})
 			.catch((err) => {
 				error(
 					err?.response?.data?.error ||
 						err?.response?.data?.errors ||
-						"Something went wrong with displaying notifications.",
+						"Something went wrong with displaying notifications. Please refresh the page",
 				);
 			});
 	};
@@ -88,12 +112,22 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 			dispatch(add(value));
 		}
 
-		function onNewNotification(value: NotificationProps) {
-			dispatch(addNotif(value));
+		function onNewNotification(value: any) {
+			dispatch(
+				addNotif({
+					key: value._id,
+					name: value.content.visitor_name,
+					message: notificationMessage(value.type, value.content),
+					time_in: value.content.time_in,
+					time_out: value.content.time_out,
+					receivedTime: value.created_at,
+					type: value.type,
+					is_read: value.is_read,
+				}),
+			);
 			play();
 		}
 
-		dispatch(fetchVisitors());
 		initialNotificaions();
 
 		socket.on("connect", onConnect);
@@ -117,124 +151,11 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 		navigate("/");
 	};
 
-	const findVisitor = (id: string) => {
-		//? Search in the data array
-		for (let index = 0; index < data.length; index++) {
-			const element = data[index];
-			//? Check if the element id matches
-			if (element.visitor_details._id === id) {
-				return index;
-			}
-			//? Search in the pals array of the element
-			const companionIndex = element.companion_details!.findIndex(
-				(p) => p._id === id,
-			);
-			if (companionIndex !== -1) {
-				return index; //? Return a modified element with type VisitorDetailsProps
-			}
-		}
-		return -1; //? Return -1 if not found
-	};
-
-	const getVisitorName = (id: string, visitor: VisitorDataType) => {
-		//? Check if the visitor id matches the id
-		if (visitor.visitor_details._id === id) {
-			return visitor.visitor_details.name;
-		} else {
-			return visitor.companion_details!.find((p) => p._id === id)!.name;
-		}
-	};
-
-	const hasUnread = () => {
-		//? Check if there is an unread notification
-		const hasAtLeastOneUnread = notifications.some(
-			(notif) => notif.is_read === false,
-		);
-
-		if (hasAtLeastOneUnread) return true;
-
-		return false;
-	};
-
-	const notificationType = (type: NotificationType) => {
-		let message: string = "";
-		switch (type) {
-			case NotificationType.Confirmation:
-				message = "Visitor Confirmation";
-				break;
-			case NotificationType.Declined:
-				message = "Visitor Declined";
-				break;
-			case NotificationType.Pending:
-				message = "New Visitor";
-				break;
-			case NotificationType.TimeIn:
-				message = "Nearing Scheduled Time In";
-				break;
-			case NotificationType.TimeOut:
-				message = "Exceeded Scheduled Time Out";
-				break;
-		}
-		return message;
-	};
-
-	const notificationMessage = (type: NotificationType, visitor: number) => {
-		let message: string = "An error occurred. Please try again.";
-		if (data[visitor]) {
-			switch (type) {
-				case NotificationType.Confirmation:
-					message = "has been confirmed at";
-					break;
-				case NotificationType.Declined:
-					message = "has been declined at";
-					break;
-				case NotificationType.Pending:
-					message = `has planned an appointment with the following: ${data[visitor].purpose.who.join(", ")} at the following: ${data[visitor].purpose.where.join(", ")} on ${formatDateObjToString(data[visitor].purpose.when)}`;
-					break;
-				case NotificationType.TimeIn:
-					message = "has yet to time in at";
-					break;
-				case NotificationType.TimeOut:
-					message = "has exceeded their scheduled time out at";
-					break;
-			}
-		}
-		return message;
-	};
-
-	const notifTime = (
-		type: NotificationType,
-		visitor: VisitorDataType,
-		created_at: Date,
-	) => {
-		let time: string = "";
-
-		switch (type) {
-			case NotificationType.Confirmation:
-				time = formatDateObjToString(created_at);
-				break;
-			case NotificationType.Declined:
-				time = formatDateObjToString(created_at);
-				break;
-			case NotificationType.Pending:
-				time = formatDateObjToString(created_at);
-				break;
-			case NotificationType.TimeIn:
-				time = formatDateString(visitor.expected_time_in);
-				break;
-			case NotificationType.TimeOut:
-				time = formatDateString(visitor.expected_time_out);
-				break;
-		}
-		return time;
-	};
-
-	const readNotification = (x: number, notif: NotificationProps) => {
+	const readNotification = (notif: NotificationStoreProps) => {
 		//? Check if the notification is already read
-		if (notifications[x].is_read) return;
-		dispatch(readNotif(notif._id));
+		if (notif.is_read) return;
 		AxiosInstance.put("/notification/update", {
-			_id: notif._id,
+			_id: notif.key,
 			is_read: true,
 		}).catch((err) => {
 			error(
@@ -243,62 +164,9 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 					"Something went wrong with updating the notification.",
 			);
 		});
-	};
 
-	const notificationMenuItems: MenuProps["items"] = notifications.map(
-		(notif, x) => {
-			const key = x + 1;
-			return {
-				label: (
-					<div
-						className="flex flex-row items-center justify-between"
-						onMouseEnter={() => readNotification(x, notif)}
-					>
-						<div className="flex w-[90%] flex-col justify-center">
-							<span className="text-lg font-bold">
-								{notificationType(notif.type)}
-							</span>
-							<span className="text-[15px]">
-								{data[findVisitor(notif.recipient)] ? (
-									<>
-										<span className="font-bold">
-											{`${getVisitorName(notif.recipient, data[findVisitor(notif.recipient)]).last_name}, ${getVisitorName(notif.recipient, data[findVisitor(notif.recipient)]).first_name} ${getVisitorName(notif.recipient, data[findVisitor(notif.recipient)]).middle_name}`}
-										</span>{" "}
-										{notificationMessage(
-											notif.type,
-											findVisitor(notif.recipient),
-										)}{" "}
-										{notif.type !== NotificationType.Pending && (
-											<span className="notice font-bold text-red-400">
-												{notifTime(
-													notif.type,
-													data[findVisitor(notif.recipient)],
-													notif.created_at,
-												)}
-											</span>
-										)}
-									</>
-								) : (
-									<span className="not-found font-bold text-error-500">
-										[Visitor has been deleted]
-									</span>
-								)}
-							</span>
-							<span className="time fon mt-3 text-[14px] font-semibold text-primary-500">
-								{notif.created_at && formatDateObjToString(notif.created_at)}
-							</span>
-						</div>
-						{!notif.is_read && (
-							<span className=" unread inline text-xs font-semibold text-primary-500">
-								NEW
-							</span>
-						)}
-					</div>
-				),
-				key: key.toString(),
-			};
-		},
-	);
+		dispatch(readNotif(notif.key));
+	};
 
 	return (
 		<div className="navbar bg-base-100">
@@ -311,35 +179,52 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 				</a>
 			</div>
 			<div className="flex-none">
-				<CustomDropdown
-					overlayClassName="notification-dropdown"
-					items={notificationMenuItems}
-				>
-					<div
-						tabIndex={0}
-						className="btn btn-circle btn-ghost hover:bg-transparent hover:text-primary-500"
-					>
-						<div className="indicator">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								strokeWidth={1.5}
-								stroke="currentColor"
-								className="h-5 w-5"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
-								/>
-							</svg>
-							{hasUnread() && (
-								<span className="badge indicator-item badge-sm bg-red-500"></span>
+				<Notifications
+					data={notifications}
+					icon="https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-ios7-bell-512.png"
+					header={{
+						title: "Notifications",
+						option: { text: "", onClick: () => console.log("Clicked") },
+					}}
+					viewAllBtn={{
+						text: "View All",
+						linkTo: "/notifications",
+					}}
+					// notificationCard={(data: any) => console.log("hakdog", data.data)}
+					notificationCard={(data: any) => (
+						<div
+							key={data.data.key}
+							className="notification flex flex-row items-end justify-between gap-[2px] px-[10px] py-[8px] transition hover:bg-primary-500"
+							onMouseLeave={() => readNotification(data.data)}
+						>
+							<div className="flex w-full flex-col justify-center">
+								<span className="font-bold">
+									{notificationType(data.data.type)}
+								</span>
+								<span>
+									<span className="font-bold">{data.data.name}</span>{" "}
+									{data.data.message}{" "}
+									{data.data.type === NotificationType.TimeIn ? (
+										<span className="font-bold">
+											{formatDateObjToString(data.data.time_in)}
+										</span>
+									) : (
+										data.data.type === NotificationType.TimeOut && (
+											<span className="font-bold">
+												{formatDateObjToString(data.data.time_out)}
+											</span>
+										)
+									)}
+								</span>
+							</div>
+							{!data.data.is_read && (
+								<span className="unread inline pr-[10px] font-semibold text-primary-500">
+									NEW
+								</span>
 							)}
 						</div>
-					</div>
-				</CustomDropdown>
+					)}
+				/>
 
 				<CustomDropdown
 					overlayClassName="account-dropdown"
@@ -350,7 +235,7 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 								<button
 									onClick={() => {
 										setIsAdmin(true);
-										navigate("/");
+										navigate("/dashboard");
 									}}
 									disabled={!wasAdmin}
 								>

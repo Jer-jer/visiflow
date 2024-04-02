@@ -19,7 +19,7 @@ export default function OuterContainer({
 }: OuterContainerProps) {
 	return (
 		<div
-			className={`${containerStyling} container-shadow mr-[25px] flex h-full flex-col items-center rounded-[20px] bg-white`}
+			className={`${containerStyling} container-shadow mr-[25px] flex flex-col items-center rounded-[20px] bg-white`}
 		>
 			<div className="mb-[30px] mt-[30px]">
 				<span

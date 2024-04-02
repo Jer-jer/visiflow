@@ -1,11 +1,22 @@
-import React, { useLayoutEffect, useRef, useState, createContext } from "react";
+import React, {
+	useLayoutEffect,
+	useRef,
+	useState,
+	createContext,
+	useEffect,
+} from "react";
 import { NavLink } from "react-router-dom";
+import { useDispatch } from "react-redux";
 
 //Components
 import Header from "../../components/header";
 import Sidebar, { SidebarItem } from "../../components/sidebar";
 
-//Interfaces
+// Store
+import { AppDispatch } from "../../store";
+
+// Actions
+import { fetchVisitors } from "../../states/visitors";
 
 //Assets
 import {
@@ -32,6 +43,9 @@ interface LoggedInProps {
 
 export let expandedWidth: number;
 
+//TODO Streamline Logging in by roles
+//TODO Streamline Logging out by roles
+
 function LoggedIn({
 	isAdmin,
 	setIsLoggedIn,
@@ -41,6 +55,12 @@ function LoggedIn({
 	const [expanded, setExpanded] = useState(false);
 	const [width, setWidth] = useState(0);
 	const ref = useRef<HTMLDivElement>(null);
+
+	const dispatch = useDispatch<AppDispatch>();
+
+	useEffect(() => {
+		dispatch(fetchVisitors());
+	}, []);
 
 	useLayoutEffect(() => {
 		if (ref.current) {
@@ -55,7 +75,7 @@ function LoggedIn({
 				<Sidebar expanded={expanded} setExpanded={setExpanded}>
 					{isAdmin ? (
 						<>
-							<NavLink to="/">
+							<NavLink to="/dashboard">
 								{({ isActive }) => (
 									<SidebarItem
 										icon={<Home />}

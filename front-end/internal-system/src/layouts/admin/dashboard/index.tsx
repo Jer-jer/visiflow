@@ -25,11 +25,6 @@ import { VisitorDataType } from "../../../utils/interfaces";
 
 export default function DashboardLayout() {
 	const { data } = useSelector((state: any) => state.visitors);
-	const dispatch = useDispatch<AppDispatch>();
-
-	useEffect(() => {
-		dispatch(fetchVisitors());
-	}, []);
 
 	return (
 		<div className="mb-[35px] ml-2 mt-3 flex">

@@ -120,13 +120,22 @@ exports.addVisitor = async (req, res) => {
 
     if (visitor_type === "Pre-Registered") {
       const pendingVisitor = await Notification.create({
+        _id: new ObjectId(),
         type: "pending",
         recipient: newVisitor.visitor_details._id,
         content: {
-          visitor_name: `${newVisitor.visitor_details.name.last_name}, ${newVisitor.visitor_details.name.first_name} ${newVisitor.visitor_details.name.middle_name}`,
+          visitor_name: `${newVisitor.visitor_details.name.last_name}, ${
+            newVisitor.visitor_details.name.first_name
+          } ${
+            newVisitor.visitor_details.name.middle_name &&
+            newVisitor.visitor_details.name.middle_name !== undefined
+              ? newVisitor.visitor_details.name.middle_name
+              : ""
+          }`,
           host_name: newVisitor.purpose.who.join(", "),
           date: newVisitor.purpose.when,
-          time: newVisitor.expected_time_in,
+          time_in: newVisitor.expected_time_in,
+          time_out: newVisitor.expected_time_out,
           location: newVisitor.purpose.where.join(", "),
           purpose: newVisitor.purpose.what.join(", "),
           visitor_type: newVisitor.visitor_type,
@@ -134,12 +143,17 @@ exports.addVisitor = async (req, res) => {
       });
 
       io.emit("newNotification", pendingVisitor);
+    } else {
+      //For walk in
+      const user_id = req.user._id;
+      const log_type = "add_visitor";
+      createSystemLog(user_id, log_type, "success");
     }
 
     return res.status(201).json({ visitor: newVisitor });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Failed to create a new visitor" });
+    res.status(500).json({ error: error });
   }
 };
 
@@ -183,7 +197,6 @@ exports.updateVisitor = async (req, res) => {
     id_picture,
   } = req.body;
 
-  const io = req.io;
   const user_id = req.user._id;
   const log_type = "update_visitor";
 
@@ -287,13 +300,15 @@ exports.updateStatus = async (req, res) => {
 
         // Appointment Confirmation
         const approvalNotif = await Notification.create({
+          _id: new ObjectId(),
           type: "confirmation",
           recipient: visitorDB.visitor_details._id,
           content: {
             visitor_name: `${visitorDB.visitor_details.name.last_name}, ${visitorDB.visitor_details.name.first_name} ${visitorDB.visitor_details.name.middle_name}`,
             host_name: visitorDB.purpose.who.join(", "),
             date: visitorDB.purpose.when,
-            time: visitorDB.expected_time_in,
+            time_in: visitorDB.expected_time_in,
+            time_out: visitorDB.expected_time_out,
             location: visitorDB.purpose.where.join(", "),
             purpose: visitorDB.purpose.what.join(", "),
             visitor_type: visitorDB.visitor_type,
@@ -331,13 +346,15 @@ exports.updateStatus = async (req, res) => {
         }
 
         const declinedNotif = await Notification.create({
+          _id: new ObjectId(),
           type: "declined",
           recipient: visitorDB.visitor_details._id,
           content: {
             visitor_name: `${visitorDB.visitor_details.name.last_name}, ${visitorDB.visitor_details.name.first_name} ${visitorDB.visitor_details.name.middle_name}`,
             host_name: visitorDB.purpose.who.join(", "),
             date: visitorDB.purpose.when,
-            time: visitorDB.expected_time_in,
+            time_in: visitorDB.expected_time_in,
+            time_out: visitorDB.expected_time_out,
             location: visitorDB.purpose.where.join(", "),
             purpose: visitorDB.purpose.what.join(", "),
             visitor_type: visitorDB.visitor_type,

@@ -20,6 +20,9 @@ interface StatisticsSummaryContentProps {
 	secondaryStatsProps: SecondaryStatsProps[];
 }
 
+//TODO: Integrate Statistics with existing data
+//TODO: Add Statistics per week
+
 export default function StatisticsSummaryContent({
 	title,
 	bigNumber,

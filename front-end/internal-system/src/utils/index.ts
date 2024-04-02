@@ -1,6 +1,8 @@
 import { DateTime } from "luxon";
 
-import { UserActionLogType } from "./enums";
+import { UserActionLogType, NotificationType } from "./enums";
+
+import { NotificationContent } from "./interfaces";
 
 export const formatDateString = (date: string) => {
 	//? Convert ISO8601 date string to date object
@@ -38,6 +40,28 @@ export const formatDateToISO = (dateObj: Date) => {
 	return formattedDateTime;
 };
 
+export const notificationType = (type: NotificationType) => {
+	let message: string = "";
+	switch (type) {
+		case NotificationType.Confirmation:
+			message = "Visitor Confirmation";
+			break;
+		case NotificationType.Declined:
+			message = "Visitor Declined";
+			break;
+		case NotificationType.Pending:
+			message = "New Visitor";
+			break;
+		case NotificationType.TimeIn:
+			message = "Nearing Scheduled Time In";
+			break;
+		case NotificationType.TimeOut:
+			message = "Exceeded Scheduled Time Out";
+			break;
+	}
+	return message;
+};
+
 export const actionType = (type: UserActionLogType) => {
 	switch (type) {
 		case "time_in":
@@ -69,4 +93,30 @@ export const actionType = (type: UserActionLogType) => {
 		default:
 			return "Unknown";
 	}
+};
+
+export const notificationMessage = (
+	type: NotificationType,
+	content: NotificationContent,
+) => {
+	let message: string = "An error occurred. Please try again.";
+
+	switch (type) {
+		case NotificationType.Confirmation:
+			message = "has been confirmed at";
+			break;
+		case NotificationType.Declined:
+			message = "has been declined at";
+			break;
+		case NotificationType.Pending:
+			message = `has planned an appointment with the following: ${content.host_name} at the following: ${content.location} on ${formatDateObjToString(content.date)}`;
+			break;
+		case NotificationType.TimeIn:
+			message = "has yet to time in at";
+			break;
+		case NotificationType.TimeOut:
+			message = "has exceeded their scheduled time out at";
+			break;
+	}
+	return message;
 };

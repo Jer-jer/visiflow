@@ -28,9 +28,6 @@ import type { RootState } from "../../../../store";
 import type { Dayjs } from "dayjs";
 import type { DatePickerProps } from "antd";
 
-// Reducers
-import { NotificationProps, addNotif } from "../../../../states/notifications";
-
 // Utils
 import { formatDateObjToString, formatDateString } from "../../../../utils";
 
@@ -98,6 +95,7 @@ const error = (message: string) => {
 	Modal.error({
 		title: `Error`,
 		content: message,
+		className: "error-modal",
 	});
 };
 

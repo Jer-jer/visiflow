@@ -87,6 +87,8 @@ export default function StepThree({
 		return false;
 	};
 
+	//TODO Fix Undefined Middle Name
+
 	const showConfirm = (data: any) => {
 		confirm({
 			title: "Do you want to proceed?",
@@ -106,7 +108,20 @@ export default function StepThree({
 				} else {
 					setLoading(true);
 					AxiosInstace.post("/visitor/new", {
-						visitor_data: data,
+						visitor_data: {
+							...data,
+							visitor_details: {
+								...data.visitor_details,
+								name: {
+									...data.visitor_details.name,
+									middle_name:
+										data.visitor_details.name.middle_name &&
+										data.visitor_details.name.middle_name === undefined
+											? ""
+											: data.visitor_details.name.middle_name,
+								},
+							},
+						},
 					})
 						.then((res: any) => {
 							setLoading(false);

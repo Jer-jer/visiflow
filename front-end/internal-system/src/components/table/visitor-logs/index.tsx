@@ -11,11 +11,7 @@ import { VisitorLogDetails } from "../../../utils/interfaces";
 import type { RootState } from "../../../store";
 
 // Utils
-import {
-	formatDateToISO,
-	formatDateObjToString,
-	formatDateString,
-} from "../../../utils";
+import { formatDateToISO, formatDateObjToString } from "../../../utils";
 
 //Styles
 import "../../../utils/variables.scss";

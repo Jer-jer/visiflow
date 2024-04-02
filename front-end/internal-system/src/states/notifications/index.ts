@@ -2,46 +2,33 @@ import { createSlice } from "@reduxjs/toolkit";
 
 // Types and Interfaces
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { VisitorType, NotificationType } from "../../utils/enums";
+import { NotificationType } from "../../utils/enums";
 
-// Utils
-
-export interface NotificationContent {
-	visitor_name: string;
-	host_name: string;
-	date: Date;
-	time: Date;
-	location: string;
-	purpose: string;
-	visitor_type: VisitorType;
-}
-
-export interface NotificationProps {
-	_id: string;
+export interface NotificationStoreProps {
+	key: string;
+	name: string;
+	message: string;
+	time_in: Date;
+	time_out: Date;
+	receivedTime: string;
 	type: NotificationType;
-	recipient: string;
-	content: NotificationContent;
 	is_read: boolean;
-	created_at: Date;
 }
 
-const initialState: NotificationProps[] = [];
+const initialState: NotificationStoreProps[] = [];
 
 export const notificationsSlice = createSlice({
 	name: "notifications",
 	initialState,
 	reducers: {
-		fetchNotifs: (state, action: PayloadAction<NotificationProps[]>) => {
+		fetchNotifs: (state, action: PayloadAction<NotificationStoreProps[]>) => {
 			return [...action.payload];
 		},
-		addNotif: (state, action: PayloadAction<NotificationProps>) => {
+		addNotif: (state, action: PayloadAction<NotificationStoreProps>) => {
 			state.push(action.payload);
 		},
 		readNotif: (state, action: PayloadAction<string>) => {
-			const notif = state.find((notif) => notif._id === action.payload);
-			if (notif) {
-				notif.is_read = true;
-			}
+			return state.filter((notif) => notif.key !== action.payload);
 		},
 	},
 });

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { jwtDecode } from "jwt-decode";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 //Interface
 import { LoginZod } from "../../utils/zodSchemas";
@@ -41,6 +41,8 @@ function LoginLayout({ setIsAdmin, setIsLoggedIn }: LoginProps) {
 	const [modalMessage, setModalMessage] = useState("");
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
+	const navigate = useNavigate();
+
 	const showModal = () => {
 		setIsModalOpen(true);
 	};
@@ -76,9 +78,12 @@ function LoginLayout({ setIsAdmin, setIsLoggedIn }: LoginProps) {
 					case "admin":
 						setIsAdmin(true);
 						localStorage.setItem("role", "1");
+						navigate("/dashboard");
 						break;
 					case "guard":
 						setIsAdmin(false);
+						localStorage.setItem("role", "2");
+						navigate("/");
 						break;
 					default:
 						setIsAdmin(false);
@@ -89,7 +94,7 @@ function LoginLayout({ setIsAdmin, setIsLoggedIn }: LoginProps) {
 			})
 			.catch((err) => {
 				showModal();
-				if(err.response !== undefined && err.response) {
+				if (err.response !== undefined && err.response) {
 					if (err.response.status === 401) {
 						setModalMessage("Invalid Username/Password.");
 					} else {
@@ -97,9 +102,10 @@ function LoginLayout({ setIsAdmin, setIsLoggedIn }: LoginProps) {
 						setModalMessage("Login Request Failed. Please try again later.");
 					}
 				} else {
-					setModalMessage("Something went wrong with your request. Please try again later.");
+					setModalMessage(
+						"Something went wrong with your request. Please try again later.",
+					);
 				}
-				
 			});
 	});
 

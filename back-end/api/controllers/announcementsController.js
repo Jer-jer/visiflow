@@ -3,13 +3,13 @@ const bodyParser = require("body-parser");
 const Announcements = require('../models/announcements');
 const { validateAnnouncements, handleValidationErrors, validationResult } = require('../middleware/dataValidation');
 
-function sanitizeData(announcements) {
-    return {
-        _id: announcements._id,
-        title: announcements.title,
-        message: announcements.message
-    };
-}
+// function sanitizeData(announcements) {
+//     return {
+//         _id: announcements._id,
+//         title: announcements.title,
+//         message: announcements.message
+//     };
+// }
 
 //Get list of announcements
 exports.getAllAnnouncements = async (req, res) => {

@@ -49,7 +49,7 @@ export default function VisitorListTable({
 					b.visitor_details.name.last_name,
 				),
 			render: (_, { visitor_details }) => {
-				return `${visitor_details.name.last_name}, ${visitor_details.name.first_name} ${visitor_details.name.middle_name}`;
+				return `${visitor_details.name.last_name}, ${visitor_details.name.first_name} ${visitor_details.name.middle_name ? visitor_details.name.middle_name : ""}`;
 			},
 		},
 		{
@@ -181,19 +181,9 @@ export default function VisitorListTable({
 					.filter((visitor) => {
 						return search.toLowerCase() === ""
 							? visitor
-							: visitor.visitor_details.name.first_name
+							: `${visitor.visitor_details.name.last_name}, ${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name!}`
 									.toLowerCase()
 									.includes(search.toLowerCase()) ||
-									(visitor.visitor_details.name.middle_name !== undefined &&
-										visitor.visitor_details.name.middle_name
-											.toLowerCase()
-											.includes(search.toLowerCase())) ||
-									visitor.visitor_details.name.last_name
-										.toLowerCase()
-										.includes(search.toLowerCase()) ||
-									`${visitor.visitor_details.name.last_name} ${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name!}`
-										.toLowerCase()
-										.includes(search.toLowerCase()) ||
 									`${visitor.visitor_details.name.first_name}${
 										visitor.visitor_details.name.middle_name
 											? ` ${visitor.visitor_details.name.middle_name}`

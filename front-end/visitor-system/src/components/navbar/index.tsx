@@ -45,7 +45,7 @@ export default function Navbar({ children }: NavbarProps) {
 			>
 				{children}
 				<Select
-					className="lg:ml-[140px] lg:mr-[42px]"
+					className="language-select lg:ml-[140px] lg:mr-[42px]"
 					defaultValue="english"
 					style={{ width: 90 }}
 					variant="borderless"

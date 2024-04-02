@@ -11,7 +11,7 @@ const Name = new Schema({
 });
 
 const systemLogSchema = new Schema({
-  _id: { type: ObjectId },
+  _id: { type: ObjectId, require: false },
   user_id: { type: ObjectId, require: true },
   name: { type: Name, require: true },
   role: { type: String, require: true },

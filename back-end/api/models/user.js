@@ -12,7 +12,7 @@ const Name = new Schema({
 });
 
 const UserSchema = new Schema({
-  _id: { type: ObjectId },
+  _id: { type: ObjectId, require: false },
   name: Name,
   username: { type: String, require: true },
   email: { type: String, require: true, unique: true },
