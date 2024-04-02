@@ -124,13 +124,17 @@ export default function Offices() {
 				email: office.email,
 				location: office.roomNo,
 				contact: office.contact,
-				img: "https://s3-alpha-sig.figma.com/img/1d30/0d05/f0e7547ac0886e050968872c37178b8b?Expires=1699228800&Signature=Tvx~-eAdBtdtvT4oRbjjkWYG9Ok4LmxysLLAsD9F3dkAHqWWXDBzrAqa4YRrQFZE4vMQodqFENZSNmBdl92qPlYRS1KFKeGF0Knx73kgpldR77R4FgFpjMe3okpy0AkjwecWrpp6xWOWXL5HpVCr5WMOt1AtmRa~i4L1m7EelT7V3eSvHGNdG5bTWB~xmOxgZx5LgPU6PvHZeYqJilJ3Doa2XCXW0AG3mziB3Y3mb1jAF0zVwblc2EfDd~X~kKiwumipNdHOctJ3rLaxe7qWDrSz7i~gyjfpCfos6q2M5mTbWZU9uEnEJ9IuZVAbtKHrIOwWSARRvhDD-Ye7pOkSKA__&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4",
+				img: office.officeImg,
 			  }));
 			setOffice(convertedData);
 		  } catch (error) {
 			console.error('Error fetching offices:', error);
 		  }
 	}
+
+	useEffect(() => {
+		console.log("test", office)
+	}, [office])
 
 	const handleSearch = async() => {
 		try {
@@ -145,7 +149,7 @@ export default function Offices() {
 				email: office.email,
 				location: office.roomNo,
 				contact: office.contact,
-				img: "https://s3-alpha-sig.figma.com/img/1d30/0d05/f0e7547ac0886e050968872c37178b8b?Expires=1699228800&Signature=Tvx~-eAdBtdtvT4oRbjjkWYG9Ok4LmxysLLAsD9F3dkAHqWWXDBzrAqa4YRrQFZE4vMQodqFENZSNmBdl92qPlYRS1KFKeGF0Knx73kgpldR77R4FgFpjMe3okpy0AkjwecWrpp6xWOWXL5HpVCr5WMOt1AtmRa~i4L1m7EelT7V3eSvHGNdG5bTWB~xmOxgZx5LgPU6PvHZeYqJilJ3Doa2XCXW0AG3mziB3Y3mb1jAF0zVwblc2EfDd~X~kKiwumipNdHOctJ3rLaxe7qWDrSz7i~gyjfpCfos6q2M5mTbWZU9uEnEJ9IuZVAbtKHrIOwWSARRvhDD-Ye7pOkSKA__&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4",
+				img: office.officeImg,
 			  }));
 			setOffice(convertedData);
 		  } catch (error) {
