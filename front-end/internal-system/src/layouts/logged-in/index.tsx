@@ -36,19 +36,14 @@ export const WidthContext = createContext(0);
 
 interface LoggedInProps {
 	isAdmin: boolean;
-	setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
 	setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
 	children: React.ReactNode;
 }
 
 export let expandedWidth: number;
 
-//TODO Streamline Logging in by roles
-//TODO Streamline Logging out by roles
-
 function LoggedIn({
 	isAdmin,
-	setIsLoggedIn,
 	setIsAdmin,
 	children,
 }: LoggedInProps) {
@@ -136,7 +131,7 @@ function LoggedIn({
 				</Sidebar>
 				<div className="h-fit min-w-0 flex-1">
 					<div>
-						<Header setIsLoggedIn={setIsLoggedIn} setIsAdmin={setIsAdmin} />
+						<Header setIsAdmin={setIsAdmin} />
 					</div>
 					{/* Main content Here */}
 					<div id="parentDiv" className="children" ref={ref}>

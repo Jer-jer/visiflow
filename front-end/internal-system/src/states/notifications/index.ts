@@ -10,7 +10,7 @@ export interface NotificationStoreProps {
 	message: string;
 	time_in: Date;
 	time_out: Date;
-	receivedTime: string;
+	receivedTime: Date;
 	type: NotificationType;
 	is_read: boolean;
 }

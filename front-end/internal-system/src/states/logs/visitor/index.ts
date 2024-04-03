@@ -18,8 +18,11 @@ export const visitorLogsSlice = createSlice({
 		addLog: (state, action: PayloadAction<VisitorLogDetails>) => {
 			state.push(action.payload);
 		},
+		removeLogs: (state) => {
+			return [];
+		}
 	},
 });
 
-export const { addLog, fetchLogs } = visitorLogsSlice.actions;
+export const { addLog, fetchLogs, removeLogs } = visitorLogsSlice.actions;
 export default visitorLogsSlice.reducer;

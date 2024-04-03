@@ -103,19 +103,19 @@ export const notificationMessage = (
 
 	switch (type) {
 		case NotificationType.Confirmation:
-			message = "has been confirmed at";
+			message = "has been confirmed on";
 			break;
 		case NotificationType.Declined:
-			message = "has been declined at";
+			message = "has been declined on";
 			break;
 		case NotificationType.Pending:
-			message = `has planned an appointment with the following: ${content.host_name} at the following: ${content.location} on ${formatDateObjToString(content.date)}`;
+			message = `has planned an appointment with the following: ${content.host_name} at the following: ${content.location} on`;
 			break;
 		case NotificationType.TimeIn:
-			message = "has yet to time in at";
+			message = "has yet to time in on";
 			break;
 		case NotificationType.TimeOut:
-			message = "has exceeded their scheduled time out at";
+			message = "has exceeded their scheduled time out on";
 			break;
 	}
 	return message;

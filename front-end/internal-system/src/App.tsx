@@ -26,7 +26,6 @@ import { LoadingOutlined } from "@ant-design/icons";
 import "./App.scss";
 
 function App() {
-	//TODO Put these states in store
 	const [loading, setLoading] = useState(true);
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [isAdmin, setIsAdmin] = useState(false);
@@ -41,6 +40,8 @@ function App() {
 			if (decoded.role === "admin") {
 				setIsAdmin(true);
 			}
+		} else {
+			setIsLoggedIn(false);
 		}
 		setLoading(false);
 	}, []);
@@ -53,7 +54,6 @@ function App() {
 				</div>
 			) : isLoggedIn ? (
 				<LoggedIn
-					setIsLoggedIn={setIsLoggedIn}
 					isAdmin={isAdmin}
 					setIsAdmin={setIsAdmin}
 				>
@@ -89,10 +89,10 @@ function App() {
 					<Route
 						path="/"
 						element={
-							<Login setIsLoggedIn={setIsLoggedIn} setIsAdmin={setIsAdmin} />
+							<Login setIsAdmin={setIsAdmin} />
 						}
 					/>
-					<Route path="*" element={<UnknownPage />} />
+					<Route path="*" element={<Navigate to="/" />} />
 				</Routes>
 			)}
 		</div>

@@ -1,5 +1,7 @@
 import axios from "axios";
 
+import { Modal } from "antd";
+
 const token = localStorage.getItem("token");
 
 const AxiosInstance = axios.create({
@@ -18,7 +20,23 @@ export const AxiosLoginInstance = axios.create({
 AxiosInstance.interceptors.response.use(
 	(response) => response,
 	async (error) => {
+		const wasAdmin = localStorage.getItem("role");
 		const originalRequest = error.config;
+
+		const errorModal = (message: string) => {
+			Modal.error({
+				title: `Error`,
+				content: message,
+				className: "error-modal",
+			});
+		};
+
+		const logout = () => {
+			wasAdmin && localStorage.removeItem("role");
+			localStorage.removeItem("token");
+			localStorage.removeItem("refreshToken");
+			window.location.reload();
+		};
 
 		if (error.response.status === 401 && !originalRequest._retry) {
 			originalRequest._retry = true;
@@ -44,12 +62,13 @@ AxiosInstance.interceptors.response.use(
 					return AxiosInstance(originalRequest);
 				} catch (refreshError) {
 					console.error("Refresh token failed:", refreshError);
-					// Handle failed refresh (e.g., logout, notify user)
+					errorModal("Refresh token failed, logging you out.");
+					logout();
 				}
 			} else {
-				//TODO Add No Refresh Token and Logout
 				console.error("No refresh token found");
-				// Handle missing refresh token (e.g., logout, notify user)
+				errorModal("No refresh token found, logging you out.");
+				logout();
 			}
 		}
 

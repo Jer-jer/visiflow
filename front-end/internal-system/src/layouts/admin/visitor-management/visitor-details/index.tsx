@@ -55,6 +55,7 @@ import Alert from "../../../../components/alert";
 //Reducers
 import { update, deleteVisitor } from "../../../../states/visitors";
 import { updateVisitor, removeTab } from "../../../../states/visitors/tab";
+import { addLog, removeLogs } from "../../../../states/logs/visitor";
 
 //Assets
 import { ExclamationCircleFilled } from "@ant-design/icons";
@@ -64,7 +65,6 @@ import "./styles.scss";
 
 // Libraries
 import AxiosInstance from "../../../../lib/axios";
-import { addLog } from "../../../../states/logs/visitor";
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -145,6 +145,9 @@ export default function VisitorDetails({
 
 	// Retrieve Logs
 	useEffect(() => {
+		//? Remove existing logs in store
+		dispatch(removeLogs());
+
 		AxiosInstance.post(`/badge/findBadge`, { visitor_id: record._id })
 			.then((res) => {
 				const badge = res.data.badge;
@@ -169,7 +172,7 @@ export default function VisitorDetails({
 						warning(
 							err?.response?.data?.error ||
 								err?.response?.data?.errors ||
-								"Something went wrong with displaying visitor logs.",
+								"Visitor has no logs.",
 						);
 					});
 			})

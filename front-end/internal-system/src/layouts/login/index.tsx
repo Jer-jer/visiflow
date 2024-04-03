@@ -31,10 +31,9 @@ type LoginDetailZod = z.infer<typeof LoginZod>;
 
 interface LoginProps {
 	setIsAdmin: Dispatch<SetStateAction<boolean>>;
-	setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
 }
 
-function LoginLayout({ setIsAdmin, setIsLoggedIn }: LoginProps) {
+function LoginLayout({ setIsAdmin }: LoginProps) {
 	const [isFocused, setIsFocused] = useState(false);
 
 	// Modal related data
@@ -78,7 +77,7 @@ function LoginLayout({ setIsAdmin, setIsLoggedIn }: LoginProps) {
 					case "admin":
 						setIsAdmin(true);
 						localStorage.setItem("role", "1");
-						navigate("/dashboard");
+						window.location.reload();
 						break;
 					case "guard":
 						setIsAdmin(false);
@@ -89,8 +88,6 @@ function LoginLayout({ setIsAdmin, setIsLoggedIn }: LoginProps) {
 						setIsAdmin(false);
 						break;
 				}
-
-				setIsLoggedIn(true);
 			})
 			.catch((err) => {
 				showModal();

@@ -5,13 +5,12 @@ import LoginLayout from "../../layouts/login";
 
 interface LoginProps {
 	setIsAdmin: Dispatch<SetStateAction<boolean>>;
-	setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
 }
 
-function Login({ setIsAdmin, setIsLoggedIn }: LoginProps) {
+function Login({ setIsAdmin }: LoginProps) {
 	return (
 		<div>
-			<LoginLayout setIsAdmin={setIsAdmin} setIsLoggedIn={setIsLoggedIn} />
+			<LoginLayout setIsAdmin={setIsAdmin} />
 		</div>
 	);
 }

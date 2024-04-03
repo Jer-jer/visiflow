@@ -11,22 +11,25 @@ import localeData from "dayjs/plugin/localeData";
 //Interfaces
 import { RootState } from "../../../../store";
 import type { AppDispatch } from "../../../../store";
-import { VisitorLogDetails } from "../../../../utils/interfaces";
+import { VisitorLogDetails, PurposeProps } from "../../../../utils/interfaces";
 import type { Dayjs } from "dayjs";
 
 //Layouts
 import CompanionLogsTable from "../../../../components/table/companion-logs";
 
 //Components
-import { Tooltip, Checkbox } from "antd";
+import { Tooltip, Checkbox, Modal } from "antd";
 import StandardModal from "../../../../components/modal";
 import DateTimePicker from "../../../../components/datetime-picker";
 
 //Reducers
-import { addLog } from "../../../../states/logs/companions";
+import { addLog, removeLogs } from "../../../../states/logs/companions";
 
 //Utils
 import { formatDateObjToString2 } from "../../../../utils";
+
+// Lib
+import AxiosInstance from "../../../../lib/axios";
 
 //Styles
 import "./styles.scss";
@@ -39,13 +42,32 @@ dayjs.extend(localeData);
 dayjs.extend(customParseFormat);
 
 interface CompanionLogsProps {
+	companionId: string;
 	lastname: string;
+	purpose?: PurposeProps;
 	open: boolean;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
+const warning = (message: string) => {
+	Modal.warning({
+		title: `Warning`,
+		content: message,
+	});
+};
+
+const error = (message: string) => {
+	Modal.error({
+		title: `Error`,
+		content: message,
+		className: "error-modal",
+	});
+};
+
 export default function CompanionLogs({
+	companionId,
 	lastname,
+	purpose,
 	open,
 	setOpen,
 }: CompanionLogsProps) {
@@ -65,100 +87,46 @@ export default function CompanionLogs({
 	};
 
 	useEffect(() => {
-		//TODO Add Axios call to companion logs
-		const data: VisitorLogDetails[] = [
-			{
-				key: "1",
-				purpose: {
-					what: ["Meeting with Client"],
-					when: new Date("2023-09-15 09:30 AM"),
-					where: ["Client's Office"],
-					who: ["John Doe"],
-				},
-				check_in_time: new Date("2023-09-15 09:30 AM"),
-				check_out_time: new Date("2023-09-15 11:00 AM"),
-			},
-			{
-				key: "2",
-				purpose: {
-					what: ["Interview"],
-					when: new Date("2023-09-16 02:45 PM"),
-					where: ["HR Office"],
-					who: ["Jane Doe"],
-				},
-				check_in_time: new Date("2023-09-16 02:45 PM"),
-				check_out_time: new Date("2023-09-16 04:15 PM"),
-			},
-			{
-				key: "3",
-				purpose: {
-					what: ["Conference Call"],
-					when: new Date("2023-09-17 10:15 AM"),
-					where: ["Home Office"],
-					who: ["John Doe", "Jane Doe"],
-				},
-				check_in_time: new Date("2023-09-17 10:15 AM"),
-				check_out_time: new Date("2023-09-17 11:30 AM"),
-			},
-			{
-				key: "4",
-				purpose: {
-					what: ["Intramurals"],
-					when: new Date("2023-09-18 12:30 PM"),
-					where: ["Football Field"],
-					who: ["John Doe", "Jane Doe"],
-				},
-				check_in_time: new Date("2023-09-18 12:30 PM"),
-				check_out_time: new Date("2023-09-18 01:30 PM"),
-			},
-			{
-				key: "5",
-				purpose: {
-					what: ["Training Session"],
-					when: new Date("2023-09-19 03:00 PM"),
-					where: ["Training Room"],
-					who: ["John Doe", "Jane Doe"],
-				},
-				check_in_time: new Date("2023-09-19 03:00 PM"),
-				check_out_time: new Date("2023-09-19 05:00 PM"),
-			},
-			{
-				key: "6",
-				purpose: {
-					what: ["Staff Meeting"],
-					when: new Date("2023-09-20 09:00 AM"),
-					where: ["Conference Room"],
-					who: ["John Doe", "Jane Doe"],
-				},
-				check_in_time: new Date("2023-09-20 09:00 AM"),
-				check_out_time: new Date("2023-09-20 10:30 AM"),
-			},
-			{
-				key: "7",
-				purpose: {
-					what: ["Visitor Registration"],
-					when: new Date("2023-09-21 11:15 AM"),
-					where: ["Reception Area"],
-					who: ["John Doe"],
-				},
-				check_in_time: new Date("2023-09-21 11:15 AM"),
-				check_out_time: new Date("2023-09-21 12:45 PM"),
-			},
-			{
-				key: "8",
-				purpose: {
-					what: ["Site Inspection"],
-					when: new Date("2023-09-22 01:30 PM"),
-					where: ["Construction Site"],
-					who: ["John Doe"],
-				},
-				check_in_time: new Date("2023-09-22 01:30 PM"),
-				check_out_time: new Date("2023-09-22 03:00 PM"),
-			},
-		];
+		if (companionId) {
+			dispatch(removeLogs());
 
-		data.map((log) => dispatch(addLog(log)));
-	}, []);
+			AxiosInstance.post(`/badge/findBadge`, { visitor_id: companionId })
+				.then((res) => {
+					const badge = res.data.badge;
+					AxiosInstance.post("/visitor/logs/find-visitor-logs", {
+						badge_id: badge._id,
+					})
+						.then((res) => {
+							const logs = res.data.visitorLogs;
+							logs.map((log: any, indx: number) =>
+								dispatch(
+									addLog({
+										key: (indx + 1).toString(),
+										purpose: purpose,
+										check_in_time: log.check_in_time,
+										check_out_time: log.check_out_time,
+									}),
+								),
+							);
+							// dispatch(fetchLogs(logs));
+						})
+						.catch((err) => {
+							warning(
+								err?.response?.data?.error ||
+									err?.response?.data?.errors ||
+									"Visitor has no logs.",
+							);
+						});
+				})
+				.catch((err) => {
+					error(
+						err?.response?.data?.error ||
+							err?.response?.data?.errors ||
+							"Something went wrong.",
+					);
+				});
+		}
+	}, [companionId]);
 
 	const companionLogsHeaders = [
 		{ label: "What", key: "what" },

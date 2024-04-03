@@ -39,7 +39,6 @@ import NotificationSound from "../../assets/notification.wav";
 //Styles
 import "./styles.scss";
 interface HeaderProps {
-	setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
 	setIsAdmin: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -51,7 +50,7 @@ const error = (message: string) => {
 	});
 };
 
-export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
+export default function Header({ setIsAdmin }: HeaderProps) {
 	//? Socket Connection
 	const [isConnected, setIsConnected] = useState(socket.connected);
 
@@ -78,10 +77,10 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 						return {
 							key: notif._id,
 							name: notif.content.visitor_name,
-							message: `${notif.content.visitor_name} ${notificationMessage(notif.type, notif.content)}`,
+							message: notificationMessage(notif.type, notif.content),
 							time_in: notif.content.time_in,
 							time_out: notif.content.time_out,
-							receivedTime: formatDateObjToString(notif.created_at),
+							receivedTime: notif.created_at,
 							type: notif.type,
 							is_read: notif.is_read,
 						};
@@ -147,8 +146,7 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 		wasAdmin && localStorage.removeItem("role");
 		localStorage.removeItem("token");
 		localStorage.removeItem("refreshToken");
-		setIsLoggedIn(false);
-		navigate("/");
+		window.location.reload();
 	};
 
 	const readNotification = (notif: NotificationStoreProps) => {
@@ -166,6 +164,23 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 		});
 
 		dispatch(readNotif(notif.key));
+	};
+
+	const notifType = (type: NotificationType, notif: NotificationStoreProps) => {
+		switch (type) {
+			case NotificationType.TimeIn:
+				return formatDateObjToString(notif.time_in);
+			case NotificationType.TimeOut:
+				return formatDateObjToString(notif.time_out);
+			case NotificationType.Confirmation:
+				return formatDateObjToString(notif.receivedTime);
+			case NotificationType.Declined:
+				return formatDateObjToString(notif.receivedTime);
+			case NotificationType.Pending:
+				return formatDateObjToString(notif.receivedTime);
+			default:
+				return "";
+		}
 	};
 
 	return (
@@ -190,7 +205,6 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 						text: "View All",
 						linkTo: "/notifications",
 					}}
-					// notificationCard={(data: any) => console.log("hakdog", data.data)}
 					notificationCard={(data: any) => (
 						<div
 							key={data.data.key}
@@ -204,17 +218,9 @@ export default function Header({ setIsLoggedIn, setIsAdmin }: HeaderProps) {
 								<span>
 									<span className="font-bold">{data.data.name}</span>{" "}
 									{data.data.message}{" "}
-									{data.data.type === NotificationType.TimeIn ? (
-										<span className="font-bold">
-											{formatDateObjToString(data.data.time_in)}
-										</span>
-									) : (
-										data.data.type === NotificationType.TimeOut && (
-											<span className="font-bold">
-												{formatDateObjToString(data.data.time_out)}
-											</span>
-										)
-									)}
+									<span className="font-bold">
+										{notifType(data.data.type, data.data)}
+									</span>
 								</span>
 							</div>
 							{!data.data.is_read && (
