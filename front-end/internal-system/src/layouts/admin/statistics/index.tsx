@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
 	LineChart,
 	Line,
@@ -10,7 +10,11 @@ import {
 	ResponsiveContainer,
 } from "recharts";
 
+// Interfaces
+import type { CheckboxProps } from "antd";
+
 //Components
+import { Checkbox } from "antd";
 import OuterContainer from "../../../components/container";
 import InnerContainer from "../../../components/container/inner-container";
 import StatisticsSummaryContent from "../../../components/stats-smmry-ctnt";
@@ -22,6 +26,10 @@ import "../../../utils/variables.scss";
 import "./styles.scss";
 
 export default function StatisticsLayout() {
+	const [week, setWeek] = useState(false);
+	const [month, setMonth] = useState(false);
+	const [year, setYear] = useState(false);
+
 	const data = [
 		{
 			name: "January",
@@ -85,9 +93,22 @@ export default function StatisticsLayout() {
 		},
 	];
 
+	const onChangeWeek: CheckboxProps["onChange"] = (e) => {
+		setWeek(e.target.checked);
+	};
+
+	const onChangeMonth: CheckboxProps["onChange"] = (e) => {
+		setMonth(e.target.checked);
+	};
+
+	const onChangeYear: CheckboxProps["onChange"] = (e) => {
+		setYear(e.target.checked);
+	};
+
 	return (
 		<div className="mb-[35px] ml-2 mt-3 flex flex-col gap-[35px]">
 			<div className="w-full">
+				{/* Summary Statistics */}
 				<OuterContainer header="Summary">
 					<InnerContainer additionalStyles="rounded-[10px] border border-[#D0D2CC]">
 						<StatisticsSummaryContent
@@ -145,6 +166,7 @@ export default function StatisticsLayout() {
 				</OuterContainer>
 			</div>
 			<div className="w-full">
+				{/* Most Visited Statistics */}
 				<OuterContainer header="Summary">
 					<InnerContainer additionalStyles="rounded-[10px] border border-[#D0D2CC]">
 						<StatisticsSummaryContentAlt
@@ -165,9 +187,10 @@ export default function StatisticsLayout() {
 							]}
 						/>
 					</InnerContainer>
+					{/* Most common reasons */}
 					<InnerContainer additionalStyles="mb-[50px] mt-[30px] rounded-[10px] border border-[#D0D2CC]">
 						<StatisticsSummaryContentAlt
-							title="most common reason for visit"
+							title="most common reasons for visit"
 							statisticsAltDetails={[
 								{
 									label: "What",
@@ -191,45 +214,9 @@ export default function StatisticsLayout() {
 				</OuterContainer>
 			</div>
 			<div className="w-full">
+				{/* WALK-IN VS REGISTERED */}
 				<OuterContainer
-					header={"WALK-IN VS PRE-REGISTERED VISITORS PER YEAR"}
-					headerStyling="text-lg tracking-[1.47px]"
-				>
-					<div className="mb-[10px] w-[95%]">
-						<ResponsiveContainer aspect={2}>
-							<LineChart
-								data={data}
-								margin={{
-									top: 5,
-									right: 30,
-									left: 20,
-									bottom: 5,
-								}}
-							>
-								<CartesianGrid strokeDasharray="3 3" />
-								<XAxis dataKey="name" />
-								<YAxis />
-								<Tooltip />
-								<Legend />
-								<Line type="monotone" dataKey="Walk-in" stroke="#E88B23" />
-								<Line
-									type="monotone"
-									dataKey="Pre-registered"
-									stroke="#82ca9d"
-								/>
-							</LineChart>
-						</ResponsiveContainer>
-					</div>
-					<div className="mb-[15px]">
-						<Select options="years" />
-						{/* Alternative TBD */}
-						{/* <DatePicker placeholder="Year" size={"middle"} picker="year" /> */}
-					</div>
-				</OuterContainer>
-			</div>
-			<div className="w-full">
-				<OuterContainer
-					header={"WALK-IN VS PRE-REGISTERED VISITORS PER MONTH"}
+					header={"WALK-IN VS REGISTERED VISITORS"}
 					headerStyling="text-lg tracking-[1.47px]"
 				>
 					<div className="mb-[10px] w-[95%]">
@@ -258,8 +245,28 @@ export default function StatisticsLayout() {
 						</ResponsiveContainer>
 					</div>
 					<div className="mb-[15px] flex gap-[10px]">
-						<Select options="months" />
-						<Select options="years" />
+						<Checkbox
+							className="statistics-checkbox flex items-center"
+							onChange={onChangeWeek}
+						>
+							Week
+						</Checkbox>
+						<Checkbox
+							className="statistics-checkbox flex items-center"
+							onChange={onChangeMonth}
+						>
+							Month
+						</Checkbox>
+						<Checkbox
+							className="statistics-checkbox flex items-center"
+							onChange={onChangeYear}
+						>
+							Year
+						</Checkbox>
+						{week && <Select options="weeks" />}
+						{month && <Select options="months" />}
+						{year && <Select options="years" />}
+
 						{/* Alternative TBD */}
 						{/* <DatePicker placeholder="Month" size={"middle"} picker="month" />
 						<DatePicker placeholder="Year" size={"middle"} picker="year" /> */}

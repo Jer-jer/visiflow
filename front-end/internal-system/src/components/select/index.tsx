@@ -6,11 +6,12 @@ import { Select } from "antd";
 import "../../utils/variables.scss";
 import "./styles.scss";
 
-//Temporary
-const years = [
-	{ value: "2021", label: "2021" },
-	{ value: "2022", label: "2022" },
-	{ value: "2023", label: "2023" },
+const weeks = [
+	{ value: "week1", label: "Week 1" },
+	{ value: "week2", label: "Week 2" },
+	{ value: "week3", label: "Week 3" },
+	{ value: "week4", label: "Week 4" },
+	{ value: "week5", label: "Week 5" },
 ];
 
 const months = [
@@ -28,6 +29,13 @@ const months = [
 	{ value: "dev", label: "December" },
 ];
 
+//Temporary
+const years = [
+	{ value: "2021", label: "2021" },
+	{ value: "2022", label: "2022" },
+	{ value: "2023", label: "2023" },
+];
+
 interface SelectProps {
 	options: string;
 }
@@ -43,6 +51,8 @@ export default function MainSelect({ options }: SelectProps) {
 				return months;
 			case "years":
 				return years;
+			case "weeks":
+				return weeks;
 			default:
 				console.error("Invalid option was used");
 				break;
@@ -55,6 +65,8 @@ export default function MainSelect({ options }: SelectProps) {
 				return "Month";
 			case "years":
 				return "Year";
+			case "weeks":
+				return "Week";
 			default:
 				console.error("Invalid option was used");
 				break;
@@ -67,6 +79,8 @@ export default function MainSelect({ options }: SelectProps) {
 				return months[0].value;
 			case "years":
 				return years[0].value;
+			case "weeks":
+				return weeks[0].value;
 			default:
 				console.error("Invalid option was used");
 				break;
