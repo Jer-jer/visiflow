@@ -12,7 +12,7 @@ import { AppDispatch } from "../../store";
 import { openVisitor } from "../../states/visitors";
 
 // Utils
-import { formatDateString } from "../../utils";
+import { formatDateObjToString } from "../../utils";
 
 //Styles
 import "../../utils/variables.scss";
@@ -29,11 +29,11 @@ export default function PendingAppointments({
 	const dispatch = useDispatch<AppDispatch>();
 
 	const toVisitorManagement = (visitor: VisitorDataType) => {
-		navigate(`/visitor-management`);
 		dispatch(openVisitor(visitor));
+		navigate(`/visitor-management`);
 	};
 	return (
-		<div className="w-full">
+		<div className="w-full !overflow-scroll">
 			{pendingAppointments.map((item, index) => (
 				<div
 					key={index}
@@ -49,7 +49,7 @@ export default function PendingAppointments({
 						</div>
 						<div className="flex flex-col">
 							<span className="line-normal text-[12px] font-[100] text-black">
-								{formatDateString(item.purpose.when)}
+								{formatDateObjToString(item.purpose.when)}
 							</span>
 							<span className="line-normal mt-[5px] text-[18px] font-[400] text-black">
 								{item.visitor_details.name.last_name}

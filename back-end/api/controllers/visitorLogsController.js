@@ -1,3 +1,6 @@
+const mongoose = require("mongoose");
+
+const ObjectId = mongoose.Types.ObjectId;
 const VisitorLogs = require("../models/visitorLogs");
 
 exports.getLogs = async (req, res) => {
@@ -26,6 +29,24 @@ exports.addLog = async (req, res) => {
   } catch (err) {
     console.error(error);
     return res.status(500).json({ error: "Failed to add visitor log" });
+  }
+};
+
+exports.findVisitorLogs = async (req, res) => {
+  const { badge_id } = req.body;
+
+  try {
+    const logs = await VisitorLogs.findOne({
+      badge_id: new ObjectId(badge_id),
+    });
+
+    if (!logs) return res.status(500).json({ error: "Visitor has no logs" });
+
+    return res.status(200).json({ visitorLogs });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: "Something went wrong fetching logs" });
   }
 };
 

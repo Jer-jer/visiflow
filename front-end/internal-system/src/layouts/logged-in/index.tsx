@@ -1,11 +1,22 @@
-import React, { useLayoutEffect, useRef, useState, createContext } from "react";
+import React, {
+	useLayoutEffect,
+	useRef,
+	useState,
+	createContext,
+	useEffect,
+} from "react";
 import { NavLink } from "react-router-dom";
+import { useDispatch } from "react-redux";
 
 //Components
 import Header from "../../components/header";
 import Sidebar, { SidebarItem } from "../../components/sidebar";
 
-//Interfaces
+// Store
+import { AppDispatch } from "../../store";
+
+// Actions
+import { fetchVisitors } from "../../states/visitors";
 
 //Assets
 import {
@@ -25,7 +36,6 @@ export const WidthContext = createContext(0);
 
 interface LoggedInProps {
 	isAdmin: boolean;
-	setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
 	setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
 	children: React.ReactNode;
 }
@@ -34,13 +44,18 @@ export let expandedWidth: number;
 
 function LoggedIn({
 	isAdmin,
-	setIsLoggedIn,
 	setIsAdmin,
 	children,
 }: LoggedInProps) {
 	const [expanded, setExpanded] = useState(false);
 	const [width, setWidth] = useState(0);
 	const ref = useRef<HTMLDivElement>(null);
+
+	const dispatch = useDispatch<AppDispatch>();
+
+	useEffect(() => {
+		dispatch(fetchVisitors());
+	}, []);
 
 	useLayoutEffect(() => {
 		if (ref.current) {
@@ -55,7 +70,7 @@ function LoggedIn({
 				<Sidebar expanded={expanded} setExpanded={setExpanded}>
 					{isAdmin ? (
 						<>
-							<NavLink to="/">
+							<NavLink to="/dashboard">
 								{({ isActive }) => (
 									<SidebarItem
 										icon={<Home />}
@@ -116,7 +131,7 @@ function LoggedIn({
 				</Sidebar>
 				<div className="h-fit min-w-0 flex-1">
 					<div>
-						<Header setIsLoggedIn={setIsLoggedIn} setIsAdmin={setIsAdmin} />
+						<Header setIsAdmin={setIsAdmin} />
 					</div>
 					{/* Main content Here */}
 					<div id="parentDiv" className="children" ref={ref}>

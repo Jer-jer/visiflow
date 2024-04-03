@@ -12,11 +12,17 @@ export const visitorLogsSlice = createSlice({
 	name: "visitors",
 	initialState,
 	reducers: {
+		fetchLogs: (state, action: PayloadAction<VisitorLogDetails[]>) => {
+			return [...action.payload];
+		},
 		addLog: (state, action: PayloadAction<VisitorLogDetails>) => {
 			state.push(action.payload);
 		},
+		removeLogs: (state) => {
+			return [];
+		}
 	},
 });
 
-export const { addLog } = visitorLogsSlice.actions;
+export const { addLog, fetchLogs, removeLogs } = visitorLogsSlice.actions;
 export default visitorLogsSlice.reducer;

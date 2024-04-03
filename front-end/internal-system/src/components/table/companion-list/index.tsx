@@ -2,7 +2,7 @@ import React, { useState, useContext, createContext } from "react";
 
 //Interfaces
 import { VisitorRecordContext } from "../../../layouts/admin/visitor-management/visitor-details";
-import { VisitorDetailsProps } from "../../../utils/interfaces";
+import { VisitorDetailsProps, PurposeProps } from "../../../utils/interfaces";
 
 //Layouts
 import VisitorCompanionsModal from "../../../layouts/admin/visitor-management/companion-details";
@@ -31,12 +31,16 @@ export default function VisitorCompanionsList({
 	const [openLogs, setOpenLogs] = useState(false);
 	const [companionRecord, setCompanionRecord] = useState<VisitorDetailsProps>();
 	const [companionLastname, setCompanionLastname] = useState("");
+	const [companionId, setCompanionId] = useState("");
+	const [companionPurpose, setCompanionPurpose] = useState<PurposeProps>();
 
 	const recordContext = useContext(VisitorRecordContext);
 
-	const viewLogs = (lastName: string) => {
+	const viewLogs = (lastName: string, id: string, purpose: PurposeProps) => {
 		setCompanionLastname(lastName);
 		setOpenLogs(!openLogs);
+		setCompanionId(id);
+		setCompanionPurpose(purpose);
 	};
 
 	const viewDetails = (record: VisitorDetailsProps) => {
@@ -55,7 +59,7 @@ export default function VisitorCompanionsList({
 			title: "Name",
 			key: "name",
 			render: (_, { name }) => {
-				return `${name.last_name}, ${name.first_name} ${name.middle_name}`;
+				return `${name.last_name}, ${name.first_name} ${name.middle_name ? name.middle_name : ""}`;
 			},
 			sorter: (a, b) => a.name.last_name.localeCompare(b.name.last_name),
 		},
@@ -72,7 +76,15 @@ export default function VisitorCompanionsList({
 			key: "actions",
 			render: (_, record) => (
 				<div className="flex gap-[10px]">
-					<Button onClick={() => viewLogs(record.name.last_name)}>
+					<Button
+						onClick={() =>
+							viewLogs(
+								record.name.last_name,
+								record._id,
+								recordContext!.purpose,
+							)
+						}
+					>
 						View Logs
 					</Button>
 					<Button onClick={() => viewDetails(record)}>View Details</Button>
@@ -121,6 +133,8 @@ export default function VisitorCompanionsList({
 					open={openLogs}
 					setOpen={setOpenLogs}
 					lastname={companionLastname}
+					companionId={companionId}
+					purpose={companionPurpose}
 				/>
 			</CompanionRecord.Provider>
 		</>

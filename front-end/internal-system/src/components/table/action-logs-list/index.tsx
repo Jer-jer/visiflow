@@ -10,6 +10,13 @@ import type { ColumnsType } from "antd/es/table";
 import { UserActionLogsDetails } from "../../../utils/interfaces";
 import type { RootState } from "../../../store";
 
+//Utils
+import {
+	actionType,
+	formatDateObjToString,
+	formatDateToISO,
+} from "../../../utils";
+
 //Styles
 import "../../../utils/variables.scss";
 import "./styles.scss";
@@ -25,42 +32,47 @@ export default function ActionLogsTable({ dateSearch }: ActionLogsTableProps) {
 
 	const columns: ColumnsType<UserActionLogsDetails> = [
 		{
-			key: "logId",
-			className: "hidden",
-		},
-		{
 			title: "Actions",
-			dataIndex: "action",
+			dataIndex: "type",
+			render: (_, { type }) => {
+				return actionType(type);
+			},
 		},
 		{
-			title: "System",
-			dataIndex: "system",
+			title: "Status",
+			dataIndex: "status",
 			filters: [
 				{
-					text: "Admin",
-					value: "admin",
+					text: "Success",
+					value: "success",
 				},
 				{
-					text: "Security",
-					value: "security",
+					text: "Failed",
+					value: "failed",
 				},
 			],
-			render: (_, { system }) => {
+			render: (_, { status }) => {
 				let color;
-				if (system === "Guard System") color = "#E88B23";
-				else if (system === "Admin System") color = "#0db284";
+				if (status === "success") color = "#0db284";
+				else if (status === "failed") color = "#FD4A4A";
 				return (
-					<Tag color={color} key={system}>
-						{system.toUpperCase()}
+					<Tag color={color} key={status}>
+						{status.toUpperCase()}
 					</Tag>
 				);
 			},
-			onFilter: (value: any, record) => record.system.indexOf(value) === 0,
+			onFilter: (value: any, record) => record.role.indexOf(value) === 0,
 		},
 		{
 			title: "Date",
-			dataIndex: "logDate",
-			sorter: (a, b) => a.logDate.localeCompare(b.logDate),
+			dataIndex: "created_at",
+			sorter: (a, b) =>
+				formatDateToISO(a.created_at)!.localeCompare(
+					formatDateToISO(b.created_at)!,
+				),
+			render: (_, { created_at }) => {
+				return formatDateObjToString(created_at);
+			},
 		},
 	];
 
@@ -70,8 +82,8 @@ export default function ActionLogsTable({ dateSearch }: ActionLogsTableProps) {
 			dataSource={userActionLogs.filter((log) => {
 				return dateSearch.length === 0
 					? log
-					: new Date(log.logDate) >= startDate &&
-							new Date(log.logDate) <= endDate;
+					: new Date(log.created_at) >= startDate &&
+							new Date(log.created_at) <= endDate;
 			})}
 			pagination={{ pageSize: 5 }}
 		/>

@@ -5,6 +5,7 @@ const processConnection = mongoose.createConnection(
 );
 
 const Schema = mongoose.Schema;
+const ObjectId = mongoose.Types.ObjectId;
 
 const Name = new Schema({
   first_name: { type: String, require: true },
@@ -42,6 +43,7 @@ const Purpose = new Schema({
 });
 
 const VisitorSchema = new Schema({
+  _id: { type: ObjectId },
   visitor_details: { type: VisitorDetails, required: true },
   companion_details: [{ type: VisitorDetails, required: true, default: [] }],
   plate_num: { type: String, sparse: true },

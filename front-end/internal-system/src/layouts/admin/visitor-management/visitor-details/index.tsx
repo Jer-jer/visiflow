@@ -28,11 +28,8 @@ import type { RootState } from "../../../../store";
 import type { Dayjs } from "dayjs";
 import type { DatePickerProps } from "antd";
 
-// Reducers
-import { NotificationProps, addNotif } from "../../../../states/notifications";
-
 // Utils
-import { formatDateObjToString } from "../../../../utils";
+import { formatDateObjToString, formatDateString } from "../../../../utils";
 
 //Layouts
 import VisitorLogs from "../visitor-logs";
@@ -58,6 +55,7 @@ import Alert from "../../../../components/alert";
 //Reducers
 import { update, deleteVisitor } from "../../../../states/visitors";
 import { updateVisitor, removeTab } from "../../../../states/visitors/tab";
+import { addLog, removeLogs } from "../../../../states/logs/visitor";
 
 //Assets
 import { ExclamationCircleFilled } from "@ant-design/icons";
@@ -67,7 +65,6 @@ import "./styles.scss";
 
 // Libraries
 import AxiosInstance from "../../../../lib/axios";
-import { socket } from "../../../../lib/socket";
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -87,6 +84,21 @@ export const VisitorRecordContext = createContext<VisitorDataType | undefined>(
 	undefined,
 );
 
+const warning = (message: string) => {
+	Modal.warning({
+		title: `Warning`,
+		content: message,
+	});
+};
+
+const error = (message: string) => {
+	Modal.error({
+		title: `Error`,
+		content: message,
+		className: "error-modal",
+	});
+};
+
 export default function VisitorDetails({
 	newTabIndex,
 	record,
@@ -101,7 +113,7 @@ export default function VisitorDetails({
 		VisitorStatus.InProgress,
 	);
 
-	//Modal States
+	//? Modal States
 	const [visitLogsOpen, setVisitLogsOpen] = useState(false);
 	const [vistorCompanionsOpen, setVisitorCompanionsOpen] = useState(false);
 	const [notifyPOIOpen, setNotifyPOIOpen] = useState(false);
@@ -131,6 +143,48 @@ export default function VisitorDetails({
 	const tabs: any = useSelector((state: RootState) => state.visitorTabs);
 	const dispatch = useDispatch();
 
+	// Retrieve Logs
+	useEffect(() => {
+		//? Remove existing logs in store
+		dispatch(removeLogs());
+
+		AxiosInstance.post(`/badge/findBadge`, { visitor_id: record._id })
+			.then((res) => {
+				const badge = res.data.badge;
+				AxiosInstance.post("/visitor/logs/find-visitor-logs", {
+					badge_id: badge._id,
+				})
+					.then((res) => {
+						const logs = res.data.visitorLogs;
+						logs.map((log: any, indx: number) =>
+							dispatch(
+								addLog({
+									key: (indx + 1).toString(),
+									purpose: record.purpose,
+									check_in_time: log.check_in_time,
+									check_out_time: log.check_out_time,
+								}),
+							),
+						);
+						// dispatch(fetchLogs(logs));
+					})
+					.catch((err) => {
+						warning(
+							err?.response?.data?.error ||
+								err?.response?.data?.errors ||
+								"Visitor has no logs.",
+						);
+					});
+			})
+			.catch((err) => {
+				error(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
+			});
+	}, []);
+
 	// Client-side Validation related data
 	const {
 		register,
@@ -157,14 +211,14 @@ export default function VisitorDetails({
 			status: record.status,
 			visitor_type: record.visitor_type,
 			what: record.purpose.what,
-			when: record.purpose.when,
+			when: new Date(record.purpose.when),
 			where: record.purpose.where,
 			who: record.purpose.who,
 		},
 	});
 
 	const updateInput = (
-		value: string | [string, string] | string[] | any,
+		value: string | [string, string] | string[] | Date | any,
 		property: string,
 	) => {
 		switch (property) {
@@ -218,7 +272,7 @@ export default function VisitorDetails({
 				setValue(property, value as string[]);
 				break;
 			case "when":
-				setValue(property, value as string);
+				setValue(property, value as Date);
 				break;
 			case "where":
 				setValue(property, value as string[]);
@@ -240,7 +294,9 @@ export default function VisitorDetails({
 		}
 	};
 
-	const onChange: DatePickerProps["onChange"] = (date, dateString) => {};
+	const onChange: DatePickerProps["onChange"] = (date, dateString) => {
+		updateInput(new Date(dateString as string), "when");
+	};
 
 	const handleChange = (property: string, value: string | string[]) =>
 		updateInput(value, property);
@@ -252,19 +308,20 @@ export default function VisitorDetails({
 	};
 
 	const composeApproval = () => {
-		const approvedOrDeclined =
-			visitorStatusUpdate === VisitorStatus.Approved ||
-			visitorStatusUpdate === VisitorStatus.Declined;
+		const approvedOrDeclined: VisitorStatus = visitorStatusUpdate;
 
 		cancel();
 		if (approvedOrDeclined) {
 			if (record.visitor_type === VisitorType.PreRegistered) {
-				if (visitorStatusUpdate === VisitorStatus.Declined) {
-					setVisitorMessage(
-						"Your pre-registration application has been declined. Below is the reason why your application has been rejected.",
-					);
+				if (visitorStatusUpdate !== VisitorStatus.InProgress) {
+					if (visitorStatusUpdate === VisitorStatus.Declined)
+						setVisitorMessage(
+							"Your pre-registration application has been declined. Below is the reason why your application has been rejected.",
+						);
+					setNotifyVisitorOpen(!notifyVisitorOpen);
+				} else if (visitorStatusUpdate === VisitorStatus.InProgress) {
+					updateStatus();
 				}
-				setNotifyVisitorOpen(!notifyVisitorOpen);
 			} else {
 				saveAction(undefined, visitorStatusUpdate);
 			}
@@ -283,9 +340,11 @@ export default function VisitorDetails({
 		})
 			.then((res) => {
 				setStatus(true);
-				setAlertMsg(
-					`Successfully ${visitorStatusUpdate === VisitorStatus.Approved ? "Approved" : visitorStatusUpdate === VisitorStatus.Declined && "Declined"} and Sent Email`,
-				);
+				if (visitorStatusUpdate !== VisitorStatus.InProgress)
+					setAlertMsg(
+						`Successfully ${visitorStatusUpdate === VisitorStatus.Approved ? "Approved" : visitorStatusUpdate === VisitorStatus.Declined && "Declined"} and Sent Email`,
+					);
+				else setAlertMsg("Successfully Updated Visitor Status");
 				setAlertOpen(true);
 				dispatch(update({ ...record, status: visitorStatusUpdate }));
 				dispatch(
@@ -348,6 +407,14 @@ export default function VisitorDetails({
 					? visitorStatus
 					: record.status,
 			visitor_type: zodData ? zodData.visitor_type : record.visitor_type,
+			purpose: zodData
+				? {
+						what: zodData.what,
+						when: zodData.when,
+						where: zodData.where,
+						who: zodData.who,
+					}
+				: record.purpose,
 		})
 			.then((res) => {
 				dispatch(update(res.data.visitor));
@@ -401,6 +468,7 @@ export default function VisitorDetails({
 			okType: "danger",
 			cancelText: "No",
 			onOk() {
+				closeTab(_id);
 				AxiosInstance.delete("/visitor/delete", {
 					data: {
 						_id,
@@ -408,7 +476,7 @@ export default function VisitorDetails({
 				})
 					.then((res) => {
 						dispatch(deleteVisitor(_id));
-						closeTab(_id);
+						// closeTab(_id);
 					})
 					.catch((err) => {
 						setAlertOpen(!alertOpen);
@@ -743,10 +811,10 @@ export default function VisitorDetails({
 											size="large"
 											defaultVal={{
 												from:
-													record.expected_time_in ||
+													formatDateString(record.expected_time_in) ||
 													formatDateObjToString(new Date()),
 												to:
-													record.expected_time_out ||
+													formatDateString(record.expected_time_out) ||
 													formatDateObjToString(new Date()),
 											}}
 											onRangeChange={onRangeChange}
@@ -814,11 +882,13 @@ export default function VisitorDetails({
 														disabledInputs && "picker-disabled"
 													} vm-placeholder`}
 													defaultValue={dayjs(
-														record.purpose.when,
+														formatDateObjToString(record.purpose.when),
 														"YYYY-MM-DD hh:mm A",
 													)}
+													format={"YYYY-MM-DD hh:mm A"}
 													onChange={onChange}
 													disabled={disabledInputs}
+													minDate={dayjs(record.purpose.when)}
 												/>
 												{errors?.when && (
 													<p className="mt-1 text-sm text-red-500">
@@ -982,7 +1052,8 @@ export default function VisitorDetails({
 											{errors.plate_num.message}
 										</p>
 									)}
-									{disabledInputs && (
+									{record.visitor_type === VisitorType.PreRegistered &&
+									disabledInputs ? (
 										<>
 											{disabledStatusInput ? (
 												<span
@@ -1035,6 +1106,18 @@ export default function VisitorDetails({
 												</p>
 											)}
 										</>
+									) : (
+										<span
+											className={`${
+												record.status === VisitorStatus.Approved
+													? "text-primary-500"
+													: record.status === VisitorStatus.InProgress
+														? "text-neutral-500"
+														: "text-error-500"
+											} text-[30px] font-bold`}
+										>
+											{record.status}
+										</span>
 									)}
 								</div>
 							</div>
