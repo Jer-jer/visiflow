@@ -7,6 +7,8 @@ router.use(passport.authenticate("jwt", { session: false }));
 
 router.get("/", VisitorLogsController.getLogs);
 
+router.post("/find-visitor-logs", VisitorLogsController.findVisitorLogs);
+
 router.post("/find", VisitorLogsController.findLog);
 
 module.exports = router;

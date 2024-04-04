@@ -8,12 +8,14 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { VisitorDataType } from "../../utils/interfaces";
 
 export interface VisitorStoreState {
+	key: string;
 	data: VisitorDataType[];
 	dashboardVisitor?: VisitorDataType;
 	loading: boolean;
 }
 
 const initialState: VisitorStoreState = {
+	key: "",
 	data: [],
 	loading: false,
 };
@@ -67,7 +69,12 @@ export const visitorSlice = createSlice({
 				state.loading = true;
 			})
 			.addCase(fetchVisitors.fulfilled, (state, action) => {
-				state.data = action.payload.visitors;
+				state.data = action.payload.visitors.map((visitor: VisitorDataType) => {
+					return {
+						...visitor,
+						key: visitor._id,
+					};
+				});
 				state.loading = false;
 			})
 			.addCase(fetchVisitors.rejected, (state, action) => {

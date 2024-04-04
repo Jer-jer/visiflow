@@ -19,6 +19,16 @@ $placeholder: (
     transition-duration: 150ms;
 }
 
+.ant-modal-content {
+    .ant-btn-primary {
+        background-color: var(--theme-primary);
+    }
+
+    .ant-btn-primary {
+        background-color: var(--theme-primary) !important;
+    }
+}
+
 .visitor-details {
     .ant-input {
         border: none !important;

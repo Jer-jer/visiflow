@@ -9,13 +9,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import Webcam from "react-webcam";
 import { isMobile } from "react-device-detect";
+import { read, utils } from "xlsx";
+import { CSVLink } from "react-csv";
 
 // Components
-import { Form, Tabs, Image, Button, Modal, Tooltip } from "antd";
+import { Form, Tabs, Image, Button, Modal, Tooltip, Checkbox } from "antd";
 
 // Interfaces
-import { VisitorDataType } from "../../../utils/interfaces";
+import {
+	VisitorDataType,
+	VisitorDetailsProps,
+} from "../../../utils/interfaces";
 import { StepTwoData, StepTwoZod } from "../../../utils/zodSchemas";
+import type { CheckboxProps } from "antd";
 
 // Components
 import StepForm from "./form";
@@ -23,11 +29,22 @@ import StepForm from "./form";
 // Utils
 import { tabName } from "../../../utils";
 
-// Assets
-
 // Styles
 import "./styles.scss";
 
+interface ExcelFileProps {
+	FirstName: string;
+	MiddleName: string;
+	LastName: string;
+	Email: string;
+	Mobile: string;
+	House: string;
+	Street: string;
+	Barangay: string;
+	City: string;
+	Province: string;
+	Country: string;
+}
 interface StepTwoProps {
 	setProgress: Dispatch<SetStateAction<number>>;
 	visitorNo: number;
@@ -35,12 +52,37 @@ interface StepTwoProps {
 	setVisitors: Dispatch<SetStateAction<VisitorDataType>>;
 }
 
+//? Excel File Template for Bulk Upload
+const visitorTemplate = [
+	[
+		"FirstName",
+		"MiddleName",
+		"LastName",
+		"Email",
+		"Mobile",
+		"House",
+		"Street",
+		"Barangay",
+		"City",
+		"Province",
+		"Country",
+	],
+];
+
+const error = (message: string) => {
+	Modal.error({
+		title: `Error`,
+		content: message,
+	});
+};
+
 export default function StepTwo({
 	setProgress,
 	visitorNo,
 	visitors,
 	setVisitors,
 }: StepTwoProps) {
+	const [byBulk, setByBulk] = useState(false);
 	const [isPhotoOpen, setIsPhotoOpen] = useState(false);
 
 	const {
@@ -69,6 +111,82 @@ export default function StepTwo({
 
 	const outMode = {
 		facingMode: { exact: "environment" },
+	};
+
+	const fileUpload = (event: any) => {
+		if (event.target.files[0]) {
+			const reader = new FileReader();
+			reader.onload = (event) => {
+				if (event.target) {
+					const data = event.target.result;
+					const wb = read(data, { type: "array" }); // Parse as array
+					const ws = wb.Sheets[wb.SheetNames[0]]; // get the first worksheet
+					const parsedData: ExcelFileProps[] =
+						utils.sheet_to_json<ExcelFileProps>(ws); // Convert sheet to array
+
+					//? Transfer Excel Data to Visitor State
+					const visitorDetails: VisitorDetailsProps = {
+						name: {
+							first_name: parsedData[0].FirstName,
+							middle_name: parsedData[0].MiddleName!,
+							last_name: parsedData[0].LastName,
+						},
+						email: parsedData[0].Email,
+						phone: parsedData[0].Mobile,
+						address: {
+							house: parsedData[0].House,
+							street: parsedData[0].Street,
+							brgy: parsedData[0].Barangay,
+							city: parsedData[0].City,
+							province: parsedData[0].Province,
+							country: parsedData[0].Country,
+						},
+						time_in: "",
+						time_out: "",
+					};
+					const companionDetails: VisitorDetailsProps[] = parsedData
+						.slice(1)
+						.map((companion) => {
+							return {
+								name: {
+									first_name: companion.FirstName,
+									middle_name: companion.MiddleName!,
+									last_name: companion.LastName,
+								},
+								email: companion.Email,
+								phone: companion.Mobile,
+								address: {
+									house: companion.House,
+									street: companion.Street,
+									brgy: companion.Barangay,
+									city: companion.City,
+									province: companion.Province,
+									country: companion.Country,
+								},
+								time_in: "",
+								time_out: "",
+							};
+						});
+
+					//? Check if the number of visitors match the number of visitors from the file
+					if (visitors.companions_details!.length !== companionDetails.length) {
+						error(
+							"Number of visitors do not match the number of visitors from the file.",
+						);
+					} else {
+						//? Set the Visitor State
+						setVisitors((visitor) => {
+							return {
+								...visitor,
+								visitor_details: visitorDetails,
+								companions_details: companionDetails,
+							};
+						});
+					}
+				}
+			};
+			reader.readAsArrayBuffer(event.target.files[0]);
+		}
 	};
 
 	const capture = useCallback(
@@ -101,6 +219,10 @@ export default function StepTwo({
 		},
 		[webcamRef],
 	);
+
+	const onChange: CheckboxProps["onChange"] = (e) => {
+		setByBulk(e.target.checked);
+	};
 
 	const handleOkPhoto = () => {
 		setIsPhotoOpen(false);
@@ -151,12 +273,45 @@ export default function StepTwo({
 					};
 				})}
 			/>
-			<div className="mr-[30px] flex items-center justify-center gap-2 lg:mr-0 lg:w-[80%] lg:justify-end">
-				<div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row">
+			<div className="mr-[30px] flex flex-col items-center justify-center gap-2 lg:mr-0 lg:w-[80%] lg:flex-row lg:justify-between">
+				<div className="flex w-full flex-col items-center gap-3 lg:w-auto lg:flex-row">
+					<Checkbox className="w-fit" checked={byBulk} onChange={onChange}>
+						Upload File
+					</Checkbox>
+					{byBulk && (
+						<>
+							<Tooltip title="Use this to fill the fields via Excel">
+								<CSVLink
+									className="w-full lg:w-[inherit]"
+									data={visitorTemplate}
+									filename={"VisitorTemplate.csv"}
+								>
+									<Button className="w-[inherit] bg-primary-500" type="primary">
+										Download Template
+									</Button>
+								</CSVLink>
+							</Tooltip>
+
+							{/* Upload Excel File */}
+							<Tooltip title="Upload FILLED template here">
+								<div className="mx-auto max-w-xs">
+									<input
+										aria-label="Upload Excel File"
+										type="file"
+										className="file:py-15 block w-full text-sm file:mr-4 file:h-[32px] file:cursor-pointer file:rounded-md file:border-0 file:bg-primary-500 file:px-4 file:text-sm file:text-white focus:outline-none disabled:pointer-events-none disabled:opacity-60"
+										accept=".xlsx, .xls, .csv"
+										onChange={fileUpload}
+									/>
+								</div>
+							</Tooltip>
+						</>
+					)}
+				</div>
+				<div className="flex w-full flex-col items-center gap-3 lg:w-auto lg:flex-row">
 					{errors?.front && errors.back && errors.selfie ? (
 						<Tooltip title="Required ID Upload">
 							<Button
-								className={`w-[inherit] ${
+								className={`w-full lg:w-[inherit] ${
 									errors.front && errors.back && errors.selfie
 										? "!bg-error"
 										: "!bg-primary-500"
@@ -169,7 +324,7 @@ export default function StepTwo({
 						</Tooltip>
 					) : (
 						<Button
-							className="!bg-primary-500"
+							className="w-full !bg-primary-500 lg:w-[inherit]"
 							type="primary"
 							onClick={showModalPhoto}
 						>
@@ -196,7 +351,7 @@ export default function StepTwo({
 					>
 						<Image.PreviewGroup>
 							<div className="flex flex-col items-center justify-center gap-[65px]">
-								<div className="flex flex-col gap-[65px] md:flex-row">
+								<div className="flex flex-col gap-[65px] lg:flex-row">
 									{!takeBackImage && !takeSelfieImage && (
 										<div className="flex flex-col items-center">
 											<label className="label">
@@ -498,13 +653,35 @@ export default function StepTwo({
 					>
 						Previous
 					</Button>
-					<Button
+					{errors?.province && errors.city ? (
+						<Tooltip title="Some fields were not filled">
+							<Button
+								className={`w-full lg:w-[inherit] ${
+									errors.province && errors.city
+										? "!bg-error"
+										: "!bg-primary-500"
+								}`}
+								type="primary"
+							>
+								Next
+							</Button>
+						</Tooltip>
+					) : (
+						<Button
+							className="w-full bg-primary-500 lg:w-[inherit]"
+							type="primary"
+							htmlType="submit"
+						>
+							Next
+						</Button>
+					)}
+					{/* <Button
 						className="w-[inherit] bg-primary-500"
 						type="primary"
 						htmlType="submit"
 					>
 						Next
-					</Button>
+					</Button> */}
 				</div>
 			</div>
 		</Form>

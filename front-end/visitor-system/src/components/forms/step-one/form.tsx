@@ -74,40 +74,44 @@ function StepOneForm({
 	const addVisitor = (value: any) => {
 		setVisitorNo(value);
 		setValue("visitorNo", value);
+		console.log("value", value, "visitorNo", visitorNo);
 		if (value > visitorNo) {
-			setVisitors((prevVisitors) => ({
-				...prevVisitors,
-				companions_details: [
-					...prevVisitors.companions_details!,
-					{
-						name: {
-							first_name: "",
-							middle_name: "",
-							last_name: "",
+			for (let i = 0; i < value - visitorNo; i++) {
+				setVisitors((prevVisitors) => ({
+					...prevVisitors,
+					companions_details: [
+						...prevVisitors.companions_details!,
+						{
+							name: {
+								first_name: "",
+								middle_name: "",
+								last_name: "",
+							},
+							email: "",
+							phone: "",
+							address: {
+								house: "",
+								street: "",
+								brgy: "",
+								city: "",
+								province: "",
+								country: "",
+							},
+							time_in: "",
+							time_out: "",
 						},
-						email: "",
-						phone: "",
-						address: {
-							house: "",
-							street: "",
-							brgy: "",
-							city: "",
-							province: "",
-							country: "",
-						},
-						time_in: "",
-						time_out: "",
-					},
-				],
-			}));
+					],
+				}));
+			}
 		} else if (value < visitorNo) {
-			const indexToRemove = visitors.companions_details!.length - 1;
-			setVisitors((prevVisitors) => ({
-				...prevVisitors,
-				companions_details: prevVisitors.companions_details!.filter(
+			let tempVisitor: VisitorDataType = visitors;
+			for (let i = 0; i < visitorNo - value; i++) {
+				const indexToRemove = visitors.companions_details!.length - 1;
+				tempVisitor.companions_details = tempVisitor.companions_details!.filter(
 					(_, index) => index !== indexToRemove,
-				),
-			}));
+				);
+			}
+			setVisitors(tempVisitor);
 		}
 	};
 
@@ -237,7 +241,7 @@ function StepOneForm({
 					}`}
 				>
 					<span className="text-[16px] font-[400] text-[#0000004d]">
-						Check in and Check out
+						Time in and Time out
 					</span>
 
 					<div className="flex flex-col">
@@ -254,10 +258,7 @@ function StepOneForm({
 									`YYYY-MM-DD ${timeFormat}`,
 								),
 							]}
-							minDate={dayjs(
-								formatDateObjToString(visitors.expected_time_in),
-								`YYYY-MM-DD ${timeFormat}`,
-							)}
+							minDate={dayjs(dayjs(), `YYYY-MM-DD ${timeFormat}`)}
 							onChange={onChangeRange}
 							placeholder={["From", "To"]}
 							format={`YYYY-MM-DD ${timeFormat}`}
@@ -282,7 +283,7 @@ function StepOneForm({
 				<div className="flex flex-col gap-[15px] lg:flex-row">
 					<div className="flex w-full flex-col">
 						<Select
-							className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
+							className="purpose font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
 							style={{ width: "100%" }}
 							showSearch
 							mode="multiple"
@@ -313,7 +314,7 @@ function StepOneForm({
 
 					<div className="flex w-full flex-col">
 						<Select
-							className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
+							className="purpose font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
 							showSearch
 							mode="multiple"
 							allowClear
@@ -346,16 +347,13 @@ function StepOneForm({
 						<Tooltip title="When">
 							<DatePicker
 								showTime
-								className="vm-placeholder hover:bg-[#DFEAEF]!border-[#d9d9d9] h-[52px] border-none bg-[#e0ebf0] hover:!border-primary-500 hover:bg-[#DFEAEF] focus:!border-primary-500"
+								className="hover:bg-[#DFEAEF]!border-[#d9d9d9] h-[52px] w-[180px] border-none bg-[#e0ebf0] hover:!border-primary-500 hover:bg-[#DFEAEF] focus:!border-primary-500"
 								placeholder="When"
 								defaultValue={dayjs(
 									formatDateObjToString(visitors.purpose.when),
 									`YYYY-MM-DD ${timeFormat}`,
 								)}
-								minDate={dayjs(
-									formatDateObjToString(visitors.purpose.when),
-									`YYYY-MM-DD ${timeFormat}`,
-								)}
+								minDate={dayjs(dayjs(), `YYYY-MM-DD ${timeFormat}`)}
 								onChange={onChangeDate}
 								format={`YYYY-MM-DD ${timeFormat}`}
 							/>
@@ -368,7 +366,7 @@ function StepOneForm({
 
 					<div className="flex w-full flex-col">
 						<Select
-							className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
+							className="purpose font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
 							showSearch
 							mode="multiple"
 							allowClear
@@ -407,7 +405,7 @@ function StepOneForm({
 						I have agreed to the{" "}
 						<Button
 							type="link"
-							className="p-0 text-[16px] text-warning hover:!text-warning"
+							className="p-0 text-[16px] text-primary-500 hover:!text-primary-200"
 							onClick={showTC}
 						>
 							terms and conditions

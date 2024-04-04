@@ -18,5 +18,5 @@
 	},
 	"include": ["src/**/*.ts", "src/**/*.tsx"], // Adjust to match your project structure
 	"exclude": ["node_modules"],
-	"files": ["images.d.ts", "audio.d.ts"]
+	"files": ["images.d.ts", "audio.d.ts", "libraries.d.ts"]
 }

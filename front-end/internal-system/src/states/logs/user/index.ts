@@ -10,11 +10,14 @@ export const userLogsSlice = createSlice({
 	name: "userLogs",
 	initialState,
 	reducers: {
-		addLog: (state, action: PayloadAction<UserActionLogsDetails>) => {
+		fetchUserLogs: (state, action: PayloadAction<UserActionLogsDetails[]>) => {
+			return [...action.payload];
+		},
+		addUserLog: (state, action: PayloadAction<UserActionLogsDetails>) => {
 			state.push(action.payload);
 		},
 	},
 });
 
-export const { addLog } = userLogsSlice.actions;
+export const { fetchUserLogs, addUserLog } = userLogsSlice.actions;
 export default userLogsSlice.reducer;
