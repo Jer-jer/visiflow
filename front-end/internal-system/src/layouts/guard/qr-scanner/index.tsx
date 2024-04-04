@@ -3,8 +3,6 @@ import React from "react";
 //Components
 import OuterContainer from "../../../components/container";
 import InnerContainer from "../../../components/container/inner-container";
-import StatisticsSummaryContent from "../../../components/stats-smmry-ctnt";
-import PendingAppointments from "../../../components/pending-appointments";
 import { Tabs, Button, Input, Image } from "antd";
 import Scanner from "../../../components/scanner";
 
@@ -15,12 +13,6 @@ import RyanReynolds from "../../../assets/ryan_reynolds.jpg";
 //Styles
 import "../../../utils/variables.scss";
 import "./styles.scss";
-
-// interface TabItems {
-// 	key: TargetKey;
-// 	visitorData?: VisitorDetailsProps;
-// 	companionsDetails?: VisitorDetailsProps[];
-// }
 
 export default function QrScannerLayout() {
 	return (
