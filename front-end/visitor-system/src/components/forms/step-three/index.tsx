@@ -87,6 +87,8 @@ export default function StepThree({
 		return false;
 	};
 
+	//TODO Fix Undefined Middle Name
+
 	const showConfirm = (data: any) => {
 		confirm({
 			title: "Do you want to proceed?",
@@ -106,7 +108,20 @@ export default function StepThree({
 				} else {
 					setLoading(true);
 					AxiosInstace.post("/visitor/new", {
-						visitor_data: data,
+						visitor_data: {
+							...data,
+							visitor_details: {
+								...data.visitor_details,
+								name: {
+									...data.visitor_details.name,
+									middle_name:
+										data.visitor_details.name.middle_name &&
+										data.visitor_details.name.middle_name === undefined
+											? ""
+											: data.visitor_details.name.middle_name,
+								},
+							},
+						},
 					})
 						.then((res: any) => {
 							setLoading(false);
@@ -138,7 +153,7 @@ export default function StepThree({
 			This form will close after ${secondsToGo} second.`,
 			onOk() {
 				clearInterval(timer);
-				// window.location.reload();
+				window.location.reload();
 			},
 		});
 
@@ -153,7 +168,7 @@ export default function StepThree({
 		setTimeout(() => {
 			clearInterval(timer);
 			instance.destroy();
-			// window.location.reload();
+			window.location.reload();
 		}, secondsToGo * 1000);
 	};
 

@@ -21,7 +21,7 @@ export const StepOneZod: ZodType<StepOneData> = z.object({
 	checkInOut: z
 		.custom<[Date, Date]>()
 		.refine((val) => val[0].getTime() < val[1].getTime(), {
-			message: "Check in must be before the Check out date.",
+			message: "Time in must be before the Time out date.",
 		}),
 	what: z
 		.string({
@@ -87,7 +87,7 @@ export const StepTwoZod: ZodType<StepTwoData> = z.object({
 			invalid_type_error: "First Name must not have number.",
 		})
 		.regex(/^[a-zA-Z]+/, {
-			message: "Must not be empty or contain any numerals.",
+			message: "First Name not be empty or contain any numerals.",
 		}),
 	middleName: z
 		.string({
@@ -95,7 +95,7 @@ export const StepTwoZod: ZodType<StepTwoData> = z.object({
 			invalid_type_error: "Middle Name must not have number.",
 		})
 		.regex(/^[a-zA-Z]*$|\b/, {
-			message: "Must not contain any numerals.",
+			message: "Middle Name not contain any numerals.",
 		})
 		.optional(),
 	lastName: z
@@ -104,7 +104,7 @@ export const StepTwoZod: ZodType<StepTwoData> = z.object({
 			invalid_type_error: "Last Name must not have number.",
 		})
 		.regex(/^[a-zA-Z]+/, {
-			message: "Must not be empty or contain any numerals.",
+			message: "Last Name not be empty or contain any numerals.",
 		}),
 
 	email: z
@@ -126,7 +126,7 @@ export const StepTwoZod: ZodType<StepTwoData> = z.object({
 			invalid_type_error: "Barangay must not have a number.",
 		})
 		.regex(/^[a-zA-Z]+/, {
-			message: "Must not be empty or contain any numerals.",
+			message: "Barangay must not be empty or contain any numerals.",
 		}),
 	city: z
 		.string({
@@ -134,7 +134,7 @@ export const StepTwoZod: ZodType<StepTwoData> = z.object({
 			invalid_type_error: "City must not have a number.",
 		})
 		.regex(/^[a-zA-Z]+/, {
-			message: "Must not be empty or contain any numerals.",
+			message: "City must not be empty or contain any numerals.",
 		}),
 	province: z
 		.string({
@@ -142,7 +142,7 @@ export const StepTwoZod: ZodType<StepTwoData> = z.object({
 			invalid_type_error: "Province must not have a number.",
 		})
 		.regex(/^[a-zA-Z]+/, {
-			message: "Must not be empty or contain any numerals.",
+			message: "Province must not be empty or contain any numerals.",
 		}),
 	country: z
 		.string({
@@ -150,7 +150,7 @@ export const StepTwoZod: ZodType<StepTwoData> = z.object({
 			invalid_type_error: "Country must not have a number.",
 		})
 		.regex(/^[a-zA-Z]+/, {
-			message: "Must not be empty or contain any numerals.",
+			message: "Country must not be empty or contain any numerals.",
 		}),
 	front: z
 		.string({

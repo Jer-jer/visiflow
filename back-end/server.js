@@ -34,7 +34,7 @@ const server = http.createServer(app);
 // const io = socketIo(server, { cors: (origin = "*") });
 // const io = socketIo(server, { cors: { origin: "*" } });
 // const io = new Server(server, { cors: { origin: "*" } });
-const io = new Server(server, { cors: { origin: "http://localhost:3000" } });
+const io = new Server(server, { cors: { origin: "*" } });
 
 app.set("io", io);
 
@@ -88,10 +88,14 @@ server.listen(PORT, () => {
 // change to */5 * * * * * for testing every 5 mins
 // 0 * * * * to every hour
 
-cron.schedule('0 * * * *', async () => {
-  await timeOutReminder(io);
-  await timeInReminder(io);
-}, {
-  scheduled: true,
-  timezone: "Asia/Manila"
-});
+cron.schedule(
+  "0 * * * *",
+  async () => {
+    await timeOutReminder(io);
+    await timeInReminder(io);
+  },
+  {
+    scheduled: true,
+    timezone: "Asia/Manila",
+  }
+);

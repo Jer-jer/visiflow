@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
 //Layouts
 import LoggedIn from "./layouts/logged-in";
 
 /* Pages */
+import NotificationsPage from "./pages/notifications";
 import Login from "./pages/login";
 //Admin
 import Dashboard from "./pages/admin/dashboard";
@@ -39,6 +40,8 @@ function App() {
 			if (decoded.role === "admin") {
 				setIsAdmin(true);
 			}
+		} else {
+			setIsLoggedIn(false);
 		}
 		setLoading(false);
 	}, []);
@@ -51,14 +54,15 @@ function App() {
 				</div>
 			) : isLoggedIn ? (
 				<LoggedIn
-					setIsLoggedIn={setIsLoggedIn}
 					isAdmin={isAdmin}
 					setIsAdmin={setIsAdmin}
 				>
 					<Routes>
+						<Route path="/notifications" element={<NotificationsPage />} />
 						{isAdmin ? (
 							<>
-								<Route path="/" element={<Dashboard />} />
+								<Route path="/" element={<Navigate to="/dashboard" />} />
+								<Route path="/dashboard" element={<Dashboard />} />
 								<Route path="/statistics" element={<Statistics />} />
 								<Route
 									path="/visitor-management"
@@ -70,6 +74,7 @@ function App() {
 							</>
 						) : (
 							<>
+								{/* <Route path="/" element={<Redirect to="/dashboard" />} /> */}
 								<Route
 									path="/"
 									element={<span>Guard System Routes Here</span>}
@@ -84,10 +89,10 @@ function App() {
 					<Route
 						path="/"
 						element={
-							<Login setIsLoggedIn={setIsLoggedIn} setIsAdmin={setIsAdmin} />
+							<Login setIsAdmin={setIsAdmin} />
 						}
 					/>
-					<Route path="*" element={<UnknownPage />} />
+					<Route path="*" element={<Navigate to="/" />} />
 				</Routes>
 			)}
 		</div>

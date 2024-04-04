@@ -14,13 +14,19 @@ import type { AppDispatch, RootState } from "../../../../store";
 import type { Dayjs } from "dayjs";
 
 //Reducer
-import { addLog } from "../../../../states/logs/user";
+import { fetchUserLogs, addUserLog } from "../../../../states/logs/user";
 
 //Components
 import { Button, Tooltip } from "antd";
 import StandardModal from "../../../../components/modal";
 import ActionLogsTable from "../../../../components/table/action-logs-list";
 import DateTimePicker from "../../../../components/datetime-picker";
+
+//Utils
+import { actionType, formatDateObjToString } from "../../../../utils";
+
+//Lib
+import AxiosInstance from "../../../../lib/axios";
 
 //Styles
 import "./styles.scss";
@@ -57,56 +63,26 @@ export default function UserActionLogs({
 		}
 	};
 
-	//TODO Must be updated real-time
 	useEffect(() => {
-		//TODO Must be updated to a call to the API
-		const data: UserActionLogsDetails[] = [
-			{
-				logId: "log123",
-				action: "Login",
-				logDate: "2023-09-15 10:30 AM",
-				system: "Admin System",
-			},
-			{
-				logId: "log789",
-				action: "Logout",
-				logDate: "2023-09-15 02:45 PM",
-				system: "Admin System",
-			},
-			{
-				logId: "log456",
-				action: "Data Update",
-				logDate: "2023-09-16 09:15 AM",
-				system: "Guard System",
-			},
-			{
-				logId: "log234",
-				action: "Profile Edit",
-				logDate: "2023-09-16 03:00 PM",
-				system: "Admin System",
-			},
-			{
-				logId: "log567",
-				action: "Logout",
-				logDate: "2023-09-17 11:20 AM",
-				system: "Guard System",
-			},
-		];
+		AxiosInstance.post("/system-logs/find-user-logs", {
+			user_id: userId,
+		}).then((res) => {
+			// console.log(res.data.systemLogs);
+			dispatch(fetchUserLogs(res.data.systemLogs));
+		});
 
-		data.map((log) => dispatch(addLog(log)));
+		// data.map((log) => dispatch(addUserLog(log)));
 	}, []);
 
 	const userLogsHeader = [
 		{ label: "Action", key: "action" },
-		{ label: "System", key: "system" },
 		{ label: "Date", key: "logDate" },
 	];
 
 	const userLogsData = userLogs.map((logs) => {
 		return {
-			action: logs.action,
-			system: logs.system,
-			logDate: logs.logDate,
+			action: actionType(logs.type),
+			logDate: formatDateObjToString(logs.created_at),
 		};
 	});
 
@@ -126,7 +102,7 @@ export default function UserActionLogs({
 				<Tooltip placement="top" title="Export Logs" arrow={false}>
 					<CSVLink
 						filename={`${lastName.toUpperCase()}_Logs.csv`}
-						data={userLogsData}
+						data={[userLogsData]}
 						headers={userLogsHeader}
 					>
 						<ExcelDownload />

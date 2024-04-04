@@ -1,7 +1,18 @@
 @import url("../../App.scss");
+@import url("../../index.scss");
 
 .header-name {
     color: #1B3B22;
+}
+
+.ant-modal-content {
+    .ant-btn-primary {
+        background-color: var(--theme-primary);
+    }
+
+    .ant-btn-primary {
+        background-color: var(--theme-primary) !important;
+    }
 }
 
 .notification-dropdown {
@@ -30,6 +41,61 @@
 
             }
         }
+    }
+}
+
+.notifications {
+    .icon {
+        display: flex;
+        align-items: center;
+
+        .count {
+            background-color: var(--theme-primary);
+        }
+    }
+
+    .container {
+        border-radius: 10px;
+        z-index: 3 !important;
+
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 10px !important;
+
+            .header-title {
+                font-size: 18px
+            }
+
+            .header-option {
+                color: var(--theme-primary);
+            }
+        }
+
+        .items {
+            .card {
+                .content {
+                    .image {
+                        display: none;
+                    }
+                }
+            }
+        }
+
+        .footer {
+            display: flex;
+            justify-content: center;
+
+            .see-all {
+                color: var(--theme-primary) !important;
+            }
+        }
+    }
+}
+
+.notification:hover {
+    .unread {
+        color: white;
     }
 }
 

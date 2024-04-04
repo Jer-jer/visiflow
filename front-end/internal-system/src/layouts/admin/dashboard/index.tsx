@@ -25,16 +25,14 @@ import { VisitorDataType } from "../../../utils/interfaces";
 
 export default function DashboardLayout() {
 	const { data } = useSelector((state: any) => state.visitors);
-	const dispatch = useDispatch<AppDispatch>();
-
-	useEffect(() => {
-		dispatch(fetchVisitors());
-	}, []);
 
 	return (
 		<div className="mb-[35px] ml-2 mt-3 flex">
 			<div className="w-[761px] flex-auto">
-				<OuterContainer header="Summary">
+				<OuterContainer
+					containerStyling="overflow-scroll h-[100dvh]"
+					header="Summary"
+				>
 					<InnerContainer additionalStyles="rounded-[10px] border border-[#D0D2CC]">
 						<StatisticsSummaryContent
 							title="total visitors for today"
@@ -91,7 +89,10 @@ export default function DashboardLayout() {
 				</OuterContainer>
 			</div>
 			<div className="w-[485px] flex-auto">
-				<OuterContainer header="Pending Appointments">
+				<OuterContainer
+					containerStyling="h-[100dvh]"
+					header="Pending Appointments"
+				>
 					<PendingAppointments
 						pendingAppointments={data.filter(
 							(visitor: VisitorDataType) =>
