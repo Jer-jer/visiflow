@@ -5,7 +5,7 @@ const {
 } = require('../middleware/dataValidation');
 const {
     uploadFileToGCS,
-  } = require("../utils/helper");
+} = require("../utils/helper");
 
   
 
@@ -48,15 +48,13 @@ exports.addOffices = async (req, res) => {
             return res.status(400).json({ error: 'Office already exists' });
         }
 
-        const [officepic] = await Promise.all([
-        uploadFileToGCS(
+        const officepic = uploadFileToGCS(
             Buffer.from(
             officeImg.replace(/^data:image\/\w+;base64,/, ""),
             "base64"
             ),
             `${Date.now()}_${name.toUpperCase()}_office.jpg`
-        ),
-        ]);
+        );
 
         const newOffice = new Offices({ 
             name, 
@@ -67,12 +65,12 @@ exports.addOffices = async (req, res) => {
             opentime,
             closetime,
             openday,
-            officepic
+            officeImg: officepic
         });
 
         const createdOffice = await newOffice.save();
 
-        res.status(201).json({ Message: createdOffice });
+        res.status(201).json({ office: createdOffice });
         
     } catch (error) {
         console.error(error);
@@ -91,7 +89,8 @@ exports.updateOffices = async (req, res) => {
             email,
             opentime,
             closetime,
-            openday,} = req.body;
+            openday,
+            officeImg} = req.body;
 
         const office = await Offices.findById(_id);
 
@@ -99,6 +98,18 @@ exports.updateOffices = async (req, res) => {
 
         if(!office) {
             return res.status(404).json({ error: 'Office not found'});
+        }
+
+        let img = officeImg;
+        if(img == null){
+            const officepic = uploadFileToGCS(
+                Buffer.from(
+                officeImg.replace(/^data:image\/\w+;base64,/, ""),
+                "base64"
+                ),
+                `${Date.now()}_${name.toUpperCase()}_office.jpg`
+            );
+            img = officepic;
         }
 
         const updateFields = {
@@ -109,8 +120,13 @@ exports.updateOffices = async (req, res) => {
             email: email !== undefined ? email : office.email,
             opentime: opentime !== undefined ? opentime : office.opentime,
             closetime: closetime !== undefined ? closetime : office.closetime,
-            openday: openday !== undefined ? openday : office.openday
+            openday: openday !== undefined ? openday : office.openday,
+            officeImg: img,
         }
+
+        
+
+        
         
         const filteredUpdateFields = Object.fromEntries(
             Object.entries(updateFields).filter(([key, value]) => value !== undefined)

@@ -9,6 +9,7 @@ const EventsSchema = new Schema({
     startTime: { type: Date, default: Date.now },
     endTime: { type: Date, default: Date.now },
     locationID: { type: String, require: true },
+    eventImg: { type: String, require: true },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });

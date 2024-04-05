@@ -9,13 +9,13 @@ import type { UploadChangeParam } from "antd/es/upload";
 //Layouts
 
 //Components
-import { Button, Dropdown, Modal, DatePicker, message, Image, MenuProps, Upload } from "antd";
+import { Button, Dropdown, Modal, DatePicker, message, Image, MenuProps} from "antd";
 import Input from "../../../../components/fields/input/input";
 import Label from "../../../../components/fields/input/label";
 import AxiosInstace from "../../../../lib/axios";
 
 //Assets
-import { ExclamationCircleFilled, LeftOutlined, LoadingOutlined, PlusOutlined } from "@ant-design/icons";
+import { ExclamationCircleFilled, LeftOutlined} from "@ant-design/icons";
 
 //Styles
 import "./styles.scss";
@@ -89,16 +89,9 @@ export default function OfficeSchedDetails({
 	const [closetime, setClosetime] = useState(record?.closetime === undefined ? new Date() : record?.closetime);
 	const [openday, setOpenday] = useState(record?.openday === undefined ? new Array(7).fill(false) : record?.openday);
 	const [loading, setLoading] = useState(false);
-	const [image, setImage] = useState<string | ArrayBuffer | null>('');
-	const [imageUrl, setImageUrl] = useState<string>(record === undefined ? "" : record?.officeImg);
-	const [fileList, setFileList] = useState<UploadFile[]>([
-		{
-			uid: "-1",
-			name: "image.png",
-			status: "done",
-			url: "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
-		},
-	]);
+	const [image, setImage] = useState<string | ArrayBuffer | null>(null);
+	const [imageUrl, setImageUrl] = useState<string>(record === undefined ? "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png" : record?.officeImg);
+	const [savedRecord, setSavedRecord] = useState(record);
 
 	//Alert State
 	const [alertOpen, setAlertOpen] = useState(false);
@@ -123,12 +116,9 @@ export default function OfficeSchedDetails({
 	};
 
 	const saveAction = async() => {
-		//This needs to be customized to whatever the DB returns
-		console.log("check:", image);
-		// saving new record
-		if(record === undefined) {
+		if(savedRecord=== undefined) {
 			try {
-				await AxiosInstace.post('/offices/new', { 
+				const response = await AxiosInstace.post('/offices/new', { 
 					name: name, 
 					roomNo: roomNo,
 					pic: pic,
@@ -139,13 +129,14 @@ export default function OfficeSchedDetails({
 					openday: openday,
 					officeImg: image
 				}); 
+				setSavedRecord(response.data.office);
 			} catch (error) {
 			console.error('Error in adding office:', error);
 			}
 		} else { // updating record
 			try {
 				await AxiosInstace.put('/offices/update', { 
-					_id: record?._id,
+					_id: record === undefined ? savedRecord._id : record._id,
 					name: name === "" ? record?.name : name, 
 					roomNo: roomNo === "" ? record?.roomNo : roomNo,
 					pic: pic === "" ? record?.pic : pic,
@@ -177,52 +168,6 @@ export default function OfficeSchedDetails({
 		setClosetime(date[1]);
 	}
 
-	const handleImage: UploadProps["onChange"] = (
-		info: UploadChangeParam<UploadFile>,
-	) => {
-		if (info.file.status === "uploading") {
-			setLoading(true);
-			console.log("uploading")
-			return;
-		}
-		if (info.file.status === "done") {
-			console.log("done uploading")
-			// Get this url from response in real world.
-			getBase64(info.file.originFileObj as RcFile, (url) => {
-				setLoading(false);
-				setImage(url);
-			});
-		}
-	};
-	
-	const handleUpload = (e: any) => {
-		const selectedFiles = e.target.files;
-	  
-		if (selectedFiles.length > 0) {
-		  const areAllFilesImages = Array.from(selectedFiles).every((file: any) =>
-			/\.(jpg|jpeg|png|gif)$/i.test(file.name)
-		  );
-	  
-		  if (areAllFilesImages) {
-			// setLogo(selectedFiles);
-			setImage(URL.createObjectURL(selectedFiles[0]))
-			setFileList(selectedFiles);
-		  } else {
-			alert('Please select only image files (JPEG, PNG, GIF, etc.).');
-			e.target.value = null;
-		  }
-		} else {
-		  alert('Please select at least one file.');
-		}
-	};
-
-	const uploadButton = (
-		<div>
-			{loading ? <LoadingOutlined /> : <PlusOutlined />}
-			<div style={{ marginTop: 8 }}>Upload</div>
-		</div>
-	);
-
 	const { RangePicker } = DatePicker;
 
 	const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -235,6 +180,7 @@ export default function OfficeSchedDetails({
 		reader.onloadend = () => {
 		const base64String = reader.result;
 		setImage(base64String);
+		setImageUrl(URL.createObjectURL(file));
 		};
 	
 		if (file) {
@@ -402,33 +348,20 @@ export default function OfficeSchedDetails({
 					</div>
 					<div>
 						{disabledInputs ? (
-							<Image
-								width={200}
-								src={imageUrl}
-							/>
-						) : (
-							// <Upload
-							// 	name="avatar"
-							// 	listType="picture-card"
-							// 	className="avatar-uploader w-[353px]"
-							// 	showUploadList={false}
-							// 	// action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
-							// 	beforeUpload={beforeUpload}
-							// 	onChange={handleImage}
-							// 	fileList={fileList}
-							// >
-							// 	{imageUrl ? (
-							// 		<img src={imageUrl} alt="avatar" style={{ width: "100%" }} />
-							// 	) : (
-							// 		uploadButton
-							// 	)}
-							// </Upload>
+								<Image
+									width={200}
+									src={imageUrl}
+								/>
+							) : (
 							<div>
 								<input type="file" accept="image/*" onChange={handleImageUpload} />
 								{image && (
 									<div>
 									<h2>Uploaded Image:</h2>
-									<img src={image.toString()} alt="Uploaded" style={{ maxWidth: '100%' }} />
+									<Image
+										width={280}
+										src={image.toString()}
+									/>
 									</div>
 								)}
 							</div>
