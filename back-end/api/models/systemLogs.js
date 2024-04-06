@@ -22,12 +22,12 @@ const systemLogSchema = new Schema({
         'add_visitor',
         'update_visitor', 
         'delete_visitor',
-        'approve_status',
-        'decline_status',
-        'add_user',
+        'approve_status', //ok
+        'decline_status', 
+        'add_user', 
         'update_user',
         'delete_user',
-        'log_in',
+        'log_in', //ok
         'log_out',
         'generate_badge'
      ],
