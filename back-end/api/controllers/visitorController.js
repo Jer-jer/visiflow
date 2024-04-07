@@ -70,6 +70,14 @@ exports.addVisitor = async (req, res) => {
       return res.status(409).json({ error: "Visitor already exists" });
     }
 
+    if (
+      id_picture.front &&
+      id_picture.back &&
+      id_picture.selfie 
+    ) {
+      
+    }
+
     const [frontId, backId, selfieId] = await Promise.all([
       uploadFileToGCS(
         Buffer.from(
@@ -108,9 +116,9 @@ exports.addVisitor = async (req, res) => {
       expected_time_in: expected_time_in,
       expected_time_out: expected_time_out,
       id_picture: {
-        front: frontId,
-        back: backId,
-        selfie: selfieId,
+        front: frontId || "",
+        back: backId || "",
+        selfie: selfieId || "",
       },
       visitor_type: visitor_type,
       status: status,
@@ -240,8 +248,8 @@ exports.updateVisitor = async (req, res) => {
       filteredUpdateFields,
       { new: true }
     );
-
-    await createSystemLog(user_id, log_type, "success");
+    
+    await createSystemLog(user_id, log_type, 'success');
     res.status(201).json({ visitor: updatedVisitor });
   } catch (error) {
     console.error(error);

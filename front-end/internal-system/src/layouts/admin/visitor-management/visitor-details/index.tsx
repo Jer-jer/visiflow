@@ -104,6 +104,8 @@ export default function VisitorDetails({
 	record,
 	setActiveKey,
 }: VisitorDeetsProps) {
+	const expected_in = formatDateObjToString(record.expected_time_in);
+	const expected_out = formatDateObjToString(record.expected_time_out);
 	//Alert State
 	const [status, setStatus] = useState(false);
 	const [alertOpen, setAlertOpen] = useState(false);
@@ -206,7 +208,10 @@ export default function VisitorDetails({
 			city: record.visitor_details.address.city,
 			province: record.visitor_details.address.province,
 			country: record.visitor_details.address.country,
-			check_in_out: [record.expected_time_in, record.expected_time_out],
+			check_in_out: [
+				formatDateObjToString(record.expected_time_in),
+				formatDateObjToString(record.expected_time_out),
+			],
 			plate_num: record.plate_num,
 			status: record.status,
 			visitor_type: record.visitor_type,
@@ -394,12 +399,8 @@ export default function VisitorDetails({
 			country: zodData
 				? zodData.country
 				: record.visitor_details.address.country,
-			expected_time_in: zodData
-				? zodData.check_in_out[0]
-				: record.expected_time_in,
-			expected_time_out: zodData
-				? zodData.check_in_out[1]
-				: record.expected_time_out,
+			expected_time_in: zodData ? zodData.check_in_out[0] : expected_in,
+			expected_time_out: zodData ? zodData.check_in_out[1] : expected_out,
 			plate_num: zodData ? zodData.plate_num : record.plate_num,
 			status: zodData
 				? zodData.status
@@ -811,10 +812,10 @@ export default function VisitorDetails({
 											size="large"
 											defaultVal={{
 												from:
-													formatDateString(record.expected_time_in) ||
+													formatDateObjToString(record.expected_time_in) ||
 													formatDateObjToString(new Date()),
 												to:
-													formatDateString(record.expected_time_out) ||
+													formatDateObjToString(record.expected_time_out) ||
 													formatDateObjToString(new Date()),
 											}}
 											onRangeChange={onRangeChange}
@@ -1156,8 +1157,8 @@ export default function VisitorDetails({
 											</Button>
 											<VisitorRecordContext.Provider value={record}>
 												<VisitorCompanions
-													expectedIn={record.expected_time_in}
-													expectedOut={record.expected_time_out}
+													expectedIn={expected_in}
+													expectedOut={expected_out}
 													open={vistorCompanionsOpen}
 													setOpen={setVisitorCompanionsOpen}
 												/>

@@ -24,7 +24,7 @@ export default function OuterContainer({
 			<div className="mb-[30px] mt-[30px]">
 				<span
 					className={`font-medium text-black ${
-						headerStyling === undefined ? "text-2xl" : headerStyling
+						headerStyling === undefined ? "text-base md:text-2xl" : headerStyling
 					}`}
 				>
 					{header}

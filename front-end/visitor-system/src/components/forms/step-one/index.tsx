@@ -15,6 +15,9 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 
+// Utils
+import { formatDateObjToString } from "../../../utils";
+
 // Styles
 import "./styles.scss";
 
@@ -38,6 +41,9 @@ export default function StepOne({
 	setVisitors,
 }: StepOneProps) {
 	const [isTCOpen, setIsTCOpen] = useState(false);
+
+	console.log(visitors.expected_time_out);
+	console.log(formatDateObjToString(visitors.expected_time_out));
 
 	const {
 		register,
