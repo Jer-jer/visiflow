@@ -240,8 +240,8 @@ exports.updateVisitor = async (req, res) => {
       filteredUpdateFields,
       { new: true }
     );
-
-    await createSystemLog(user_id, log_type, "success");
+    
+    await createSystemLog(user_id, log_type, 'success');
     res.status(201).json({ visitor: updatedVisitor });
   } catch (error) {
     console.error(error);
