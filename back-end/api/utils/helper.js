@@ -25,7 +25,7 @@ const ACCESS_TOKEN_EXPIRATION = "20m";
 const REFRESH_TOKEN_EXPIRATION = "7d";
 const bucketName = "visiflow";
 
-const local_ip = '192.168.1.4';
+const local_ip = 'localhost';
 
 // Lazy-loaded storage
 let storage;
@@ -271,7 +271,7 @@ async function updateLog(badgeId, _id, type, user_id, res) {
       return res.status(200).json({ message: "time-out" });
     } catch (error) {
       await createSystemLog(user_id, "time_out", "failed");
-      return res.status(500).json({ Error: "Failed to time-out visitor" });
+      return res.status(500).json({ Error: "time-outFailed" });
     }
   } else {
     if (type === "pre-reg") {
@@ -290,10 +290,12 @@ async function updateLog(badgeId, _id, type, user_id, res) {
       } catch (error) {
         console.error(error);
         await createSystemLog(user_id, "time_in", "failed");
-        return res.status(500).json({ Error: "failed to time-in visitor" });
+        return res.status(500).json({ Error: "time-inFailed" });
       }
     }
   }
+
+  callback();
 }
 
 function uploadFileToGCS(bufferData, fileName) {

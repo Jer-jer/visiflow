@@ -79,10 +79,10 @@ function LoginLayout({ setIsAdmin }: LoginProps) {
 						localStorage.setItem("role", "1");
 						window.location.reload();
 						break;
-					case "guard":
+					case "security":
 						setIsAdmin(false);
 						localStorage.setItem("role", "2");
-						navigate("/");
+						window.location.reload();
 						break;
 					default:
 						setIsAdmin(false);

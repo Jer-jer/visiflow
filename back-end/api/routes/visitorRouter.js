@@ -3,9 +3,21 @@ const router = express.Router();
 const passport = require("passport");
 const VisitorController = require("../controllers/visitorController");
 
+// Custom middleware to conditionally apply authentication
+const optionalAuth = (req, res, next) => {
+  // Check if authentication is required
+  if (req.query.auth === 'true') { // Example: Pass ?auth=true in the query for authentication
+    // Apply authentication middleware
+    passport.authenticate("jwt", { session: false })(req, res, next);
+  } else {
+    // Authentication not required, proceed to the next middleware
+    next();
+  }
+};
+
 router.get("/", passport.authenticate("jwt", { session: false }), VisitorController.getVisitors);
 
-router.post("/new", VisitorController.addVisitor);
+router.post("/new", optionalAuth, VisitorController.addVisitor);
 
 router.post("/find", passport.authenticate("jwt", { session: false }), VisitorController.findVisitor);
 
