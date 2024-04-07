@@ -82,6 +82,7 @@ function StepOneForm({
 				setVisitors((prevVisitors) => [
 					...prevVisitors,
 					{
+						visitor_no: i + 2,
 						visitor_details: {
 							name: {
 								first_name: "",

@@ -64,6 +64,7 @@ export interface IDPictureProps {
 }
 
 export interface VisitorDataType {
+	visitor_no: number;
 	visitor_details: VisitorDetailsProps;
 	// companions_details: VisitorDetailsProps[] | null;
 	expected_time_in: Date;

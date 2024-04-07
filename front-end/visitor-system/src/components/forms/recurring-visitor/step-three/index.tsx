@@ -188,8 +188,8 @@ export default function StepThree({
 	};
 
 	const onSubmit = handleSubmit((data) => {
-		// console.log(data);
-		showConfirm(data);
+		console.log(visitors);
+		// showConfirm(data);
 	});
 
 	const ConfirmForm = ({ visitor, increment }: ConfirmFormProps) => {
@@ -291,7 +291,7 @@ export default function StepThree({
 					items={visitors.slice(1).map((visitor, i) => {
 						const id = String(i + 1);
 						return {
-							label: tabName(id),
+							label: `Companion ${id}`,
 							key: id,
 							children: (
 								<ConfirmForm increment={i} visitor={visitor.visitor_details} />

@@ -4,6 +4,7 @@ import React, {
 	Dispatch,
 	useRef,
 	useCallback,
+	useEffect,
 } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -84,6 +85,7 @@ export default function StepTwo({
 	mainVisitor,
 	setVisitors,
 }: StepTwoProps) {
+	const [hasPhoto, setHasPhoto] = useState(false);
 	const [byBulk, setByBulk] = useState(false);
 	const [isPhotoOpen, setIsPhotoOpen] = useState(false);
 
@@ -115,6 +117,17 @@ export default function StepTwo({
 		facingMode: { exact: "environment" },
 	};
 
+	useEffect(() => {
+		if (
+			mainVisitor.id_picture.front !== "" &&
+			mainVisitor.id_picture.back !== "" &&
+			mainVisitor.id_picture.selfie !== ""
+		)
+			setHasPhoto(true);
+		else setHasPhoto(false);
+	}, []);
+
+	//? File Upload
 	const fileUpload = (event: any) => {
 		if (event.target.files[0]) {
 			const reader = new FileReader();
@@ -160,12 +173,10 @@ export default function StepTwo({
 						//? Set the Visitor State
 						setVisitors((prevVisitors) => {
 							const updatedVisitors = prevVisitors.map((visitor, index) => {
-								console.log("index: ", index, "visitor: ", visitor);
 								if (index > 0) {
-									console.log("more than 0");
 									return {
 										...visitor,
-										visitor_details: visitorDetails[index],
+										visitor_details: visitorDetails[index - 1],
 									};
 								}
 								return visitor;
@@ -284,64 +295,76 @@ export default function StepTwo({
 	return (
 		//TODO Continue working with Step 2
 		<Form name="Step Two Form" onFinish={onSubmit} autoComplete="off">
-			<Tabs
-				className="w-[80%]"
-				size="middle"
-				style={{ marginBottom: 32 }}
-				items={visitors.slice(1).map((visitor, i) => {
-					const id = String(i + 1);
-					return {
-						label: `Companion ${id}`,
-						key: id,
-						children: (
-							<StepForm
-								visitorDetails={visitor.visitor_details}
-								increment={i}
-								errors={errors}
-								register={register}
-								setValue={setValue}
-								setVisitors={setVisitors}
-							/>
-						),
-					};
-				})}
-			/>
+			{visitors.length === 1 ? (
+				<span>You need to upload an ID</span>
+			) : (
+				<Tabs
+					className="w-[80%]"
+					size="middle"
+					style={{ marginBottom: 32 }}
+					items={visitors.slice(1).map((visitor, i) => {
+						const id = String(i + 1);
+						return {
+							label: `Companion ${id}`,
+							key: id,
+							children: (
+								<StepForm
+									visitorDetails={visitor.visitor_details}
+									increment={i}
+									errors={errors}
+									register={register}
+									setValue={setValue}
+									setVisitors={setVisitors}
+								/>
+							),
+						};
+					})}
+				/>
+			)}
+
 			<div className="mr-[30px] flex flex-col items-center justify-center gap-2 lg:mr-0 lg:w-[80%] lg:flex-row lg:justify-between">
 				<div className="flex w-full flex-col items-center gap-3 lg:w-auto lg:flex-row">
-					<Checkbox className="w-fit" checked={byBulk} onChange={onChange}>
-						Upload File
-					</Checkbox>
-					{byBulk && (
+					{visitors.length > 1 && (
 						<>
-							<Tooltip title="Use this to fill the fields via Excel">
-								<CSVLink
-									className="w-full lg:w-[inherit]"
-									data={visitorTemplate}
-									filename={"VisitorTemplate.csv"}
-								>
-									<Button className="w-[inherit] bg-primary-500" type="primary">
-										Download Template
-									</Button>
-								</CSVLink>
-							</Tooltip>
+							<Checkbox className="w-fit" checked={byBulk} onChange={onChange}>
+								Upload File
+							</Checkbox>
+							{byBulk && (
+								<>
+									<Tooltip title="Use this to fill the fields via Excel">
+										<CSVLink
+											className="w-full lg:w-[inherit]"
+											data={visitorTemplate}
+											filename={"VisitorTemplate.csv"}
+										>
+											<Button
+												className="w-[inherit] bg-primary-500"
+												type="primary"
+											>
+												Download Template
+											</Button>
+										</CSVLink>
+									</Tooltip>
 
-							{/* Upload Excel File */}
-							<Tooltip title="Upload FILLED template here">
-								<div className="mx-auto max-w-xs">
-									<input
-										aria-label="Upload Excel File"
-										type="file"
-										className="file:py-15 block w-full text-sm file:mr-4 file:h-[32px] file:cursor-pointer file:rounded-md file:border-0 file:bg-primary-500 file:px-4 file:text-sm file:text-white focus:outline-none disabled:pointer-events-none disabled:opacity-60"
-										accept=".xlsx, .xls, .csv"
-										onChange={fileUpload}
-									/>
-								</div>
-							</Tooltip>
+									{/* Upload Excel File */}
+									<Tooltip title="Upload FILLED template here">
+										<div className="mx-auto max-w-xs">
+											<input
+												aria-label="Upload Excel File"
+												type="file"
+												className="file:py-15 block w-full text-sm file:mr-4 file:h-[32px] file:cursor-pointer file:rounded-md file:border-0 file:bg-primary-500 file:px-4 file:text-sm file:text-white focus:outline-none disabled:pointer-events-none disabled:opacity-60"
+												accept=".xlsx, .xls, .csv"
+												onChange={fileUpload}
+											/>
+										</div>
+									</Tooltip>
+								</>
+							)}
 						</>
 					)}
 				</div>
 				<div className="flex w-full flex-col items-center gap-3 lg:w-auto lg:flex-row">
-					{visitors[0].id_picture.front === "" && (
+					{!hasPhoto && (
 						<>
 							{errors?.front && errors.back && errors.selfie ? (
 								<Tooltip title="Required ID Upload">

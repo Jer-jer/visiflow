@@ -17,6 +17,7 @@ function NewVisitor() {
 	const [visitorNo, setVisitorNo] = useState(1);
 	const [visitors, setVisitors] = useState<VisitorDataType[]>([
 		{
+			visitor_no: 1,
 			visitor_details: {
 				name: {
 					first_name: "",

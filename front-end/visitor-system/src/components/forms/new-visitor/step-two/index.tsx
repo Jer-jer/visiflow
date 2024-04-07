@@ -179,10 +179,6 @@ export default function StepTwo({
 
 			switch (property) {
 				case "front":
-					// setVisitors((prev) => ({
-					// 	...prev,
-					// 	id_picture: { ...prev.id_picture, front: imageSrc as string },
-					// }));
 					setVisitors((prevVisitors) => {
 						const updatedVisitors = prevVisitors.map((visitor, index) => {
 							if (index === 0) {
@@ -201,25 +197,9 @@ export default function StepTwo({
 
 						return updatedVisitors;
 					});
-					// setVisitors((preVisitors) => {
-					// 	let updatedVisitors = [...preVisitors];
-					// 	updatedVisitors[0].id_picture.front = imageSrc as string;
-
-					// 	return updatedVisitors;
-					// });
 					setValue("front", imageSrc as string);
 					break;
 				case "back":
-					// setVisitors((prev) => ({
-					// 	...prev,
-					// 	id_picture: { ...prev.id_picture, back: imageSrc as string },
-					// }));
-					// setVisitors((preVisitors) => {
-					// 	let updatedVisitors = [...preVisitors];
-					// 	updatedVisitors[0].id_picture.back = imageSrc as string;
-
-					// 	return updatedVisitors;
-					// });
 					setVisitors((prevVisitors) => {
 						const updatedVisitors = prevVisitors.map((visitor, index) => {
 							if (index === 0) {
@@ -241,16 +221,6 @@ export default function StepTwo({
 					setValue("back", imageSrc as string);
 					break;
 				case "selfie":
-					// setVisitors((prev) => ({
-					// 	...prev,
-					// 	id_picture: { ...prev.id_picture, selfie: imageSrc as string },
-					// }));
-					// setVisitors((preVisitors) => {
-					// 	let updatedVisitors = [...preVisitors];
-					// 	updatedVisitors[0].id_picture.selfie = imageSrc as string;
-
-					// 	return updatedVisitors;
-					// });
 					setVisitors((prevVisitors) => {
 						const updatedVisitors = prevVisitors.map((visitor, index) => {
 							if (index === 0) {
@@ -310,24 +280,6 @@ export default function StepTwo({
 				className="w-[80%]"
 				size="middle"
 				style={{ marginBottom: 32 }}
-				// items={new Array(visitorNo).fill(null).map((_, i) => {
-				// 	const id = String(i + 1);
-				// 	return {
-				// 		label: tabName(id),
-				// 		key: id,
-				// 		children: (
-				// 			<StepForm
-				// 				mainVisitor={visitors[0].visitor_details} //? Main Visitor Information
-				// 				visitors={visitors} //? Companions Visitor Information
-				// 				increment={i}
-				// 				errors={errors}
-				// 				register={register}
-				// 				setValue={setValue}
-				// 				setVisitors={setVisitors}
-				// 			/>
-				// 		),
-				// 	};
-				// })}
 				items={visitors.map((visitor, i) => {
 					const id = String(i + 1);
 					return {
@@ -336,6 +288,7 @@ export default function StepTwo({
 						children: (
 							<StepForm
 								visitorDetails={visitor.visitor_details}
+								visitorNo={visitor.visitor_no}
 								increment={i}
 								errors={errors}
 								register={register}
