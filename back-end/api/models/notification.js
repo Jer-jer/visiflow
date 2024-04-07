@@ -11,13 +11,15 @@ const Content = new Schema({
   visitor_name: { type: String, require: true },
   host_name: { type: String, require: true },
   date: { type: Date, require: true },
-  time: { type: String, require: true },
+  time_in: { type: Date, require: true },
+  time_out: { type: Date, require: true },
   location: { type: String, require: true },
   purpose: { type: String, require: true },
   visitor_type: { type: String, require: true },
 });
 
 const NotificationSchema = new Schema({
+  _id: { type: ObjectId, require: false },
   type: {
     type: String,
     enum: ["time-in", "time-out", "confirmation", "pending", "declined"],

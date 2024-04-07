@@ -134,7 +134,11 @@ export default function UserManagementLayout() {
 	useEffect(() => {
 		AxiosInstance.get("/user")
 			.then((res) => {
-				setUsers(res.data.users);
+				setUsers(
+					res.data.users.map((user: UserDataType, index: number) => {
+						return { ...user, key: user._id };
+					}),
+				);
 				setLoading(false);
 			})
 			.catch((err) => {

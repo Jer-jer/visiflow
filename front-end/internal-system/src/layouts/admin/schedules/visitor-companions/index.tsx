@@ -36,7 +36,10 @@ export default function VisitorCompanions({
 		>
 			<div className="flex w-full items-center justify-start gap-[25px]">
 				<Input className="w-[366px]" placeholder="Search" prefix={<Search />} />
-				<Button type="primary" className="search-button !bg-primary-500">
+				<Button
+					type="primary"
+					className="search-button !bg-primary-500 hover:!bg-primary-500"
+				>
 					Search
 				</Button>
 				<ExcelDownload />

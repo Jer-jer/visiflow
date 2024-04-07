@@ -152,6 +152,8 @@ const VisitorList = ({ addTab }: VisitorProps) => {
 	);
 };
 
+//TODO
+//!Fix: Tabs in user also opened when opening a tab in visitors
 export default function VisitorManagementLayout() {
 	const [activeKey, setActiveKey]: any = useState(1);
 	const newTabIndex = useRef(1);
@@ -164,7 +166,6 @@ export default function VisitorManagementLayout() {
 
 	const dispatch = useDispatch<AppDispatch>();
 
-	//TODO to change to real-time fetching soon
 	useEffect(() => {
 		dispatch(fetchVisitors());
 	}, [tabs]);

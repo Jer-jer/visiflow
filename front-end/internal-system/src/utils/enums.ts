@@ -21,3 +21,19 @@ export enum NotificationType {
 	Pending = "pending",
 	Declined = "declined",
 }
+
+export enum UserActionLogType {
+	TimeIn = "time_in",
+	TimeOut = "time_out",
+	AddVisitor = "add_visitor",
+	UpdateVisitor = "update_visitor",
+	DeleteVisitor = "delete_visitor",
+	ApproveStatus = "approve_status",
+	DeclineStatus = "decline_status",
+	AddUser = "add_user",
+	UpdateUser = "update_user",
+	DeleteUser = "delete_user",
+	LogIn = "log_in",
+	Logout = "log_out",
+	GenerateBadge = "generate_badge",
+}

@@ -1,8 +1,8 @@
 const Badge = require("../models/badge");
-const { 
-  generateVisitorQRCode, 
+const {
+  generateVisitorQRCode,
   updateLog,
-  createSystemLog
+  createSystemLog,
 } = require("../utils/helper");
 
 const badgeQty = 5;
@@ -23,9 +23,7 @@ exports.findBadge = async (req, res) => {
   const { visitor_id } = req.body;
   const badge = await Badge.findOne({ visitor_id });
   if (!badge)
-    return res
-      .status(400)
-      .json({ message: `No badge assigned to visitor ${visitor_id}` });
+    return res.status(400).json({ error: "No badge assigned to this visitor" });
   res.status(200).json({ badge });
 };
 
@@ -33,42 +31,42 @@ exports.generateBadge = async (req, res) => {
   try {
     // const clientIP = req.ip;
     const user_id = req.user._id;
-    const log_type = 'generate_badge';
+    const log_type = "generate_badge";
 
     for (let counter = 0; counter < badgeQty; counter++) {
       await generateVisitorQRCode(counter);
     }
 
-    await createSystemLog(user_id, log_type, 'success');
+    await createSystemLog(user_id, log_type, "success");
     return res.status(200).json({ message: `Generated ${badgeQty} of badges` });
   } catch (error) {
     console.error(error);
-    await createSystemLog(user_id, log_type, 'failed');
+    await createSystemLog(user_id, log_type, "failed");
     return res.status(500).json({ Error: error });
   }
 };
 
 //still hard coded for testing purpose only
 exports.newBadge = async (req, res) => {
-    const { visitor_id, qr_id } = req.body;
-    const user_id = req.user._id;
-    const log_type = 'time_in';
+  const { visitor_id, qr_id } = req.body;
+  const user_id = req.user._id;
+  const log_type = "time_in";
 
-    try {
-      const badge = await Badge.create({
-        visitor_id: visitor_id,
-        qr_id: qr_id,
-        is_active: true
-      });
-      
-      createSystemLog(user_id, log_type, 'success');
-      return res.send(200).json({ Badge: badge});
-    } catch (error) {
-      console.error(error);
-      createSystemLog(user_id, log_type, 'success');
-      return res.send(500).json({ Error: error });
-    }
-}
+  try {
+    const badge = await Badge.create({
+      visitor_id: visitor_id,
+      qr_id: qr_id,
+      is_active: true,
+    });
+
+    createSystemLog(user_id, log_type, "success");
+    return res.send(200).json({ Badge: badge });
+  } catch (error) {
+    console.error(error);
+    createSystemLog(user_id, log_type, "success");
+    return res.send(500).json({ Error: error });
+  }
+};
 
 exports.checkBadge = async (req, res) => {
   const { qr_id, visitor_id } = req.query;
@@ -97,6 +95,6 @@ exports.checkBadge = async (req, res) => {
     return res.status(400).json({ message: `Invalid visitor badge` });
   }
 
-   const _id = (visitor_id !== undefined) ? visitor_id : qr_id;
-   updateLog(badge._id, _id, type, req.user._id, res); 
-}
+  const _id = visitor_id !== undefined ? visitor_id : qr_id;
+  updateLog(badge._id, _id, type, req.user._id, res);
+};
