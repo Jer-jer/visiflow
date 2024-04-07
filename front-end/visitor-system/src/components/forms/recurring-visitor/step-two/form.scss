@@ -1,0 +1,55 @@
+// $vm_placeholder: (
+//     'input::-webkit-input-placeholder',
+//     'input:-moz-placeholder',
+//     'input::-moz-placeholder',
+//     'input:-ms-input-placeholder',
+//     'input::input-placeholder',
+//     'input::placeholder',
+// );
+
+// @each $selector in $vm_placeholder {
+//     #{$selector} {
+//         color: #0C0D0D;
+//     }
+// }
+
+// $placeholder: (
+//     '.ant-picker-input input::placeholder'
+// );
+
+// @each $selector in $placeholder {
+//     #{$selector} {
+//         color: #0C0D0D !important;
+//     }
+// }
+
+.form-item {
+    .ant-form-item-label {
+        display: flex;
+        align-items: center;
+
+        label {
+            display: block;
+        }
+    }
+}
+
+.upload {
+    border: 0;
+    background: "none";
+
+    div {
+        margin-top: 8;
+    }
+}
+
+.address {
+    width: 200px !important;
+    height: 40px !important;
+
+    .ant-select-selector {
+        .ant-select-selection-placeholder {
+            color: #0C0D0D !important;
+        }
+    }
+}

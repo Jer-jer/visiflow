@@ -11,7 +11,7 @@ import "./styles.scss";
 
 // Assets
 import { SearchOutlined } from "@ant-design/icons";
-import AxiosInstace from "../../lib/axios";
+import AxiosInstance from "../../lib/axios";
 
 const { Meta } = Card;
 
@@ -114,7 +114,7 @@ export default function Offices() {
 	const fetchData = async() => {
 		try {
 			const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-			const response = await AxiosInstace.get('/offices/')
+			const response = await AxiosInstance.get('/offices/')
 			const data = response.data.office
 			const convertedData: OfficesProps[] = data.map((office: any) => ({
 				title: office.name,
@@ -132,14 +132,14 @@ export default function Offices() {
 		  }
 	}
 
-	useEffect(() => {
-		console.log("test", office)
-	}, [office])
+	// useEffect(() => {
+	// 	console.log("test", office)
+	// }, [office])
 
 	const handleSearch = async() => {
 		try {
 			const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-			const response = await AxiosInstace.post('/offices/search', {query: searchValue})
+			const response = await AxiosInstance.post('/offices/search', {query: searchValue})
 			const data = response.data.office;
 			const convertedData: OfficesProps[] = data.map((office: any) => ({
 				title: office.name,

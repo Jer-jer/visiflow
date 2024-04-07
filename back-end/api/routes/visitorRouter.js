@@ -7,6 +7,10 @@ router.get("/", passport.authenticate("jwt", { session: false }), VisitorControl
 
 router.post("/new", VisitorController.addVisitor);
 
+router.post("/new-recurring", VisitorController.newRecurringVisitor);
+
+router.post("/find-last-name", VisitorController.findVisitorByLastName);
+
 router.post("/find", passport.authenticate("jwt", { session: false }), VisitorController.findVisitor);
 
 router.put("/update", passport.authenticate("jwt", { session: false }),  VisitorController.updateVisitor);

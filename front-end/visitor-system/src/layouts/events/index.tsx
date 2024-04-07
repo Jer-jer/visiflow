@@ -12,7 +12,7 @@ import "./styles.scss";
 
 // Assets
 import { SearchOutlined } from "@ant-design/icons";
-import AxiosInstace from "../../lib/axios";
+import AxiosInstance from "../../lib/axios";
 import { EventsProps } from "../../utils/interfaces";
 
 export default function Events() {
@@ -48,7 +48,7 @@ export default function Events() {
 	//fetch data for display
 	const fetchData = async() => {
 		try {
-			const response = await AxiosInstace.get('/events/')
+			const response = await AxiosInstance.get('/events/')
 			const data = response.data.event
 			
 			
@@ -110,7 +110,7 @@ export default function Events() {
 
 	const handleSearch = async() => {
 		try {
-			const response = await AxiosInstace.post('/events/search', {name: searchValue})
+			const response = await AxiosInstance.post('/events/search', {name: searchValue})
 			const data = response.data.event;
 			const convertedData: EventsProps[] = data.map((event: any) => ({
 				header: {

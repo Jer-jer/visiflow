@@ -29,96 +29,163 @@ exports.getVisitors = async (req, res) => {
 };
 
 exports.addVisitor = async (req, res) => {
-  const {
-    visitor_data: {
-      visitor_details: {
-        name: { first_name, middle_name, last_name },
-        address: { street, house, brgy, city, province, country },
-        email,
-        phone,
-      },
-      expected_time_in,
-      expected_time_out,
-      companion_details,
-      plate_num,
-      purpose,
-      id_picture,
-      visitor_type,
-      status,
-    },
-  } = req.body;
+  //? Expects an array of visitors
+  const { visitors } = req.body;
 
   const io = req.io;
 
+  let companions = []; //? Will contain the companions' ObjectId
+
   try {
+    //? Adding Companions
+    for (let key = 1; key < visitors.length; key++) {
+      await Promise.all(
+        validateVisitor.map((validation) => validation.run(visitors[key]))
+      );
+
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array()[0].msg });
+      }
+
+      const visitorDB = await Visitor.findOne({
+        "visitors.visitor_details.name.first_name":
+          visitors[key].visitor_details.name.first_name,
+        "visitors.visitor_details.name.middle_name":
+          visitors[key].visitor_details.name.middle_name,
+        "visitors.visitor_details.name.last_name":
+          visitors[key].visitor_details.name.last_name,
+      });
+
+      if (visitorDB) {
+        return res.status(409).json({
+          error: `Visitor ${visitors[key].visitor_details.name.last_name} already exists`,
+        });
+      }
+
+      const newVisitor = await Visitor.create({
+        _id: new ObjectId(),
+        visitor_details: visitors[key].visitor_details,
+        companion_details: [],
+        plate_num: visitors[key].plate_num,
+        purpose: visitors[key].purpose,
+        expected_time_in: visitors[key].expected_time_in,
+        expected_time_out: visitors[key].expected_time_out,
+        id_picture: {
+          front: "",
+          back: "",
+          selfie: "",
+        },
+        visitor_type: visitors[key].visitor_type,
+        status: visitors[key].status,
+      });
+
+      io.emit("newVisitor", newVisitor);
+
+      companions.push(newVisitor._id);
+
+      if (newVisitor.visitor_type === "Pre-Registered") {
+        const pendingVisitor = await Notification.create({
+          _id: new ObjectId(),
+          type: "pending",
+          recipient: newVisitor.visitor_details._id,
+          content: {
+            visitor_name: `${newVisitor.visitor_details.name.last_name}, ${
+              newVisitor.visitor_details.name.first_name
+            } ${
+              newVisitor.visitor_details.name.middle_name &&
+              newVisitor.visitor_details.name.middle_name !== undefined
+                ? newVisitor.visitor_details.name.middle_name
+                : ""
+            }`,
+            host_name: newVisitor.purpose.who.join(", "),
+            date: newVisitor.purpose.when,
+            time_in: newVisitor.expected_time_in,
+            time_out: newVisitor.expected_time_out,
+            location: newVisitor.purpose.where.join(", "),
+            purpose: newVisitor.purpose.what.join(", "),
+            visitor_type: newVisitor.visitor_type,
+          },
+        });
+
+        io.emit("newNotification", pendingVisitor);
+      } else if (newVisitor.visitor_type === "Walk-In") {
+        //For walk in
+        const user_id = req.user._id;
+        const log_type = "add_visitor";
+        createSystemLog(user_id, log_type, "success");
+      }
+    }
+
     await Promise.all(
-      validateVisitor.map((validation) => validation.run(req.body.visitor_data))
+      validateVisitor.map((validation) => validation.run(visitors[0]))
     );
 
     const errors = validationResult(req);
+
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array()[0].msg });
     }
 
     const visitorDB = await Visitor.findOne({
-      "visitor_details.name.first_name": first_name,
-      "visitor_details.name.middle_name": middle_name,
-      "visitor_details.name.last_name": last_name,
+      "visitors.visitor_details.name.first_name":
+        visitors[0].visitor_details.name.last_name,
+      "visitors.visitor_details.name.middle_name":
+        visitors[0].visitor_details.name.middle_name,
+      "visitors.visitor_details.name.last_name":
+        visitors[0].visitor_details.name.last_name,
     });
 
     if (visitorDB) {
-      return res.status(409).json({ error: "Visitor already exists" });
+      return res.status(409).json({
+        error: `Visitor ${visitorDB.visitor_details.name.last_name} already exists`,
+      });
     }
 
     const [frontId, backId, selfieId] = await Promise.all([
       uploadFileToGCS(
         Buffer.from(
-          id_picture.front.replace(/^data:image\/\w+;base64,/, ""),
+          visitors[0].id_picture.front.replace(/^data:image\/\w+;base64,/, ""),
           "base64"
         ),
-        `${Date.now()}_${last_name.toUpperCase()}_front.jpg`
+        `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_front.jpg`
       ),
       uploadFileToGCS(
         Buffer.from(
-          id_picture.back.replace(/^data:image\/\w+;base64,/, ""),
+          visitors[0].id_picture.back.replace(/^data:image\/\w+;base64,/, ""),
           "base64"
         ),
-        `${Date.now()}_${last_name.toUpperCase()}_back.jpg`
+        `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_back.jpg`
       ),
       uploadFileToGCS(
         Buffer.from(
-          id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""),
+          visitors[0].id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""),
           "base64"
         ),
-        `${Date.now()}_${last_name.toUpperCase()}_selfie.jpg`
+        `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_selfie.jpg`
       ),
     ]);
 
     const newVisitor = await Visitor.create({
       _id: new ObjectId(),
-      visitor_details: {
-        name: { first_name, middle_name, last_name },
-        address: { street, house, brgy, city, province, country },
-        email,
-        phone,
-      },
-      companion_details: companion_details || [],
-      plate_num: plate_num,
-      purpose: purpose,
-      expected_time_in: expected_time_in,
-      expected_time_out: expected_time_out,
+      visitor_details: visitors[0].visitor_details,
+      companions: companions,
+      plate_num: visitors[0].plate_num,
+      purpose: visitors[0].purpose,
+      expected_time_in: visitors[0].expected_time_in,
+      expected_time_out: visitors[0].expected_time_out,
       id_picture: {
         front: frontId,
         back: backId,
         selfie: selfieId,
       },
-      visitor_type: visitor_type,
-      status: status,
+      visitor_type: visitors[0].visitor_type,
+      status: visitors[0].status,
     });
 
     io.emit("newVisitor", newVisitor);
 
-    if (visitor_type === "Pre-Registered") {
+    if (newVisitor.visitor_type === "Pre-Registered") {
       const pendingVisitor = await Notification.create({
         _id: new ObjectId(),
         type: "pending",
@@ -150,7 +217,7 @@ exports.addVisitor = async (req, res) => {
       createSystemLog(user_id, log_type, "success");
     }
 
-    return res.status(201).json({ visitor: newVisitor });
+    return res.status(201).json({ success: newVisitor });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error });
@@ -171,6 +238,31 @@ exports.findVisitor = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to find visitor by ID" });
+  }
+};
+
+exports.findVisitorByLastName = async (req, res) => {
+  const { last_name } = req.body;
+
+  try {
+    const visitorDB = await Visitor.findOne({
+      "visitor_details.name.last_name": last_name,
+    });
+
+    if (visitorDB) {
+      return res.status(200).json({
+        success: "Visitor found",
+        visitor_id: visitorDB._id,
+        id_picture: visitorDB.id_picture,
+      });
+    } else {
+      return res.status(404).json({ error: "Visitor not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong with your request" });
   }
 };
 
@@ -246,7 +338,60 @@ exports.updateVisitor = async (req, res) => {
   } catch (error) {
     console.error(error);
     await createSystemLog(user_id, log_type, "failed");
-    return res.status(500).json({ error: "Failed to update user" });
+    return res.status(500).json({ error: "Failed to update visitor" });
+  }
+};
+
+exports.newRecurringVisitor = async (req, res) => {
+  const {
+    _id,
+    companion_details,
+    plate_num,
+    purpose,
+    expected_time_in,
+    expected_time_out,
+    visitor_type,
+  } = req.body;
+
+  // const user_id = req.user._id;
+  // const log_type = "update_visitor";
+
+  try {
+    const visitorDB = await Visitor.findById(_id);
+    if (!visitorDB) {
+      return res.status(404).json({ error: "Visitor not found" });
+    }
+
+    const updateFields = {
+      companion_details: companion_details,
+      plate_num: plate_num,
+      purpose: purpose,
+      expected_time_in: expected_time_in,
+      expected_time_out: expected_time_out,
+      visitor_type: visitor_type,
+    };
+
+    const filteredUpdateFields = Object.fromEntries(
+      Object.entries(updateFields).filter(([key, value]) => value !== undefined)
+    );
+
+    if (Object.keys(filteredUpdateFields).length === 0) {
+      return res.status(400).json({ error: "No valid fields to update" });
+    }
+
+    const updatedVisitor = await Visitor.findByIdAndUpdate(
+      _id,
+      filteredUpdateFields,
+      { new: true }
+    );
+
+    //? TBD If Guard System will utilize it
+    // await createSystemLog(user_id, log_type, "success");
+    res.status(201).json({ visitor: updatedVisitor });
+  } catch (error) {
+    console.error(error);
+    // await createSystemLog(user_id, log_type, "failed");
+    return res.status(500).json({ error: "Failed to update visitor" });
   }
 };
 
