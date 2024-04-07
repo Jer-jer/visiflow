@@ -24,16 +24,13 @@ const badgeRouter = require("./api/routes/badgeRouter");
 const eventsRouter = require("./api/routes/eventsRouter");
 const announcementsRouter = require("./api/routes/announcementsRouter");
 const notificationRouter = require("./api/routes/notificationRouter");
-const systemLogRouter = require('./api/routes/systemLogRouter');
-const officesRouter = require('./api/routes/officesRouter');
+const systemLogRouter = require("./api/routes/systemLogRouter");
+const officesRouter = require("./api/routes/officesRouter");
 const { timeInReminder, timeOutReminder } = require("./api/utils/helper");
 
 // Create Express app
 const app = express();
 const server = http.createServer(app);
-// const io = socketIo(server, { cors: (origin = "*") });
-// const io = socketIo(server, { cors: { origin: "*" } });
-// const io = new Server(server, { cors: { origin: "*" } });
 const io = new Server(server, { cors: { origin: "*" } });
 
 app.set("io", io);
@@ -62,7 +59,7 @@ app.use("/events", eventsRouter);
 app.use("/announcements", announcementsRouter);
 app.use("/notification", notificationRouter);
 app.use("/system-logs", systemLogRouter);
-app.use('/offices', officesRouter);
+app.use("/offices", officesRouter);
 
 // Socket.io events
 io.on("connection", (socket) => {

@@ -27,6 +27,7 @@ exports.findBadge = async (req, res) => {
   res.status(200).json({ badge });
 };
 
+//TODO Create Generate Badge button
 exports.generateBadge = async (req, res) => {
   try {
     // const clientIP = req.ip;
@@ -76,7 +77,7 @@ exports.checkBadge = async (req, res) => {
   // if(!req.user) {
   //   return res.status(401).json({ Error: 'Unauthorized user' });
   // }
-  
+
   if (qr_id !== undefined) {
     badge = await Badge.findOne({ qr_id: qr_id });
     if (!badge) {

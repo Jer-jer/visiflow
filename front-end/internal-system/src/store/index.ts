@@ -8,6 +8,7 @@ import UserLogsReducer from "../states/logs/user";
 import VisitorTabsReducer from "../states/visitors/tab";
 import UserTabsReducer from "../states/users/tab";
 import NotificationsReducer from "../states/notifications";
+import RolesReducer from "../states/roles";
 
 export const store = configureStore({
 	reducer: {
@@ -18,6 +19,7 @@ export const store = configureStore({
 		userTabs: UserTabsReducer,
 		userLogs: UserLogsReducer,
 		notifications: NotificationsReducer,
+		isAdmin: RolesReducer,
 	},
 });
 

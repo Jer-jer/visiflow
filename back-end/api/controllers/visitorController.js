@@ -17,7 +17,6 @@ const ObjectId = mongoose.Types.ObjectId;
 exports.getVisitors = async (req, res) => {
   try {
     const visitors = await Visitor.find();
-    const io = req.io;
 
     return res.status(200).json({ visitors });
   } catch (error) {
@@ -25,6 +24,33 @@ exports.getVisitors = async (req, res) => {
     return res
       .status(500)
       .json({ error: "Failed to retrieve visitors from the database" });
+  }
+};
+
+exports.getCompanions = async (req, res) => {
+  const { visitor_id } = req.body;
+
+  try {
+    const visitorDB = await Visitor.findById(new ObjectId(visitor_id));
+
+    if (!visitorDB) {
+      return res.status(404).json({ error: "Visitor not found" });
+    }
+
+    const companionIds = visitorDB.companions.map((id) => new ObjectId(id));
+
+    const companions = await Visitor.find({
+      _id: { $in: companionIds },
+    });
+
+    if (!companions) {
+      return res.status(404).json({ error: "Companions not found" });
+    }
+
+    return res.status(200).json({ companions });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to retrieve Companions" });
   }
 };
 
