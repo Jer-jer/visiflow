@@ -34,8 +34,6 @@ export default function PreRegister() {
 				province: "",
 				country: "",
 			},
-			time_in: "",
-			time_out: "",
 		},
 		companions_details: [],
 		expected_time_in: new Date(),

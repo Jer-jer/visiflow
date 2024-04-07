@@ -25,6 +25,8 @@ const ACCESS_TOKEN_EXPIRATION = "20m";
 const REFRESH_TOKEN_EXPIRATION = "7d";
 const bucketName = "visiflow";
 
+const local_ip = 'localhost';
+
 // Lazy-loaded storage
 let storage;
 
@@ -105,7 +107,7 @@ async function verifyRefreshToken(token) {
 async function generateVisitorQRCode(badgeId) {
   return new Promise((resolve, reject) => {
     const filename = `api/resource/badge/badge${badgeId}.png`;
-    const uri = `http://192.168.1.71:5000/badge/checkBadge?qr_id=${badgeId}`;
+    const uri = `http://${local_ip}:5000/badge/checkBadge?qr_id=${badgeId}`;
 
     QRCode.toFile(
       filename,
@@ -186,7 +188,7 @@ async function generateBadge(visitor) {
 
   await badge.save();
 
-  const uri = `http://192.168.1.71:5000/badge/checkBadge?visitor_id=${visitor._id}`;
+  const uri = `http://${local_ip}:5000/badge/checkBadge?visitor_id=${visitor._id}`;
   const filename = `api/resource/badge/badge${badge._id}.png`;
   await generateQRCode(uri, filename, badge._id);
 
@@ -269,7 +271,7 @@ async function updateLog(badgeId, _id, type, user_id, res) {
       return res.status(200).json({ message: "time-out" });
     } catch (error) {
       await createSystemLog(user_id, "time_out", "failed");
-      return res.status(500).json({ Error: "Failed to time-out visitor" });
+      return res.status(500).json({ Error: "time-outFailed" });
     }
   } else {
     if (type === "pre-reg") {
@@ -288,10 +290,12 @@ async function updateLog(badgeId, _id, type, user_id, res) {
       } catch (error) {
         console.error(error);
         await createSystemLog(user_id, "time_in", "failed");
-        return res.status(500).json({ Error: "failed to time-in visitor" });
+        return res.status(500).json({ Error: "time-inFailed" });
       }
     }
   }
+
+  callback();
 }
 
 function uploadFileToGCS(bufferData, fileName) {
@@ -441,13 +445,12 @@ async function createSystemLog(id, type, status) {
   try {
     const userDB = await User.findById(id);
 
-    console.log(userDB);
-
     if (!userDB) {
       return false;
     }
 
     await SystemLog.create({
+
       user_id: userDB._id,
       name: {
         first_name: userDB.name.first_name,
@@ -455,8 +458,9 @@ async function createSystemLog(id, type, status) {
       },
       role: userDB.role,
       type: type,
-      status: status,
+      status: status
     });
+
   } catch (error) {
     console.error(error);
     return false;
