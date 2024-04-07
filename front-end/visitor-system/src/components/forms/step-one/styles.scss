@@ -1,10 +1,10 @@
 $vm_placeholder: (
-    '.vm-placeholder input::-webkit-input-placeholder',
-    '.vm-placeholder input:-moz-placeholder',
-    '.vm-placeholder input::-moz-placeholder',
-    '.vm-placeholder input:-ms-input-placeholder',
-    '.vm-placeholder input::input-placeholder',
-    '.vm-placeholder input::placeholder',
+    'input::-webkit-input-placeholder',
+    'input:-moz-placeholder',
+    'input::-moz-placeholder',
+    'input:-ms-input-placeholder',
+    'input::input-placeholder',
+    'input::placeholder',
 );
 
 @each $selector in $vm_placeholder {
@@ -74,6 +74,10 @@ $placeholder: (
     .ant-select-selector {
         background: #DFEAEF !important;
         border: none !important;
+
+        .ant-select-selection-placeholder {
+            color: #727470;
+        }
     }
 
     .ant-select-selector {
@@ -85,6 +89,11 @@ $placeholder: (
         border-color: transparent !important;
         --tw-ring-color: transparent !important;
         --tw-ring-shadow: transparent !important;
+    }
+
+    .ant-select-arrow,
+    .ant-select-clear {
+        color: #0C0D0D;
     }
 }
 

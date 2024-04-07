@@ -1,7 +1,8 @@
-import React, { useEffect, Dispatch, SetStateAction } from "react";
+import React, { useEffect, Dispatch, SetStateAction, useState } from "react";
+import axios from "axios";
 
 // Components
-import { Input, Divider, Form } from "antd";
+import { Input, Divider, Form, Select, Tooltip } from "antd";
 
 // Interfaces
 import {
@@ -9,17 +10,25 @@ import {
 	VisitorDetailsProps,
 } from "../../../utils/interfaces";
 import type { StepTwoData } from "../../../utils/zodSchemas";
-import type {
-	UseFormRegister,
-	UseFormSetValue,
-	FieldErrors,
+import {
+	type UseFormRegister,
+	type UseFormSetValue,
+	type FieldErrors,
 } from "react-hook-form";
 
 // Utils
 import { mainOrCompanion } from "../../../utils";
 
+// Assets
+import { LoadingOutlined } from "@ant-design/icons";
+
 // Styles
 import "./form.scss";
+
+interface AddressSelectProps {
+	value: string;
+	label: string;
+}
 
 interface FormProps {
 	mainVisitor: VisitorDetailsProps;
@@ -40,6 +49,49 @@ export default function StepTwoForm({
 	setValue,
 	setVisitors,
 }: FormProps) {
+	// Address Stuff
+	const [loadCountries, setLoadCountries] = useState<boolean>(false);
+	const [countries, setCountries] = useState<AddressSelectProps[]>();
+	const [noCountries, setNoCountries] = useState<boolean>(false);
+	const [loadStates, setLoadStates] = useState<boolean>(false);
+	const [states, setStates] = useState<AddressSelectProps[]>([]);
+	const [noStates, setNoStates] = useState<boolean>(false);
+	const [loadCities, setLoadCities] = useState<boolean>(false);
+	const [cities, setCities] = useState<AddressSelectProps[]>([]);
+	const [noCities, setNoCities] = useState<boolean>(false);
+
+	useEffect(() => {
+		setLoadCountries(true);
+		axios
+			.get("https://countriesnow.space/api/v0.1/countries/states")
+			.then((response) => {
+				const data = response.data.data;
+				if (data.length > 0) {
+					setNoCountries(false);
+					setCountries(
+						data.map((c: any) => ({ value: c.name, label: c.name })),
+					);
+				} else setNoCountries(true);
+				setLoadCountries(false);
+			})
+			.catch(() => {
+				setNoCountries(true);
+				setLoadCountries(false);
+			});
+
+		if (
+			mainOrCompanion(increment, mainVisitor, companions).address.province &&
+			mainOrCompanion(increment, mainVisitor, companions).address.city
+		) {
+			onChangeCountry(
+				mainOrCompanion(increment, mainVisitor, companions).address.country,
+			);
+			onChangeState(
+				mainOrCompanion(increment, mainVisitor, companions).address.province,
+			);
+		}
+	}, []);
+
 	useEffect(() => {
 		if (increment === 0) {
 			if (mainVisitor) {
@@ -139,6 +191,75 @@ export default function StepTwoForm({
 			}));
 		}
 	};
+
+	const onChangeCountry = (value: string) => {
+		updateData(value, "country");
+
+		setLoadStates(true);
+		axios
+			.post("https://countriesnow.space/api/v0.1/countries/states", {
+				country: value,
+			})
+			.then((response) => {
+				const data = response.data.data;
+				if (data.states.length > 0) {
+					setNoStates(false);
+					setStates(
+						data.states.map((s: any) => ({ value: s.name, label: s.name })),
+					);
+				} else setNoStates(true);
+
+				setLoadStates(false);
+			})
+			.catch(() => {
+				setNoStates(true);
+				setLoadStates(false);
+			});
+	};
+
+	const onChangeState = (value: string) => {
+		updateData(value, "province");
+
+		setLoadCities(true);
+		axios
+			.post("https://countriesnow.space/api/v0.1/countries/state/cities", {
+				country: mainOrCompanion(increment, mainVisitor, companions).address
+					.country,
+				state: value,
+			})
+			.then((response) => {
+				const data = response.data.data;
+				if (data.length > 0) {
+					setNoCities(false);
+					setCities(data.map((city: string) => ({ value: city, label: city })));
+				} else setNoCities(true);
+
+				setLoadCities(false);
+			})
+			.catch(() => {
+				setNoCities(true);
+				setLoadCities(false);
+			});
+	};
+
+	const onChangeCity = async (value: string) => {
+		updateData(value, "city");
+	};
+
+	const filterCountry = (
+		input: string,
+		option?: { label: string; value: string },
+	) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
+
+	const filterState = (
+		input: string,
+		option?: { label: string; value: string },
+	) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
+
+	const filterCity = (
+		input: string,
+		option?: { label: string; value: string },
+	) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
 	return (
 		<>
@@ -394,18 +515,20 @@ export default function StepTwoForm({
 							Barangay
 						</span>
 						<div className="flex w-full flex-col">
-							<Input
-								key={increment}
-								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
-								{...register("brgy")}
-								value={
-									mainOrCompanion(increment, mainVisitor, companions).address
-										.brgy
-								}
-								onChange={(event: any) =>
-									updateData(event.target.value, "brgy")
-								}
-							/>
+							<Tooltip title="can be suburb, village, ward, etc.">
+								<Input
+									key={increment}
+									className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
+									{...register("brgy")}
+									value={
+										mainOrCompanion(increment, mainVisitor, companions).address
+											.brgy
+									}
+									onChange={(event: any) =>
+										updateData(event.target.value, "brgy")
+									}
+								/>
+							</Tooltip>
 							{errors?.brgy && (
 								<p className="mt-1 text-sm text-red-500">
 									{errors.brgy.message}
@@ -420,32 +543,61 @@ export default function StepTwoForm({
 							errors?.city ? "items-start" : "items-center"
 						} justify-between gap-[5%]`}
 					>
-						<span
-							className={`w-[120px] ${
-								errors?.city && "mt-[6px]"
-							} text-[16px] font-[400] text-[#0000004d] lg:w-[50px]`}
-						>
-							City
-						</span>
-						<div className="flex w-full flex-col">
-							<Input
-								key={increment}
-								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
-								{...register("city")}
-								value={
-									mainOrCompanion(increment, mainVisitor, companions).address
-										.city
-								}
-								onChange={(event: any) =>
-									updateData(event.target.value, "city")
-								}
-							/>
-							{errors?.city && (
-								<p className="mt-1 text-sm text-red-500">
-									{errors.city.message}
-								</p>
-							)}
-						</div>
+						{mainOrCompanion(increment, mainVisitor, companions).address
+							.province ? (
+							<>
+								<span
+									className={`w-[120px] ${
+										errors?.city && "mt-[6px]"
+									} text-[16px] font-[400] text-[#0000004d] lg:w-[50px]`}
+								>
+									City
+								</span>
+								<div className="flex w-full flex-col">
+									{loadCities ? (
+										<div className="pl-[30%]">
+											<LoadingOutlined className="text-[24px] text-primary-500" />
+										</div>
+									) : noCities ? (
+										<Input
+											key={increment}
+											className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
+											{...register("city")}
+											value={
+												mainOrCompanion(increment, mainVisitor, companions)
+													.address.city
+											}
+											onChange={(event: any) =>
+												updateData(event.target.value, "city")
+											}
+										/>
+									) : (
+										<Select
+											key={increment}
+											loading={loadCities}
+											className="address text-[#0C0D0D] hover:!text-[#0C0D0D]"
+											showSearch
+											allowClear
+											defaultValue={
+												mainOrCompanion(increment, mainVisitor, companions)
+													.address.city || null
+											}
+											onChange={onChangeCity}
+											options={cities}
+											filterOption={filterCity}
+										/>
+									)}
+
+									{errors?.city && (
+										<p className="mt-1 text-sm text-red-500">
+											{errors.city.message}
+										</p>
+									)}
+								</div>
+							</>
+						) : (
+							<span>&nbsp;</span>
+						)}
 					</div>
 				</Form.Item>
 				<Form.Item>
@@ -454,32 +606,65 @@ export default function StepTwoForm({
 							errors?.province ? "items-start" : "items-center"
 						} justify-between gap-[5%]`}
 					>
-						<span
-							className={`w-[120px] ${
-								errors?.province && "mt-[6px]"
-							} text-[16px] font-[400] text-[#0000004d]`}
-						>
-							Province
-						</span>
-						<div className="flex w-full flex-col">
-							<Input
-								key={increment}
-								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
-								{...register("province")}
-								value={
-									mainOrCompanion(increment, mainVisitor, companions).address
-										.province
-								}
-								onChange={(event: any) =>
-									updateData(event.target.value, "province")
-								}
-							/>
-							{errors?.province && (
-								<p className="mt-1 text-sm text-red-500">
-									{errors.province.message}
-								</p>
-							)}
-						</div>
+						{mainOrCompanion(increment, mainVisitor, companions).address
+							.country ? (
+							<>
+								<span
+									className={`w-[120px] ${
+										errors?.province && "mt-[6px]"
+									} text-[16px] font-[400] text-[#0000004d]`}
+								>
+									Province
+								</span>
+								<div className="flex w-full flex-col">
+									{loadStates ? (
+										<div className="pl-[30%]">
+											<LoadingOutlined className="text-[24px] text-primary-500" />
+										</div>
+									) : noStates ? (
+										<Tooltip title="can be state or region">
+											<Input
+												key={increment}
+												className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
+												{...register("province")}
+												value={
+													mainOrCompanion(increment, mainVisitor, companions)
+														.address.province
+												}
+												onChange={(event: any) =>
+													updateData(event.target.value, "province")
+												}
+											/>
+										</Tooltip>
+									) : (
+										<Tooltip title="can be state or region">
+											<Select
+												key={increment}
+												loading={loadStates}
+												className="address text-[#0C0D0D] hover:!text-[#0C0D0D]"
+												showSearch
+												allowClear
+												defaultValue={
+													mainOrCompanion(increment, mainVisitor, companions)
+														.address.province || null
+												}
+												onChange={onChangeState}
+												options={states}
+												filterOption={filterState}
+											/>
+										</Tooltip>
+									)}
+
+									{errors?.province && (
+										<p className="mt-1 text-sm text-red-500">
+											{errors.province.message}
+										</p>
+									)}
+								</div>
+							</>
+						) : (
+							<span>&nbsp;</span>
+						)}
 					</div>
 				</Form.Item>
 				<Form.Item>
@@ -496,18 +681,43 @@ export default function StepTwoForm({
 							Country
 						</span>
 						<div className="flex w-full flex-col">
-							<Input
-								key={increment}
-								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
-								{...register("country")}
-								value={
-									mainOrCompanion(increment, mainVisitor, companions).address
-										.country
-								}
-								onChange={(event: any) =>
-									updateData(event.target.value, "country")
-								}
-							/>
+							{loadCountries ? (
+								<div className="pl-[30%]">
+									<LoadingOutlined className="text-[24px] text-primary-500" />
+								</div>
+							) : noCountries ? (
+								<Input
+									key={increment}
+									className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
+									{...register("country")}
+									value={
+										mainOrCompanion(increment, mainVisitor, companions).address
+											.country
+									}
+									onChange={(event: any) =>
+										updateData(event.target.value, "country")
+									}
+								/>
+							) : (
+								<Select
+									loading={loadCountries}
+									key={increment}
+									className="address text-[#0C0D0D] hover:!text-[#0C0D0D]"
+									showSearch
+									allowClear
+									placeholder={
+										mainOrCompanion(increment, mainVisitor, companions).address
+											.country
+									}
+									defaultValue={
+										mainOrCompanion(increment, mainVisitor, companions).address
+											.country || null
+									}
+									onChange={onChangeCountry}
+									options={countries}
+									filterOption={filterCountry}
+								/>
+							)}
 							{errors?.country && (
 								<p className="mt-1 text-sm text-red-500">
 									{errors.country.message}

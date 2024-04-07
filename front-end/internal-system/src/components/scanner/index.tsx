@@ -3,11 +3,12 @@ import React from "react";
 
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { useEffect, useState } from "react";
+import { qr_id } from "../../layouts/guard/visitor-form";
 
 //Styles
 import "./styles.scss";
 
-export default function Scanner() {
+export default function Scanner({ onQRstatus }: any) {
 	const [scanResult, setScanResult] = useState<string | null>(null);
 	let scanner: Html5QrcodeScanner | null = null;
 
@@ -40,19 +41,23 @@ export default function Scanner() {
 
 	function success(result: string) {
 		if (isValidUrl(result)) {
-			if (scanner) {
-				scanner.clear();
+			console.log(result);
+			if (qr_id != undefined) {
+				onQRstatus("Visitor Form is Ongoing");
+			} else if (result == "time-out" || result == "time-in") {
+				onQRstatus("Successfully Timed-In/Out");
+			} else if (result == "time-outFailed" || result == "time-inFailed") {
+				onQRstatus("Time-In/Out Failed");
+			} else {
+				if (scanner) {
+					scanner.clear();
+				}
+				setScanResult(result);
+				// Redirect to the scanned link
+				window.location.href = result;
 			}
-			setScanResult(result);
-			// Redirect to the scanned link
-			window.location.href = result;
 		} else {
-			console.log("Invalid URL:", result);
-			<p>invalid url</p>;
-			// Reinitialize scanner to continue scanning
-			if (scanner) {
-				scanner.resume();
-			}
+			onQRstatus("Invalid QR");
 		}
 	}
 

@@ -1,4 +1,6 @@
 require("dotenv").config();
+const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
 
 // Imports
 const bcrypt = require("bcrypt");
@@ -12,8 +14,8 @@ const Badge = require("../models/badge");
 const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
 const Notification = require("../models/notification");
-const User = require('../models/user');
-const SystemLog = require('../models/systemLogs');
+const User = require("../models/user");
+const SystemLog = require("../models/systemLogs");
 
 // Google Cloud Storage
 const { Storage } = require("@google-cloud/storage");
@@ -263,11 +265,11 @@ async function updateLog(badgeId, _id, type, user_id, res) {
         { $set: { qr_id: null, is_active: false, is_valid: false } }
       );
 
-      await createSystemLog(user_id, 'time_out', 'success');
+      await createSystemLog(user_id, "time_out", "success");
       return res.status(200).json({ message: "time-out" });
     } catch (error) {
-      await createSystemLog(user_id, 'time_out', 'failed');
-      return res.status(500).json({ Error: "Failed to time-out visitor" });
+      await createSystemLog(user_id, "time_out", "failed");
+      return res.status(500).json({ Error: "time-outFailed" });
     }
   } else {
     if (type === "pre-reg") {
@@ -277,15 +279,18 @@ async function updateLog(badgeId, _id, type, user_id, res) {
       });
 
       try {
-        await Badge.updateOne({ _id: badge._id }, { $set: { is_active: true } });
-        await createSystemLog(user_id, 'time_in', 'success');
+        await Badge.updateOne(
+          { _id: badge._id },
+          { $set: { is_active: true } }
+        );
+        await createSystemLog(user_id, "time_in", "success");
         return res.status(200).json({ message: "time-in" });
       } catch (error) {
         console.error(error);
-        await createSystemLog(user_id, 'time_in', 'failed');
-        return res.status(500).json({ Error: 'failed to time-in visitor' });
+        await createSystemLog(user_id, "time_in", "failed");
+        return res.status(500).json({ Error: "time-inFailed" });
       }
-    } 
+    }
   }
 
   callback();
@@ -400,7 +405,9 @@ async function createNotification(visitor, type, io) {
   const hostName =
     visitor.purpose?.who.join(", ") || visitorDB?.purpose?.who.join(", ") || "";
   const date = visitor.purpose?.when || visitorDB?.when || "";
-  const time = visitor.expected_time_in || visitorDB?.expected_time_in || "";
+  const time_in = visitor.expected_time_in || visitorDB?.expected_time_in || "";
+  const time_out =
+    visitor.expected_time_out || visitorDB?.expected_time_out || "";
   const location =
     visitor.purpose?.where.join(", ") ||
     visitorDB?.purpose?.where.join(", ") ||
@@ -413,13 +420,15 @@ async function createNotification(visitor, type, io) {
     visitor_name: visitorName,
     host_name: hostName,
     date: date,
-    time: time,
+    time_in: time_in,
+    time_out: time_out,
     location: location,
     purpose: purpose,
     visitor_type: visitorType,
   };
 
   await Notification.create({
+    _id: new ObjectId(),
     type: type,
     recipient: visitor.visitor_details?._id || visitor[0]._id,
     content: notificationContent,
@@ -438,19 +447,18 @@ async function createSystemLog(id, type, status) {
 
     if (!userDB) {
       return false;
-    } 
+    }
 
     await SystemLog.create({
       user_id: userDB._id,
       name: {
         first_name: userDB.name.first_name,
-        last_name: userDB.name.last_name
+        last_name: userDB.name.last_name,
       },
       role: userDB.role,
       type: type,
-      status: status
+      status: status,
     });
-
   } catch (error) {
     console.error(error);
     return false;

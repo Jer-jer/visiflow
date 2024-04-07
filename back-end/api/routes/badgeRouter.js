@@ -4,7 +4,7 @@ const badgeController = require("../controllers/badgeController");
 
 router.get("/", badgeController.getBadges);
 
-router.post("/findBadge", badgeController.getBadges);
+router.post("/findBadge", badgeController.findBadge);
 
 router.get("/generateBadge", badgeController.generateBadge);
 

@@ -49,7 +49,7 @@ export default function VisitorListTable({
 					b.visitor_details.name.last_name,
 				),
 			render: (_, { visitor_details }) => {
-				return `${visitor_details.name.last_name}, ${visitor_details.name.first_name} ${visitor_details.name.middle_name}`;
+				return `${visitor_details.name.last_name}, ${visitor_details.name.first_name} ${visitor_details.name.middle_name ? visitor_details.name.middle_name : ""}`;
 			},
 		},
 		{
@@ -181,18 +181,9 @@ export default function VisitorListTable({
 					.filter((visitor) => {
 						return search.toLowerCase() === ""
 							? visitor
-							: visitor.visitor_details.name.first_name
+							: `${visitor.visitor_details.name.last_name}, ${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name!}`
 									.toLowerCase()
 									.includes(search.toLowerCase()) ||
-									visitor.visitor_details.name
-										.middle_name!.toLowerCase()
-										.includes(search.toLowerCase()) ||
-									visitor.visitor_details.name.last_name
-										.toLowerCase()
-										.includes(search.toLowerCase()) ||
-									`${visitor.visitor_details.name.last_name} ${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name}`
-										.toLowerCase()
-										.includes(search.toLowerCase()) ||
 									`${visitor.visitor_details.name.first_name}${
 										visitor.visitor_details.name.middle_name
 											? ` ${visitor.visitor_details.name.middle_name}`
@@ -207,12 +198,11 @@ export default function VisitorListTable({
 						return dateSearch.length === 0
 							? visitor
 							: hideInOut
-								? new Date(visitor.expected_time_in) >= startDate &&
-									new Date(visitor.expected_time_out) <= endDate
-								: new Date(formatDateObjToString(visitor.created_at)) >=
+								? new Date(formatDateObjToString(visitor.created_at)) >=
 										startDate &&
-									new Date(formatDateObjToString(visitor.created_at)) <=
-										endDate;
+									new Date(formatDateObjToString(visitor.created_at)) <= endDate
+								: new Date(visitor.expected_time_in) >= startDate &&
+									new Date(visitor.expected_time_out) <= endDate;
 					})}
 				pagination={{ pageSize: 8 }}
 			/>
