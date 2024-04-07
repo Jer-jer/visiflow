@@ -49,6 +49,7 @@ export default function PageDetails({
 	//Form States
 	const [title, setTitle] = useState(record === undefined ? "" : record?.title);
 	const [body, setBody] = useState(record === undefined ? "" : record?.message);
+	const [savedRecord, setSavedRecord] = useState(record);
 
 	//Alert State
 	const [alertOpen, setAlertOpen] = useState(false);
@@ -70,12 +71,13 @@ export default function PageDetails({
 		//This needs to be customized to whatever the DB returns
 
 		// saving new record
-		if(record === undefined) {
+		if(savedRecord=== undefined) {
 			try {
-				await AxiosInstace.post('/announcements/new', { 
+				const response = await AxiosInstace.post('/announcements/new', { 
 					title: title,
 					message: body
 				}); 
+				setSavedRecord(response.data.event);
 			} catch (error) {
 			console.error('Error in adding announcement:', error);
 			}
@@ -83,7 +85,7 @@ export default function PageDetails({
 			console.log("hello data:", title === "" ? record?.title : title, body === "" ? record?.message : body, record?._id)
 			try {
 				await AxiosInstace.put('/announcements/update', { 
-					_id: record?._id,
+					_id: record === undefined ? savedRecord._id : record._id,
 					title: title === "" ? record?.title : title,
 					message: body === "" ? record?.message : body
 				}); 
