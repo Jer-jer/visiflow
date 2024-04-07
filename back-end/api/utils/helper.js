@@ -443,13 +443,12 @@ async function createSystemLog(id, type, status) {
   try {
     const userDB = await User.findById(id);
 
-    console.log(userDB);
-
     if (!userDB) {
       return false;
     }
 
     await SystemLog.create({
+
       user_id: userDB._id,
       name: {
         first_name: userDB.name.first_name,
