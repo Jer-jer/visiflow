@@ -25,7 +25,7 @@ const ACCESS_TOKEN_EXPIRATION = "20m";
 const REFRESH_TOKEN_EXPIRATION = "7d";
 const bucketName = "visiflow";
 
-const local_ip = '192.168.1.4';
+const local_ip = 'localhost';
 
 // Lazy-loaded storage
 let storage;

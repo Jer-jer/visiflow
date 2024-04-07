@@ -67,6 +67,7 @@ export default function Scanner({ onQRstatus }: any) {
 
 	const desiredUrlPatterns = [
 		"http://localhost:3000/visitor-form/?qr_id=",
+		"http://localhost:5000/badge/checkBadge?visitor_id=",
 		"http://localhost:5000/badge/checkBadge?qr_id=",
 		// Add more desired URL patterns here if needed
 	];

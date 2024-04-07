@@ -74,7 +74,8 @@ function App() {
 							</>
 						) : (
 							<>
-								<Route path="/" element={<QRScanner />} />
+								<Route path="/" element={<Navigate to="/qr-scanner" />} />
+								<Route path="/qr-scanner" element={<QRScanner />} />
 								<Route path="/visitor-form" element={<VisitorForm />} />
 								<Route path="/preregistered-qr" element={<PreregisteredQR />} />
 								<Route path="/visitor-status" element={<VisitorStatus />} />
