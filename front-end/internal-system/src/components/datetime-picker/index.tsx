@@ -45,6 +45,7 @@ function DateTimePicker({
 }: DatePickerProps) {
 	const { RangePicker } = DatePicker;
 	const timeFormat = "hh:mm A";
+	console.log(defaultVal);
 
 	return (
 		<div className={`${globalStyling}`}>
@@ -61,7 +62,7 @@ function DateTimePicker({
 						: [
 								dayjs(defaultVal?.from, `YYYY-MM-DD ${timeFormat}`),
 								dayjs(defaultVal?.to, `YYYY-MM-DD ${timeFormat}`),
-						  ]
+							]
 				}
 				onChange={onRangeChange}
 				placeholder={["From", "To"]}

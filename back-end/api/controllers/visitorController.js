@@ -59,7 +59,7 @@ exports.addVisitor = async (req, res) => {
 
       if (visitorDB) {
         return res.status(409).json({
-          error: `Visitor ${visitors[key].visitor_details.name.last_name} already exists`,
+          error: "Visitor/s already exist.",
         });
       }
 
@@ -142,6 +142,9 @@ exports.addVisitor = async (req, res) => {
       });
     }
 
+    if (id_picture.front && id_picture.back && id_picture.selfie) {
+    }
+
     const [frontId, backId, selfieId] = await Promise.all([
       uploadFileToGCS(
         Buffer.from(
@@ -175,9 +178,9 @@ exports.addVisitor = async (req, res) => {
       expected_time_in: visitors[0].expected_time_in,
       expected_time_out: visitors[0].expected_time_out,
       id_picture: {
-        front: frontId,
-        back: backId,
-        selfie: selfieId,
+        front: frontId || "",
+        back: backId || "",
+        selfie: selfieId || "",
       },
       visitor_type: visitors[0].visitor_type,
       status: visitors[0].status,

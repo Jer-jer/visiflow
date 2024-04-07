@@ -188,7 +188,7 @@ export default function Header({ setIsAdmin }: HeaderProps) {
 			<div className="flex-1">
 				<a
 					href="/"
-					className="header-name btn btn-ghost text-xl normal-case hover:bg-transparent"
+					className="header-name btn btn-ghost text-base normal-case hover:bg-transparent md:text-xl"
 				>
 					Gullas Visitor Management System
 				</a>

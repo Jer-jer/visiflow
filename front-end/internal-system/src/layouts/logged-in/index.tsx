@@ -26,6 +26,10 @@ import {
 	UserGroup,
 	Users,
 	Edit,
+	Camera,
+	QRScanner,
+	PreregisterQR,
+	Form,
 } from "../../assets/svg";
 
 //Styles
@@ -42,11 +46,7 @@ interface LoggedInProps {
 
 export let expandedWidth: number;
 
-function LoggedIn({
-	isAdmin,
-	setIsAdmin,
-	children,
-}: LoggedInProps) {
+function LoggedIn({ isAdmin, setIsAdmin, children }: LoggedInProps) {
 	const [expanded, setExpanded] = useState(false);
 	const [width, setWidth] = useState(0);
 	const ref = useRef<HTMLDivElement>(null);
@@ -126,7 +126,44 @@ function LoggedIn({
 							</NavLink>
 						</>
 					) : (
-						<></>
+						<>
+							<NavLink to="/">
+								{({ isActive }) => (
+									<SidebarItem
+										icon={<QRScanner />}
+										text="QR Scanner"
+										active={isActive}
+									/>
+								)}
+							</NavLink>
+							<NavLink to={"/visitor-form"}>
+								{({ isActive }) => (
+									<SidebarItem
+										icon={<Form />}
+										text="Visitor Form"
+										active={isActive}
+									/>
+								)}
+							</NavLink>
+							<NavLink to="/preregistered-qr">
+								{({ isActive }) => (
+									<SidebarItem
+										icon={<PreregisterQR />}
+										text="Pre-Register QR"
+										active={isActive}
+									/>
+								)}
+							</NavLink>
+							<NavLink to="/visitor-status">
+								{({ isActive }) => (
+									<SidebarItem
+										icon={<UserGroup />}
+										text="Visitor Status"
+										active={isActive}
+									/>
+								)}
+							</NavLink>
+						</>
 					)}
 				</Sidebar>
 				<div className="h-fit min-w-0 flex-1">
