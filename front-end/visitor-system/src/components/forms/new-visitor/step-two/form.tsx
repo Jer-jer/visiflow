@@ -539,7 +539,7 @@ export default function StepTwoForm({
 										<div className="pl-[30%]">
 											<LoadingOutlined className="text-[24px] text-primary-500" />
 										</div>
-									) : noCities ? (
+									) : noCities || states.length === 0 ? (
 										<Input
 											key={increment}
 											className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"

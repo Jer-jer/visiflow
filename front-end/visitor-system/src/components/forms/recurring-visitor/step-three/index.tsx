@@ -12,11 +12,7 @@ import { VisitorStatus, VisitorType } from "../../../../utils/enums";
 import { Tabs, Divider, Button, Form, Modal } from "antd";
 
 // Utils
-import {
-	mainOrCompanion,
-	tabName,
-	formatDateObjToString,
-} from "../../../../utils";
+import { formatDateObjToString } from "../../../../utils";
 
 // Assets
 import { ExclamationCircleFilled, LoadingOutlined } from "@ant-design/icons";
@@ -91,41 +87,28 @@ export default function StepThree({
 			icon: <ExclamationCircleFilled />,
 			onOk() {
 				if (
-					visitors.filter((visitor: VisitorDataType) =>
-						companions_not_empty(visitor.visitor_details),
-					).length > 0
+					visitors
+						.slice(1)
+						.filter((visitor: VisitorDataType) =>
+							companions_not_empty(visitor.visitor_details),
+						).length > 0
 				) {
 					console.log(
-						visitors.filter((visitor: VisitorDataType) =>
-							companions_not_empty(visitor.visitor_details),
-						),
+						visitors
+							.slice(1)
+							.filter((visitor: VisitorDataType) =>
+								companions_not_empty(visitor.visitor_details),
+							),
 					);
 					error("Some companions are not filled.");
 				} else {
 					setLoading(true);
-					//TODO Fix Error Handling Back-end
-					//TODO Fix error: Won't return response even though successfull
-					AxiosInstance.post("/visitor/new", {
+					AxiosInstance.post("/visitor/new-recurring", {
 						visitors: visitors,
-						// visitor_data: {
-						// 	...data,
-						// 	visitor_details: {
-						// 		...data.visitor_details,
-						// 		name: {
-						// 			...data.visitor_details.name,
-						// 			middle_name:
-						// 				data.visitor_details.name.middle_name &&
-						// 				data.visitor_details.name.middle_name === undefined
-						// 					? ""
-						// 					: data.visitor_details.name.middle_name,
-						// 		},
-						// 	},
-						// },
 					})
 						.then((res: any) => {
 							setLoading(false);
-							console.log("SUCCESSFULLY REGISTERED");
-							// successMessage("Sucessfully Registered");
+							successMessage("Sucessfully Registered");
 						})
 						.catch((err: any) => {
 							setLoading(false);
@@ -188,8 +171,7 @@ export default function StepThree({
 	};
 
 	const onSubmit = handleSubmit((data) => {
-		console.log(visitors);
-		// showConfirm(data);
+		showConfirm(data);
 	});
 
 	const ConfirmForm = ({ visitor, increment }: ConfirmFormProps) => {

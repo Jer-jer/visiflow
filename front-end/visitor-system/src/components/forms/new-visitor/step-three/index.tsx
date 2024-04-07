@@ -12,11 +12,7 @@ import { VisitorStatus, VisitorType } from "../../../../utils/enums";
 import { Tabs, Divider, Button, Form, Modal } from "antd";
 
 // Utils
-import {
-	mainOrCompanion,
-	tabName,
-	formatDateObjToString,
-} from "../../../../utils";
+import { tabName, formatDateObjToString } from "../../../../utils";
 
 // Assets
 import { ExclamationCircleFilled, LoadingOutlined } from "@ant-design/icons";
@@ -108,25 +104,10 @@ export default function StepThree({
 					//TODO Fix error: Won't return response even though successfull
 					AxiosInstance.post("/visitor/new", {
 						visitors: visitors,
-						// visitor_data: {
-						// 	...data,
-						// 	visitor_details: {
-						// 		...data.visitor_details,
-						// 		name: {
-						// 			...data.visitor_details.name,
-						// 			middle_name:
-						// 				data.visitor_details.name.middle_name &&
-						// 				data.visitor_details.name.middle_name === undefined
-						// 					? ""
-						// 					: data.visitor_details.name.middle_name,
-						// 		},
-						// 	},
-						// },
 					})
 						.then((res: any) => {
 							setLoading(false);
-							console.log("SUCCESSFULLY REGISTERED");
-							// successMessage("Sucessfully Registered");
+							successMessage("Sucessfully Registered");
 						})
 						.catch((err: any) => {
 							setLoading(false);
@@ -154,7 +135,7 @@ export default function StepThree({
 			This form will close after ${secondsToGo} second.`,
 			onOk() {
 				clearInterval(timer);
-				window.location.reload();
+				// window.location.reload();
 			},
 		});
 
@@ -169,7 +150,7 @@ export default function StepThree({
 		setTimeout(() => {
 			clearInterval(timer);
 			instance.destroy();
-			window.location.reload();
+			// window.location.reload();
 		}, secondsToGo * 1000);
 	};
 
@@ -185,7 +166,6 @@ export default function StepThree({
 	};
 
 	const onSubmit = handleSubmit((data) => {
-		// console.log(data);
 		showConfirm(data);
 	});
 

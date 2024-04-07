@@ -296,7 +296,9 @@ export default function StepTwo({
 		//TODO Continue working with Step 2
 		<Form name="Step Two Form" onFinish={onSubmit} autoComplete="off">
 			{visitors.length === 1 ? (
-				<span>You need to upload an ID</span>
+				<h1 className="font-700 mb-[10px] text-[28px] !text-[#FD4A4A]">
+					You need to upload your ID
+				</h1>
 			) : (
 				<Tabs
 					className="w-[80%]"
@@ -309,6 +311,7 @@ export default function StepTwo({
 							key: id,
 							children: (
 								<StepForm
+									visitorNo={visitor.visitor_no}
 									visitorDetails={visitor.visitor_details}
 									increment={i}
 									errors={errors}
