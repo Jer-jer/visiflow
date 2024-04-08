@@ -65,13 +65,13 @@ app.use("/system-logs", systemLogRouter);
 app.use('/offices', officesRouter);
 
 // Socket.io events
-io.on("connection", (socket) => {
-  console.log(`Client: ${socket.id} connected!`);
+// io.on("connection", (socket) => {
+//   console.log(`Client: ${socket.id} connected!`);
 
-  socket.on("disconnect", () => {
-    console.log(`Client: ${socket.id} disconnected`);
-  });
-});
+//   socket.on("disconnect", () => {
+//     console.log(`Client: ${socket.id} disconnected`);
+//   });
+// });
 
 // Error handling middleware
 app.use((error, req, res, next) => {

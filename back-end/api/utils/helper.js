@@ -480,4 +480,5 @@ module.exports = {
   timeOutReminder,
   sendEmail,
   createSystemLog,
+  createNotification,
 };

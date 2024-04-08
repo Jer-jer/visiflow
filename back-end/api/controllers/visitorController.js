@@ -8,10 +8,12 @@ const {
   uploadFileToGCS,
   sendEmail,
   createSystemLog,
+  createNotification,
 } = require("../utils/helper");
 const { Buffer } = require("node:buffer");
 const Notification = require("../models/notification");
 const mongoose = require("mongoose");
+const { findOne } = require("../models/user");
 const ObjectId = mongoose.Types.ObjectId;
 
 exports.getVisitors = async (req, res) => {
@@ -34,190 +36,75 @@ exports.addVisitor = async (req, res) => {
 
   const io = req.io;
 
-  let companions = []; //? Will contain the companions' ObjectId
+  let companions = []; 
+  let mainVisitorId;
+  let index = 0;
 
   try {
-    //? Adding Companions
-    for (let key = 1; key < visitors.length; key++) {
+    for (const visitor of visitors) {
+      
       await Promise.all(
-        validateVisitor.map((validation) => validation.run(visitors[key]))
+        validateVisitor.map((validation) => validation.run(visitors))
       );
 
       const errors = validationResult(req);
+
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array()[0].msg });
       }
 
-      const visitorDB = await Visitor.findOne({
-        "visitors.visitor_details.name.first_name":
-          visitors[key].visitor_details.name.first_name,
-        "visitors.visitor_details.name.middle_name":
-          visitors[key].visitor_details.name.middle_name,
-        "visitors.visitor_details.name.last_name":
-          visitors[key].visitor_details.name.last_name,
-      });
+      const visitorDB = await Visitor.findOne({ 'visitor_details.email': visitor.visitor_details.email });
 
       if (visitorDB) {
-        return res.status(409).json({
-          error: `Visitor ${visitors[key].visitor_details.name.last_name} already exists`,
-        });
-      }
+        return res.status(400).json({ error: 'Visitor already exists' });
+      } 
 
       const newVisitor = await Visitor.create({
         _id: new ObjectId(),
-        visitor_details: visitors[key].visitor_details,
-        companion_details: [],
-        plate_num: visitors[key].plate_num,
-        purpose: visitors[key].purpose,
-        expected_time_in: visitors[key].expected_time_in,
-        expected_time_out: visitors[key].expected_time_out,
+        visitor_details: visitor.visitor_details,
+        companions: [],
+        plate_num: visitor.plate_num,
+        purpose: visitor.purpose,
+        visitor_type: visitor.visitor_type,
+        status: visitor.status,
         id_picture: {
           front: "",
           back: "",
           selfie: "",
         },
-        visitor_type: visitors[key].visitor_type,
-        status: visitors[key].status,
+        expected_time_in: visitor.expected_time_in,
+        expected_time_out: visitor.expected_time_out
       });
+      if (index === 0) {
+        mainVisitorId = newVisitor._id;
+      } else {
+        companions.push(newVisitor._id);
+      }
 
       io.emit("newVisitor", newVisitor);
 
-      companions.push(newVisitor._id);
-
       if (newVisitor.visitor_type === "Pre-Registered") {
-        const pendingVisitor = await Notification.create({
-          _id: new ObjectId(),
-          type: "pending",
-          recipient: newVisitor.visitor_details._id,
-          content: {
-            visitor_name: `${newVisitor.visitor_details.name.last_name}, ${
-              newVisitor.visitor_details.name.first_name
-            } ${
-              newVisitor.visitor_details.name.middle_name &&
-              newVisitor.visitor_details.name.middle_name !== undefined
-                ? newVisitor.visitor_details.name.middle_name
-                : ""
-            }`,
-            host_name: newVisitor.purpose.who.join(", "),
-            date: newVisitor.purpose.when,
-            time_in: newVisitor.expected_time_in,
-            time_out: newVisitor.expected_time_out,
-            location: newVisitor.purpose.where.join(", "),
-            purpose: newVisitor.purpose.what.join(", "),
-            visitor_type: newVisitor.visitor_type,
-          },
-        });
-
-        io.emit("newNotification", pendingVisitor);
-      } else if (newVisitor.visitor_type === "Walk-In") {
+        createNotification(newVisitor, 'pending', io);
+          
+      } else {
         //For walk in
         const user_id = req.user._id;
         const log_type = "add_visitor";
         createSystemLog(user_id, log_type, "success");
       }
+
+      index++;
+    } 
+
+    if (companions.length > 0) {
+      await Visitor.updateOne(
+        { _id: mainVisitorId },
+        { $set: { companions: companions }}
+      );
     }
 
-    await Promise.all(
-      validateVisitor.map((validation) => validation.run(visitors[0]))
-    );
+    return res.status(201).json({ visitors: visitors });
 
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array()[0].msg });
-    }
-
-    const visitorDB = await Visitor.findOne({
-      "visitors.visitor_details.name.first_name":
-        visitors[0].visitor_details.name.last_name,
-      "visitors.visitor_details.name.middle_name":
-        visitors[0].visitor_details.name.middle_name,
-      "visitors.visitor_details.name.last_name":
-        visitors[0].visitor_details.name.last_name,
-    });
-
-    if (visitorDB) {
-      return res.status(409).json({
-        error: `Visitor ${visitorDB.visitor_details.name.last_name} already exists`,
-      });
-    }
-
-    const [frontId, backId, selfieId] = await Promise.all([
-      uploadFileToGCS(
-        Buffer.from(
-          visitors[0].id_picture.front.replace(/^data:image\/\w+;base64,/, ""),
-          "base64"
-        ),
-        `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_front.jpg`
-      ),
-      uploadFileToGCS(
-        Buffer.from(
-          visitors[0].id_picture.back.replace(/^data:image\/\w+;base64,/, ""),
-          "base64"
-        ),
-        `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_back.jpg`
-      ),
-      uploadFileToGCS(
-        Buffer.from(
-          visitors[0].id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""),
-          "base64"
-        ),
-        `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_selfie.jpg`
-      ),
-    ]);
-
-    const newVisitor = await Visitor.create({
-      _id: new ObjectId(),
-      visitor_details: visitors[0].visitor_details,
-      companions: companions,
-      plate_num: visitors[0].plate_num,
-      purpose: visitors[0].purpose,
-      expected_time_in: visitors[0].expected_time_in,
-      expected_time_out: visitors[0].expected_time_out,
-      id_picture: {
-        front: frontId,
-        back: backId,
-        selfie: selfieId,
-      },
-      visitor_type: visitors[0].visitor_type,
-      status: visitors[0].status,
-    });
-
-    io.emit("newVisitor", newVisitor);
-
-    if (newVisitor.visitor_type === "Pre-Registered") {
-      const pendingVisitor = await Notification.create({
-        _id: new ObjectId(),
-        type: "pending",
-        recipient: newVisitor.visitor_details._id,
-        content: {
-          visitor_name: `${newVisitor.visitor_details.name.last_name}, ${
-            newVisitor.visitor_details.name.first_name
-          } ${
-            newVisitor.visitor_details.name.middle_name &&
-            newVisitor.visitor_details.name.middle_name !== undefined
-              ? newVisitor.visitor_details.name.middle_name
-              : ""
-          }`,
-          host_name: newVisitor.purpose.who.join(", "),
-          date: newVisitor.purpose.when,
-          time_in: newVisitor.expected_time_in,
-          time_out: newVisitor.expected_time_out,
-          location: newVisitor.purpose.where.join(", "),
-          purpose: newVisitor.purpose.what.join(", "),
-          visitor_type: newVisitor.visitor_type,
-        },
-      });
-
-      io.emit("newNotification", pendingVisitor);
-    } else {
-      //For walk in
-      const user_id = req.user._id;
-      const log_type = "add_visitor";
-      createSystemLog(user_id, log_type, "success");
-    }
-
-    return res.status(201).json({ success: newVisitor });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error });

@@ -8,14 +8,14 @@ const Schema = mongoose.Schema;
 const ObjectId = mongoose.Types.ObjectId;
 
 const Content = new Schema({
-  visitor_name: { type: String, require: true },
-  host_name: { type: String, require: true },
-  date: { type: Date, require: true },
-  time_in: { type: Date, require: true },
-  time_out: { type: Date, require: true },
-  location: { type: String, require: true },
-  purpose: { type: String, require: true },
-  visitor_type: { type: String, require: true },
+  visitor_name: { type: String},
+  host_name: { type: String},
+  date: { type: Date},
+  time_in: { type: Date},
+  time_out: { type: Date},
+  location: { type: String},
+  purpose: { type: String},
+  visitor_type: { type: String},
 });
 
 const NotificationSchema = new Schema({
@@ -25,8 +25,8 @@ const NotificationSchema = new Schema({
     enum: ["time-in", "time-out", "confirmation", "pending", "declined"],
     required: true,
   },
-  recipient: { type: ObjectId, require: true },
-  content: { type: Content, require: true },
+  recipient: { type: ObjectId},
+  content: { type: Content},
   is_read: { type: Boolean, default: false },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
