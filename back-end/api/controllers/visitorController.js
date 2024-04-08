@@ -62,13 +62,12 @@ exports.addVisitor = async (req, res) => {
 
   const io = req.io;
 
-  let companions = []; 
+  let companions = [];
   let mainVisitorId;
   let index = 0;
 
   try {
     for (const visitor of visitors) {
-      
       await Promise.all(
         validateVisitor.map((validation) => validation.run(visitors))
       );
@@ -79,15 +78,39 @@ exports.addVisitor = async (req, res) => {
         return res.status(400).json({ errors: errors.array()[0].msg });
       }
 
-      const visitorDB = await Visitor.findOne({ 'visitor_details.email': visitor.visitor_details.email });
+      const visitorDB = await Visitor.findOne({
+        "visitor_details.email": visitor.visitor_details.email,
+      });
 
       if (visitorDB) {
-        return res.status(400).json({ error: 'Visitor already exists' });
-      } 
+        const checkCompanion = await Visitor.findOne({
+          "visitor_details.name.first_name":
+            visitor.visitor_details.name.first_name,
+          "visitor_details.name.middle_name":
+            visitor.visitor_details.name.middle_name,
+          "visitor_details.name.last_name":
+            visitor.visitor_details.name.last_name,
+        });
+
+        if (!checkCompanion)
+          return res.status(409).json({
+            error: `${visitor.visitor_details.email} has already been used by another visitor`,
+          });
+
+        return res.status(400).json({
+          error: `Visitor using ${visitor.visitor_details.email} already has an existing record`,
+        });
+      }
 
       const newVisitor = await Visitor.create({
         _id: new ObjectId(),
-        visitor_details: visitor.visitor_details,
+        visitor_details: {
+          first_name: visitor.visitor_details.first_name,
+          middle_name: visitor.visitor_details.middle_name
+            ? visitor.visitor_details.middle_name
+            : "",
+          last_name: visitor.visitor_details.last_name,
+        },
         companions: [],
         plate_num: visitor.plate_num,
         purpose: visitor.purpose,
@@ -99,7 +122,7 @@ exports.addVisitor = async (req, res) => {
           selfie: "",
         },
         expected_time_in: visitor.expected_time_in,
-        expected_time_out: visitor.expected_time_out
+        expected_time_out: visitor.expected_time_out,
       });
       if (index === 0) {
         mainVisitorId = newVisitor._id;
@@ -110,8 +133,7 @@ exports.addVisitor = async (req, res) => {
       io.emit("newVisitor", newVisitor);
 
       if (newVisitor.visitor_type === "Pre-Registered") {
-        createNotification(newVisitor, 'pending', io);
-          
+        createNotification(newVisitor, "pending", io);
       } else {
         //For walk in
         const user_id = req.user._id;
@@ -120,17 +142,16 @@ exports.addVisitor = async (req, res) => {
       }
 
       index++;
-    } 
+    }
 
     if (companions.length > 0) {
       await Visitor.updateOne(
         { _id: mainVisitorId },
-        { $set: { companions: companions }}
+        { $set: { companions: companions } }
       );
     }
 
     return res.status(201).json({ visitors: visitors });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error });
@@ -154,12 +175,12 @@ exports.findVisitor = async (req, res) => {
   }
 };
 
-exports.findVisitorByLastName = async (req, res) => {
-  const { last_name } = req.body;
+exports.findVisitorByEmail = async (req, res) => {
+  const { email } = req.body;
 
   try {
     const visitorDB = await Visitor.findOne({
-      "visitor_details.name.last_name": last_name,
+      "visitor_details.email": email,
     });
 
     if (visitorDB) {
@@ -186,7 +207,6 @@ exports.updateVisitor = async (req, res) => {
     first_name,
     middle_name,
     last_name,
-    companion_details,
     street,
     house,
     brgy,
@@ -200,7 +220,8 @@ exports.updateVisitor = async (req, res) => {
     expected_time_in,
     expected_time_out,
     visitor_type,
-    id_picture,
+    companions,
+    // id_picture,
   } = req.body;
 
   const user_id = req.user._id;
@@ -224,13 +245,13 @@ exports.updateVisitor = async (req, res) => {
       "visitor_details.address.country": country,
       "visitor_details.email": email,
       "visitor_details.phone": phone,
-      companion_details: companion_details,
       plate_num: plate_num,
       purpose: purpose,
       expected_time_in: expected_time_in,
       expected_time_out: expected_time_out,
       visitor_type: visitor_type,
-      id_picture: id_picture,
+      companions: companions,
+      // id_picture: id_picture,
     };
 
     const filteredUpdateFields = Object.fromEntries(
@@ -277,7 +298,7 @@ exports.newRecurringVisitor = async (req, res) => {
           "visitor_details.name.first_name":
             visitors[x].visitor_details.name.first_name,
           "visitor_details.name.middle_name":
-            visitors[x].visitor_details.name.middle_name,
+            visitor[x].visitor_details.name.middle_name,
           "visitor_details.name.last_name":
             visitors[x].visitor_details.name.last_name,
         });
@@ -306,14 +327,14 @@ exports.newRecurringVisitor = async (req, res) => {
         io.emit("newVisitor", updatedVisitor);
       } else {
         //? NEW COMPANION
-        // await Promise.all(
-        //   validateVisitor.map((validation) => validation.run(visitors[x]))
-        // );
+        await Promise.all(
+          validateVisitor.map((validation) => validation.run(visitors[x]))
+        );
 
-        // const errors = validationResult(req);
-        // if (!errors.isEmpty()) {
-        //   return res.status(400).json({ errors: errors.array()[0].msg });
-        // }
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return res.status(400).json({ errors: errors.array()[0].msg });
+        }
 
         const visitorDB = await Visitor.findOne({
           "visitor_details.name.first_name":
@@ -332,7 +353,13 @@ exports.newRecurringVisitor = async (req, res) => {
 
         const newVisitor = await Visitor.create({
           _id: new ObjectId(),
-          visitor_details: visitors[x].visitor_details,
+          visitor_details: {
+            first_name: visitors[x].visitor_details.first_name,
+            middle_name: visitors[x].visitor_details.middle_name
+              ? visitors[x].visitor_details.middle_name
+              : "",
+            last_name: visitors[x].visitor_details.last_name,
+          },
           companion_details: [],
           plate_num: visitors[x].plate_num,
           purpose: visitors[x].purpose,
@@ -352,28 +379,29 @@ exports.newRecurringVisitor = async (req, res) => {
         companions.push(newVisitor._id);
 
         if (newVisitor.visitor_type === "Pre-Registered") {
-          const pendingVisitor = await Notification.create({
-            _id: new ObjectId(),
-            type: "pending",
-            recipient: newVisitor.visitor_details._id,
-            content: {
-              visitor_name: `${newVisitor.visitor_details.name.last_name}, ${
-                newVisitor.visitor_details.name.first_name
-              } ${
-                newVisitor.visitor_details.name.middle_name &&
-                newVisitor.visitor_details.name.middle_name !== undefined
-                  ? newVisitor.visitor_details.name.middle_name
-                  : ""
-              }`,
-              host_name: newVisitor.purpose.who.join(", "),
-              date: newVisitor.purpose.when,
-              time_in: newVisitor.expected_time_in,
-              time_out: newVisitor.expected_time_out,
-              location: newVisitor.purpose.where.join(", "),
-              purpose: newVisitor.purpose.what.join(", "),
-              visitor_type: newVisitor.visitor_type,
-            },
-          });
+          createNotification(newVisitor, "pending", io);
+          // const pendingVisitor = await Notification.create({
+          //   _id: new ObjectId(),
+          //   type: "pending",
+          //   recipient: newVisitor.visitor_details._id,
+          //   content: {
+          //     visitor_name: `${newVisitor.visitor_details.name.last_name}, ${
+          //       newVisitor.visitor_details.name.first_name
+          //     } ${
+          //       newVisitor.visitor_details.name.middle_name &&
+          //       newVisitor.visitor_details.name.middle_name !== undefined
+          //         ? newVisitor.visitor_details.name.middle_name
+          //         : ""
+          //     }`,
+          //     host_name: newVisitor.purpose.who.join(", "),
+          //     date: newVisitor.purpose.when,
+          //     time_in: newVisitor.expected_time_in,
+          //     time_out: newVisitor.expected_time_out,
+          //     location: newVisitor.purpose.where.join(", "),
+          //     purpose: newVisitor.purpose.what.join(", "),
+          //     visitor_type: newVisitor.visitor_type,
+          //   },
+          // });
 
           io.emit("newNotification", pendingVisitor);
         } else if (newVisitor.visitor_type === "Walk-In") {
@@ -444,28 +472,29 @@ exports.newRecurringVisitor = async (req, res) => {
     io.emit("newVisitor", updatedMainVisitor);
 
     if (updatedMainVisitor.visitor_type === "Pre-Registered") {
-      const pendingVisitor = await Notification.create({
-        _id: new ObjectId(),
-        type: "pending",
-        recipient: updatedMainVisitor.visitor_details._id,
-        content: {
-          visitor_name: `${
-            updatedMainVisitor.visitor_details.name.last_name
-          }, ${updatedMainVisitor.visitor_details.name.first_name} ${
-            updatedMainVisitor.visitor_details.name.middle_name &&
-            updatedMainVisitor.visitor_details.name.middle_name !== undefined
-              ? updatedMainVisitor.visitor_details.name.middle_name
-              : ""
-          }`,
-          host_name: updatedMainVisitor.purpose.who.join(", "),
-          date: updatedMainVisitor.purpose.when,
-          time_in: updatedMainVisitor.expected_time_in,
-          time_out: updatedMainVisitor.expected_time_out,
-          location: updatedMainVisitor.purpose.where.join(", "),
-          purpose: updatedMainVisitor.purpose.what.join(", "),
-          visitor_type: updatedMainVisitor.visitor_type,
-        },
-      });
+      createNotification(updatedMainVisitor, "pending", io);
+      // const pendingVisitor = await Notification.create({
+      //   _id: new ObjectId(),
+      //   type: "pending",
+      //   recipient: updatedMainVisitor.visitor_details._id,
+      //   content: {
+      //     visitor_name: `${
+      //       updatedMainVisitor.visitor_details.name.last_name
+      //     }, ${updatedMainVisitor.visitor_details.name.first_name} ${
+      //       updatedMainVisitor.visitor_details.name.middle_name &&
+      //       updatedMainVisitor.visitor_details.name.middle_name !== undefined
+      //         ? updatedMainVisitor.visitor_details.name.middle_name
+      //         : ""
+      //     }`,
+      //     host_name: updatedMainVisitor.purpose.who.join(", "),
+      //     date: updatedMainVisitor.purpose.when,
+      //     time_in: updatedMainVisitor.expected_time_in,
+      //     time_out: updatedMainVisitor.expected_time_out,
+      //     location: updatedMainVisitor.purpose.where.join(", "),
+      //     purpose: updatedMainVisitor.purpose.what.join(", "),
+      //     visitor_type: updatedMainVisitor.visitor_type,
+      //   },
+      // });
 
       io.emit("newNotification", pendingVisitor);
     } else if (updatedMainVisitor.visitor_type === "Walk-In") {

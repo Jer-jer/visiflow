@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Interface
 import type { SearchProps } from "antd/es/input/Search";
@@ -6,7 +7,7 @@ import { VisitorStatus, VisitorType } from "../../utils/enums";
 import { VisitorDataType } from "../../utils/interfaces";
 
 // Components
-import { Input, Tooltip, Modal } from "antd";
+import { Input, Tooltip, Modal, Button } from "antd";
 import Stepper from "../stepper";
 import StepOne from "../forms/recurring-visitor/step-one";
 import StepTwo from "../forms/recurring-visitor/step-two";
@@ -16,7 +17,7 @@ import StepThree from "../forms/recurring-visitor/step-three";
 import AxiosInstance from "../../lib/axios";
 
 // Assets
-import { LoadingOutlined } from "@ant-design/icons";
+import { LeftOutlined, LoadingOutlined } from "@ant-design/icons";
 
 // Styles
 import "./styles.scss";
@@ -34,6 +35,9 @@ function RecurringVisitor() {
 	const [visitorFound, setVisitorFound] = useState(false);
 
 	const [loading, setLoading] = useState(false);
+
+	//Modal States
+	const [foundRecurring, setFoundRecurring] = useState(false);
 
 	const [progress, setProgress] = useState(1);
 	const [visitorNo, setVisitorNo] = useState(0);
@@ -81,15 +85,26 @@ function RecurringVisitor() {
 		},
 	]);
 
+	const navigate = useNavigate();
+
 	//? If form is error
 	const [error, setError] = useState(false);
+
+	const recurringOk = () => {
+		setFoundRecurring(false);
+		setVisitorFound(true);
+	};
+
+	const recurringCancel = () => {
+		setFoundRecurring(false);
+	};
 
 	const onSearch: SearchProps["onSearch"] = (value, _e, info) => {
 		setLoading(true);
 		if (value) {
 			setError(false);
-			AxiosInstance.post("/visitor/find-last-name", {
-				last_name: value.charAt(0).toUpperCase() + value.slice(1).toLowerCase(), //? Capitalize first letter of the last name,
+			AxiosInstance.post("/visitor/find-email", {
+				email: value,
 			})
 				.then((res) => {
 					if (res.status === 200) {
@@ -105,7 +120,7 @@ function RecurringVisitor() {
 							}));
 							return updatedVisitor;
 						});
-						setVisitorFound(true);
+						setFoundRecurring(true);
 					}
 					setLoading(false);
 				})
@@ -121,21 +136,51 @@ function RecurringVisitor() {
 
 	return (
 		<>
+			<Modal
+				title={
+					<span className="text-[24px] font-bold text-primary-500">
+						Visitor Found
+					</span>
+				}
+				open={foundRecurring}
+				onOk={recurringOk}
+				onCancel={recurringCancel}
+			>
+				<div className="flex flex-col">
+					<p className="text-[16px] font-semibold">{`${visitors[0].visitor_details.name.last_name}, ${visitors[0].visitor_details.name.first_name} ${visitors[0].visitor_details.name.middle_name ? visitors[0].visitor_details.name.middle_name : ""}`}</p>
+					<p>Is this you?</p>
+					<p className="mt-[20px] text-[10px]">
+						If it's not you, please contact{" "}
+						<span className="italic text-error">09123456789</span>
+					</p>
+				</div>
+			</Modal>
 			{!visitorFound ? (
 				<div className="flex h-full w-full items-center justify-center">
 					{loading ? (
 						<LoadingOutlined className="text-[128px] text-primary-500" />
 					) : (
-						<Tooltip title={error ? "Must be filled" : ""}>
-							<Search
-								className="search-visitor"
-								status={error ? "error" : ""}
-								placeholder="Enter your last name"
-								allowClear
-								onSearch={onSearch}
-								style={{ width: 300 }}
-							/>
-						</Tooltip>
+						<div className="flex flex-col items-center gap-3">
+							<Tooltip title={error ? "Must be filled" : ""}>
+								<Search
+									className="search-visitor"
+									status={error ? "error" : ""}
+									placeholder="Enter your email"
+									allowClear
+									onSearch={onSearch}
+									style={{ width: 300 }}
+									type="email"
+								/>
+							</Tooltip>
+							<Button
+								type="link"
+								className="flex items-center justify-center text-primary-500 hover:!text-primary-300"
+								onClick={() => window.location.reload()}
+							>
+								<LeftOutlined />
+								Go Back
+							</Button>
+						</div>
 					)}
 				</div>
 			) : (

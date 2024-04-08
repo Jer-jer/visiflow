@@ -3,7 +3,11 @@ import { useSelector } from "react-redux";
 
 //Interfaces
 import { VisitorRecordContext } from "../../../layouts/admin/visitor-management/visitor-details";
-import { VisitorDetailsProps, PurposeProps } from "../../../utils/interfaces";
+import {
+	VisitorDetailsProps,
+	PurposeProps,
+	VisitorDataType,
+} from "../../../utils/interfaces";
 
 //Layouts
 import VisitorCompanionsModal from "../../../layouts/admin/visitor-management/companion-details";
@@ -24,7 +28,7 @@ interface VisitorCompanionsProps {
 	search: string;
 }
 
-export const CompanionRecord = createContext<VisitorDetailsProps | undefined>(
+export const CompanionRecord = createContext<VisitorDataType | undefined>(
 	undefined,
 );
 
@@ -33,16 +37,16 @@ export default function VisitorCompanionsList({
 }: VisitorCompanionsProps) {
 	const [openDetails, setOpenDetails] = useState(false);
 	const [openLogs, setOpenLogs] = useState(false);
-	const [companionRecord, setCompanionRecord] = useState<VisitorDetailsProps>();
-	const [companionLastname, setCompanionLastname] = useState("");
 	const [companionId, setCompanionId] = useState("");
+	const [companionRecord, setCompanionRecord] = useState<VisitorDataType>();
+	const [companionLastname, setCompanionLastname] = useState("");
 	const [companionPurpose, setCompanionPurpose] = useState<PurposeProps>();
 
 	const { companions } = useSelector((state: RootState) => state.companions);
 
-	const companionDetails = companions.map(
-		(companion) => companion.visitor_details,
-	);
+	// const companionDetails = companions.map(
+	// 	(companion) => companion.visitor_details,
+	// );
 
 	const recordContext = useContext(VisitorRecordContext);
 
@@ -53,12 +57,13 @@ export default function VisitorCompanionsList({
 		setCompanionPurpose(purpose);
 	};
 
-	const viewDetails = (record: VisitorDetailsProps) => {
+	const viewDetails = (record: VisitorDataType) => {
 		setCompanionRecord(record);
+		setCompanionId(record._id);
 		setOpenDetails(!openDetails);
 	};
 
-	const columns: ColumnsType<VisitorDetailsProps> = [
+	const columns: ColumnsType<VisitorDataType> = [
 		{
 			title: "ID",
 			dataIndex: "_id",
@@ -68,17 +73,20 @@ export default function VisitorCompanionsList({
 		{
 			title: "Name",
 			key: "name",
-			render: (_, { name }) => {
-				return `${name.last_name}, ${name.first_name} ${name.middle_name ? name.middle_name : ""}`;
+			render: (_, { visitor_details }) => {
+				return `${visitor_details.name.last_name}, ${visitor_details.name.first_name} ${visitor_details.name.middle_name ? visitor_details.name.middle_name : ""}`;
 			},
-			sorter: (a, b) => a.name.last_name.localeCompare(b.name.last_name),
+			sorter: (a, b) =>
+				a.visitor_details.name.last_name.localeCompare(
+					b.visitor_details.name.last_name,
+				),
 		},
 		{
 			title: "Email",
 			dataIndex: "companion_details",
 			key: "email",
-			render: (_, { email }) => {
-				return email;
+			render: (_, { visitor_details }) => {
+				return visitor_details.email;
 			},
 		},
 		{
@@ -89,7 +97,7 @@ export default function VisitorCompanionsList({
 					<Button
 						onClick={() =>
 							viewLogs(
-								record.name.last_name,
+								record.visitor_details.name.last_name,
 								record._id,
 								recordContext!.purpose,
 							)
@@ -107,59 +115,36 @@ export default function VisitorCompanionsList({
 		<>
 			<Table
 				columns={columns}
-				dataSource={companionDetails.filter((companion) => {
+				dataSource={companions.filter((companion) => {
 					return search.toLowerCase() === ""
 						? companion
-						: companion.name.first_name
+						: companion.visitor_details.name.first_name
 								.toLowerCase()
 								.includes(search.toLowerCase()) ||
-								companion.name
+								companion.visitor_details.name
 									.middle_name!.toLowerCase()
 									.includes(search.toLowerCase()) ||
-								companion.name.last_name
+								companion.visitor_details.name.last_name
 									.toLowerCase()
 									.includes(search.toLowerCase()) ||
-								`${companion.name.last_name} ${companion.name.first_name} ${companion.name.middle_name}`
+								`${companion.visitor_details.name.last_name} ${companion.visitor_details.name.first_name} ${companion.visitor_details.name.middle_name}`
 									.toLowerCase()
 									.includes(search.toLowerCase()) ||
-								`${companion.name.first_name}${
-									companion.name.middle_name
-										? ` ${companion.name.middle_name}`
+								`${companion.visitor_details.name.first_name}${
+									companion.visitor_details.name.middle_name
+										? ` ${companion.visitor_details.name.middle_name}`
 										: ""
-								} ${companion.name.last_name}`
+								} ${companion.visitor_details.name.last_name}`
 									.toLowerCase()
 									.includes(search.toLowerCase()) ||
-								companion.email.includes(search);
+								companion.visitor_details.email.includes(search);
 				})}
-				// dataSource={recordContext!.companion_details!.filter((companion) => {
-				// 	return search.toLowerCase() === ""
-				// 		? companion
-				// 		: companion.name.first_name
-				// 				.toLowerCase()
-				// 				.includes(search.toLowerCase()) ||
-				// 				companion.name
-				// 					.middle_name!.toLowerCase()
-				// 					.includes(search.toLowerCase()) ||
-				// 				companion.name.last_name
-				// 					.toLowerCase()
-				// 					.includes(search.toLowerCase()) ||
-				// 				`${companion.name.last_name} ${companion.name.first_name} ${companion.name.middle_name}`
-				// 					.toLowerCase()
-				// 					.includes(search.toLowerCase()) ||
-				// 				`${companion.name.first_name}${
-				// 					companion.name.middle_name
-				// 						? ` ${companion.name.middle_name}`
-				// 						: ""
-				// 				} ${companion.name.last_name}`
-				// 					.toLowerCase()
-				// 					.includes(search.toLowerCase()) ||
-				// 				companion.email.includes(search);
-				// })}
 				pagination={{ pageSize: 5 }}
 			/>
 			<CompanionRecord.Provider value={companionRecord}>
 				<VisitorCompanionsModal
 					mainVisitorId={recordContext!._id}
+					id={companionId}
 					open={openDetails}
 					setOpen={setOpenDetails}
 				/>

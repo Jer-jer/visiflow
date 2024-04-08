@@ -84,7 +84,6 @@ export interface VisitorDataType {
 	_id: string;
 	visitor_details: VisitorDetailsProps;
 	companions?: string[];
-	// companion_details: VisitorDetailsProps[];
 	date: string;
 	purpose: PurposeProps;
 	plate_num: string | null;

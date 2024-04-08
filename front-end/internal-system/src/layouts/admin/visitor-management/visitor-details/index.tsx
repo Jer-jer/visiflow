@@ -29,7 +29,7 @@ import type { Dayjs } from "dayjs";
 import type { DatePickerProps } from "antd";
 
 // Utils
-import { formatDateObjToString, formatDateString } from "../../../../utils";
+import { formatDateObjToString } from "../../../../utils";
 
 //Layouts
 import VisitorLogs from "../visitor-logs";
@@ -144,6 +144,9 @@ export default function VisitorDetails({
 	// Store Related variables
 	const tabs: any = useSelector((state: RootState) => state.visitorTabs);
 	const { companions } = useSelector((state: RootState) => state.companions);
+	const companionDetails = companions.map(
+		(companion) => companion.visitor_details,
+	);
 
 	const dispatch = useDispatch();
 
@@ -388,7 +391,6 @@ export default function VisitorDetails({
 			last_name: zodData
 				? zodData.last_name
 				: record.visitor_details.name.last_name,
-			// companion_details: record.companion_details,
 			phone: zodData ? zodData.phone : record.visitor_details.phone,
 			email: zodData ? zodData.email : record.visitor_details.email,
 			house_no: zodData ? zodData.house : record.visitor_details.address.house,
@@ -1145,28 +1147,6 @@ export default function VisitorDetails({
 										purpose={record.purpose}
 									/>
 									{/* Optional only for visitors with companions */}
-									{/* {record.companion_details!.length > 0 && (
-										<>
-											<Button
-												type="primary"
-												size="large"
-												className="search-button !rounded-[18px] !bg-primary-500"
-												onClick={() =>
-													setVisitorCompanionsOpen(!vistorCompanionsOpen)
-												}
-											>
-												View Companions
-											</Button>
-											<VisitorRecordContext.Provider value={record}>
-												<VisitorCompanions
-													expectedIn={expected_in}
-													expectedOut={expected_out}
-													open={vistorCompanionsOpen}
-													setOpen={setVisitorCompanionsOpen}
-												/>
-											</VisitorRecordContext.Provider>
-										</>
-									)} */}
 									{companions.length > 0 && (
 										<>
 											<Button
@@ -1214,11 +1194,9 @@ Where: ${record.purpose.where.map((where) => where).join(", ")}
 Who: ${record.purpose.who.map((who) => who).join(", ")}`}
 												disabled={true}
 											/>
-											{/* //TODO Update Notify to put companions email */}
-											{/* <Notify
+											<Notify
 												emailInput={record.visitor_details.email}
-												// companionRecords={record.companion_details}
-												companionRecords={companions}
+												companionRecords={companionDetails}
 												modalHeader="Notify Visitor"
 												subject="Pre-Registration Application Feedback"
 												message={visitorMessage}
@@ -1226,7 +1204,7 @@ Who: ${record.purpose.who.map((who) => who).join(", ")}`}
 												setOpen={setNotifyVisitorOpen}
 												setVisitorMessage={setVisitorMessage}
 												onOk={updateStatus}
-											/> */}
+											/>
 										</>
 									)}
 								</>

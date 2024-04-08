@@ -6,7 +6,8 @@ const VisitorController = require("../controllers/visitorController");
 // Custom middleware to conditionally apply authentication
 const optionalAuth = (req, res, next) => {
   // Check if authentication is required
-  if (req.query.auth === 'true') { // Example: Pass ?auth=true in the query for authentication
+  if (req.query.auth === "true") {
+    // Example: Pass ?auth=true in the query for authentication
     // Apply authentication middleware
     passport.authenticate("jwt", { session: false })(req, res, next);
   } else {
@@ -15,22 +16,46 @@ const optionalAuth = (req, res, next) => {
   }
 };
 
-router.get("/", passport.authenticate("jwt", { session: false }), VisitorController.getVisitors);
+router.get(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  VisitorController.getVisitors
+);
 
-router.post("/get-companions", passport.authenticate("jwt", { session: false }), VisitorController.getCompanions);
+router.post(
+  "/get-companions",
+  passport.authenticate("jwt", { session: false }),
+  VisitorController.getCompanions
+);
 
 router.post("/new", optionalAuth, VisitorController.addVisitor);
 
 router.post("/new-recurring", VisitorController.newRecurringVisitor);
 
-router.post("/find-last-name", VisitorController.findVisitorByLastName);
+router.post("/find-email", VisitorController.findVisitorByEmail);
 
-router.post("/find", passport.authenticate("jwt", { session: false }), VisitorController.findVisitor);
+router.post(
+  "/find",
+  passport.authenticate("jwt", { session: false }),
+  VisitorController.findVisitor
+);
 
-router.put("/update", passport.authenticate("jwt", { session: false }),  VisitorController.updateVisitor);
+router.put(
+  "/update",
+  passport.authenticate("jwt", { session: false }),
+  VisitorController.updateVisitor
+);
 
-router.put("/update-status", passport.authenticate("jwt", {session: false }), VisitorController.updateStatus);
+router.put(
+  "/update-status",
+  passport.authenticate("jwt", { session: false }),
+  VisitorController.updateStatus
+);
 
-router.delete("/delete", passport.authenticate("jwt", { session: false }), VisitorController.deleteVisitor);
+router.delete(
+  "/delete",
+  passport.authenticate("jwt", { session: false }),
+  VisitorController.deleteVisitor
+);
 
 module.exports = router;

@@ -41,7 +41,7 @@ export const companionSlice = createSlice({
 				return visitor;
 			});
 		},
-		deleteVisitor: (state, action: PayloadAction<string>) => {
+		deleteCompanion: (state, action: PayloadAction<string>) => {
 			state.companions = state.companions.filter(
 				(visitor) => visitor._id !== action.payload,
 			);
@@ -54,11 +54,12 @@ export const companionSlice = createSlice({
 				state.loading = true;
 			})
 			.addCase(fetchCompanions.fulfilled, (state, action) => {
-				console.log(action.payload);
 				state.companions = action.payload.companions.map(
 					(visitor: VisitorDataType) => {
+						console.log(visitor._id);
 						return {
 							...visitor,
+							_id: visitor._id,
 							key: visitor._id,
 						};
 					},
@@ -71,5 +72,5 @@ export const companionSlice = createSlice({
 	},
 });
 
-export const { update, deleteVisitor } = companionSlice.actions;
+export const { update, deleteCompanion } = companionSlice.actions;
 export default companionSlice.reducer;

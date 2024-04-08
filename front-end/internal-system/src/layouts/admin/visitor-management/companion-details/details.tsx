@@ -20,7 +20,8 @@ import type { Dayjs } from "dayjs";
 import type { RootState } from "../../../../store";
 
 //Store
-import { update, deleteCompanion } from "../../../../states/visitors";
+import { update } from "../../../../states/visitors";
+import { deleteCompanion } from "../../../../states/visitors/companions";
 
 //Components
 import { Button, Form, Input, Modal } from "antd";
@@ -41,6 +42,7 @@ import { ExclamationCircleFilled } from "@ant-design/icons";
 import "./styles.scss";
 interface CompanionDetailsProps {
 	mainVisitorId: string;
+	id: string;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -50,6 +52,7 @@ const { confirm } = Modal;
 
 export default function CompanionDetails({
 	mainVisitorId,
+	id,
 	setOpen,
 }: CompanionDetailsProps) {
 	const record = useContext(CompanionRecord);
@@ -92,17 +95,17 @@ export default function CompanionDetails({
 	} = useForm<CompanionDetailTypeZod>({
 		resolver: zodResolver(CompanionDetailZod),
 		defaultValues: {
-			first_name: record!.name.first_name,
-			middle_name: record!.name.middle_name,
-			last_name: record!.name.last_name,
-			phone: record!.phone,
-			email: record!.email,
-			house: record!.address.house,
-			street: record!.address.street,
-			brgy: record!.address.brgy,
-			city: record!.address.city,
-			province: record!.address.province,
-			country: record!.address.country,
+			first_name: record!.visitor_details.name.first_name,
+			middle_name: record!.visitor_details.name.middle_name,
+			last_name: record!.visitor_details.name.last_name,
+			phone: record!.visitor_details.phone,
+			email: record!.visitor_details.email,
+			house: record!.visitor_details.address.house,
+			street: record!.visitor_details.address.street,
+			brgy: record!.visitor_details.address.brgy,
+			city: record!.visitor_details.address.city,
+			province: record!.visitor_details.address.province,
+			country: record!.visitor_details.address.country,
 			check_in_out: [expected_in, expected_out],
 		},
 	});
@@ -163,26 +166,28 @@ export default function CompanionDetails({
 
 	const saveAction = (zodData: CompanionDetailsInterfaceZod) => {
 		AxiosInstance.put("/visitor/update", {
-			_id: mainVisitorId,
-			companion_details: {
-				name: {
-					first_name: zodData.first_name,
-					middle_name: zodData.middle_name,
-					last_name: zodData.last_name,
-				},
-				address: {
-					house: zodData.house,
-					street: zodData.street,
-					brgy: zodData.brgy,
-					city: zodData.city,
-					province: zodData.province,
-					country: zodData.country,
-				},
-				phone: zodData.phone,
-				email: zodData.email,
-				time_in: zodData.check_in_out[0],
-				time_out: zodData.check_in_out[1],
-			},
+			_id: id,
+			first_name: zodData
+				? zodData.first_name
+				: record!.visitor_details.name.first_name,
+			middle_name: zodData
+				? zodData.middle_name
+				: record!.visitor_details.name.middle_name,
+			last_name: zodData
+				? zodData.last_name
+				: record!.visitor_details.name.last_name,
+			phone: zodData ? zodData.phone : record!.visitor_details.phone,
+			email: zodData ? zodData.email : record!.visitor_details.email,
+			house_no: zodData ? zodData.house : record!.visitor_details.address.house,
+			street: zodData ? zodData.street : record!.visitor_details.address.street,
+			brgy: zodData ? zodData.brgy : record!.visitor_details.address.brgy,
+			city: zodData ? zodData.city : record!.visitor_details.address.city,
+			province: zodData
+				? zodData.province
+				: record!.visitor_details.address.province,
+			country: zodData
+				? zodData.country
+				: record!.visitor_details.address.country,
 		})
 			.then((res) => {
 				dispatch(update(res.data.visitor));
@@ -221,7 +226,9 @@ export default function CompanionDetails({
 			city: data[mainVisitorIndex].visitor_details.address.city,
 			province: data[mainVisitorIndex].visitor_details.address.province,
 			country: data[mainVisitorIndex].visitor_details.address.country,
-			// companion_details: data[mainVisitorIndex].companion_details,
+			companions: data[mainVisitorIndex].companions!.filter(
+				(item) => item !== id,
+			),
 			plate_num: data[mainVisitorIndex].plate_num,
 			status: data[mainVisitorIndex].status,
 			visitor_type: data[mainVisitorIndex].visitor_type,
@@ -242,14 +249,14 @@ export default function CompanionDetails({
 
 	const showDeleteConfirm = () => {
 		confirm({
-			title: "Are you sure you want to delete this visitor?",
+			title: "Are you sure you want to remove companion?",
 			className: "confirm-buttons",
 			icon: <ExclamationCircleFilled className="!text-error-500" />,
 			okText: "Yes",
 			okType: "danger",
 			cancelText: "No",
 			onOk() {
-				dispatch(deleteCompanion(record!._id!));
+				dispatch(deleteCompanion(id));
 				setDeleteComp(true);
 			},
 		});
@@ -298,7 +305,7 @@ export default function CompanionDetails({
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.name.first_name}
+												placeholder={record!.visitor_details.name.first_name}
 												{...register("first_name")}
 												onChange={(e) =>
 													updateInput(e.target.value, "first_name")
@@ -323,7 +330,7 @@ export default function CompanionDetails({
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.name.middle_name}
+												placeholder={record!.visitor_details.name.middle_name}
 												{...register("middle_name")}
 												onChange={(e) =>
 													updateInput(e.target.value, "middle_name")
@@ -350,7 +357,7 @@ export default function CompanionDetails({
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.name.last_name}
+												placeholder={record!.visitor_details.name.last_name}
 												{...register("last_name")}
 												onChange={(e) =>
 													updateInput(e.target.value, "last_name")
@@ -375,7 +382,7 @@ export default function CompanionDetails({
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.phone}
+												placeholder={record!.visitor_details.phone}
 												{...register("phone")}
 												onChange={(e) => updateInput(e.target.value, "phone")}
 												disabled={disabledInputs}
@@ -402,7 +409,7 @@ export default function CompanionDetails({
 									<div className="flex flex-col">
 										<Input
 											className="vm-placeholder h-[38px] w-[640px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-											placeholder={record!.email}
+											placeholder={record!.visitor_details.email}
 											{...register("email")}
 											onChange={(e) => updateInput(e.target.value, "email")}
 											disabled={disabledInputs}
@@ -426,7 +433,7 @@ export default function CompanionDetails({
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.address.house}
+												placeholder={record!.visitor_details.address.house}
 												{...register("house")}
 												onChange={(e) => updateInput(e.target.value, "house")}
 												disabled={disabledInputs}
@@ -449,7 +456,7 @@ export default function CompanionDetails({
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.address.city}
+												placeholder={record!.visitor_details.address.city}
 												{...register("city")}
 												onChange={(e) => updateInput(e.target.value, "city")}
 												disabled={disabledInputs}
@@ -474,7 +481,7 @@ export default function CompanionDetails({
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.address.street}
+												placeholder={record!.visitor_details.address.street}
 												{...register("street")}
 												onChange={(e) => updateInput(e.target.value, "street")}
 												disabled={disabledInputs}
@@ -497,7 +504,7 @@ export default function CompanionDetails({
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.address.province}
+												placeholder={record!.visitor_details.address.province}
 												{...register("province")}
 												onChange={(e) =>
 													updateInput(e.target.value, "province")
@@ -524,7 +531,7 @@ export default function CompanionDetails({
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.address.brgy}
+												placeholder={record!.visitor_details.address.brgy}
 												{...register("brgy")}
 												onChange={(e) => updateInput(e.target.value, "brgy")}
 												disabled={disabledInputs}
@@ -547,7 +554,7 @@ export default function CompanionDetails({
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record!.address.country}
+												placeholder={record!.visitor_details.address.country}
 												{...register("country")}
 												onChange={(e) => updateInput(e.target.value, "country")}
 												disabled={disabledInputs}

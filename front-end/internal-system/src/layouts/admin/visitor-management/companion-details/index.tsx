@@ -15,12 +15,14 @@ import "./styles.scss";
 
 interface VisitorCompanionsProps {
 	mainVisitorId: string;
+	id: string;
 	open: boolean;
 	setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function VisitorCompanionsModal({
 	mainVisitorId,
+	id,
 	open,
 	setOpen,
 }: VisitorCompanionsProps) {
@@ -34,7 +36,11 @@ export default function VisitorCompanionsModal({
 			setOpen={setOpen}
 			footer={false}
 		>
-			<CompanionDetails mainVisitorId={mainVisitorId} setOpen={setOpen} />
+			<CompanionDetails
+				mainVisitorId={mainVisitorId}
+				id={id}
+				setOpen={setOpen}
+			/>
 		</StandardModal>
 	);
 }

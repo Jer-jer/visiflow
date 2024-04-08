@@ -100,8 +100,6 @@ export default function StepThree({
 					error("Some companions are not filled.");
 				} else {
 					setLoading(true);
-					//TODO Fix Error Handling Back-end
-					//TODO Fix error: Won't return response even though successfull
 					AxiosInstance.post("/visitor/new", {
 						visitors: visitors,
 					})
