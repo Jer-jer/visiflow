@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React from "react";
+import { useSelector } from "react-redux";
 
 // Interfaces
 import { VisitorStatus } from "../../../utils/enums";
@@ -9,12 +9,6 @@ import OuterContainer from "../../../components/container";
 import InnerContainer from "../../../components/container/inner-container";
 import StatisticsSummaryContent from "../../../components/stats-smmry-ctnt";
 import PendingAppointments from "../../../components/pending-appointments";
-
-// Store
-import { AppDispatch } from "../../../store";
-
-// Reducers
-import { fetchVisitors } from "../../../states/visitors";
 
 //Assets
 

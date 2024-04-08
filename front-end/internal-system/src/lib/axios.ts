@@ -20,7 +20,6 @@ export const AxiosLoginInstance = axios.create({
 AxiosInstance.interceptors.response.use(
 	(response) => response,
 	async (error) => {
-		const wasAdmin = localStorage.getItem("role");
 		const originalRequest = error.config;
 
 		const errorModal = (message: string) => {
@@ -32,10 +31,8 @@ AxiosInstance.interceptors.response.use(
 		};
 
 		const logout = () => {
-			wasAdmin && localStorage.removeItem("role");
-			localStorage.removeItem("token");
-			localStorage.removeItem("refreshToken");
 			window.location.reload();
+			localStorage.clear();
 		};
 
 		if (error.response.status === 401 && !originalRequest._retry) {

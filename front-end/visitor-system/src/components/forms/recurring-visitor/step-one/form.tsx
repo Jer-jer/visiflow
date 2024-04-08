@@ -15,40 +15,42 @@ import {
 } from "antd";
 
 // Interfaces
-import { VisitorDataType } from "../../../utils/interfaces";
+import { VisitorDataType } from "../../../../utils/interfaces";
 import type {
 	UseFormRegister,
 	UseFormSetValue,
 	FieldErrors,
 } from "react-hook-form";
 import type { RangePickerProps } from "antd/es/date-picker";
-import { StepOneData } from "../../../utils/zodSchemas";
+import { StepOneRecurringData } from "../../../../utils/zodSchemas";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 import type { DatePickerProps } from "antd";
+import { VisitorStatus, VisitorType } from "../../../../utils/enums";
 
 // Utils
-import { formatDateObjToString } from "../../../utils";
+import { formatDateObjToString } from "../../../../utils";
 
 // Styles
 import "./styles.scss";
 
 interface FormProps {
 	visitorNo: number;
-	visitors: VisitorDataType;
+	visitors: VisitorDataType[];
+	mainVisitor: VisitorDataType;
 	isTCOpen: boolean;
-	errors: FieldErrors<StepOneData>;
-	register: UseFormRegister<StepOneData>;
-	setValue: UseFormSetValue<StepOneData>;
+	errors: FieldErrors<StepOneRecurringData>;
+	register: UseFormRegister<StepOneRecurringData>;
+	setValue: UseFormSetValue<StepOneRecurringData>;
 
 	showTC: () => void;
 	handleTCOk: () => void;
 	handleTCCancel: () => void;
 
 	setVisitorNo: Dispatch<SetStateAction<number>>;
-	setVisitors: Dispatch<SetStateAction<VisitorDataType>>;
+	setVisitors: Dispatch<SetStateAction<VisitorDataType[]>>;
 }
 
 dayjs.extend(weekday);
@@ -58,6 +60,7 @@ dayjs.extend(customParseFormat);
 function StepOneForm({
 	visitorNo,
 	visitors,
+	mainVisitor,
 	isTCOpen,
 	errors,
 	register,
@@ -72,21 +75,21 @@ function StepOneForm({
 	const timeFormat = "hh:mm A";
 
 	const addVisitor = (value: any) => {
-		setVisitorNo(value);
 		setValue("visitorNo", value);
-		console.log("value", value, "visitorNo", visitorNo);
+		setVisitorNo(value);
 		if (value > visitorNo) {
 			for (let i = 0; i < value - visitorNo; i++) {
-				setVisitors((prevVisitors) => ({
+				setVisitors((prevVisitors) => [
 					...prevVisitors,
-					companions_details: [
-						...prevVisitors.companions_details!,
-						{
+					{
+						visitor_no: i + 2,
+						visitor_details: {
 							name: {
 								first_name: "",
 								middle_name: "",
 								last_name: "",
 							},
+
 							email: "",
 							phone: "",
 							address: {
@@ -100,18 +103,34 @@ function StepOneForm({
 							time_in: "",
 							time_out: "",
 						},
-					],
-				}));
+						expected_time_in: new Date(),
+						expected_time_out: new Date(),
+						purpose: {
+							what: [],
+							when: new Date(),
+							where: [],
+							who: [],
+						},
+						termsConditions: false,
+						plate_num: null,
+						id_picture: {
+							front: "",
+							back: "",
+							selfie: "",
+						},
+						status: VisitorStatus.InProgress,
+						visitor_type: VisitorType.PreRegistered,
+					},
+				]);
 			}
 		} else if (value < visitorNo) {
-			let tempVisitor: VisitorDataType = visitors;
-			for (let i = 0; i < visitorNo - value; i++) {
-				const indexToRemove = visitors.companions_details!.length - 1;
-				tempVisitor.companions_details = tempVisitor.companions_details!.filter(
-					(_, index) => index !== indexToRemove,
+			if (value === 0 || value === null) {
+				setVisitors((prevVisitor) => prevVisitor.slice(0, 1));
+			} else {
+				setVisitors((prevVisitor) =>
+					prevVisitor.slice(prevVisitor.length - value, prevVisitor.length),
 				);
 			}
-			setVisitors(tempVisitor);
 		}
 	};
 
@@ -119,16 +138,27 @@ function StepOneForm({
 		value: RangePickerProps["value"],
 		dateString: [string, string],
 	) => {
-		setVisitors({
-			...visitors,
-			expected_time_in: new Date(dateString[0]),
-			expected_time_out: new Date(dateString[1]),
+		setVisitors((preVisitors) => {
+			let updatedVisitors = [...preVisitors];
+			for (let x = 0; x < updatedVisitors.length; x++) {
+				updatedVisitors[x].expected_time_in = new Date(dateString[0]);
+				updatedVisitors[x].expected_time_out = new Date(dateString[1]);
+			}
+
+			return updatedVisitors;
 		});
 		setValue("checkInOut", [new Date(dateString[0]), new Date(dateString[1])]);
 	};
 
 	const onChange = (e: CheckboxChangeEvent) => {
-		setVisitors({ ...visitors, termsConditions: e.target.checked });
+		setVisitors((preVisitors) => {
+			let updatedVisitors = [...preVisitors];
+			for (let x = 0; x < updatedVisitors.length; x++) {
+				updatedVisitors[x].termsConditions = e.target.checked;
+			}
+
+			return updatedVisitors;
+		});
 
 		setValue("termsConditions", e.target.checked);
 	};
@@ -139,43 +169,47 @@ function StepOneForm({
 	) => {
 		switch (purpose) {
 			case "what":
-				setVisitors((prevVisitors) => ({
-					...prevVisitors,
-					purpose: {
-						...prevVisitors.purpose,
-						what: value as string[],
-					},
-				}));
+				setVisitors((preVisitors) => {
+					let updatedVisitors = [...preVisitors];
+					for (let x = 0; x < updatedVisitors.length; x++) {
+						updatedVisitors[x].purpose.what = value as string[];
+					}
+
+					return updatedVisitors;
+				});
 				setValue("what", value as string[]);
 				break;
 			case "when":
-				setVisitors((prevVisitors) => ({
-					...prevVisitors,
-					purpose: {
-						...prevVisitors.purpose,
-						when: value as Date,
-					},
-				}));
+				setVisitors((preVisitors) => {
+					let updatedVisitors = [...preVisitors];
+					for (let x = 0; x < updatedVisitors.length; x++) {
+						updatedVisitors[x].purpose.when = value as Date;
+					}
+
+					return updatedVisitors;
+				});
 				setValue("when", value as Date);
 				break;
 			case "where":
-				setVisitors((prevVisitors) => ({
-					...prevVisitors,
-					purpose: {
-						...prevVisitors.purpose,
-						where: value as string[],
-					},
-				}));
+				setVisitors((preVisitors) => {
+					let updatedVisitors = [...preVisitors];
+					for (let x = 0; x < updatedVisitors.length; x++) {
+						updatedVisitors[x].purpose.where = value as string[];
+					}
+
+					return updatedVisitors;
+				});
 				setValue("where", value as string[]);
 				break;
 			case "who":
-				setVisitors((prevVisitors) => ({
-					...prevVisitors,
-					purpose: {
-						...prevVisitors.purpose,
-						who: value as string[],
-					},
-				}));
+				setVisitors((preVisitors) => {
+					let updatedVisitors = [...preVisitors];
+					for (let x = 0; x < updatedVisitors.length; x++) {
+						updatedVisitors[x].purpose.who = value as string[];
+					}
+
+					return updatedVisitors;
+				});
 				setValue("who", value as string[]);
 				break;
 			default:
@@ -191,14 +225,14 @@ function StepOneForm({
 			<Form.Item>
 				<div className="mb-[5px] flex items-center gap-8 lg:w-[20%]">
 					<span className="text-[16px] font-[400] text-[#0000004d]">
-						No. of Visitors
+						No. of Companions
 					</span>
 
 					<InputNumber
 						className="rounded-[5px] border-none bg-[#DFEAEF] focus-within:!bg-[#DFEAEF] hover:bg-[#DFEAEF] focus:border-primary-500 focus:!bg-[#DFEAEF] focus:outline-0 focus:!ring-transparent"
 						{...register("visitorNo", { valueAsNumber: true })}
 						style={{ width: 80, height: 35 }}
-						min={1}
+						min={0}
 						defaultValue={visitorNo}
 						onChange={addVisitor}
 					/>
@@ -219,12 +253,14 @@ function StepOneForm({
 					<Input
 						className="w-[100px] rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent lg:w-full"
 						{...register("plateNum")}
-						value={visitors.plate_num === null ? "" : visitors.plate_num}
+						value={mainVisitor.plate_num === null ? "" : mainVisitor.plate_num}
 						onChange={(event: any) => {
-							setVisitors((prevVisitors) => ({
-								...prevVisitors,
-								plate_num: event.target.value,
-							}));
+							setVisitors((preVisitors) => {
+								let updatedVisitors = [...preVisitors];
+								updatedVisitors[0].plate_num = event.target.value;
+
+								return updatedVisitors;
+							});
 							setValue("plateNum", event.target.value);
 						}}
 					/>
@@ -250,11 +286,11 @@ function StepOneForm({
 							size="middle"
 							defaultValue={[
 								dayjs(
-									formatDateObjToString(visitors.expected_time_in),
+									formatDateObjToString(mainVisitor.expected_time_in),
 									`YYYY-MM-DD ${timeFormat}`,
 								),
 								dayjs(
-									formatDateObjToString(visitors.expected_time_out),
+									formatDateObjToString(mainVisitor.expected_time_out),
 									`YYYY-MM-DD ${timeFormat}`,
 								),
 							]}
@@ -290,7 +326,7 @@ function StepOneForm({
 							allowClear
 							placeholder="What"
 							listHeight={128}
-							defaultValue={visitors.purpose.what}
+							defaultValue={mainVisitor.purpose.what}
 							onChange={(value: string[]) => handlePurpose("what", value)}
 							options={[
 								{
@@ -319,7 +355,7 @@ function StepOneForm({
 							mode="multiple"
 							allowClear
 							placeholder="Where"
-							defaultValue={visitors.purpose.where}
+							defaultValue={mainVisitor.purpose.where}
 							onChange={(value: string[]) => handlePurpose("where", value)}
 							options={[
 								{
@@ -350,7 +386,7 @@ function StepOneForm({
 								className="hover:bg-[#DFEAEF]!border-[#d9d9d9] h-[52px] w-[180px] border-none bg-[#e0ebf0] hover:!border-primary-500 hover:bg-[#DFEAEF] focus:!border-primary-500"
 								placeholder="When"
 								defaultValue={dayjs(
-									formatDateObjToString(visitors.purpose.when),
+									formatDateObjToString(mainVisitor.purpose.when),
 									`YYYY-MM-DD ${timeFormat}`,
 								)}
 								minDate={dayjs(dayjs(), `YYYY-MM-DD ${timeFormat}`)}
@@ -371,7 +407,7 @@ function StepOneForm({
 							mode="multiple"
 							allowClear
 							placeholder="Who"
-							defaultValue={visitors.purpose.who}
+							defaultValue={mainVisitor.purpose.who}
 							onChange={(value: string[]) => handlePurpose("who", value)}
 							options={[
 								{
@@ -396,7 +432,7 @@ function StepOneForm({
 					<Form.Item className="m-0" rules={[{ required: true }]}>
 						<Checkbox
 							{...register("termsConditions")}
-							checked={visitors.termsConditions!}
+							checked={mainVisitor.termsConditions!}
 							onChange={onChange}
 						></Checkbox>
 					</Form.Item>

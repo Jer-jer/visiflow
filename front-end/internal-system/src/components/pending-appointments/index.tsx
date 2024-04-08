@@ -42,11 +42,14 @@ export default function PendingAppointments({
 					}`}
 				>
 					<div className="flex justify-start gap-[12px]">
-						<div className="avatar">
-							<div className="h-[50px] w-[50px] rounded-full">
-								<img src={item.id_picture.selfie} alt="" />
+						{item.id_picture.selfie && (
+							<div className="avatar">
+								<div className="h-[50px] w-[50px] rounded-full">
+									<img src={item.id_picture.selfie} alt="" />
+								</div>
 							</div>
-						</div>
+						)}
+
 						<div className="flex flex-col">
 							<span className="line-normal text-[12px] font-[100] text-black">
 								{formatDateObjToString(item.purpose.when)}

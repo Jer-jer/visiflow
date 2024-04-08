@@ -12,7 +12,7 @@ import "./styles.scss";
 
 // Assets
 import { SearchOutlined } from "@ant-design/icons";
-import AxiosInstace from "../../lib/axios";
+import AxiosInstance from "../../lib/axios";
 import { EventsProps } from "../../utils/interfaces";
 
 export default function Events() {
@@ -38,33 +38,32 @@ export default function Events() {
 	};
 
 	useEffect(() => {
-		if(searchValue == "") {
+		if (searchValue === "") {
 			fetchData();
 		} else {
 			handleSearch();
 		}
-	}, [searchValue])
+	}, [searchValue]);
 
 	//fetch data for display
-	const fetchData = async() => {
+	const fetchData = async () => {
 		try {
-			const response = await AxiosInstace.get('/events/')
-			const data = response.data.event
-			
-			
+			const response = await AxiosInstance.get("/events/");
+			const data = response.data.event;
+
 			const convertedData: EventsProps[] = data.map((event: any) => {
 				const endDate = new Date(event.endDate);
 				const endTime = new Date(event.endTime);
-				
+
 				endDate.setHours(endTime.getHours());
 				endDate.setMinutes(endTime.getMinutes());
 
 				const startDate = new Date(event.startDate);
 				const startTime = new Date(event.startTime);
-				
+
 				startDate.setHours(startTime.getHours());
 				startDate.setMinutes(startTime.getMinutes());
-				
+
 				const header = {
 					title: event.name,
 					startDate: startDate,
@@ -81,42 +80,44 @@ export default function Events() {
 			});
 			setEvent(convertedData);
 			convertEvent(convertedData);
-		  } catch (error) {
-			console.error('Error fetching events:', error);
-		  }
-	}
+		} catch (error) {
+			console.error("Error fetching events:", error);
+		}
+	};
 
 	const convertEvent = (events: EventsProps[]) => {
 		const currentDate = new Date();
-	
-		const eventsToday = events.filter(event => {
+
+		const eventsToday = events.filter((event) => {
 			const startDate = new Date(event.header.startDate);
 			const endDate = new Date(event.header.endDate);
-			
+
 			return currentDate >= startDate && currentDate <= endDate;
 		});
-	
+
 		setEventToday(eventsToday);
-		
-		const eventsUpcoming = events.filter(event => {
+
+		const eventsUpcoming = events.filter((event) => {
 			const startDate = new Date(event.header.startDate);
 			const endDate = new Date(event.header.endDate);
-			
+
 			return startDate > currentDate;
 		});
-	
-		setEventUpcoming(eventsUpcoming);
-	}
 
-	const handleSearch = async() => {
+		setEventUpcoming(eventsUpcoming);
+	};
+
+	const handleSearch = async () => {
 		try {
-			const response = await AxiosInstace.post('/events/search', {name: searchValue})
+			const response = await AxiosInstance.post("/events/search", {
+				name: searchValue,
+			});
 			const data = response.data.event;
 			const convertedData: EventsProps[] = data.map((event: any) => ({
 				header: {
 					title: event.name,
 					startDate: new Date(event.startDate),
-					endDate:new Date(event.endDate),
+					endDate: new Date(event.endDate),
 					loc: event.locationID,
 				},
 				desc: event.description,
@@ -124,10 +125,10 @@ export default function Events() {
 			  }));
 			setEvent(convertedData);
 			setEventToday(convertedData);
-		  } catch (error) {
-			console.error('Error fetching events:', error);
-		  }
-	}
+		} catch (error) {
+			console.error("Error fetching events:", error);
+		}
+	};
 
 	return (
 		<div className="flex flex-col gap-[50px] pb-[50px]">
@@ -166,22 +167,16 @@ export default function Events() {
 						placeholder="Search"
 						value={searchValue}
 						onPressEnter={handleSearch}
-						onChange={e => setSearchValue(e.target.value)}
+						onChange={(e) => setSearchValue(e.target.value)}
 						prefix={<SearchOutlined />}
 					/>
 				</div>
 			</div>
 			<div className="flex flex-wrap items-center justify-center gap-[25px]">
 				{todayActive ? (
-					<TodayEvents
-						events={eventToday}
-					/>
+					<TodayEvents events={eventToday} />
 				) : (
-					upcomingActive && (
-						<UpcomingEvents
-							events={eventUpcoming}
-						/>
-					)
+					upcomingActive && <UpcomingEvents events={eventUpcoming} />
 				)}
 				{/* <EventCard
 					header={{

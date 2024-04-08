@@ -1,93 +1,44 @@
 import React, { useState } from "react";
 
 // Components
-import Stepper from "../../components/stepper";
-import StepOne from "../../components/forms/step-one";
-import StepTwo from "../../components/forms/step-two";
-import StepThree from "../../components/forms/step-three";
-
-// Interfaces
-import { VisitorDataType } from "../../utils/interfaces";
-import { VisitorStatus, VisitorType } from "../../utils/enums";
+import { Button } from "antd";
+import NewVisitor from "../../components/new-visitor";
+import RecurringVisitor from "../../components/recurring-visitor";
 
 // Styles
 import "./styles.scss";
 
 export default function PreRegister() {
-	const [progress, setProgress] = useState(1);
-	const [visitorNo, setVisitorNo] = useState(1);
-	const [visitors, setVisitors] = useState<VisitorDataType>({
-		visitor_details: {
-			name: {
-				first_name: "",
-				middle_name: "",
-				last_name: "",
-			},
+	const [isNew, setIsNew] = useState(false);
+	const [isRecurring, setIsRecurring] = useState(false);
 
-			email: "",
-			phone: "",
-			address: {
-				house: "",
-				street: "",
-				brgy: "",
-				city: "",
-				province: "",
-				country: "",
-			},
-		},
-		companions_details: [],
-		expected_time_in: new Date(),
-		expected_time_out: new Date(),
-		purpose: {
-			what: [],
-			when: new Date(),
-			where: [],
-			who: [],
-		},
-		termsConditions: false,
-		plate_num: null,
-		id_picture: {
-			front: "",
-			back: "",
-			selfie: "",
-		},
-		status: VisitorStatus.InProgress,
-		visitor_type: VisitorType.PreRegistered,
-	});
+	const isNewOrRecurring = (newVisitor: boolean, recurringVisitor: boolean) => {
+		setIsNew(newVisitor);
+		setIsRecurring(recurringVisitor);
+	};
 
 	return (
-		<div className="flex w-full flex-col pb-[32px]">
-			<Stepper progress={progress} setProgress={setProgress} />
-			<div className="flex-start ml-[20px] mt-[25px] flex flex-col gap-[10px] md:ml-[30px] lg:ml-[182px]">
-				<h1 className="font-700 header mb-[10px] text-[38px] text-[#1B3B22]">
-					Pre-Registration Form
-				</h1>
-				{progress === 1 ? (
-					<StepOne
-						setProgress={setProgress}
-						visitorNo={visitorNo}
-						visitors={visitors}
-						setVisitorNo={setVisitorNo}
-						setVisitors={setVisitors}
-					/>
-				) : progress === 2 ? (
-					<StepTwo
-						setProgress={setProgress}
-						visitorNo={visitorNo}
-						visitors={visitors}
-						setVisitors={setVisitors}
-					/>
-				) : (
-					progress === 3 && (
-						<StepThree
-							visitorNo={visitorNo}
-							setProgress={setProgress}
-							visitors={visitors}
-						/>
-					)
-				)}
-				<div className="mr-[30px] flex items-center justify-center gap-2 lg:mr-0 lg:w-[80%] lg:justify-end"></div>
-			</div>
-		</div>
+		<>
+			{!isNew && !isRecurring && (
+				<div className="flex h-full items-center justify-center gap-5">
+					<Button
+						type="primary"
+						className="w-[inherit] bg-primary-500"
+						onClick={(e) => isNewOrRecurring(true, false)}
+					>
+						New Visitor
+					</Button>
+					<Button
+						type="primary"
+						className="w-[inherit] bg-primary-500"
+						onClick={(e) => isNewOrRecurring(false, true)}
+					>
+						Recurring Visitor
+					</Button>
+				</div>
+			)}
+			{isRecurring && <RecurringVisitor />}
+			{isNew && <NewVisitor />}
+		</>
 	);
 }

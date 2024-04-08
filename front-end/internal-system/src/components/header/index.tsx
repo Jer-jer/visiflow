@@ -1,8 +1,9 @@
-import React, { Dispatch, SetStateAction, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import useSound from "use-sound";
 import Notifications from "react-notifications-menu";
+import { jwtDecode } from "jwt-decode";
 
 //Components
 import { Modal } from "antd";
@@ -20,6 +21,7 @@ import type { AppDispatch, RootState } from "../../store";
 //Reducers
 import { add } from "../../states/visitors";
 import { addNotif, readNotif } from "../../states/notifications";
+import { changeRole } from "../../states/roles";
 
 //Utils
 import {
@@ -38,9 +40,6 @@ import NotificationSound from "../../assets/notification.wav";
 
 //Styles
 import "./styles.scss";
-interface HeaderProps {
-	setIsAdmin: Dispatch<SetStateAction<boolean>>;
-}
 
 const error = (message: string) => {
 	Modal.error({
@@ -50,15 +49,13 @@ const error = (message: string) => {
 	});
 };
 
-export default function Header({ setIsAdmin }: HeaderProps) {
+export default function Header() {
 	//? Socket Connection
 	const [isConnected, setIsConnected] = useState(socket.connected);
+	const [isAdmin, setIsAdmin] = useState(false);
 
 	//? Redux
 	const notifications = useSelector((state: RootState) => state.notifications);
-
-	//? Determine if the user is an admin
-	const wasAdmin = localStorage.getItem("role");
 
 	const [play] = useSound(NotificationSound, { volume: 1, soundEnabled: true });
 
@@ -96,6 +93,25 @@ export default function Header({ setIsAdmin }: HeaderProps) {
 				);
 			});
 	};
+
+	useEffect(() => {
+		const token = localStorage.getItem("token");
+
+		if (token) {
+			const decoded: any = jwtDecode(token);
+
+			/*
+			 * Roles:
+			 * admin
+			 * security
+			 */
+			if (decoded.role === "admin") {
+				setIsAdmin(true);
+			} else {
+				setIsAdmin(false);
+			}
+		}
+	}, []);
 
 	useEffect(() => {
 		//? Real-Time Watcher
@@ -143,10 +159,8 @@ export default function Header({ setIsAdmin }: HeaderProps) {
 	}, []);
 
 	const logout = () => {
-		wasAdmin && localStorage.removeItem("role");
-		localStorage.removeItem("token");
-		localStorage.removeItem("refreshToken");
 		window.location.reload();
+		localStorage.clear();
 	};
 
 	const readNotification = (notif: NotificationStoreProps) => {
@@ -240,30 +254,30 @@ export default function Header({ setIsAdmin }: HeaderProps) {
 							label: (
 								<button
 									onClick={() => {
-										setIsAdmin(true);
+										dispatch(changeRole(true));
 										navigate("/dashboard");
 									}}
-									disabled={!wasAdmin}
+									disabled={!isAdmin}
 								>
 									Admin System
 								</button>
 							),
-							disabled: !wasAdmin,
+							disabled: !isAdmin,
 						},
 						{
 							key: "2",
 							label: (
 								<button
 									onClick={() => {
-										setIsAdmin(false);
-										navigate("/");
+										dispatch(changeRole(false));
+										navigate("/qr-scanner");
 									}}
-									disabled={!wasAdmin}
+									disabled={!isAdmin}
 								>
 									Guard System
 								</button>
 							),
-							disabled: !wasAdmin,
+							disabled: !isAdmin,
 						},
 						{
 							key: "3",
