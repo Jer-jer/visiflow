@@ -23,9 +23,9 @@ const Address = new Schema({
 });
 
 const IdPhoto = new Schema({
-  front: { type: String, require: true },
-  back: { type: String, require: true },
-  selfie: { type: String, require: true },
+  front: { type: String },
+  back: { type: String },
+  selfie: { type: String },
 });
 
 const VisitorDetails = new Schema({

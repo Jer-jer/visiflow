@@ -90,11 +90,11 @@ export default function VisitorListTable({
 			dataIndex: "expected_time_in",
 			key: "expected_time_in",
 			sorter: (a, b) =>
-				formatDateString(a.expected_time_in).localeCompare(
-					formatDateString(b.expected_time_in),
+				formatDateObjToString(a.expected_time_in).localeCompare(
+					formatDateObjToString(b.expected_time_in),
 				),
 			render: (_, { expected_time_in }) => {
-				return formatDateString(expected_time_in);
+				return formatDateObjToString(expected_time_in);
 			},
 			hidden: hideInOut,
 		},
@@ -103,11 +103,11 @@ export default function VisitorListTable({
 			dataIndex: "expected_time_out",
 			key: "expected_time_out",
 			sorter: (a, b) =>
-				formatDateString(a.expected_time_out).localeCompare(
-					formatDateString(b.expected_time_out),
+				formatDateObjToString(a.expected_time_out).localeCompare(
+					formatDateObjToString(b.expected_time_out),
 				),
 			render: (_, { expected_time_out }) => {
-				return formatDateString(expected_time_out);
+				return formatDateObjToString(expected_time_out);
 			},
 			hidden: hideInOut,
 		},

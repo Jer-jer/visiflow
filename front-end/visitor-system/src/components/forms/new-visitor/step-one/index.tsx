@@ -15,6 +15,9 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 
+// Utils
+import { formatDateObjToString } from "../../../../utils";
+
 // Styles
 import "./styles.scss";
 

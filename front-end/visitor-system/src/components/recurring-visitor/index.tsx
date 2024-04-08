@@ -98,6 +98,10 @@ function RecurringVisitor() {
 								...visitor,
 								id: res.data.visitor_id,
 								id_picture: res.data.id_picture,
+								visitor_details: {
+									...visitor.visitor_details,
+									name: res.data.name,
+								},
 							}));
 							return updatedVisitor;
 						});

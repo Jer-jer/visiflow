@@ -31,6 +31,7 @@ interface AddressSelectProps {
 }
 
 interface FormProps {
+	visitorNo: number;
 	visitorDetails: VisitorDetailsProps;
 	increment: number;
 	errors: FieldErrors<StepTwoData>;
@@ -40,6 +41,7 @@ interface FormProps {
 }
 
 export default function StepTwoForm({
+	visitorNo,
 	visitorDetails,
 	increment,
 	errors,
@@ -180,27 +182,16 @@ export default function StepTwoForm({
 				console.error("Something went wrong");
 		}
 
-		// if (increment === 0) {
-		// 	setVisitors((prevVisitors) => ({
-		// 		...prevVisitors,
-		// 		visitor_details: updatedVisitors,
-		// 	}));
-		// } else {
-		// 	updatedCompanions[increment - 1] = updatedVisitors;
-
-		// 	setVisitors((prevVisitors) => ({
-		// 		...prevVisitors,
-		// 		companions_details: updatedCompanions,
-		// 	}));
-		// }
-
 		setVisitors((preVisitors) => {
-			let updateVisitors = [...preVisitors];
-			for (let x = 0; x < updateVisitors.length; x++) {
-				if (updateVisitors[x].visitor_details === updatedVisitors) {
-					updateVisitors[x].visitor_details = updatedVisitors;
+			let updateVisitors = preVisitors.map((visitor, index) => {
+				if (index === visitorNo - 1) {
+					return {
+						...visitor,
+						visitor_details: updatedVisitors,
+					};
 				}
-			}
+				return visitor;
+			});
 
 			return updateVisitors;
 		});
@@ -548,7 +539,7 @@ export default function StepTwoForm({
 										<div className="pl-[30%]">
 											<LoadingOutlined className="text-[24px] text-primary-500" />
 										</div>
-									) : noCities ? (
+									) : noCities || states.length === 0 ? (
 										<Input
 											key={increment}
 											className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"

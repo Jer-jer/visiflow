@@ -86,13 +86,22 @@ export interface VisitorDataType {
 	companion_details?: VisitorDetailsProps[];
 	date: string;
 	purpose: PurposeProps;
-	plate_num: string;
-	expected_time_in: string;
-	expected_time_out: string;
+	plate_num: string | null;
+	expected_time_in: Date;
+	expected_time_out: Date;
 	status: VisitorStatus;
 	visitor_type: VisitorType;
 	id_picture: IDPictureProps;
 	created_at: Date;
+}
+
+export interface GuardVisitorDataType {
+	visitor_details: VisitorDetailsProps;
+	expected_time_out: Date;
+	purpose: PurposeProps;
+	plate_num: string | null;
+	status: VisitorStatus;
+	visitor_type: VisitorType;
 }
 
 export interface IDPictureProps {
