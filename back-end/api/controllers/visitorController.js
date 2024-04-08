@@ -40,6 +40,32 @@ exports.addVisitor = async (req, res) => {
   let mainVisitorId;
   let index = 0;
 
+  const [frontId, backId, selfieId] = await Promise.all([
+    uploadFileToGCS(
+      Buffer.from(
+        visitors[0].id_picture.front.replace(/^data:image\/\w+;base64,/, ""),
+        "base64"
+      ),
+      `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_front.jpg`
+    ),
+    uploadFileToGCS(
+      Buffer.from(
+        visitors[0].id_picture.back.replace(/^data:image\/\w+;base64,/, ""),
+        "base64"
+      ),
+      `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_back.jpg`
+    ),
+    uploadFileToGCS(
+      Buffer.from(
+        visitors[0].id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""),
+        "base64"
+      ),
+      `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_selfie.jpg`
+    ),
+  ]);
+
+  console.log(frontId, backId, selfieId);
+
   try {
     for (const visitor of visitors) {
       
@@ -68,9 +94,9 @@ exports.addVisitor = async (req, res) => {
         visitor_type: visitor.visitor_type,
         status: visitor.status,
         id_picture: {
-          front: "",
-          back: "",
-          selfie: "",
+          front: index === 0 ? frontId : "",
+          back: index === 0 ? backId : "",
+          selfie: index === 0 ? selfieId : "",
         },
         expected_time_in: visitor.expected_time_in,
         expected_time_out: visitor.expected_time_out
