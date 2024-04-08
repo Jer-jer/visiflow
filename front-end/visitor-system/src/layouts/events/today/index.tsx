@@ -28,7 +28,7 @@ export default function TodayEvents({ events }: EventsPropsAggregate) {
 					}}
 					desc={event.desc}
 				>
-					<img className="max-h-[233px]" alt="example" src={event.img} />
+					<img className="w-full h-64 object-cover" alt="example" src={event.img} />
 				</EventCard>
 			))}
 		</div>

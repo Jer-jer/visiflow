@@ -1,6 +1,6 @@
 /* Built using Ant Design */
 import React, { SetStateAction, Dispatch } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 // Components
 import { Table, Tag, Button, Checkbox } from "antd";
@@ -9,10 +9,13 @@ import { Table, Tag, Button, Checkbox } from "antd";
 import { VisitorDataType } from "../../../utils/interfaces";
 import { VisitorStatus, VisitorType } from "../../../utils/enums";
 import type { ColumnsType } from "antd/es/table";
-import type { RootState } from "../../../store";
+import { AppDispatch, type RootState } from "../../../store";
+
+// Reducers
+import { fetchCompanions } from "../../../states/visitors/companions";
 
 // Utils
-import { formatDateString, formatDateObjToString } from "../../../utils";
+import { formatDateObjToString } from "../../../utils";
 
 // Assets
 import { LoadingOutlined } from "@ant-design/icons";
@@ -39,6 +42,13 @@ export default function VisitorListTable({
 	const { data, loading } = useSelector((state: RootState) => state.visitors);
 	const startDate = new Date(dateSearch[0]);
 	const endDate = new Date(dateSearch[1]);
+
+	const dispatch = useDispatch<AppDispatch>();
+
+	const openDetails = (record: VisitorDataType) => {
+		addTab(record);
+		dispatch(fetchCompanions(record._id));
+	};
 
 	const columns: ColumnsType<VisitorDataType> = [
 		{
@@ -160,7 +170,7 @@ export default function VisitorListTable({
 			key: "action",
 			fixed: "right",
 			render: (_, record) => (
-				<Button onClick={() => addTab(record)}>View Details</Button>
+				<Button onClick={() => openDetails(record)}>View Details</Button>
 			),
 		},
 	];

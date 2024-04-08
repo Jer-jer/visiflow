@@ -30,7 +30,6 @@ export default function VisitorCompanionsModal({
 				<span className="text-[22px] text-[#0C0D0D]">Companion Details</span>
 			}
 			centered
-			size={1400}
 			open={open}
 			setOpen={setOpen}
 			footer={false}

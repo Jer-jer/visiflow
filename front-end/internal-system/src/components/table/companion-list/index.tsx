@@ -1,4 +1,5 @@
 import React, { useState, useContext, createContext } from "react";
+import { useSelector } from "react-redux";
 
 //Interfaces
 import { VisitorRecordContext } from "../../../layouts/admin/visitor-management/visitor-details";
@@ -11,6 +12,9 @@ import CompanionLogs from "../../../layouts/admin/visitor-management/companion-l
 //Components
 import { Button, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
+
+//Store
+import { RootState } from "../../../store";
 
 //Styles
 import "../../../utils/variables.scss";
@@ -33,6 +37,12 @@ export default function VisitorCompanionsList({
 	const [companionLastname, setCompanionLastname] = useState("");
 	const [companionId, setCompanionId] = useState("");
 	const [companionPurpose, setCompanionPurpose] = useState<PurposeProps>();
+
+	const { companions } = useSelector((state: RootState) => state.companions);
+
+	const companionDetails = companions.map(
+		(companion) => companion.visitor_details,
+	);
 
 	const recordContext = useContext(VisitorRecordContext);
 
@@ -97,7 +107,7 @@ export default function VisitorCompanionsList({
 		<>
 			<Table
 				columns={columns}
-				dataSource={recordContext!.companion_details!.filter((companion) => {
+				dataSource={companionDetails.filter((companion) => {
 					return search.toLowerCase() === ""
 						? companion
 						: companion.name.first_name
@@ -121,6 +131,30 @@ export default function VisitorCompanionsList({
 									.includes(search.toLowerCase()) ||
 								companion.email.includes(search);
 				})}
+				// dataSource={recordContext!.companion_details!.filter((companion) => {
+				// 	return search.toLowerCase() === ""
+				// 		? companion
+				// 		: companion.name.first_name
+				// 				.toLowerCase()
+				// 				.includes(search.toLowerCase()) ||
+				// 				companion.name
+				// 					.middle_name!.toLowerCase()
+				// 					.includes(search.toLowerCase()) ||
+				// 				companion.name.last_name
+				// 					.toLowerCase()
+				// 					.includes(search.toLowerCase()) ||
+				// 				`${companion.name.last_name} ${companion.name.first_name} ${companion.name.middle_name}`
+				// 					.toLowerCase()
+				// 					.includes(search.toLowerCase()) ||
+				// 				`${companion.name.first_name}${
+				// 					companion.name.middle_name
+				// 						? ` ${companion.name.middle_name}`
+				// 						: ""
+				// 				} ${companion.name.last_name}`
+				// 					.toLowerCase()
+				// 					.includes(search.toLowerCase()) ||
+				// 				companion.email.includes(search);
+				// })}
 				pagination={{ pageSize: 5 }}
 			/>
 			<CompanionRecord.Provider value={companionRecord}>

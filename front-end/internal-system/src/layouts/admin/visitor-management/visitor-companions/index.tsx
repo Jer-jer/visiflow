@@ -2,6 +2,7 @@
 
 import React, { Dispatch, SetStateAction, useContext, useState } from "react";
 import { CSVLink } from "react-csv";
+import { useSelector } from "react-redux";
 
 //Interface
 import { VisitorRecordContext } from "../visitor-details";
@@ -10,6 +11,9 @@ import { VisitorRecordContext } from "../visitor-details";
 import { Input, Tooltip } from "antd";
 import StandardModal from "../../../../components/modal";
 import VisitorCompanionsList from "../../../../components/table/companion-list";
+
+//Store
+import { RootState } from "../../../../store";
 
 //Styles
 import "./styles.scss";
@@ -33,6 +37,8 @@ export default function VisitorCompanions({
 	const [search, setSearch] = useState<string>("");
 	const recordContext = useContext(VisitorRecordContext);
 
+	const { companions } = useSelector((state: RootState) => state.companions);
+
 	const companionDetailsHeaders = [
 		{ label: "First Name", key: "firstname" },
 		{ label: "Middle Name", key: "middlename" },
@@ -49,25 +55,41 @@ export default function VisitorCompanions({
 		{ label: "Expected Check Out", key: "check_out" },
 	];
 
-	const companionDetailsData = recordContext!.companion_details!.map(
-		(companion) => {
-			return {
-				firstname: companion.name.first_name,
-				middlename: companion.name.middle_name,
-				lastname: companion.name.last_name,
-				phone: companion.phone,
-				email: companion.email,
-				house: companion.address.house,
-				street: companion.address.street,
-				brgy: companion.address.brgy,
-				city: companion.address.city,
-				province: companion.address.province,
-				country: companion.address.country,
-				check_in: expectedIn,
-				check_out: expectedOut,
-			};
-		},
-	);
+	// const companionDetailsData = recordContext!.companion_details!.map(
+	// 	(companion) => {
+	// 		return {
+	// 			firstname: companion.name.first_name,
+	// 			middlename: companion.name.middle_name,
+	// 			lastname: companion.name.last_name,
+	// 			phone: companion.phone,
+	// 			email: companion.email,
+	// 			house: companion.address.house,
+	// 			street: companion.address.street,
+	// 			brgy: companion.address.brgy,
+	// 			city: companion.address.city,
+	// 			province: companion.address.province,
+	// 			country: companion.address.country,
+	// 			check_in: expectedIn,
+	// 			check_out: expectedOut,
+	// 		};
+	// 	},
+	// );
+
+	const companionDetailsData = companions.map((companion) => ({
+		firstname: companion.visitor_details.name.first_name,
+		middlename: companion.visitor_details.name.middle_name,
+		lastname: companion.visitor_details.name.last_name,
+		phone: companion.visitor_details.phone,
+		email: companion.visitor_details.email,
+		house: companion.visitor_details.address.house,
+		street: companion.visitor_details.address.street,
+		brgy: companion.visitor_details.address.brgy,
+		city: companion.visitor_details.address.city,
+		province: companion.visitor_details.address.province,
+		country: companion.visitor_details.address.country,
+		check_in: expectedIn,
+		check_out: expectedOut,
+	}))
 
 	return (
 		<StandardModal

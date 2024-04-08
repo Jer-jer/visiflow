@@ -211,9 +211,7 @@ export default function Offices() {
 								hoverable
 								key={key}
 								className="bg-[#DFEAEF] hover:cursor-default md:max-w-[700px] lg:max-w-[700px]"
-								cover={
-									<img alt="example" src={off.img} className="h-auto w-full" />
-								}
+								cover={<img alt="example" src={off.img} className="w-full h-64 object-cover" />}
 							>
 								<Meta
 									className=""

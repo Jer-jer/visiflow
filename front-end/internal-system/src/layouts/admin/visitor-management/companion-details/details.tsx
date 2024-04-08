@@ -35,7 +35,6 @@ import AxiosInstance from "../../../../lib/axios";
 import { formatDateObjToString } from "../../../../utils";
 
 //Assets
-import { ExcelDownload } from "../../../../assets/svg";
 import { ExclamationCircleFilled } from "@ant-design/icons";
 
 //Styles
@@ -222,7 +221,7 @@ export default function CompanionDetails({
 			city: data[mainVisitorIndex].visitor_details.address.city,
 			province: data[mainVisitorIndex].visitor_details.address.province,
 			country: data[mainVisitorIndex].visitor_details.address.country,
-			companion_details: data[mainVisitorIndex].companion_details,
+			// companion_details: data[mainVisitorIndex].companion_details,
 			plate_num: data[mainVisitorIndex].plate_num,
 			status: data[mainVisitorIndex].status,
 			visitor_type: data[mainVisitorIndex].visitor_type,
@@ -284,10 +283,7 @@ export default function CompanionDetails({
 				autoComplete="off"
 			>
 				<div className="mr-[135px] flex flex-col gap-[35px]">
-					<div className="flex justify-end">
-						<ExcelDownload />
-					</div>
-					<div className="ml-[58px] flex flex-col gap-[25px]">
+					<div className="ml-[58px] mt-[50px] flex flex-col gap-[25px]">
 						<div className="flex justify-between">
 							<div className="flex w-[782px] flex-col gap-[20px]">
 								<div className="flex gap-[60px]">
