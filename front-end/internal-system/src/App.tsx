@@ -18,6 +18,10 @@ import Schedules from "./pages/admin/schedules";
 import UnknownPage from "./pages/404";
 
 //Guard
+import VisitorForm from "./pages/guard/visitor-form";
+import QRScanner from "./pages/guard/qr-scanner";
+import PreregisteredQR from "./pages/guard/preregistered-qr";
+import VisitorStatus from "./pages/guard/visitor-status";
 
 //Assets
 import { LoadingOutlined } from "@ant-design/icons";
@@ -53,10 +57,7 @@ function App() {
 					<LoadingOutlined className="text-[128px] text-primary-500" />
 				</div>
 			) : isLoggedIn ? (
-				<LoggedIn
-					isAdmin={isAdmin}
-					setIsAdmin={setIsAdmin}
-				>
+				<LoggedIn isAdmin={isAdmin} setIsAdmin={setIsAdmin}>
 					<Routes>
 						<Route path="/notifications" element={<NotificationsPage />} />
 						{isAdmin ? (
@@ -70,15 +71,14 @@ function App() {
 								/>
 								<Route path="/manage-users" element={<UserManagement />} />
 								<Route path="/home-editor" element={<HomeEditor />} />
-								<Route path="/schedules" element={<Schedules />} />
 							</>
 						) : (
 							<>
-								{/* <Route path="/" element={<Redirect to="/dashboard" />} /> */}
-								<Route
-									path="/"
-									element={<span>Guard System Routes Here</span>}
-								/>
+								<Route path="/" element={<Navigate to="/qr-scanner" />} />
+								<Route path="/qr-scanner" element={<QRScanner />} />
+								<Route path="/visitor-form" element={<VisitorForm />} />
+								<Route path="/preregistered-qr" element={<PreregisteredQR />} />
+								<Route path="/visitor-status" element={<VisitorStatus />} />
 							</>
 						)}
 						<Route path="*" element={<UnknownPage />} />
@@ -86,12 +86,7 @@ function App() {
 				</LoggedIn>
 			) : (
 				<Routes>
-					<Route
-						path="/"
-						element={
-							<Login setIsAdmin={setIsAdmin} />
-						}
-					/>
+					<Route path="/" element={<Login setIsAdmin={setIsAdmin} />} />
 					<Route path="*" element={<Navigate to="/" />} />
 				</Routes>
 			)}
