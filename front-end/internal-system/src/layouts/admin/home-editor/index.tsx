@@ -9,6 +9,7 @@ import { Tabs } from "antd";
 import HomeList from "../../../components/table/home-editor";
 import OfficeScheduleList from "../../../components/table/home-editor/office-schedule";
 import EventsScheduleList from "../../../components/table/home-editor/events-schedule";
+import EmployeeList from '../../../components/table/home-editor/employee-list';
 
 //Styles
 import "../../../utils/variables.scss";
@@ -56,6 +57,14 @@ export default function HomeEditorLayout() {
 					key="3"
 				>
 					<EventsScheduleList />
+				</Tabs.TabPane>
+				<Tabs.TabPane
+					className="w-full"
+					closable={false}
+					tab="Employee List"
+					key="4"
+				>
+					<EmployeeList />
 				</Tabs.TabPane>
 			</Tabs>
 		</div>

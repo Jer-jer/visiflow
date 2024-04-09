@@ -3,9 +3,9 @@ const router = express.Router();
 const passport = require('passport');
 const BuildingLocController = require("../controllers/buildingController");
 
-router.use(
-    passport.authenticate('jwt', {session: false })
-);
+// router.use(
+//     passport.authenticate('jwt', {session: false })
+// );
 
 router.get("/", BuildingLocController.getBuildings);
 

@@ -81,15 +81,15 @@ const AnnouncementAdvisoryProps = ({
 		>
 			{children}
 		</div>
-	);
+	)
 };
 
 interface AnnouncementModel {
-	_id: string;
-	title: string;
-	message: string;
-	updatedAt: string;
-	priority: number;
+	_id: string,
+	title: string,
+	message: string,
+	updatedAt: string,
+	priority: number,
 }
 
 export default function Home() {
@@ -102,27 +102,24 @@ export default function Home() {
 
 	const fetchData = async () => {
 		try {
-			const response = await AxiosInstance.get("/announcements/");
-			const data = response.data.announce;
-			const convertedData: AnnouncementModel[] = data.map(
-				(announcement: any) => ({
-					_id: announcement._id,
-					title: announcement.title,
-					message: announcement.message,
-					updatedAt: new Date(announcement.updatedAt)
-						.toISOString()
-						.split("T")[0],
-					priority: announcement.prio,
-				}),
-			);
-			const sortedAnnouncements = [...convertedData].sort(
-				(a, b) => a.priority - b.priority,
-			);
+			const response = await AxiosInstance.get('/announcements/')
+			const data = response.data.announce
+			const convertedData: AnnouncementModel[] = data.map((announcement: any) => ({
+				_id: announcement._id,
+				title: announcement.title,
+				message: announcement.message,
+				updatedAt: new Date(announcement.updatedAt).toISOString().split('T')[0],
+				priority: announcement.prio
+			  }));
+			const sortedAnnouncements = [...convertedData].sort((a, b) => a.priority - b.priority);
 			setAnnouncement(sortedAnnouncements);
-		} catch (error) {
-			console.error("Error fetching announcements:", error);
-		}
-	};
+		  } catch (error) {
+			console.error('Error fetching announcements:', error);
+		  }
+		  
+
+		
+	}
 
 	return (
 		<div className="flex flex-col justify-center gap-[36px]">
