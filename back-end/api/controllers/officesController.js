@@ -94,10 +94,12 @@ exports.updateOffices = async (req, res) => {
             openday,
             officeImg} = req.body;
 
+        const existingOffice = await Offices.findOne({ name, roomNo });
+        if (existingOffice) {
+            return res.status(400).json({ error: 'Office already exists' });
+        }
+
         const office = await Offices.findById(_id);
-
-        
-
         if(!office) {
             return res.status(404).json({ error: 'Office not found'});
         }

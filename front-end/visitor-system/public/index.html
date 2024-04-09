@@ -18,17 +18,15 @@
 			rel="stylesheet"
 		/>
 
-		<script
+		<!-- <script
 			type="text/javascript"
 			src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
-		></script>
+		></script> -->
 		<script
 			src="https://unpkg.com/@ryangjchandler/alpine-tooltip@1.2.0/dist/cdn.min.js"
 			crossorigin="anonymous"
 			referrerpolicy="no-referrer"
 		></script>
-
-		<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 		<link rel="apple-touch-icon" href="%PUBLIC_URL%/logo.png" />
 		<!--
@@ -46,6 +44,14 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
 		<title>UVG Visitor System</title>
+
+	<!-- Google Translate API -->
+		<script type="text/javascript">
+			function googleTranslateElementInit() {
+				new google.translate.TranslateElement({ pageLanguage: 'en' }, 'google_translate_element');
+			}
+		</script>
+		<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 	</head>
 	<body>
 		<noscript>You need to enable JavaScript to run this app.</noscript>
@@ -61,6 +67,7 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
 	</body>
+	<!-- Chatbase Chatbot API -->
 	<script>
 	window.embeddedChatbotConfig = {
 	chatbotId: "ELWamVJ47Xm4WBNiFKiaY",

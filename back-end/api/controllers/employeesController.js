@@ -1,7 +1,7 @@
 const express = require("express");//for import of express package
 const bodyParser = require("body-parser");
-const Announcements = require('../models/employees');
-const { validateAnnouncements, handleValidationErrors, validationResult } = require('../middleware/dataValidation');
+const Employees = require('../models/employees');
+const { validateEmployees, handleValidationErrors, validationResult } = require('../middleware/dataValidation');
 
 // function sanitizeData(announcements) {
 //     return {
@@ -14,16 +14,34 @@ const { validateAnnouncements, handleValidationErrors, validationResult } = requ
 //Get list of announcements
 exports.getAllEmployees = async (req, res) => {
     try {
-        const announce = await Announcements.find();
-        return res.json({ announce });
+        const employees = await Employees.find();
+        return res.json({ employees });
     } catch (error) {
         return res.status(500).json({ error: "Internal Server Error "});
+    }
+};
+
+// //Find Announcements by Title
+exports.getEmployeesByName = async (req, res) => {
+    try {
+        const {name} = req.body;
+        const regex = new RegExp(name, 'i');
+        const searchEmployees = await Employees.find({name: regex});
+        if(searchEmployees) {
+            return res.status(201).json({ employees: searchEmployees });
+        } else {
+            return res.status(404).json({ error: 'Announcement not found'});
+        }
+    } catch (error) {
+        return res.status(500).json({ error: 'Internal Server Error '});
     }
 };
 
 //Create new announcements
 exports.createNewEmployees = async (req, res) => {
     // Run validation middleware
+    const { name, email, contact } = req.body;
+
     await Promise.all(validateEmployees.map(validation => validation.run(req)));
 
     const errors = validationResult(req);
@@ -31,98 +49,76 @@ exports.createNewEmployees = async (req, res) => {
         return res.status(400).json({ errors: errors.array()[0].msg });
     }
 
-    
-    
-    try {
-        const { 
-            name, 
-            email,
-            contact
-        } = req.body;
-        
-        // //check if the bldgLoc already exists
-        // const existingbldgLoc = await BuildingLoc.findOne({ name, roomNo });
-        // if (existingbldgLoc) {
-        //     return res.status(400).json({ error: 'Bldg Loc already exists' });
-        // }
+    const existingEmployee = await Employees.findOne({ name, email });
+        if (existingEmployee) {
+            return res.status(400).json({ error: 'Employee already exists' });
+        }
 
-        const newAnnounce = new Announcements({ 
-            name, 
+    try {
+        const newEmployee = await Employees.create({ 
+            name,
             email,
             contact
         });
 
+        res.status(201).json({ employees: newEmployee });
 
-        const createdEmployees = await newEmployee.save();
-
-        if (createdEmployees) {
-            return res.status(201).json({ employee: sanitizeData(createdEmployees) });
-        } else {
-            return res.status(400).json({ error: 'Failed to Create new User' });
-        }
-    } catch (err) {
-        return res.status(500).json({ error: 'Internal Server Error'});
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Failed to create new Employee" });
     }
 };
-// //Find Announcements by Title
-// exports.getAnnouncementsByTitle = async (req, res) => {
-//     try {
-//         const {title} = req.body;
-//         const regex = new RegExp(title, 'i');
-//         const searchAnnouncements = await Announcements.find({title: regex});
-//         if(searchAnnouncements) {
-//             return res.status(201).json({ announce: searchAnnouncements });
-//         } else {
-//             return res.status(404).json({ error: 'Announcement not found'});
-//         }
-//     } catch (error) {
-//         return res.status(500).json({ error: 'Internal Server Error '});
-//     }
-// };
 
-// exports.updateAnnouncements = async (req, res) => {
-//     try {
-//         const { _id, title, message} = req.body;
-
-//         const announce = await Announcements.findById(_id);
-
-//         if(!announce) {
-//             return res.status(404).json({ error: 'Announcement not found'});
-//         }
-
-//         const updateFields = {
-//             title: title !== undefined ? title : announce.title,
-//             message: message !== undefined ? message : announce.message
-//         }
+exports.updateEmployees = async (req, res) => {
+    try {
         
-//         const filteredUpdateFields = Object.fromEntries(
-//             Object.entries(updateFields).filter(([key, value]) => value !== undefined)
-//         );
+        const { _id, name,  email, contact} = req.body;
 
-//         if (Object.keys(filteredUpdateFields).length === 0) {
-//             return res.status(400).json({ error: "No valid fields to update" });
-//         }
+        const existingEmployee = await Employees.findOne({ name, email });
+        if (existingEmployee) {
+            return res.status(400).json({ error: 'Employee already exists' });
+        }
 
-//         const updatedAnnouncements = await Announcements.findByIdAndUpdate(_id, filteredUpdateFields, { new: true });
+        const employee = await Employees.findById(_id);
 
-//         return res.status(201).json({ announce: sanitizeData(updatedAnnouncements)});
-//     } catch (error) {
-//         return res.status(500).json({ error: 'Internal Server Error' });
-//     }
-// };
+        if(!employee) {
+            return res.status(404).json({ error: 'Employee not found'});
+        }
 
-// exports.deleteAnnouncements = async (req, res) => {
-//       try {
-//         const {_id} = req.body;
+        const updateFields = {
+            name: name !== undefined ? name : employee.name,
+            email: email !== undefined ? email : employee.email,
+            contact: contact !== undefined ? contact : employee.contact
+        }
+        
+        const filteredUpdateFields = Object.fromEntries(
+            Object.entries(updateFields).filter(([key, value]) => value !== undefined)
+        );
 
-//         const deletedData = await Announcements.findByIdAndDelete(_id);
+        if (Object.keys(filteredUpdateFields).length === 0) {
+            return res.status(400).json({ error: "No valid fields to update" });
+        }
 
-//         if (deletedData) {
-//             return res.status(201).json({ message: 'Data deleted successfully'});
-//         } else {
-//             return res.status(404).json({ error: "Announcement not found"});
-//         }
-//       } catch (error) {
-//         return res.status(500).json({ error: 'Internal Server Error' });
-//       }
-// }
+        const updatedEmployees = await Employees.findByIdAndUpdate(_id, filteredUpdateFields, { new: true });
+
+        return res.status(201).json({ employees: updatedEmployees});
+    } catch (error) {
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+exports.deleteEmployees = async (req, res) => {
+      try {
+        const {_id} = req.body;
+
+        const deletedData = await Employees.findByIdAndDelete(_id);
+
+        if (deletedData) {
+            return res.status(201).json({ message: 'Data deleted successfully'});
+        } else {
+            return res.status(404).json({ error: "Announcement not found"});
+        }
+      } catch (error) {
+        return res.status(500).json({ error: 'Internal Server Error' });
+      }
+}
