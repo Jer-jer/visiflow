@@ -9,6 +9,9 @@ const {
   sendEmail,
   createSystemLog,
   createNotification,
+  generateFileName,
+  createImageBuffer,
+  validateDuplicate
 } = require("../utils/helper");
 const { Buffer } = require("node:buffer");
 const Notification = require("../models/notification");
@@ -58,229 +61,113 @@ exports.getCompanions = async (req, res) => {
 
 exports.addVisitor = async (req, res) => {
   const { visitors } = req.body;
-
   const io = req.io;
 
-  let companions = [];
-  let mainVisitorId;
-  let index = 0;
-
-<<<<<<< HEAD
-  // const [frontId, backId, selfieId] = await Promise.all([
-  //   uploadFileToGCS(
-  //     Buffer.from(
-  //       visitors[0].id_picture.front.replace(/^data:image\/\w+;base64,/, ""),
-  //       "base64"
-  //     ),
-  //     `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_front.jpg`
-  //   ),
-  //   uploadFileToGCS(
-  //     Buffer.from(
-  //       visitors[0].id_picture.back.replace(/^data:image\/\w+;base64,/, ""),
-  //       "base64"
-  //     ),
-  //     `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_back.jpg`
-  //   ),
-  //   uploadFileToGCS(
-  //     Buffer.from(
-  //       visitors[0].id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""),
-  //       "base64"
-  //     ),
-  //     `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_selfie.jpg`
-  //   ),
-  // ]);
+  if (!visitors || visitors.length === 0) {
+    return res.status(400).json({ error: 'No visitors provided' });
+  }
 
   try {
-    for (const visitor of visitors) {
-=======
-  const [frontId, backId, selfieId] = await Promise.all([
-    uploadFileToGCS(
-      Buffer.from(
-        visitors[0].id_picture.front.replace(/^data:image\/\w+;base64,/, ""),
-        "base64"
-      ),
-      `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_front.jpg`
-    ),
-    uploadFileToGCS(
-      Buffer.from(
-        visitors[0].id_picture.back.replace(/^data:image\/\w+;base64,/, ""),
-        "base64"
-      ),
-      `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_back.jpg`
-    ),
-    uploadFileToGCS(
-      Buffer.from(
-        visitors[0].id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""),
-        "base64"
-      ),
-      `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_selfie.jpg`
-    ),
-  ]);
+    const mainVisitor = visitors[0];
+    let companions = [];
+    let mainVisitorId;
 
-  try {
-    for (const visitor of visitors) {
-      await Promise.all(
+    // Bulk data validation
+    await Promise.all(visitors.map(visitor => 
+      Promise.all(
         validateVisitor.map((validation) => validation.run(visitor))
-      );
->>>>>>> master
+      )
+    ));
 
-      // console.log(visitor);
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array()[0].msg });
+    }
 
-      // await Promise.all(
-      //   validateVisitor.map((validation) => validation.run(visitor))
-      // );
+    const duplicateErrors = await validateDuplicate(visitors, res);
 
-      // const errors = validationResult(req);
+    if (duplicateErrors.length > 0) {
+      return res.status(409).json({ error: duplicateErrors[0] });
+    }
 
-      // if (!errors.isEmpty()) {
-      //   return res.status(400).json({ errors: errors.array()[0].msg });
-      // }
-
-      const visitorDB = await Visitor.findOne({
-        "visitor_details.email": visitor.visitor_details.email,
-      });
-  
-      if (visitorDB) {
-<<<<<<< HEAD
-        const checkCompanion = await Visitor.findOne({
-          "visitor_details.name.first_name":
-            visitor.visitor_details.name.first_name,
-          "visitor_details.name.last_name":
-            visitor.visitor_details.name.last_name
-        });
-        
-        if (!checkCompanion)
-=======
-        const firstName = visitorDB.visitor_details.name.first_name;
-        const middleName = visitorDB.visitor_details.name.middle_name
-          ? visitorDB.visitor_details.name.middle_name
-          : "";
-        const lastName = visitorDB.visitor_details.name.last_name;
-
-        const duplicateCompanion =
-          visitor.visitor_details.name.first_name === firstName &&
-          visitor.visitor_details.name.middle_name === middleName &&
-          visitor.visitor_details.name.last_name === lastName;
-        // const checkCompanion = await Visitor.findOne({
-        //   "visitor_details.name.first_name":
-        //     visitorDB.visitor_details.name.first_name,
-        //   "visitor_details.name.middle_name": visitorDB.visitor_details.name
-        //     .middle_name
-        //     ? visitorDB.visitor_details.name.middle_name
-        //     : "",
-        //   "visitor_details.name.last_name":
-        //     visitorDB.visitor_details.name.last_name,
-        // });
-
-        if (!duplicateCompanion)
->>>>>>> master
-          return res.status(409).json({
-          error: `${visitor.visitor_details.email} has already been used by another visitor`,
-        });
-
-        return res.status(400).json({
-          error: `Visitor using ${visitor.visitor_details.email} already has an existing record`,
-        });
-      }
-
-<<<<<<< HEAD
-      //   return res.status(400).json({
-      //     error: `Visitor using ${visitor.visitor_details.email} already has an existing record`,
-      //   });
-      // }
-=======
-      const newVisitor = await Visitor.create({
+    const [frontId, backId, selfieId] = await Promise.all([
+      //Upload images to Google Cloud Storage
+      uploadFileToGCS(
+        createImageBuffer(mainVisitor.id_picture.front), 
+        generateFileName(mainVisitor, "front")),
+      uploadFileToGCS(
+        createImageBuffer(mainVisitor.id_picture.back), 
+        generateFileName(mainVisitor, "back")),
+      uploadFileToGCS(
+        createImageBuffer(mainVisitor.id_picture.selfie), 
+        generateFileName(mainVisitor, "selfie")),
+    ]);
+    
+    const newVisitorsData = visitors.map((visitor, index) => {
+      // Visitor creation
+      const { visitor_details, plate_num, purpose, visitor_type, status, expected_time_in, expected_time_out } = visitor;
+      return {
         _id: new ObjectId(),
         visitor_details: {
           name: {
-            first_name: visitor.visitor_details.name.first_name,
-            middle_name: visitor.visitor_details.name.middle_name
-              ? visitor.visitor_details.name.middle_name
-              : "",
-            last_name: visitor.visitor_details.name.last_name,
+            ...visitor_details.name,
+            middle_name: visitor_details.name.middle_name || "",
           },
-          address: {
-            street: visitor.visitor_details.address.street,
-            house: visitor.visitor_details.address.house,
-            brgy: visitor.visitor_details.address.brgy,
-            city: visitor.visitor_details.address.city,
-            province: visitor.visitor_details.address.province,
-            country: visitor.visitor_details.address.country,
-          },
-          email: visitor.visitor_details.email,
-          phone: visitor.visitor_details.phone,
+          address: { ...visitor_details.address },
+          email: visitor_details.email,
+          phone: visitor_details.phone,
         },
         companions: [],
-        plate_num: visitor.plate_num,
-        purpose: visitor.purpose,
-        visitor_type: visitor.visitor_type,
-        status: visitor.status,
+        plate_num,
+        purpose,
+        visitor_type,
+        status,
         id_picture: {
           front: index === 0 ? frontId : "",
           back: index === 0 ? backId : "",
           selfie: index === 0 ? selfieId : "",
         },
-        expected_time_in: visitor.expected_time_in,
-        expected_time_out: visitor.expected_time_out,
-      });
-      if (index === 0) {
-        mainVisitorId = newVisitor._id;
-      } else {
-        companions.push(newVisitor._id);
+        expected_time_in,
+        expected_time_out
+      };
+    });
+    
+    try {
+      const newVisitors = await Visitor.insertMany(newVisitorsData);
+      mainVisitorId = newVisitors[0]._id;
+      companions.push(...newVisitors.slice(1).map(visitor => visitor._id));
+
+      if (companions.length > 0) {
+          await Visitor.updateOne(
+            { _id: mainVisitorId },
+            { $set: { companions: companions } }
+          );
       }
->>>>>>> master
 
-      // const newVisitor = await Visitor.create({
-      //   _id: new ObjectId(),
-      //   visitor_details: {
-      //     first_name: visitor.visitor_details.first_name,
-      //     middle_name: visitor.visitor_details.middle_name
-      //       ? visitor.visitor_details.middle_name
-      //       : "",
-      //     last_name: visitor.visitor_details.last_name,
-      //   },
-      //   companions: [],
-      //   plate_num: visitor.plate_num,
-      //   purpose: visitor.purpose,
-      //   visitor_type: visitor.visitor_type,
-      //   status: visitor.status,
-      //   id_picture: {
-      //     front: index === 0 ? frontId : "",
-      //     back: index === 0 ? backId : "",
-      //     selfie: index === 0 ? selfieId : "",
-      //   },
-      //   expected_time_in: visitor.expected_time_in,
-      //   expected_time_out: visitor.expected_time_out,
-      // });
+      newVisitors.forEach(visitor => {
+        io.emit("newVisitor", visitor);
+        if (visitor.visitor_type === "Pre-Registered") {
+          createNotification(visitor, "pending", io);
+        } else {
+          createSystemLog(req.user._id, "add_visitor", "success");
+        }
+      });
 
-      // if (index === 0) {
-      //   mainVisitorId = newVisitor._id;
-      // } else {
-      //   companions.push(newVisitor._id);
-      // }
-
-      // io.emit("newVisitor", newVisitor);
-
-      // if (newVisitor.visitor_type === "Pre-Registered") {
-      //   createNotification(newVisitor, "pending", io);
-      // } else {
-      //   //For walk in
-      //   const user_id = req.user._id;
-      //   const log_type = "add_visitor";
-      //   createSystemLog(user_id, log_type, "success");
-      // }
-
-      index++;
+      if (!res.headersSent) { // Check if headers have been sent before sending the response
+        return res.status(201).json({ visitors: newVisitors });
+      }
+    } catch (error) {
+      if (error.code === 11000) {
+        if (!res.headersSent) {
+          return res.status(409).json({ error: "Duplicate key error" });
+        }
+      } else {
+        if (!res.headersSent) {
+          return res.status(500).json({ error: "Internal Server Error" });
+        }
+      }
     }
 
-    // if (companions.length > 0) {
-    //   await Visitor.updateOne(
-    //     { _id: mainVisitorId },
-    //     { $set: { companions: companions } }
-    //   );
-    // }
-
-    // return res.status(201).json({ visitors: visitors });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error });
