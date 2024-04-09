@@ -48,15 +48,20 @@ export const visitorSlice = createSlice({
 				(visitor) => visitor._id !== action.payload,
 			);
 		},
+		// deleteCompanion: (state, action: PayloadAction<string>) => {
+		// 	state.data = state.data.map((visitor) => {
+		// 		if (visitor.companion_details) {
+		// 			visitor.companion_details = visitor.companion_details.filter(
+		// 				(companion) => companion._id !== action.payload,
+		// 			);
+		// 		}
+		// 		return visitor;
+		// 	});
+		// },
 		deleteCompanion: (state, action: PayloadAction<string>) => {
-			state.data = state.data.map((visitor) => {
-				if (visitor.companion_details) {
-					visitor.companion_details = visitor.companion_details.filter(
-						(companion) => companion._id !== action.payload,
-					);
-				}
-				return visitor;
-			});
+			state.data = state.data.filter(
+				(visitor) => visitor._id !== action.payload,
+			);
 		},
 		openVisitor: (state, action: PayloadAction<VisitorDataType>) => {
 			state.dashboardVisitor = action.payload;

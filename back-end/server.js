@@ -32,9 +32,6 @@ const { timeInReminder, timeOutReminder } = require("./api/utils/helper");
 // Create Express app
 const app = express();
 const server = http.createServer(app);
-// const io = socketIo(server, { cors: (origin = "*") });
-// const io = socketIo(server, { cors: { origin: "*" } });
-// const io = new Server(server, { cors: { origin: "*" } });
 const io = new Server(server, { cors: { origin: "*" } });
 
 app.set("io", io);
@@ -67,13 +64,13 @@ app.use('/offices', officesRouter);
 app.use('/employees', employeesRouter);
 
 // Socket.io events
-io.on("connection", (socket) => {
-  console.log(`Client: ${socket.id} connected!`);
+// io.on("connection", (socket) => {
+//   console.log(`Client: ${socket.id} connected!`);
 
-  socket.on("disconnect", () => {
-    console.log(`Client: ${socket.id} disconnected`);
-  });
-});
+//   socket.on("disconnect", () => {
+//     console.log(`Client: ${socket.id} disconnected`);
+//   });
+// });
 
 // Error handling middleware
 app.use((error, req, res, next) => {

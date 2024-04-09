@@ -57,7 +57,7 @@ function App() {
 			</div>
 
 			{/* MAIN CONTENT */}
-			<div>
+			<div className="h-full">
 				<Routes>
 					<Route path="/" element={<Home />} />
 					<Route path="/pre-register" element={<PreRegister />} />

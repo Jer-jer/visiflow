@@ -8,25 +8,26 @@ import { Form } from "antd";
 import StepOneForm from "./form";
 
 // Interfaces
-import type { StepOneData } from "../../../utils/zodSchemas";
-import { VisitorDataType } from "../../../utils/interfaces";
-import { StepOneZod } from "../../../utils/zodSchemas";
+import type { StepOneData } from "../../../../utils/zodSchemas";
+import { VisitorDataType } from "../../../../utils/interfaces";
+import { StepOneZod } from "../../../../utils/zodSchemas";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 
 // Utils
-import { formatDateObjToString } from "../../../utils";
+import { formatDateObjToString } from "../../../../utils";
 
 // Styles
 import "./styles.scss";
 
 interface StepOneProps {
 	visitorNo: number;
-	visitors: VisitorDataType;
+	mainVisitor: VisitorDataType;
+	visitors: VisitorDataType[];
 	setProgress: Dispatch<SetStateAction<number>>;
 	setVisitorNo: Dispatch<SetStateAction<number>>;
-	setVisitors: Dispatch<SetStateAction<VisitorDataType>>;
+	setVisitors: Dispatch<SetStateAction<VisitorDataType[]>>;
 }
 
 dayjs.extend(weekday);
@@ -35,15 +36,13 @@ dayjs.extend(customParseFormat);
 
 export default function StepOne({
 	visitorNo,
+	mainVisitor,
 	visitors,
 	setProgress,
 	setVisitorNo,
 	setVisitors,
 }: StepOneProps) {
 	const [isTCOpen, setIsTCOpen] = useState(false);
-
-	console.log(visitors.expected_time_out);
-	console.log(formatDateObjToString(visitors.expected_time_out));
 
 	const {
 		register,
@@ -54,12 +53,12 @@ export default function StepOne({
 		resolver: zodResolver(StepOneZod),
 		defaultValues: {
 			visitorNo: visitorNo,
-			checkInOut: [visitors.expected_time_in, visitors.expected_time_out],
-			what: visitors.purpose.what,
-			when: visitors.purpose.when,
-			where: visitors.purpose.where,
-			who: visitors.purpose.who,
-			termsConditions: visitors.termsConditions,
+			checkInOut: [mainVisitor.expected_time_in, mainVisitor.expected_time_out],
+			what: mainVisitor.purpose.what,
+			when: mainVisitor.purpose.when,
+			where: mainVisitor.purpose.where,
+			who: mainVisitor.purpose.who,
+			termsConditions: mainVisitor.termsConditions,
 		},
 	});
 
@@ -88,6 +87,7 @@ export default function StepOne({
 			<StepOneForm
 				visitorNo={visitorNo}
 				visitors={visitors}
+				mainVisitor={mainVisitor}
 				isTCOpen={isTCOpen}
 				errors={errors}
 				register={register}

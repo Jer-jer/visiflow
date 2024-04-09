@@ -5,7 +5,7 @@ import HomeBox from "../../components/home-box";
 
 // Styles
 import "./styles.scss";
-import AxiosInstace from "../../lib/axios";
+import AxiosInstance from "../../lib/axios";
 
 // Assets
 
@@ -109,7 +109,7 @@ export default function Home() {
 
 	const fetchData = async() => {
 		try {
-			const response = await AxiosInstace.get('/announcements/')
+			const response = await AxiosInstance.get('/announcements/')
 			const data = response.data.announce
 			const convertedData: AnnouncementModel[] = data.map((announcement: any) => ({
 				_id: announcement._id,
