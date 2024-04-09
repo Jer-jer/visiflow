@@ -86,7 +86,6 @@ export default function StepThree({
 			title: "Do you want to proceed?",
 			icon: <ExclamationCircleFilled />,
 			onOk() {
-				console.log(visitors);
 				if (
 					visitors.filter((visitor: VisitorDataType) =>
 						companions_not_empty(visitor.visitor_details),
@@ -101,7 +100,18 @@ export default function StepThree({
 				} else {
 					setLoading(true);
 					AxiosInstance.post("/visitor/new", {
-						visitors: visitors,
+						visitors: visitors.map((visitor: VisitorDataType) => ({
+							...visitor,
+							visitor_details: {
+								...visitor.visitor_details,
+								name: {
+									...visitor.visitor_details.name,
+									middle_name: visitor.visitor_details.name.middle_name
+										? visitor.visitor_details.name.middle_name
+										: "",
+								},
+							},
+						})),
 					})
 						.then((res: any) => {
 							setLoading(false);
@@ -111,9 +121,10 @@ export default function StepThree({
 							setLoading(false);
 							if (err.response) {
 								error(
-									err.response.data.error ||
+									err.response.data.error._message ||
+										err.response.data.error ||
 										err.response.data.errors ||
-										err.response.errors,
+										"Something went wrong",
 								);
 							} else {
 								error("Something went wrong.");
@@ -133,7 +144,7 @@ export default function StepThree({
 			This form will close after ${secondsToGo} second.`,
 			onOk() {
 				clearInterval(timer);
-				// window.location.reload();
+				window.location.reload();
 			},
 		});
 
@@ -148,7 +159,7 @@ export default function StepThree({
 		setTimeout(() => {
 			clearInterval(timer);
 			instance.destroy();
-			// window.location.reload();
+			window.location.reload();
 		}, secondsToGo * 1000);
 	};
 
