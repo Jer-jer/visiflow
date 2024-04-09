@@ -5,7 +5,7 @@ import HomeBox from "../../components/home-box";
 
 // Styles
 import "./styles.scss";
-import AxiosInstace from "../../lib/axios";
+import AxiosInstance from "../../lib/axios";
 
 // Assets
 
@@ -22,6 +22,7 @@ interface DressCodeProps {
 interface AnnouncementProps {
 	size?: String;
 	responsive?: String;
+	date?: String;
 	children: React.ReactNode;
 }
 
@@ -70,20 +71,29 @@ const AnnouncementAdvisoryProps = ({
 	size,
 	responsive,
 	children,
+	date
 }: AnnouncementProps) => {
 	return (
 		<div
-			className={`w-[80%] pb-[15px] text-center ${size} font-[300] text-[#4B4B4B] ${responsive}`}
+		className={`w-[80%] pb-[15px] text-center ${size} font-[300] ${responsive}`}
 		>
-			{children}
+			<div
+				className={`text-black font-medium`}
+			>
+				Posted at: {date}
+			</div>
+			<div
+				className={`text-[#4B4B4B]`}
+			>
+				{children}
+			</div>
 		</div>
-	);
-};
-
-interface AnnouncementModel {
+	)
+};interface AnnouncementModel {
 	_id: string,
 	title: string,
-	message: string
+	message: string,
+	updatedAt: string
 }
 
 export default function Home() {
@@ -96,12 +106,13 @@ export default function Home() {
 
 	const fetchData = async() => {
 		try {
-			const response = await AxiosInstace.get('/announcements/')
+			const response = await AxiosInstance.get('/announcements/')
 			const data = response.data.announce
 			const convertedData: AnnouncementModel[] = data.map((announcement: any) => ({
 				_id: announcement._id,
 				title: announcement.title,
 				message: announcement.message,
+				updatedAt: new Date(announcement.updatedAt).toISOString().split('T')[0],
 			  }));
 			setAnnouncement(convertedData);
 		  } catch (error) {
@@ -127,10 +138,8 @@ export default function Home() {
 							headerSize="text-[32px]"
 							headerText={announce.title}
 							>
-								<AnnouncementAdvisoryProps size="text-[20px]">
-									<span>
-										{announce.message}
-									</span>
+								<AnnouncementAdvisoryProps size="text-[20px]" date={announce.updatedAt}>
+									<span>{announce.message}</span>
 								</AnnouncementAdvisoryProps>
 							</HomeBox>
 						))}

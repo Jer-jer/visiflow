@@ -45,7 +45,7 @@ root.render(
 			}}
 		>
 			<BrowserRouter basename="/">
-				<App>
+				<App className="h-full">
 					<MainApp />
 				</App>
 			</BrowserRouter>

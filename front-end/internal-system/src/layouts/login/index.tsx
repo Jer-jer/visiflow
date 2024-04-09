@@ -1,9 +1,8 @@
-import React, { useState, Dispatch, SetStateAction } from "react";
+import React, { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { jwtDecode } from "jwt-decode";
-import { useNavigate } from "react-router-dom";
 
 //Interface
 import { LoginZod } from "../../utils/zodSchemas";
@@ -29,18 +28,12 @@ import {
 
 type LoginDetailZod = z.infer<typeof LoginZod>;
 
-interface LoginProps {
-	setIsAdmin: Dispatch<SetStateAction<boolean>>;
-}
-
-function LoginLayout({ setIsAdmin }: LoginProps) {
+function LoginLayout() {
 	const [isFocused, setIsFocused] = useState(false);
 
 	// Modal related data
 	const [modalMessage, setModalMessage] = useState("");
 	const [isModalOpen, setIsModalOpen] = useState(false);
-
-	const navigate = useNavigate();
 
 	const showModal = () => {
 		setIsModalOpen(true);
@@ -75,17 +68,10 @@ function LoginLayout({ setIsAdmin }: LoginProps) {
 
 				switch (role) {
 					case "admin":
-						setIsAdmin(true);
-						localStorage.setItem("role", "1");
 						window.location.reload();
 						break;
 					case "security":
-						setIsAdmin(false);
-						localStorage.setItem("role", "2");
 						window.location.reload();
-						break;
-					default:
-						setIsAdmin(false);
 						break;
 				}
 			})

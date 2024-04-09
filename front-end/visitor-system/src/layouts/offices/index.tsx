@@ -11,7 +11,7 @@ import "./styles.scss";
 
 // Assets
 import { SearchOutlined } from "@ant-design/icons";
-import AxiosInstace from "../../lib/axios";
+import AxiosInstance from "../../lib/axios";
 
 const { Meta } = Card;
 
@@ -77,18 +77,30 @@ export default function Offices() {
 	}: OfficesProps) => {
 		return (
 			<div className="grid grid-cols-3 gap-4 text-[#0C0D0D]">
-					<span className="text-[15px] font-[400]">Operating Hours:</span>
-					<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">{op}</p>
-					<span className="text-[15px] font-[400]">Days Available:</span>
-					<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">{dayOp}</p>
-					<span className="text-[15px] font-[400]">Personnel in Charge:</span>
-					<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">{pic}</p>
-					<span className="text-[15px] font-[400]">Email:</span>
-					<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">{email}</p>
-					<span className="text-[15px] font-[400]">Location:</span>
-					<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">{location}</p>
-					<span className="text-[15px] font-[400]">Contact:</span>
-					<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">{contact}</p>
+				<span className="text-[15px] font-[400]">Operating Hours:</span>
+				<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">
+					{op}
+				</p>
+				<span className="text-[15px] font-[400]">Days Available:</span>
+				<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">
+					{dayOp}
+				</p>
+				<span className="text-[15px] font-[400]">Personnel in Charge:</span>
+				<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">
+					{pic}
+				</p>
+				<span className="text-[15px] font-[400]">Email:</span>
+				<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">
+					{email}
+				</p>
+				<span className="text-[15px] font-[400]">Location:</span>
+				<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">
+					{location}
+				</p>
+				<span className="text-[15px] font-[400]">Contact:</span>
+				<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">
+					{contact}
+				</p>
 				{/* <div
 					className={`w-fit rounded-[5px]  ${
 						availability ? "bg-primary-500" : "bg-error"
@@ -103,63 +115,84 @@ export default function Offices() {
 	};
 	//for use effect to call fetch data when opening window
 	useEffect(() => {
-		if(searchValue == "") {
+		if (searchValue === "") {
 			fetchData();
 		} else {
 			handleSearch();
 		}
-	}, [searchValue])
+	}, [searchValue]);
 
 	//fetch data for display
-	const fetchData = async() => {
+	const fetchData = async () => {
 		try {
-			const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-			const response = await AxiosInstace.get('/offices/')
-			const data = response.data.office
+			const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+			const response = await AxiosInstance.get("/offices/");
+			const data = response.data.office;
 			const convertedData: OfficesProps[] = data.map((office: any) => ({
 				title: office.name,
-				op: new Date(office.opentime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + " - " + new Date(office.closetime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+				op:
+					new Date(office.opentime).toLocaleTimeString([], {
+						hour: "2-digit",
+						minute: "2-digit",
+					}) +
+					" - " +
+					new Date(office.closetime).toLocaleTimeString([], {
+						hour: "2-digit",
+						minute: "2-digit",
+					}),
 				dayOp: days.filter((day, index) => office.openday[index]).join(", "),
 				pic: office.pic,
 				email: office.email,
 				location: office.roomNo,
 				contact: office.contact,
 				img: office.officeImg,
-			  }));
+			}));
 			setOffice(convertedData);
-		  } catch (error) {
-			console.error('Error fetching offices:', error);
-		  }
-	}
+		} catch (error) {
+			console.error("Error fetching offices:", error);
+		}
+	};
 
-	useEffect(() => {
-		console.log("test", office)
-	}, [office])
+	// useEffect(() => {
+	// 	console.log("test", office)
+	// }, [office])
 
-	const handleSearch = async() => {
+	const handleSearch = async () => {
 		try {
-			const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-			const response = await AxiosInstace.post('/offices/search', {query: searchValue})
+			const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+			const response = await AxiosInstance.post("/offices/search", {
+				query: searchValue,
+			});
 			const data = response.data.office;
 			const convertedData: OfficesProps[] = data.map((office: any) => ({
 				title: office.name,
-				op: new Date(office.opentime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + " - " + new Date(office.closetime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-				dayOp: days.map((day, index) => { return office.openday[index] ? "" : day}),
+				op:
+					new Date(office.opentime).toLocaleTimeString([], {
+						hour: "2-digit",
+						minute: "2-digit",
+					}) +
+					" - " +
+					new Date(office.closetime).toLocaleTimeString([], {
+						hour: "2-digit",
+						minute: "2-digit",
+					}),
+				dayOp: days.map((day, index) => {
+					return office.openday[index] ? "" : day;
+				}),
 				pic: office.pic,
 				email: office.email,
 				location: office.roomNo,
 				contact: office.contact,
 				img: office.officeImg,
-			  }));
+			}));
 			setOffice(convertedData);
-		  } catch (error) {
-			console.error('Error fetching offices:', error);
-		  }
-	}
-
+		} catch (error) {
+			console.error("Error fetching offices:", error);
+		}
+	};
 
 	return (
-		<div className="flex justify-center item-center align-center">
+		<div className="item-center align-center flex justify-center">
 			<div className="container ml-[24px] mr-[24px] mt-[25px] flex flex-col items-center gap-[50px] md:ml-[40px] md:mt-[50px] lg:items-start lg:gap-[94px]">
 				<Input
 					className="search-input w-full md:w-[584px] lg:w-[450px]"
@@ -167,18 +200,18 @@ export default function Offices() {
 					placeholder="Search"
 					value={searchValue}
 					onPressEnter={handleSearch}
-					onChange={e => setSearchValue(e.target.value)}
+					onChange={(e) => setSearchValue(e.target.value)}
 					prefix={<SearchOutlined />}
 				/>
 
-			<div className="flex justify-center w-full">
-				<div className="mb-[120px] p-[32px] grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 justify-center gap-[56px] lg:justify-normal w-full">
+				<div className="flex w-full justify-center">
+					<div className="mb-[120px] grid w-full grid-cols-1 justify-center gap-[56px] p-[32px] sm:grid-cols-2 md:grid-cols-3 lg:justify-normal">
 						{office.map((off, key) => (
 							<Card
 								hoverable
 								key={key}
 								className="bg-[#DFEAEF] hover:cursor-default md:max-w-[700px] lg:max-w-[700px]"
-								cover={<img alt="example" src={off.img} className="w-full h-auto" />}
+								cover={<img alt="example" src={off.img} className="w-full h-64 object-cover" />}
 							>
 								<Meta
 									className=""
@@ -204,8 +237,5 @@ export default function Offices() {
 				</div>
 			</div>
 		</div>
-		
-
-
-);
+	);
 }
