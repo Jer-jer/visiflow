@@ -115,13 +115,12 @@ exports.addVisitor = async (req, res) => {
           "visitor_details.name.last_name":
             visitor.visitor_details.name.last_name
         });
-        if (checkCompanion)
+        
+        if (!checkCompanion)
           return res.status(409).json({
           error: `${visitor.visitor_details.email} has already been used by another visitor`,
         });
-      }
 
-      if (visitorDB) {
         return res.status(400).json({
           error: `Visitor using ${visitor.visitor_details.email} already has an existing record`,
         });
