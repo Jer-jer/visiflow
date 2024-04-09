@@ -25,7 +25,7 @@ const ACCESS_TOKEN_EXPIRATION = "20m";
 const REFRESH_TOKEN_EXPIRATION = "7d";
 const bucketName = "visiflow";
 
-const local_ip = 'localhost';
+const local_ip = '192.168.1.4';
 
 // Lazy-loaded storage
 let storage;
@@ -298,19 +298,36 @@ async function updateLog(badgeId, _id, type, user_id, res) {
   callback();
 }
 
+//Image Upload Section
+
+//Function to upload image to Google Cloud Storage
 function uploadFileToGCS(bufferData, fileName) {
   const storage = getStorage();
   const bucket = storage.bucket(bucketName);
   const file = bucket.file(fileName);
 
-  file.save(bufferData, {
-    contentType: "image/jpeg",
-  });
-
-  const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
-
-  return publicUrl;
+  try {
+    file.save(bufferData, {
+      contentType: "image/jpeg",
+    });
+    
+    return `https://storage.googleapis.com/${bucketName}/${fileName}`;
+  } catch (error) {
+    return error
+  }
 }
+
+//Generates the image file name
+function generateFileName(visitor, type) {
+  return `${Date.now()}_${visitor.visitor_details.name.last_name.toUpperCase()}_${type}.jpg`;
+}
+
+//Generate image Buffer
+function createImageBuffer(imageData) {
+  return Buffer.from(imageData.replace(/^data:image\/\w+;base64,/, ""), "base64");
+}
+
+//End of Image Upload Section
 
 function isThirtyMinutesBefore(time_in) {
   const currentDate = new Date();
@@ -467,6 +484,42 @@ async function createSystemLog(id, type, status) {
   }
 }
 
+//Visitor Duplicate Validation
+async function validateDuplicate(visitors, res) {
+
+  const validateDuplicate = visitors.map(async visitor => {
+    try {
+      // Check if visitor has an existing record
+      const visitorDB = await Visitor.findOne({"visitor_details.email": visitor.visitor_details.email});
+
+      // Check if email is used by another visitor
+      if (visitorDB) {
+        const { first_name, middle_name, last_name } = visitorDB.visitor_details.name;
+        const { email } = visitor.visitor_details;
+
+        const isDuplicate = visitor.visitor_details.name.first_name === first_name &&
+                            (visitor.visitor_details.name.middle_name || "") === (middle_name || "") &&
+                            visitor.visitor_details.name.last_name === last_name;
+
+        return isDuplicate ? 
+          `Visitor using ${email} already has an existing record` :
+          `${email} has already been used by another visitor`;
+      }
+    } catch (error) {
+      console.error("Error while validating duplicate:", error);
+      throw error;
+    }
+  });
+
+  try {
+    const validationResults = await Promise.all(validateDuplicate);
+    return validationResults.filter(result => result !== undefined);
+  } catch (error) {
+    return res.status(500).json({ error: "Error while validating duplicates:", error });
+  }
+}
+
+
 module.exports = {
   hashPassword,
   comparePassword,
@@ -483,4 +536,7 @@ module.exports = {
   sendEmail,
   createSystemLog,
   createNotification,
+  generateFileName,
+  createImageBuffer,
+  validateDuplicate
 };

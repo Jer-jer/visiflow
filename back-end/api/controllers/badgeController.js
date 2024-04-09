@@ -74,10 +74,10 @@ exports.checkBadge = async (req, res) => {
   let badge;
   let type;
 
-  // if(!req.user) {
-  //   return res.status(401).json({ Error: 'Unauthorized user' });
-  // }
-
+  if(!req.user) {
+    return res.status(401).json({ Error: 'Unauthorized user' });
+  }
+  
   if (qr_id !== undefined) {
     badge = await Badge.findOne({ qr_id: qr_id });
     if (!badge) {
