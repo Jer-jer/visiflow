@@ -5,9 +5,11 @@ import AxiosInstace from "../../../../lib/axios";
 //Interfaces
 import type { ColumnsType } from "antd/es/table";
 import { EventsSchedule } from "../../../../utils/interfaces";
+import type { Dayjs } from "dayjs";
 
 //Components
-import { Table, Button, Modal, Input } from "antd";
+import { Table, Button, Modal, Input} from "antd";
+import DateTimePicker from "../../../../components/datetime-picker";
 
 //Layout
 import EventsSchedDetails from "../../../../layouts/admin/home-editor/events-details";
@@ -48,11 +50,11 @@ export default function EventsScheduleList() {
 
 	useEffect(() => {
 		if(searchValue == "") {
-			fetchAndSetOffices();
+			fetchAndSetEvents();
 		}
 	}, [searchValue])
 
-	const fetchAndSetOffices = async () => {
+	const fetchAndSetEvents = async () => {
 		try {
 			const response = await AxiosInstace.get('/events/')
 			const data = response.data.event
@@ -61,8 +63,8 @@ export default function EventsScheduleList() {
 			//getting only the data we want
 			const convertedData: EventsSchedule[] = data.map((event: any) => ({
 				name: event.name,
-				startDate: event.startDate,
-				endDate: event.endDate,
+				startDate: new Date(event.startDate).toISOString().split('T')[0] ,
+				endDate: new Date(event.endDate).toISOString().split('T')[0],
 				startTime: event.startTime,
 				endTime: event.endTime,
 			  }));
@@ -84,7 +86,7 @@ export default function EventsScheduleList() {
 			async onOk() {
 				try {
 					await AxiosInstace.delete('/events/delete', { data: { _id: data._id } }); 
-					fetchAndSetOffices();
+					fetchAndSetEvents();
 				  } catch (error) {
 					console.error('Error deleting office:', error);
 				  }
@@ -101,8 +103,8 @@ export default function EventsScheduleList() {
 			const data = response.data.event;
 			const convertedData: EventsSchedule[] = data.map((event: any) => ({
 				name: event.name,
-				startDate: event.startDate,
-				endDate: event.endDate,
+				startDate: new Date(event.startDate).toISOString().split('T')[0] ,
+				endDate: new Date(event.endDate).toISOString().split('T')[0],
 				startTime: event.startTime,
 				endTime: event.endTime,
 			  }));
@@ -112,6 +114,20 @@ export default function EventsScheduleList() {
 			console.error('Error fetching events:', error);
 		  }
 	}
+
+	const onRangeChange = (dates: Dayjs[], dateStrings: string[]) => {
+		if (dates) {
+			let startDate = dateStrings[0];
+			let endDate = dateStrings[1];
+			const filteredEvents = events.filter((event) => {
+			
+				return new Date(event.startDate).getTime() >= new Date(startDate).getTime() && new Date(event.endDate).getTime() <= new Date(endDate).getTime();
+			});
+			setEvents(filteredEvents)
+		} else {
+			fetchAndSetEvents();
+		}
+	};
 
 	const edit = (record: any) => {
 		setPageDetail(record);
@@ -184,12 +200,16 @@ export default function EventsScheduleList() {
 			title: "Events",
 			dataIndex: "name",
 		},
-		// {
-		// 	title: "Date",
-		// 	render: (_, record) => {
-		// 		return `${formatDate(record.date)} ${record.start}`;
-		// 	},
-		// },
+		{
+			title: "Start Date",
+			dataIndex: "startDate",
+			sorter: (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+		},
+		{
+			title: "End Date",
+			dataIndex: "endDate",
+			sorter: (a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
+		},
 		{
 			title: (
 				<Button onClick={newEvent} className="w-[20%]" type="primary">
@@ -227,6 +247,7 @@ export default function EventsScheduleList() {
 					<Button type="primary" className="search-button !bg-primary-500">
 						Search
 					</Button>
+					<DateTimePicker size="large" onRangeChange={onRangeChange} />
 				</div>
 			)}
 			<div className="mr-[50px]">
@@ -241,6 +262,7 @@ export default function EventsScheduleList() {
 					<EventsSchedDetails
 						record={pageDetail}
 						setOpenDetails={setOpenDetails}
+						fetch={fetchAndSetEvents}
 					/>
 				)}
 			</div>

@@ -25,6 +25,7 @@ import { ArrowDown } from "../../../../assets/svg";
 interface OfficeSchedDetailsProps {
 	record?: any;
 	setOpenDetails: Dispatch<SetStateAction<boolean>>;
+	fetch: () => void;
 }
 
 const { confirm } = Modal;
@@ -78,13 +79,14 @@ const getBase64 = (img: RcFile, callback: (url: string) => void) => {
 export default function OfficeSchedDetails({
 	record,
 	setOpenDetails,
+	fetch
 }: OfficeSchedDetailsProps) {
 	//Form States
-	const [name, setName] = useState("");
-	const [roomNo, setRoomNo] = useState("");
-	const [pic, setPic] = useState("");
-	const [contact, setContact] = useState("");
-	const [email, setEmail] = useState("");
+	const [name, setName] = useState(record?.name === undefined ? "" : record?.name);
+	const [roomNo, setRoomNo] = useState(record?.roomNo === undefined ? "" : record?.roomNo);
+	const [pic, setPic] = useState(record?.pic === undefined ? "" : record?.pic);
+	const [contact, setContact] = useState(record?.contact === undefined ? "" : record?.contact);
+	const [email, setEmail] = useState(record?.email === undefined ? "" : record?.email);
 	const [opentime, setOpentime] = useState(record?.opentime === undefined ? new Date() : record?.opentime);
 	const [closetime, setClosetime] = useState(record?.closetime === undefined ? new Date() : record?.closetime);
 	const [openday, setOpenday] = useState(record?.openday === undefined ? new Array(7).fill(false) : record?.openday);
@@ -145,12 +147,14 @@ export default function OfficeSchedDetails({
 					opentime: opentime,
 					closetime: closetime,
 					openday: openday,
-					officeImg: image === undefined ? record?.officeImg : image,
+					officeImg: image === null ? record?.officeImg : image,
 				}); 
 			} catch (error) {
 			console.error('Error in updating office:', error);
 			}
 		}
+
+		fetch();
 
 		setAlertOpen(!alertOpen);
 

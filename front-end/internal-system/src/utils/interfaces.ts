@@ -134,6 +134,8 @@ export interface UserDataType {
 export interface HomeEditor {
 	title: string;
 	body: string;
+	prio: number;
+	createdAt: Date;
 }
 
 export interface OfficeSchedule {

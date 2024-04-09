@@ -89,11 +89,14 @@ const AnnouncementAdvisoryProps = ({
 			</div>
 		</div>
 	)
-};interface AnnouncementModel {
+};
+
+interface AnnouncementModel {
 	_id: string,
 	title: string,
 	message: string,
-	updatedAt: string
+	updatedAt: string,
+	priority: number,
 }
 
 export default function Home() {
@@ -113,11 +116,16 @@ export default function Home() {
 				title: announcement.title,
 				message: announcement.message,
 				updatedAt: new Date(announcement.updatedAt).toISOString().split('T')[0],
+				priority: announcement.prio
 			  }));
-			setAnnouncement(convertedData);
+			const sortedAnnouncements = [...convertedData].sort((a, b) => a.priority - b.priority);
+			setAnnouncement(sortedAnnouncements);
 		  } catch (error) {
 			console.error('Error fetching announcements:', error);
 		  }
+		  
+
+		
 	}
 
 	return (

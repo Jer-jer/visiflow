@@ -6,7 +6,7 @@ import { HomeEditor } from "../../../../utils/interfaces";
 //Layouts
 
 //Components
-import { Button, Modal } from "antd";
+import { Button, Modal, InputNumber } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import Input from "../../../../components/fields/input/input";
 import Label from "../../../../components/fields/input/label";
@@ -19,8 +19,9 @@ import "./styles.scss";
 import AxiosInstace from "../../../../lib/axios";
 
 interface PageDetailsProps {
-	record?: {_id: string, title: string, message: string};
+	record?: {_id: string, title: string, message: string, prio: number};
 	setOpenDetails: Dispatch<SetStateAction<boolean>>;
+	fetch: () => void;
 }
 
 const { confirm } = Modal;
@@ -45,10 +46,12 @@ const showDeleteConfirm = () => {
 export default function PageDetails({
 	record,
 	setOpenDetails,
+	fetch,
 }: PageDetailsProps) {
 	//Form States
 	const [title, setTitle] = useState(record === undefined ? "" : record?.title);
 	const [body, setBody] = useState(record === undefined ? "" : record?.message);
+	const [prio, setPrio] = useState<number | null>(record === undefined ? 1 : record?.prio);
 	const [savedRecord, setSavedRecord] = useState(record);
 
 	//Alert State
@@ -75,7 +78,8 @@ export default function PageDetails({
 			try {
 				const response = await AxiosInstace.post('/announcements/new', { 
 					title: title,
-					message: body
+					message: body,
+					prio: prio
 				}); 
 				setSavedRecord(response.data.event);
 			} catch (error) {
@@ -87,18 +91,19 @@ export default function PageDetails({
 				await AxiosInstace.put('/announcements/update', { 
 					_id: record === undefined ? savedRecord._id : record._id,
 					title: title === "" ? record?.title : title,
-					message: body === "" ? record?.message : body
+					message: body === "" ? record?.message : body,
+					prio: prio === 999 ? record?.prio : prio
 				}); 
 			} catch (error) {
 			console.error('Error in updating announcement:', error);
 			}
 		}
 
+		fetch();
+
 		setAlertOpen(!alertOpen);
 
 		setDisabledInputs(!disabledInputs);
-
-		window.location.reload();
 	};
 
 	return (
@@ -139,6 +144,24 @@ export default function PageDetails({
 								onChange={(e) => setBody(e.target.value)}
 								rows={8}
 								disabled={disabledInputs}
+							/>
+						</div>
+					</div>
+					<div className="flex w-full gap-[60px]">
+						<div className="flex w-full items-start">
+							<Label
+								labelStyling="w-[15%]"
+								spanStyling="text-black font-medium text-[16px]"
+							>
+								Priority Number
+							</Label>
+							<InputNumber
+								className="p-0 input h-[38px] rounded-[5px] w-20"
+								defaultValue={prio!}
+								onChange={setPrio}
+								disabled={disabledInputs}
+								min={1}
+								max={99}
 							/>
 						</div>
 					</div>
