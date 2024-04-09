@@ -41,6 +41,7 @@ dayjs.extend(customParseFormat);
 interface EventsSchedDetailsProps {
 	record?: any;
 	setOpenDetails: Dispatch<SetStateAction<boolean>>;
+	fetch: () => void;
 }
 
 const { confirm } = Modal;
@@ -84,15 +85,16 @@ const showDeleteConfirm = () => {
 export default function EventsSchedDetails({
 	record,
 	setOpenDetails,
+	fetch,
 }: EventsSchedDetailsProps) {
 	//Form States
-	const [name, setName] = useState("");
-	const [startDate, setStartDate] = useState(record === undefined ? new Date() : record?.startDate);
-	const [endDate, setEndDate] = useState(record === undefined ? new Date() : record?.endDate);
-	const [startTime, setStartTime] = useState(record === undefined ? new Date() : record?.startTime);
-	const [endTime, setEndTime] = useState(record === undefined ? new Date() : record?.endTime);
-	const [locationId, setLocationId] = useState("");
-	const [description, setDescription] = useState("");
+	const [name, setName] = useState(record?.name === undefined ? "" : record?.name);
+	const [startDate, setStartDate] = useState(record?.startDate === undefined ? new Date() : record?.startDate);
+	const [endDate, setEndDate] = useState(record?.endDate === undefined ? new Date() : record?.endDate);
+	const [startTime, setStartTime] = useState(record?.startTime === undefined ? new Date() : record?.startTime);
+	const [endTime, setEndTime] = useState(record?.endTime === undefined ? new Date() : record?.endTime);
+	const [locationId, setLocationId] = useState(record?.locationID === undefined ? "" : record?.locationID);
+	const [description, setDescription] = useState(record?.description === undefined ? "" : record?.description);
 
 	//Image States
 	const [loading, setLoading] = useState(false);
@@ -147,12 +149,14 @@ export default function EventsSchedDetails({
 					locationID: locationId,
 					description: description,
             		// userID: userID,
-					eventImg: image
+					eventImg: image === null ? record?.eventImg : image,
 				}); 
 			} catch (error) {
 			console.error('Error in updating event:', error);
 			}
 		}
+
+		fetch();
 
 		setAlertOpen(!alertOpen);
 
@@ -285,6 +289,7 @@ export default function EventsSchedDetails({
 							<TextArea
 								className="custom-textarea input h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
 								placeholder={record?.description}
+								value={description}
 								onChange={(e) => setDescription(e.target.value)}
 								rows={8}
 								disabled={disabledInputs}

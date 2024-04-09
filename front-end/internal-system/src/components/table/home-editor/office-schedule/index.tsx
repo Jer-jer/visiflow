@@ -223,6 +223,7 @@ export default function OfficeScheduleList() {
 					<OfficeSchedDetails
 						record={pageDetail}
 						setOpenDetails={setOpenDetails}
+						fetch={fetchAndSetOffices}
 					/>
 				)}
 			</div>
