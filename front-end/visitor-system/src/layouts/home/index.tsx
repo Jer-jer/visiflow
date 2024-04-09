@@ -5,7 +5,7 @@ import HomeBox from "../../components/home-box";
 
 // Styles
 import "./styles.scss";
-import AxiosInstace from "../../lib/axios";
+import AxiosInstance from "../../lib/axios";
 
 // Assets
 
@@ -89,11 +89,14 @@ const AnnouncementAdvisoryProps = ({
 			</div>
 		</div>
 	)
-};interface AnnouncementModel {
+};
+
+interface AnnouncementModel {
 	_id: string,
 	title: string,
 	message: string,
-	updatedAt: string
+	updatedAt: string,
+	priority: number,
 }
 
 export default function Home() {
@@ -106,18 +109,23 @@ export default function Home() {
 
 	const fetchData = async() => {
 		try {
-			const response = await AxiosInstace.get('/announcements/')
+			const response = await AxiosInstance.get('/announcements/')
 			const data = response.data.announce
 			const convertedData: AnnouncementModel[] = data.map((announcement: any) => ({
 				_id: announcement._id,
 				title: announcement.title,
 				message: announcement.message,
 				updatedAt: new Date(announcement.updatedAt).toISOString().split('T')[0],
+				priority: announcement.prio
 			  }));
-			setAnnouncement(convertedData);
+			const sortedAnnouncements = [...convertedData].sort((a, b) => a.priority - b.priority);
+			setAnnouncement(sortedAnnouncements);
 		  } catch (error) {
 			console.error('Error fetching announcements:', error);
 		  }
+		  
+
+		
 	}
 
 	return (

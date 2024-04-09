@@ -36,7 +36,8 @@ exports.createNewAnnouncements = async (req, res) => {
     try {
         const { 
             title, 
-            message
+            message,
+            prio
         } = req.body;
         
         // //check if the bldgLoc already exists
@@ -47,7 +48,8 @@ exports.createNewAnnouncements = async (req, res) => {
 
         const newAnnounce = new Announcements({ 
             title, 
-            message
+            message,
+            prio
         });
 
 
@@ -80,7 +82,7 @@ exports.getAnnouncementsByTitle = async (req, res) => {
 
 exports.updateAnnouncements = async (req, res) => {
     try {
-        const { _id, title, message} = req.body;
+        const { _id, title, message, prio} = req.body;
 
         const announce = await Announcements.findById(_id);
 
@@ -90,7 +92,8 @@ exports.updateAnnouncements = async (req, res) => {
 
         const updateFields = {
             title: title !== undefined ? title : announce.title,
-            message: message !== undefined ? message : announce.message
+            message: message !== undefined ? message : announce.message,
+            prio: prio !== undefined ? prio : announce.prio
         }
         
         const filteredUpdateFields = Object.fromEntries(

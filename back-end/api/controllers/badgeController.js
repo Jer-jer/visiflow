@@ -27,6 +27,7 @@ exports.findBadge = async (req, res) => {
   res.status(200).json({ badge });
 };
 
+//TODO Create Generate Badge button
 exports.generateBadge = async (req, res) => {
   try {
     // const clientIP = req.ip;

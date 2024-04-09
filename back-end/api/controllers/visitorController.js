@@ -8,16 +8,17 @@ const {
   uploadFileToGCS,
   sendEmail,
   createSystemLog,
+  createNotification,
 } = require("../utils/helper");
 const { Buffer } = require("node:buffer");
 const Notification = require("../models/notification");
 const mongoose = require("mongoose");
+const { findOne } = require("../models/user");
 const ObjectId = mongoose.Types.ObjectId;
 
 exports.getVisitors = async (req, res) => {
   try {
     const visitors = await Visitor.find();
-    const io = req.io;
 
     return res.status(200).json({ visitors });
   } catch (error) {
@@ -28,137 +29,152 @@ exports.getVisitors = async (req, res) => {
   }
 };
 
+exports.getCompanions = async (req, res) => {
+  const { visitor_id } = req.body;
+
+  try {
+    const visitorDB = await Visitor.findById(new ObjectId(visitor_id));
+
+    if (!visitorDB) {
+      return res.status(404).json({ error: "Visitor not found" });
+    }
+
+    const companionIds = visitorDB.companions.map((id) => new ObjectId(id));
+
+    const companions = await Visitor.find({
+      _id: { $in: companionIds },
+    });
+
+    if (!companions) {
+      return res.status(404).json({ error: "Companions not found" });
+    }
+
+    return res.status(200).json({ companions });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to retrieve Companions" });
+  }
+};
+
 exports.addVisitor = async (req, res) => {
-  const {
-    visitor_data: {
-      visitor_details: {
-        name: { first_name, middle_name, last_name },
-        address: { street, house, brgy, city, province, country },
-        email,
-        phone,
-      },
-      expected_time_in,
-      expected_time_out,
-      companion_details,
-      plate_num,
-      purpose,
-      id_picture,
-      visitor_type,
-      status,
-    },
-  } = req.body;
+  const { visitors } = req.body;
 
   const io = req.io;
 
+  let companions = [];
+  let mainVisitorId;
+  let index = 0;
+
+  const [frontId, backId, selfieId] = await Promise.all([
+    uploadFileToGCS(
+      Buffer.from(
+        visitors[0].id_picture.front.replace(/^data:image\/\w+;base64,/, ""),
+        "base64"
+      ),
+      `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_front.jpg`
+    ),
+    uploadFileToGCS(
+      Buffer.from(
+        visitors[0].id_picture.back.replace(/^data:image\/\w+;base64,/, ""),
+        "base64"
+      ),
+      `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_back.jpg`
+    ),
+    uploadFileToGCS(
+      Buffer.from(
+        visitors[0].id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""),
+        "base64"
+      ),
+      `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_selfie.jpg`
+    ),
+  ]);
+
   try {
-    await Promise.all(
-      validateVisitor.map((validation) => validation.run(req.body.visitor_data))
-    );
+    for (const visitor of visitors) {
+      // await Promise.all(
+      //   validateVisitor.map((validation) => validation.run(visitors))
+      // );
 
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array()[0].msg });
-    }
+      // const errors = validationResult(req);
 
-    const visitorDB = await Visitor.findOne({
-      "visitor_details.name.first_name": first_name,
-      "visitor_details.name.middle_name": middle_name,
-      "visitor_details.name.last_name": last_name,
-    });
+      // if (!errors.isEmpty()) {
+      //   return res.status(400).json({ errors: errors.array()[0].msg });
+      // }
 
-    if (visitorDB) {
-      return res.status(409).json({ error: "Visitor already exists" });
-    }
+      // const visitorDB = await Visitor.findOne({
+      //   "visitor_details.email": visitor.visitor_details.email,
+      // });
 
-    if (
-      id_picture.front &&
-      id_picture.back &&
-      id_picture.selfie 
-    ) {
-      
-    }
+      // if (visitorDB) {
+      //   const checkCompanion = await Visitor.findOne({
+      //     "visitor_details.name.first_name":
+      //       visitor.visitor_details.name.first_name,
+      //     "visitor_details.name.middle_name":
+      //       visitor.visitor_details.name.middle_name,
+      //     "visitor_details.name.last_name":
+      //       visitor.visitor_details.name.last_name,
+      //   });
 
-    const [frontId, backId, selfieId] = await Promise.all([
-      uploadFileToGCS(
-        Buffer.from(
-          id_picture.front.replace(/^data:image\/\w+;base64,/, ""),
-          "base64"
-        ),
-        `${Date.now()}_${last_name.toUpperCase()}_front.jpg`
-      ),
-      uploadFileToGCS(
-        Buffer.from(
-          id_picture.back.replace(/^data:image\/\w+;base64,/, ""),
-          "base64"
-        ),
-        `${Date.now()}_${last_name.toUpperCase()}_back.jpg`
-      ),
-      uploadFileToGCS(
-        Buffer.from(
-          id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""),
-          "base64"
-        ),
-        `${Date.now()}_${last_name.toUpperCase()}_selfie.jpg`
-      ),
-    ]);
+      //   if (!checkCompanion)
+      //     return res.status(409).json({
+      //       error: `${visitor.visitor_details.email} has already been used by another visitor`,
+      //     });
 
-    const newVisitor = await Visitor.create({
-      _id: new ObjectId(),
-      visitor_details: {
-        name: { first_name, middle_name, last_name },
-        address: { street, house, brgy, city, province, country },
-        email,
-        phone,
-      },
-      companion_details: companion_details || [],
-      plate_num: plate_num,
-      purpose: purpose,
-      expected_time_in: expected_time_in,
-      expected_time_out: expected_time_out,
-      id_picture: {
-        front: frontId || "",
-        back: backId || "",
-        selfie: selfieId || "",
-      },
-      visitor_type: visitor_type,
-      status: status,
-    });
+      //   return res.status(400).json({
+      //     error: `Visitor using ${visitor.visitor_details.email} already has an existing record`,
+      //   });
+      // }
 
-    io.emit("newVisitor", newVisitor);
-
-    if (visitor_type === "Pre-Registered") {
-      const pendingVisitor = await Notification.create({
+      const newVisitor = await Visitor.create({
         _id: new ObjectId(),
-        type: "pending",
-        recipient: newVisitor.visitor_details._id,
-        content: {
-          visitor_name: `${newVisitor.visitor_details.name.last_name}, ${
-            newVisitor.visitor_details.name.first_name
-          } ${
-            newVisitor.visitor_details.name.middle_name &&
-            newVisitor.visitor_details.name.middle_name !== undefined
-              ? newVisitor.visitor_details.name.middle_name
-              : ""
-          }`,
-          host_name: newVisitor.purpose.who.join(", "),
-          date: newVisitor.purpose.when,
-          time_in: newVisitor.expected_time_in,
-          time_out: newVisitor.expected_time_out,
-          location: newVisitor.purpose.where.join(", "),
-          purpose: newVisitor.purpose.what.join(", "),
-          visitor_type: newVisitor.visitor_type,
+        visitor_details: {
+          first_name: visitor.visitor_details.first_name,
+          middle_name: visitor.visitor_details.middle_name
+            ? visitor.visitor_details.middle_name
+            : "",
+          last_name: visitor.visitor_details.last_name,
         },
+        companions: [],
+        plate_num: visitor.plate_num,
+        purpose: visitor.purpose,
+        visitor_type: visitor.visitor_type,
+        status: visitor.status,
+        id_picture: {
+          front: index === 0 ? frontId : "",
+          back: index === 0 ? backId : "",
+          selfie: index === 0 ? selfieId : "",
+        },
+        expected_time_in: visitor.expected_time_in,
+        expected_time_out: visitor.expected_time_out,
       });
+      if (index === 0) {
+        mainVisitorId = newVisitor._id;
+      } else {
+        companions.push(newVisitor._id);
+      }
 
-      io.emit("newNotification", pendingVisitor);
-    } else {
-      //For walk in
-      const user_id = req.user._id;
-      const log_type = "add_visitor";
-      createSystemLog(user_id, log_type, "success");
+      // io.emit("newVisitor", newVisitor);
+
+      // if (newVisitor.visitor_type === "Pre-Registered") {
+      //   createNotification(newVisitor, "pending", io);
+      // } else {
+      //   //For walk in
+      //   const user_id = req.user._id;
+      //   const log_type = "add_visitor";
+      //   createSystemLog(user_id, log_type, "success");
+      // }
+
+      index++;
     }
 
-    return res.status(201).json({ visitor: newVisitor });
+    if (companions.length > 0) {
+      await Visitor.updateOne(
+        { _id: mainVisitorId },
+        { $set: { companions: companions } }
+      );
+    }
+
+    return res.status(201).json({ visitors: visitors });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error });
@@ -182,13 +198,38 @@ exports.findVisitor = async (req, res) => {
   }
 };
 
+exports.findVisitorByEmail = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const visitorDB = await Visitor.findOne({
+      "visitor_details.email": email,
+    });
+
+    if (visitorDB) {
+      return res.status(200).json({
+        success: "Visitor found",
+        visitor_id: visitorDB._id,
+        id_picture: visitorDB.id_picture,
+        name: visitorDB.visitor_details.name,
+      });
+    } else {
+      return res.status(404).json({ error: "Visitor not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong with your request" });
+  }
+};
+
 exports.updateVisitor = async (req, res) => {
   const {
     _id,
     first_name,
     middle_name,
     last_name,
-    companion_details,
     street,
     house,
     brgy,
@@ -202,7 +243,8 @@ exports.updateVisitor = async (req, res) => {
     expected_time_in,
     expected_time_out,
     visitor_type,
-    id_picture,
+    companions,
+    // id_picture,
   } = req.body;
 
   const user_id = req.user._id;
@@ -226,13 +268,13 @@ exports.updateVisitor = async (req, res) => {
       "visitor_details.address.country": country,
       "visitor_details.email": email,
       "visitor_details.phone": phone,
-      companion_details: companion_details,
       plate_num: plate_num,
       purpose: purpose,
       expected_time_in: expected_time_in,
       expected_time_out: expected_time_out,
       visitor_type: visitor_type,
-      id_picture: id_picture,
+      companions: companions,
+      // id_picture: id_picture,
     };
 
     const filteredUpdateFields = Object.fromEntries(
@@ -248,13 +290,248 @@ exports.updateVisitor = async (req, res) => {
       filteredUpdateFields,
       { new: true }
     );
-    
-    await createSystemLog(user_id, log_type, 'success');
+
+    await createSystemLog(user_id, log_type, "success");
     res.status(201).json({ visitor: updatedVisitor });
   } catch (error) {
     console.error(error);
     await createSystemLog(user_id, log_type, "failed");
-    return res.status(500).json({ error: "Failed to update user" });
+    return res.status(500).json({ error: "Failed to update visitor" });
+  }
+};
+
+exports.newRecurringVisitor = async (req, res) => {
+  const { visitors } = req.body;
+
+  // const user_id = req.user._id;
+  // const log_type = "update_visitor";
+
+  const io = req.io;
+  let companions = [];
+
+  try {
+    for (let x = 1; x < visitors.length; x++) {
+      const visitorDB = await Visitor.findOne({
+        "visitor_details.email": visitors[x].visitor_details.email,
+      });
+
+      if (visitorDB) {
+        //? UPDATE COMPANION
+        const checkCompanion = await Visitor.findOne({
+          "visitor_details.name.first_name":
+            visitors[x].visitor_details.name.first_name,
+          "visitor_details.name.middle_name":
+            visitor[x].visitor_details.name.middle_name,
+          "visitor_details.name.last_name":
+            visitors[x].visitor_details.name.last_name,
+        });
+
+        if (!checkCompanion)
+          return res.status(409).json({
+            error: `${visitors[x].visitor_details.email} has already been used by another visitor`,
+          });
+
+        const updatedVisitor = await Visitor.findByIdAndUpdate(
+          checkCompanion._id,
+          {
+            purpose: visitors[x].purpose,
+            expected_time_in: visitors[x].expected_time_in,
+            expected_time_out: visitors[x].expected_time_out,
+          },
+          { new: true }
+        );
+
+        if (!updatedVisitor) {
+          return res.status(500).json({
+            error: `Failed to register ${visitors[x].visitor_details.name.last_name}. Please try again.`,
+          });
+        }
+
+        io.emit("newVisitor", updatedVisitor);
+      } else {
+        //? NEW COMPANION
+        await Promise.all(
+          validateVisitor.map((validation) => validation.run(visitors[x]))
+        );
+
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return res.status(400).json({ errors: errors.array()[0].msg });
+        }
+
+        const visitorDB = await Visitor.findOne({
+          "visitor_details.name.first_name":
+            visitors[x].visitor_details.name.first_name,
+          "visitor_details.name.middle_name":
+            visitors[x].visitor_details.name.middle_name,
+          "visitor_details.name.last_name":
+            visitors[x].visitor_details.name.last_name,
+        });
+
+        if (visitorDB) {
+          return res.status(409).json({
+            error: `Visitor ${visitors[x].visitor_details.name.last_name} already exists`,
+          });
+        }
+
+        const newVisitor = await Visitor.create({
+          _id: new ObjectId(),
+          visitor_details: {
+            first_name: visitors[x].visitor_details.first_name,
+            middle_name: visitors[x].visitor_details.middle_name
+              ? visitors[x].visitor_details.middle_name
+              : "",
+            last_name: visitors[x].visitor_details.last_name,
+          },
+          companion_details: [],
+          plate_num: visitors[x].plate_num,
+          purpose: visitors[x].purpose,
+          expected_time_in: visitors[x].expected_time_in,
+          expected_time_out: visitors[x].expected_time_out,
+          id_picture: {
+            front: "",
+            back: "",
+            selfie: "",
+          },
+          visitor_type: visitors[x].visitor_type,
+          status: visitors[x].status,
+        });
+
+        io.emit("newVisitor", newVisitor);
+
+        companions.push(newVisitor._id);
+
+        if (newVisitor.visitor_type === "Pre-Registered") {
+          createNotification(newVisitor, "pending", io);
+          // const pendingVisitor = await Notification.create({
+          //   _id: new ObjectId(),
+          //   type: "pending",
+          //   recipient: newVisitor.visitor_details._id,
+          //   content: {
+          //     visitor_name: `${newVisitor.visitor_details.name.last_name}, ${
+          //       newVisitor.visitor_details.name.first_name
+          //     } ${
+          //       newVisitor.visitor_details.name.middle_name &&
+          //       newVisitor.visitor_details.name.middle_name !== undefined
+          //         ? newVisitor.visitor_details.name.middle_name
+          //         : ""
+          //     }`,
+          //     host_name: newVisitor.purpose.who.join(", "),
+          //     date: newVisitor.purpose.when,
+          //     time_in: newVisitor.expected_time_in,
+          //     time_out: newVisitor.expected_time_out,
+          //     location: newVisitor.purpose.where.join(", "),
+          //     purpose: newVisitor.purpose.what.join(", "),
+          //     visitor_type: newVisitor.visitor_type,
+          //   },
+          // });
+
+          io.emit("newNotification", pendingVisitor);
+        } else if (newVisitor.visitor_type === "Walk-In") {
+          //For walk in
+          const user_id = req.user._id;
+          const log_type = "add_visitor";
+          createSystemLog(user_id, log_type, "success");
+        }
+      }
+    }
+
+    let [frontId, backId, selfieId] = [
+      visitors[0].id_picture.front,
+      visitors[0].id_picture.back,
+      visitors[0].id_picture.selfie,
+    ];
+
+    if (
+      (frontId && frontId.startsWith("data:image/")) ||
+      (backId && backId.startsWith("data:image/")) ||
+      (selfieId && selfieId.startsWith("data:image/"))
+    ) {
+      [frontId, backId, selfieId] = await Promise.all([
+        uploadFileToGCS(
+          Buffer.from(
+            frontId.replace(/^data:image\/\w+;base64,/, ""),
+            "base64"
+          ),
+          `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_front.jpg`
+        ),
+        uploadFileToGCS(
+          Buffer.from(backId.replace(/^data:image\/\w+;base64,/, ""), "base64"),
+          `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_back.jpg`
+        ),
+        uploadFileToGCS(
+          Buffer.from(
+            selfieId.replace(/^data:image\/\w+;base64,/, ""),
+            "base64"
+          ),
+          `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_selfie.jpg`
+        ),
+      ]);
+    }
+
+    const updatedMainVisitor = await Visitor.findByIdAndUpdate(
+      new ObjectId(visitors[0].id),
+      {
+        id_picture: {
+          front: frontId,
+          back: backId,
+          selfie: selfieId,
+        },
+        plate_num: visitors[0].plate_num,
+        purpose: visitors[0].purpose,
+        expected_time_in: visitors[0].expected_time_in,
+        expected_time_out: visitors[0].expected_time_out,
+        companions: companions,
+      },
+      { new: true }
+    );
+
+    if (!updatedMainVisitor) {
+      return res.status(500).json({
+        error: `Failed to register ${visitors[0].visitor_details.name.last_name}. Please try again.`,
+      });
+    }
+
+    io.emit("newVisitor", updatedMainVisitor);
+
+    if (updatedMainVisitor.visitor_type === "Pre-Registered") {
+      createNotification(updatedMainVisitor, "pending", io);
+      // const pendingVisitor = await Notification.create({
+      //   _id: new ObjectId(),
+      //   type: "pending",
+      //   recipient: updatedMainVisitor.visitor_details._id,
+      //   content: {
+      //     visitor_name: `${
+      //       updatedMainVisitor.visitor_details.name.last_name
+      //     }, ${updatedMainVisitor.visitor_details.name.first_name} ${
+      //       updatedMainVisitor.visitor_details.name.middle_name &&
+      //       updatedMainVisitor.visitor_details.name.middle_name !== undefined
+      //         ? updatedMainVisitor.visitor_details.name.middle_name
+      //         : ""
+      //     }`,
+      //     host_name: updatedMainVisitor.purpose.who.join(", "),
+      //     date: updatedMainVisitor.purpose.when,
+      //     time_in: updatedMainVisitor.expected_time_in,
+      //     time_out: updatedMainVisitor.expected_time_out,
+      //     location: updatedMainVisitor.purpose.where.join(", "),
+      //     purpose: updatedMainVisitor.purpose.what.join(", "),
+      //     visitor_type: updatedMainVisitor.visitor_type,
+      //   },
+      // });
+
+      io.emit("newNotification", pendingVisitor);
+    } else if (updatedMainVisitor.visitor_type === "Walk-In") {
+      //? TBD If Guard System will utilize it
+      //For walk in
+      const user_id = req.user._id;
+      const log_type = "add_visitor";
+      createSystemLog(user_id, log_type, "success");
+    }
+
+    res.status(201).json({ message: "Success" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to update visitor" });
   }
 };
 

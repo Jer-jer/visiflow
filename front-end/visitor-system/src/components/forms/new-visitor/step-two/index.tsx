@@ -19,15 +19,15 @@ import { Form, Tabs, Image, Button, Modal, Tooltip, Checkbox } from "antd";
 import {
 	VisitorDataType,
 	VisitorDetailsProps,
-} from "../../../utils/interfaces";
-import { StepTwoData, StepTwoZod } from "../../../utils/zodSchemas";
+} from "../../../../utils/interfaces";
+import { StepTwoData, StepTwoZod } from "../../../../utils/zodSchemas";
 import type { CheckboxProps } from "antd";
 
 // Components
 import StepForm from "./form";
 
 // Utils
-import { tabName } from "../../../utils";
+import { tabName } from "../../../../utils";
 
 // Styles
 import "./styles.scss";
@@ -48,8 +48,9 @@ interface ExcelFileProps {
 interface StepTwoProps {
 	setProgress: Dispatch<SetStateAction<number>>;
 	visitorNo: number;
-	visitors: VisitorDataType;
-	setVisitors: Dispatch<SetStateAction<VisitorDataType>>;
+	visitors: VisitorDataType[];
+	mainVisitor: VisitorDataType;
+	setVisitors: Dispatch<SetStateAction<VisitorDataType[]>>;
 }
 
 //? Excel File Template for Bulk Upload
@@ -80,6 +81,7 @@ export default function StepTwo({
 	setProgress,
 	visitorNo,
 	visitors,
+	mainVisitor,
 	setVisitors,
 }: StepTwoProps) {
 	const [byBulk, setByBulk] = useState(false);
@@ -93,9 +95,9 @@ export default function StepTwo({
 	} = useForm<StepTwoData>({
 		resolver: zodResolver(StepTwoZod),
 		defaultValues: {
-			front: visitors.id_picture.front,
-			back: visitors.id_picture.back,
-			selfie: visitors.id_picture.selfie,
+			front: mainVisitor.id_picture.front,
+			back: mainVisitor.id_picture.back,
+			selfie: mainVisitor.id_picture.selfie,
 		},
 	});
 
@@ -125,62 +127,44 @@ export default function StepTwo({
 						utils.sheet_to_json<ExcelFileProps>(ws); // Convert sheet to array
 
 					//? Transfer Excel Data to Visitor State
-					const visitorDetails: VisitorDetailsProps = {
-						name: {
-							first_name: parsedData[0].FirstName,
-							middle_name: parsedData[0].MiddleName!,
-							last_name: parsedData[0].LastName,
-						},
-						email: parsedData[0].Email,
-						phone: parsedData[0].Mobile,
-						address: {
-							house: parsedData[0].House,
-							street: parsedData[0].Street,
-							brgy: parsedData[0].Barangay,
-							city: parsedData[0].City,
-							province: parsedData[0].Province,
-							country: parsedData[0].Country,
-						},
-						time_in: "",
-						time_out: "",
-					};
-					const companionDetails: VisitorDetailsProps[] = parsedData
-						.slice(1)
-						.map((companion) => {
+					const visitorDetails: VisitorDetailsProps[] = parsedData.map(
+						(visitor) => {
 							return {
 								name: {
-									first_name: companion.FirstName,
-									middle_name: companion.MiddleName!,
-									last_name: companion.LastName,
+									first_name: visitor.FirstName,
+									middle_name: visitor.MiddleName!,
+									last_name: visitor.LastName,
 								},
-								email: companion.Email,
-								phone: companion.Mobile,
+								email: visitor.Email,
+								phone: visitor.Mobile,
 								address: {
-									house: companion.House,
-									street: companion.Street,
-									brgy: companion.Barangay,
-									city: companion.City,
-									province: companion.Province,
-									country: companion.Country,
+									house: visitor.House,
+									street: visitor.Street,
+									brgy: visitor.Barangay,
+									city: visitor.City,
+									province: visitor.Province,
+									country: visitor.Country,
 								},
 								time_in: "",
 								time_out: "",
 							};
-						});
+						},
+					);
 
 					//? Check if the number of visitors match the number of visitors from the file
-					if (visitors.companions_details!.length !== companionDetails.length) {
+					if (visitors.length !== visitorDetails.length) {
 						error(
 							"Number of visitors do not match the number of visitors from the file.",
 						);
 					} else {
 						//? Set the Visitor State
-						setVisitors((visitor) => {
-							return {
+						setVisitors((prevVisitors) => {
+							const updatedVisitors = prevVisitors.map((visitor, index) => ({
 								...visitor,
-								visitor_details: visitorDetails,
-								companions_details: companionDetails,
-							};
+								visitor_details: visitorDetails[index],
+							}));
+
+							return updatedVisitors;
 						});
 					}
 				}
@@ -195,24 +179,66 @@ export default function StepTwo({
 
 			switch (property) {
 				case "front":
-					setVisitors((prev) => ({
-						...prev,
-						id_picture: { ...prev.id_picture, front: imageSrc as string },
-					}));
+					setVisitors((prevVisitors) => {
+						const updatedVisitors = prevVisitors.map((visitor, index) => {
+							if (index === 0) {
+								return {
+									...visitor,
+									id_picture: {
+										...visitor.id_picture,
+										front: imageSrc as string,
+									},
+								};
+							}
+							return {
+								...visitor,
+							};
+						});
+
+						return updatedVisitors;
+					});
 					setValue("front", imageSrc as string);
 					break;
 				case "back":
-					setVisitors((prev) => ({
-						...prev,
-						id_picture: { ...prev.id_picture, back: imageSrc as string },
-					}));
+					setVisitors((prevVisitors) => {
+						const updatedVisitors = prevVisitors.map((visitor, index) => {
+							if (index === 0) {
+								return {
+									...visitor,
+									id_picture: {
+										...visitor.id_picture,
+										back: imageSrc as string,
+									},
+								};
+							}
+							return {
+								...visitor,
+							};
+						});
+
+						return updatedVisitors;
+					});
 					setValue("back", imageSrc as string);
 					break;
 				case "selfie":
-					setVisitors((prev) => ({
-						...prev,
-						id_picture: { ...prev.id_picture, selfie: imageSrc as string },
-					}));
+					setVisitors((prevVisitors) => {
+						const updatedVisitors = prevVisitors.map((visitor, index) => {
+							if (index === 0) {
+								return {
+									...visitor,
+									id_picture: {
+										...visitor.id_picture,
+										selfie: imageSrc as string,
+									},
+								};
+							}
+							return {
+								...visitor,
+							};
+						});
+
+						return updatedVisitors;
+					});
 					setValue("selfie", imageSrc as string);
 					break;
 			}
@@ -254,15 +280,15 @@ export default function StepTwo({
 				className="w-[80%]"
 				size="middle"
 				style={{ marginBottom: 32 }}
-				items={new Array(visitorNo).fill(null).map((_, i) => {
+				items={visitors.map((visitor, i) => {
 					const id = String(i + 1);
 					return {
 						label: tabName(id),
 						key: id,
 						children: (
 							<StepForm
-								mainVisitor={visitors.visitor_details} //? Main Visitor Information
-								companions={visitors.companions_details!} //? Companions Visitor Information
+								visitorDetails={visitor.visitor_details}
+								visitorNo={visitor.visitor_no}
 								increment={i}
 								errors={errors}
 								register={register}
@@ -362,11 +388,11 @@ export default function StepTwo({
 											<div className="mx-auto max-w-xs">
 												{takeFrontImage ? (
 													<>
-														{visitors.id_picture.front !== "" ? (
+														{mainVisitor.id_picture.front !== "" ? (
 															<>
 																<Image
 																	width={300}
-																	src={visitors.id_picture.front}
+																	src={mainVisitor.id_picture.front}
 																/>
 																<div className="flex justify-between">
 																	<Button
@@ -374,13 +400,13 @@ export default function StepTwo({
 																		type="primary"
 																		onClick={() => {
 																			setTakeFrontImage(true);
-																			setVisitors((prev) => ({
-																				...prev,
-																				id_picture: {
-																					...prev.id_picture,
-																					front: "",
-																				},
-																			}));
+																			setVisitors((preVisitors) => {
+																				let updatedVisitors = [...preVisitors];
+																				updatedVisitors[0].id_picture.front =
+																					"";
+
+																				return updatedVisitors;
+																			});
 																		}}
 																	>
 																		Retake Photo
@@ -426,10 +452,10 @@ export default function StepTwo({
 													</>
 												) : (
 													<>
-														{visitors.id_picture.front && (
+														{mainVisitor.id_picture.front && (
 															<Image
 																width={300}
-																src={visitors.id_picture.front}
+																src={mainVisitor.id_picture.front}
 															/>
 														)}
 														<Button
@@ -460,11 +486,11 @@ export default function StepTwo({
 											<div className="mx-auto max-w-xs">
 												{takeBackImage ? (
 													<>
-														{visitors.id_picture.back !== "" ? (
+														{mainVisitor.id_picture.back !== "" ? (
 															<>
 																<Image
 																	width={300}
-																	src={visitors.id_picture.back}
+																	src={mainVisitor.id_picture.back}
 																/>
 																<div className="flex justify-between">
 																	<Button
@@ -472,13 +498,12 @@ export default function StepTwo({
 																		type="primary"
 																		onClick={() => {
 																			setTakeBackImage(true);
-																			setVisitors((prev) => ({
-																				...prev,
-																				id_picture: {
-																					...prev.id_picture,
-																					back: "",
-																				},
-																			}));
+																			setVisitors((preVisitors) => {
+																				let updatedVisitors = [...preVisitors];
+																				updatedVisitors[0].id_picture.back = "";
+
+																				return updatedVisitors;
+																			});
 																		}}
 																	>
 																		Retake Photo
@@ -524,10 +549,10 @@ export default function StepTwo({
 													</>
 												) : (
 													<>
-														{visitors.id_picture.back && (
+														{mainVisitor.id_picture.back && (
 															<Image
 																width={300}
-																src={visitors.id_picture.back}
+																src={mainVisitor.id_picture.back}
 															/>
 														)}
 														<Button
@@ -557,11 +582,11 @@ export default function StepTwo({
 											<div className="mx-auto max-w-xs">
 												{takeSelfieImage ? (
 													<>
-														{visitors.id_picture.selfie !== "" ? (
+														{mainVisitor.id_picture.selfie !== "" ? (
 															<>
 																<Image
 																	width={300}
-																	src={visitors.id_picture.selfie}
+																	src={mainVisitor.id_picture.selfie}
 																/>
 																<div className="flex justify-between">
 																	<Button
@@ -569,13 +594,13 @@ export default function StepTwo({
 																		type="primary"
 																		onClick={() => {
 																			setTakeSelfieImage(true);
-																			setVisitors((prev) => ({
-																				...prev,
-																				id_picture: {
-																					...prev.id_picture,
-																					selfie: "",
-																				},
-																			}));
+																			setVisitors((preVisitors) => {
+																				let updatedVisitors = [...preVisitors];
+																				updatedVisitors[0].id_picture.selfie =
+																					"";
+
+																				return updatedVisitors;
+																			});
 																		}}
 																	>
 																		Retake Photo
@@ -619,10 +644,10 @@ export default function StepTwo({
 													</>
 												) : (
 													<>
-														{visitors.id_picture.selfie && (
+														{mainVisitor.id_picture.selfie && (
 															<Image
 																width={300}
-																src={visitors.id_picture.selfie}
+																src={mainVisitor.id_picture.selfie}
 															/>
 														)}
 														<Button

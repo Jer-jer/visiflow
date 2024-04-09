@@ -6,14 +6,14 @@ import React, {
 	useEffect,
 } from "react";
 import { NavLink } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 //Components
 import Header from "../../components/header";
 import Sidebar, { SidebarItem } from "../../components/sidebar";
 
 // Store
-import { AppDispatch } from "../../store";
+import { AppDispatch, RootState } from "../../store";
 
 // Actions
 import { fetchVisitors } from "../../states/visitors";
@@ -39,19 +39,19 @@ import "./styles.scss";
 export const WidthContext = createContext(0);
 
 interface LoggedInProps {
-	isAdmin: boolean;
-	setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
 	children: React.ReactNode;
 }
 
 export let expandedWidth: number;
 
-function LoggedIn({ isAdmin, setIsAdmin, children }: LoggedInProps) {
+function LoggedIn({ children }: LoggedInProps) {
 	const [expanded, setExpanded] = useState(false);
 	const [width, setWidth] = useState(0);
 	const ref = useRef<HTMLDivElement>(null);
 
 	const dispatch = useDispatch<AppDispatch>();
+
+	const isAdmin = useSelector((state: RootState) => state.isAdmin);
 
 	useEffect(() => {
 		dispatch(fetchVisitors());
@@ -127,7 +127,7 @@ function LoggedIn({ isAdmin, setIsAdmin, children }: LoggedInProps) {
 						</>
 					) : (
 						<>
-							<NavLink to="/">
+							<NavLink to="/qr-scanner">
 								{({ isActive }) => (
 									<SidebarItem
 										icon={<QRScanner />}
@@ -168,7 +168,7 @@ function LoggedIn({ isAdmin, setIsAdmin, children }: LoggedInProps) {
 				</Sidebar>
 				<div className="h-fit min-w-0 flex-1">
 					<div>
-						<Header setIsAdmin={setIsAdmin} />
+						<Header />
 					</div>
 					{/* Main content Here */}
 					<div id="parentDiv" className="children" ref={ref}>

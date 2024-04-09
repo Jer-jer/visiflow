@@ -48,13 +48,15 @@ exports.addOffices = async (req, res) => {
             return res.status(400).json({ error: 'Office already exists' });
         }
 
-        const officepic = uploadFileToGCS(
-            Buffer.from(
-            officeImg.replace(/^data:image\/\w+;base64,/, ""),
-            "base64"
-            ),
-            `${Date.now()}_${name.toUpperCase()}_office.jpg`
-        );
+        const [officepic] = await Promise.all([
+            uploadFileToGCS(
+                Buffer.from(
+                officeImg.replace(/^data:image\/\w+;base64,/, ""),
+                "base64"
+                ),
+                `${Date.now()}_${name.toUpperCase()}_office.jpg`
+            )
+        ]);
 
         const newOffice = new Offices({ 
             name, 
@@ -102,13 +104,15 @@ exports.updateOffices = async (req, res) => {
 
         let img = officeImg;
         if(img == null){
-            const officepic = uploadFileToGCS(
-                Buffer.from(
-                officeImg.replace(/^data:image\/\w+;base64,/, ""),
-                "base64"
-                ),
-                `${Date.now()}_${name.toUpperCase()}_office.jpg`
-            );
+            const [officepic] = await Promise.all([
+                uploadFileToGCS(
+                    Buffer.from(
+                    officeImg.replace(/^data:image\/\w+;base64,/, ""),
+                    "base64"
+                    ),
+                    `${Date.now()}_${name.toUpperCase()}_office.jpg`
+                )
+            ]);
             img = officepic;
         }
 

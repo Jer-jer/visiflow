@@ -2,22 +2,26 @@ import { configureStore } from "@reduxjs/toolkit";
 
 // Slices
 import VisitorReducer from "../states/visitors";
+import CompanionsReducer from "../states/visitors/companions";
 import VisitorLogsReducer from "../states/logs/visitor";
 import CompanionLogsReducer from "../states/logs/companions";
 import UserLogsReducer from "../states/logs/user";
 import VisitorTabsReducer from "../states/visitors/tab";
 import UserTabsReducer from "../states/users/tab";
 import NotificationsReducer from "../states/notifications";
+import RolesReducer from "../states/roles";
 
 export const store = configureStore({
 	reducer: {
 		visitorTabs: VisitorTabsReducer,
 		visitors: VisitorReducer,
+		companions: CompanionsReducer,
 		visitorLogs: VisitorLogsReducer,
 		companionLogs: CompanionLogsReducer,
 		userTabs: UserTabsReducer,
 		userLogs: UserLogsReducer,
 		notifications: NotificationsReducer,
+		isAdmin: RolesReducer,
 	},
 });
 
