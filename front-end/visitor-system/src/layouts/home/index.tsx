@@ -26,6 +26,7 @@ interface AnnouncementProps {
 	children: React.ReactNode;
 }
 
+//! Don't delete yet
 const VisitingHours = ({ size }: VisitingHoursProps) => {
 	return (
 		<>
@@ -49,6 +50,7 @@ const VisitingHours = ({ size }: VisitingHoursProps) => {
 	);
 };
 
+//! Don't delete yet
 const DressCode = ({ sizeOne, sizeTwo, responsive }: DressCodeProps) => {
 	return (
 		<>
@@ -71,32 +73,23 @@ const AnnouncementAdvisoryProps = ({
 	size,
 	responsive,
 	children,
-	date
+	date,
 }: AnnouncementProps) => {
 	return (
 		<div
-		className={`w-[80%] pb-[15px] text-center ${size} font-[300] ${responsive}`}
+			className={`w-[80%] overflow-scroll pb-[15px] text-center ${size} font-[300] text-[#4B4B4B] ${responsive}`}
 		>
-			<div
-				className={`text-black font-medium`}
-			>
-				Posted at: {date}
-			</div>
-			<div
-				className={`text-[#4B4B4B]`}
-			>
-				{children}
-			</div>
+			{children}
 		</div>
-	)
+	);
 };
 
 interface AnnouncementModel {
-	_id: string,
-	title: string,
-	message: string,
-	updatedAt: string,
-	priority: number,
+	_id: string;
+	title: string;
+	message: string;
+	updatedAt: string;
+	priority: number;
 }
 
 export default function Home() {
@@ -107,26 +100,29 @@ export default function Home() {
 		fetchData();
 	}, []);
 
-	const fetchData = async() => {
+	const fetchData = async () => {
 		try {
-			const response = await AxiosInstance.get('/announcements/')
-			const data = response.data.announce
-			const convertedData: AnnouncementModel[] = data.map((announcement: any) => ({
-				_id: announcement._id,
-				title: announcement.title,
-				message: announcement.message,
-				updatedAt: new Date(announcement.updatedAt).toISOString().split('T')[0],
-				priority: announcement.prio
-			  }));
-			const sortedAnnouncements = [...convertedData].sort((a, b) => a.priority - b.priority);
+			const response = await AxiosInstance.get("/announcements/");
+			const data = response.data.announce;
+			const convertedData: AnnouncementModel[] = data.map(
+				(announcement: any) => ({
+					_id: announcement._id,
+					title: announcement.title,
+					message: announcement.message,
+					updatedAt: new Date(announcement.updatedAt)
+						.toISOString()
+						.split("T")[0],
+					priority: announcement.prio,
+				}),
+			);
+			const sortedAnnouncements = [...convertedData].sort(
+				(a, b) => a.priority - b.priority,
+			);
 			setAnnouncement(sortedAnnouncements);
-		  } catch (error) {
-			console.error('Error fetching announcements:', error);
-		  }
-		  
-
-		
-	}
+		} catch (error) {
+			console.error("Error fetching announcements:", error);
+		}
+	};
 
 	return (
 		<div className="flex flex-col justify-center gap-[36px]">
@@ -138,62 +134,46 @@ export default function Home() {
 				</div>
 			</div>
 			{desktopMedia.matches ? (
-				<div className="flex flex-col items-center justify-center gap-[36px]">
-					<div className="mb-[40px] flex w-[90%] justify-center gap-[46px] flex-wrap">
-						{announcement.map((announce) => (
-							<HomeBox
+				<div className="mb-[50px] flex flex-wrap items-center justify-center gap-[36px]">
+					{announcement.map((announce, index) => (
+						<HomeBox
+							key={index}
 							mainClass="flex w-[42%] items-center justify-center"
 							headerSize="text-[32px]"
 							headerText={announce.title}
-							>
-								<AnnouncementAdvisoryProps size="text-[20px]" date={announce.updatedAt}>
-									<span>{announce.message}</span>
-								</AnnouncementAdvisoryProps>
-							</HomeBox>
-						))}
-					</div>
+							date={announce.updatedAt}
+						>
+							<AnnouncementAdvisoryProps size="text-[20px]">
+								<span>{announce.message}</span>
+							</AnnouncementAdvisoryProps>
+						</HomeBox>
+					))}
 				</div>
 			) : (
-				<div className="flex flex-col items-center justify-center gap-[36px]">
+				<div className="mb-[50px] flex flex-col items-center justify-center gap-[36px]">
+					{/* 
+					! TEMPLATE DON'T REMOVE
 					<HomeBox
 						mainClass="h-fit w-[90%]"
 						headerSize="text-[22px]"
 						headerText="Visiting Hours"
 					>
 						<VisitingHours size="text-[14px]" />
-					</HomeBox>
-					<HomeBox
-						mainClass="h-fit w-[90%]"
-						headerSize="text-[22px]"
-						headerText="Dress Code"
-					>
-						<DressCode responsive="md:w-[40%]" />
-					</HomeBox>
-					<HomeBox
-						mainClass="h-fit w-[90%]"
-						headerSize="text-[22px]"
-						headerText="Announcement"
-					>
-						<AnnouncementAdvisoryProps responsive="md:w-[50%]">
-							<span>
-								Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-								eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-								enim ad minim veniam
-							</span>
-						</AnnouncementAdvisoryProps>
-					</HomeBox>
-					<HomeBox
-						mainClass="mb-[30px] h-fit w-[90%]"
-						headerSize="text-[22px]"
-						headerText="Traffic Advisory"
-					>
-						<AnnouncementAdvisoryProps responsive="md:w-[50%]">
-							<span>
-								Excepteur sint occaecat cupidatat non proident, sunt in culpa
-								qui officia deserunt mollit anim id est laborum
-							</span>
-						</AnnouncementAdvisoryProps>
-					</HomeBox>
+					</HomeBox> 
+					*/}
+					{announcement.map((announce, index) => (
+						<HomeBox
+							key={index}
+							mainClass="h-fit w-[90%]"
+							headerSize="text-[22px]"
+							headerText={announce.title}
+							date={announce.updatedAt}
+						>
+							<AnnouncementAdvisoryProps responsive="md:w-[50%]">
+								<span>{announce.message}</span>
+							</AnnouncementAdvisoryProps>
+						</HomeBox>
+					))}
 				</div>
 			)}
 		</div>
