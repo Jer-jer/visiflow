@@ -65,34 +65,37 @@ exports.addVisitor = async (req, res) => {
   let mainVisitorId;
   let index = 0;
 
-  const [frontId, backId, selfieId] = await Promise.all([
-    uploadFileToGCS(
-      Buffer.from(
-        visitors[0].id_picture.front.replace(/^data:image\/\w+;base64,/, ""),
-        "base64"
-      ),
-      `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_front.jpg`
-    ),
-    uploadFileToGCS(
-      Buffer.from(
-        visitors[0].id_picture.back.replace(/^data:image\/\w+;base64,/, ""),
-        "base64"
-      ),
-      `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_back.jpg`
-    ),
-    uploadFileToGCS(
-      Buffer.from(
-        visitors[0].id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""),
-        "base64"
-      ),
-      `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_selfie.jpg`
-    ),
-  ]);
+  // const [frontId, backId, selfieId] = await Promise.all([
+  //   uploadFileToGCS(
+  //     Buffer.from(
+  //       visitors[0].id_picture.front.replace(/^data:image\/\w+;base64,/, ""),
+  //       "base64"
+  //     ),
+  //     `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_front.jpg`
+  //   ),
+  //   uploadFileToGCS(
+  //     Buffer.from(
+  //       visitors[0].id_picture.back.replace(/^data:image\/\w+;base64,/, ""),
+  //       "base64"
+  //     ),
+  //     `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_back.jpg`
+  //   ),
+  //   uploadFileToGCS(
+  //     Buffer.from(
+  //       visitors[0].id_picture.selfie.replace(/^data:image\/\w+;base64,/, ""),
+  //       "base64"
+  //     ),
+  //     `${Date.now()}_${visitors[0].visitor_details.name.last_name.toUpperCase()}_selfie.jpg`
+  //   ),
+  // ]);
 
   try {
     for (const visitor of visitors) {
+
+      // console.log(visitor);
+
       // await Promise.all(
-      //   validateVisitor.map((validation) => validation.run(visitors))
+      //   validateVisitor.map((validation) => validation.run(visitor))
       // );
 
       // const errors = validationResult(req);
@@ -101,57 +104,62 @@ exports.addVisitor = async (req, res) => {
       //   return res.status(400).json({ errors: errors.array()[0].msg });
       // }
 
-      // const visitorDB = await Visitor.findOne({
-      //   "visitor_details.email": visitor.visitor_details.email,
-      // });
+      const visitorDB = await Visitor.findOne({
+        "visitor_details.email": visitor.visitor_details.email,
+      });
+  
+      if (visitorDB) {
+        const checkCompanion = await Visitor.findOne({
+          "visitor_details.name.first_name":
+            visitor.visitor_details.name.first_name,
+          "visitor_details.name.last_name":
+            visitor.visitor_details.name.last_name
+        });
+        if (checkCompanion)
+          return res.status(409).json({
+          error: `${visitor.visitor_details.email} has already been used by another visitor`,
+        });
+      }
 
-      // if (visitorDB) {
-      //   const checkCompanion = await Visitor.findOne({
-      //     "visitor_details.name.first_name":
-      //       visitor.visitor_details.name.first_name,
-      //     "visitor_details.name.middle_name":
-      //       visitor.visitor_details.name.middle_name,
-      //     "visitor_details.name.last_name":
-      //       visitor.visitor_details.name.last_name,
-      //   });
-
-      //   if (!checkCompanion)
-      //     return res.status(409).json({
-      //       error: `${visitor.visitor_details.email} has already been used by another visitor`,
-      //     });
+      if (visitorDB) {
+        return res.status(400).json({
+          error: `Visitor using ${visitor.visitor_details.email} already has an existing record`,
+        });
+      }
 
       //   return res.status(400).json({
       //     error: `Visitor using ${visitor.visitor_details.email} already has an existing record`,
       //   });
       // }
 
-      const newVisitor = await Visitor.create({
-        _id: new ObjectId(),
-        visitor_details: {
-          first_name: visitor.visitor_details.first_name,
-          middle_name: visitor.visitor_details.middle_name
-            ? visitor.visitor_details.middle_name
-            : "",
-          last_name: visitor.visitor_details.last_name,
-        },
-        companions: [],
-        plate_num: visitor.plate_num,
-        purpose: visitor.purpose,
-        visitor_type: visitor.visitor_type,
-        status: visitor.status,
-        id_picture: {
-          front: index === 0 ? frontId : "",
-          back: index === 0 ? backId : "",
-          selfie: index === 0 ? selfieId : "",
-        },
-        expected_time_in: visitor.expected_time_in,
-        expected_time_out: visitor.expected_time_out,
-      });
-      if (index === 0) {
-        mainVisitorId = newVisitor._id;
-      } else {
-        companions.push(newVisitor._id);
-      }
+      // const newVisitor = await Visitor.create({
+      //   _id: new ObjectId(),
+      //   visitor_details: {
+      //     first_name: visitor.visitor_details.first_name,
+      //     middle_name: visitor.visitor_details.middle_name
+      //       ? visitor.visitor_details.middle_name
+      //       : "",
+      //     last_name: visitor.visitor_details.last_name,
+      //   },
+      //   companions: [],
+      //   plate_num: visitor.plate_num,
+      //   purpose: visitor.purpose,
+      //   visitor_type: visitor.visitor_type,
+      //   status: visitor.status,
+      //   id_picture: {
+      //     front: index === 0 ? frontId : "",
+      //     back: index === 0 ? backId : "",
+      //     selfie: index === 0 ? selfieId : "",
+      //   },
+      //   expected_time_in: visitor.expected_time_in,
+      //   expected_time_out: visitor.expected_time_out,
+      // });
+
+      // if (index === 0) {
+      //   mainVisitorId = newVisitor._id;
+      // } else {
+      //   companions.push(newVisitor._id);
+      // }
 
       // io.emit("newVisitor", newVisitor);
 
@@ -167,14 +175,14 @@ exports.addVisitor = async (req, res) => {
       index++;
     }
 
-    if (companions.length > 0) {
-      await Visitor.updateOne(
-        { _id: mainVisitorId },
-        { $set: { companions: companions } }
-      );
-    }
+    // if (companions.length > 0) {
+    //   await Visitor.updateOne(
+    //     { _id: mainVisitorId },
+    //     { $set: { companions: companions } }
+    //   );
+    // }
 
-    return res.status(201).json({ visitors: visitors });
+    // return res.status(201).json({ visitors: visitors });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error });
