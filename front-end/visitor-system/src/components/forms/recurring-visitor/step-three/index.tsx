@@ -104,7 +104,18 @@ export default function StepThree({
 				} else {
 					setLoading(true);
 					AxiosInstance.post("/visitor/new-recurring", {
-						visitors: visitors,
+						visitors: visitors.map((visitor: VisitorDataType) => ({
+							...visitor,
+							visitor_details: {
+								...visitor.visitor_details,
+								name: {
+									...visitor.visitor_details.name,
+									middle_name: visitor.visitor_details.name.middle_name
+										? visitor.visitor_details.name.middle_name
+										: "",
+								},
+							},
+						})),
 					})
 						.then((res: any) => {
 							setLoading(false);
@@ -114,9 +125,10 @@ export default function StepThree({
 							setLoading(false);
 							if (err.response) {
 								error(
-									err.response.data.error ||
+									err.response.data.error._message ||
+										err.response.data.error ||
 										err.response.data.errors ||
-										err.response.errors,
+										"Something went wrong",
 								);
 							} else {
 								error("Something went wrong.");

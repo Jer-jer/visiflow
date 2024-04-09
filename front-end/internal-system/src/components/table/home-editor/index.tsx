@@ -64,6 +64,8 @@ export default function HomeList() {
 			const convertedData: HomeEditor[] = data.map((announcement: any) => ({
 				title: announcement.title,
 				body: announcement.message,
+				prio: announcement.prio,
+				createdAt: new Date(announcement.updatedAt).toISOString().split('T')[0] 
 			  }));
 			setData(data);
 			setAnnouncements(convertedData);
@@ -101,6 +103,8 @@ export default function HomeList() {
 			const convertedData: HomeEditor[] = data.map((announcement: any) => ({
 				title: announcement.title,
 				body: announcement.message,
+				prio: announcement.prio,
+				createdAt: new Date(announcement.updatedAt).toISOString().split('T')[0] 
 			  }));
 			setData(data);
 			setAnnouncements(convertedData);
@@ -123,6 +127,16 @@ export default function HomeList() {
 		{
 			title: "Title",
 			dataIndex: "title",
+		},
+		{
+			title: "Priority Number",
+			dataIndex: "prio",
+			sorter: (a, b) => a.prio - b.prio,
+		},
+		{
+			title: "Created At",
+			dataIndex: "createdAt",
+			sorter: (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime() ,
 		},
 		{
 			title: (
@@ -173,7 +187,11 @@ export default function HomeList() {
 					/>
 				)}
 				{openDetails && (
-					<PageDetails record={pageDetail} setOpenDetails={setOpenDetails} />
+					<PageDetails
+					record={pageDetail}
+					setOpenDetails={setOpenDetails}
+					fetch={fetchAndSetAnnouncements}
+					/>
 				)}
 			</div>
 		</div>
