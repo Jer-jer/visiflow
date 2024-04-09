@@ -8,7 +8,7 @@ import { EventsSchedule } from "../../../../utils/interfaces";
 import type { Dayjs } from "dayjs";
 
 //Components
-import { Table, Button, Modal, Input} from "antd";
+import { Table, Button, Modal, Input, Checkbox} from "antd";
 import DateTimePicker from "../../../../components/datetime-picker";
 
 //Layout
@@ -46,7 +46,9 @@ export default function EventsScheduleList() {
 	const [openDetails, setOpenDetails] = useState(false);
 	const [data, setData] = useState<any>([]);
 	const [events, setEvents] = useState<EventsSchedule[]>([]);
+	const [displayEvents, setDisplayEvents] = useState<EventsSchedule[]>([]);
 	const [searchValue, setSearchValue] = useState("");
+	const [checkedList, setCheckedList] = useState<string[]>([]);
 
 	useEffect(() => {
 		if(searchValue == "") {
@@ -70,6 +72,7 @@ export default function EventsScheduleList() {
 			  }));
 			setData(data);
 			setEvents(convertedData);
+			setDisplayEvents(convertedData);
 		  } catch (error) {
 			console.error('Error fetching events:', error);
 		  }
@@ -110,6 +113,7 @@ export default function EventsScheduleList() {
 			  }));
 			setData(data);
 			setEvents(convertedData);
+			setDisplayEvents(convertedData);
 		  } catch (error) {
 			console.error('Error fetching events:', error);
 		  }
@@ -123,11 +127,40 @@ export default function EventsScheduleList() {
 			
 				return new Date(event.startDate).getTime() >= new Date(startDate).getTime() && new Date(event.endDate).getTime() <= new Date(endDate).getTime();
 			});
-			setEvents(filteredEvents)
+			setDisplayEvents(filteredEvents);
 		} else {
-			fetchAndSetEvents();
+			setDisplayEvents(events);
 		}
 	};
+
+	const onCheckboxChange = (checkedValues: string[]) => {
+		setCheckedList(checkedValues)
+		let filteredEvents;
+		if (checkedValues.length === 0) {
+			filteredEvents = events; // Return unfiltered events
+		  } else {
+			filteredEvents = events.filter(event => {
+				const currentDate = new Date().toISOString().slice(0, 10);
+				if (checkedValues.includes('past')) {
+				if (new Date(event.endDate) < new Date(currentDate)) {
+					return true;
+				}
+				}
+				if (checkedValues.includes('current')) {
+				if (new Date(event.startDate) <= new Date(currentDate) && new Date(event.endDate) >= new Date(currentDate)) {
+					return true;
+				}
+				}
+				if (checkedValues.includes('upcoming')) {
+				if (new Date(event.startDate) > new Date(currentDate)) {
+					return true;
+				}
+				}
+				return false;
+			});
+		}
+		setDisplayEvents(filteredEvents);
+	}
 
 	const edit = (record: any) => {
 		setPageDetail(record);
@@ -231,30 +264,42 @@ export default function EventsScheduleList() {
 		},
 	];
 
+	const options = [
+		{ label: 'Past', value: 'past' },
+		{ label: 'Current', value: 'current' },
+		{ label: 'Upcoming', value: 'upcoming' },
+	  ];
+
 	return (
 		<div className="ml-[45px] mt-[30px] flex flex-col gap-[50px]">
 			{!openDetails && (
-				<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
-					<Input
-						className="w-[366px]"
-						size="large"
-						placeholder="Search"
-						onPressEnter={handleSearch}
-						prefix={<Search />}
-						value={searchValue}
-						onChange={e => setSearchValue(e.target.value)}
-					/>
-					<Button type="primary" className="search-button !bg-primary-500">
-						Search
-					</Button>
-					<DateTimePicker size="large" onRangeChange={onRangeChange} />
-				</div>
+				<>
+					<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
+						<Input
+							className="w-[366px]"
+							size="large"
+							placeholder="Search"
+							onPressEnter={handleSearch}
+							prefix={<Search />}
+							value={searchValue}
+							onChange={e => setSearchValue(e.target.value)}
+						/>
+						<Button type="primary" className="search-button !bg-primary-500">
+							Search
+						</Button>
+						<DateTimePicker size="large" onRangeChange={onRangeChange} />
+					</div>
+					<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
+						<Checkbox.Group options={options} value={checkedList} onChange={onCheckboxChange}/>
+					</div>
+				</>
+				
 			)}
 			<div className="mr-[50px]">
 				{!openDetails && (
 					<Table
 						columns={columns}
-						dataSource={events}
+						dataSource={displayEvents}
 						pagination={{ pageSize: 8 }}
 					/>
 				)}

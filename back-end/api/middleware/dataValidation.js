@@ -29,7 +29,7 @@ const validateAnnouncements = [
 ];
 const validateEmployees = [
     body('name').notEmpty().withMessage('Name is required').isString().withMessage("Name must be a String"),
-    body('email').notEmpty().withMessage('Email is required').isString().withMessage("Email must be a String"),
+    body('email').notEmpty().withMessage('Email is required').isEmail().withMessage("Email must be valid"),
     body('contact').isLength({ min: 11 }).withMessage('Phone number must be at least 11 digits').notEmpty().withMessage('Phone Number is required').isString().withMessage("Phone Number must be a String")
 ];
 const validateEvents = [

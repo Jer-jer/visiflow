@@ -138,6 +138,12 @@ export interface HomeEditor {
 	createdAt: Date;
 }
 
+export interface Employee {
+	name: string;
+	email: string;
+	contact: string;
+}
+
 export interface OfficeSchedule {
 	name: string;
 	roomNo: string;
