@@ -29,12 +29,13 @@ exports.findBadge = async (req, res) => {
 
 //TODO Create Generate Badge button
 exports.generateBadge = async (req, res) => {
+  const { qty } = req.body;
   try {
     // const clientIP = req.ip;
     const user_id = req.user._id;
     const log_type = "generate_badge";
 
-    for (let counter = 0; counter < badgeQty; counter++) {
+    for (let counter = 0; counter < qty; counter++) {
       await generateVisitorQRCode(counter);
     }
 
