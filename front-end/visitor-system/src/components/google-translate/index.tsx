@@ -1,9 +1,9 @@
 import "./styles.scss";
+
 import React, { useEffect } from 'react';
 
 
-const GoogleTranslateComponent: React.FC = () => {
-  
+const GoogleTranslateComponent: React.FC = () =>{  
     return (
         <div id="google_translate_element"></div>
     );
