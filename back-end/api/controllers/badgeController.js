@@ -27,7 +27,6 @@ exports.findBadge = async (req, res) => {
   res.status(200).json({ badge });
 };
 
-//TODO Create Generate Badge button
 exports.generateBadge = async (req, res) => {
   const { qty } = req.body;
   try {
@@ -62,11 +61,11 @@ exports.newBadge = async (req, res) => {
     });
 
     createSystemLog(user_id, log_type, "success");
-    return res.send(200).json({ Badge: badge });
+    return res.sendStatus(200);
   } catch (error) {
     console.error(error);
     createSystemLog(user_id, log_type, "success");
-    return res.send(500).json({ Error: error });
+    return res.sendStatus(500);
   }
 };
 
@@ -75,10 +74,11 @@ exports.checkBadge = async (req, res) => {
   let badge;
   let type;
 
-  if(!req.user) {
-    return res.status(401).json({ Error: 'Unauthorized user' });
-  }
-  
+  //! Back-end, how does this work? How does the back-end know who the user is if the router this is in is not using passport.authenticate?
+  // if (!req.user) {
+  //   return res.status(401).json({ Error: "Unauthorized user" });
+  // }
+
   if (qr_id !== undefined) {
     badge = await Badge.findOne({ qr_id: qr_id });
     if (!badge) {

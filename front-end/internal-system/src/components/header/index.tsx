@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import useSound from "use-sound";
 import Notifications from "react-notifications-menu";
@@ -22,7 +21,6 @@ import type { InputNumberProps } from "antd";
 //Reducers
 import { add } from "../../states/visitors";
 import { addNotif, readNotif } from "../../states/notifications";
-import { changeRole } from "../../states/roles";
 
 //Utils
 import {
@@ -65,8 +63,6 @@ export default function Header() {
 	const notifications = useSelector((state: RootState) => state.notifications);
 
 	const [play] = useSound(NotificationSound, { volume: 1, soundEnabled: true });
-
-	const navigate = useNavigate();
 
 	const dispatch = useDispatch<AppDispatch>();
 
@@ -256,9 +252,7 @@ export default function Header() {
 					open={success}
 					onOk={handleSuccessOk}
 				>
-					<div className="mt-[20px]">
-						<span>Sucessfully generated {noOfBadges} badges</span>
-					</div>
+					<span>Sucessfully generated {noOfBadges} badges</span>
 				</Modal>
 				<Modal
 					title={
@@ -283,15 +277,18 @@ export default function Header() {
 						</span>
 					</div>
 				</Modal>
-				<Tooltip title="Generate Badges">
-					<button
-						title="Generate Badges"
-						className="btn btn-ghost pr-[1rem] hover:bg-transparent"
-						onClick={showGenModal}
-					>
-						<PlusCircleOutlined style={{ fontSize: "17px" }} />
-					</button>
-				</Tooltip>
+				{isAdmin && (
+					<Tooltip title="Generate Badges">
+						<button
+							title="Generate Badges"
+							className="btn btn-ghost pr-[1rem] hover:bg-transparent"
+							onClick={showGenModal}
+						>
+							<PlusCircleOutlined style={{ fontSize: "17px" }} />
+						</button>
+					</Tooltip>
+				)}
+
 				<div className="pr-[1rem]">
 					<Notifications
 						data={notifications}
@@ -340,8 +337,8 @@ export default function Header() {
 							label: (
 								<button
 									onClick={() => {
-										dispatch(changeRole(true));
-										navigate("/dashboard");
+										localStorage.setItem("mode", "admin");
+										window.location.href = "/dashboard";
 									}}
 									disabled={!isAdmin}
 								>
@@ -355,8 +352,8 @@ export default function Header() {
 							label: (
 								<button
 									onClick={() => {
-										dispatch(changeRole(false));
-										navigate("/qr-scanner");
+										localStorage.setItem("mode", "security");
+										window.location.href = "/qr-scanner";
 									}}
 									disabled={!isAdmin}
 								>
@@ -371,7 +368,7 @@ export default function Header() {
 						},
 					]}
 				>
-					<div tabIndex={0} className="pr-[1rem]">
+					<div tabIndex={0} className="pr-[1rem] hover:cursor-pointer">
 						<Account />
 					</div>
 				</CustomDropdown>

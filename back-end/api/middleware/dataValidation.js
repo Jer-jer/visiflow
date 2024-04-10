@@ -2,7 +2,7 @@ const { body, validationResult } = require('express-validator');
 
 const validateUser = [
     body('first_name').isString().withMessage('Invalid First name').notEmpty().withMessage('First name is required'),
-    body('middle_name').isString().withMessage('Invalid Middle name').notEmpty().withMessage('Middle name is required'),
+    body('middle_name').isString().withMessage('Invalid Middle name').optional(),
     body('last_name').isString().withMessage('Invalid Last name').notEmpty().withMessage('Last name is required'),
     body('username').optional().notEmpty().isString().withMessage('Username is required'),
     body('email').isEmail().withMessage('Must be a valid email'),

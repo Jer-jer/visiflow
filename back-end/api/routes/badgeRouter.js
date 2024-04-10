@@ -15,6 +15,10 @@ router.post(
 
 router.get("/checkBadge", badgeController.checkBadge);
 
-router.post("/newBadge", badgeController.newBadge);
+router.post(
+  "/newBadge",
+  passport.authenticate("jwt", { session: false }),
+  badgeController.newBadge
+);
 
 module.exports = router;
