@@ -80,7 +80,6 @@ export interface IDPictureProps {
 	selfie: string;
 }
 export interface VisitorDataType {
-	key: string;
 	_id: string;
 	visitor_details: VisitorDetailsProps;
 	companions?: string[];

@@ -7,7 +7,7 @@ router.get("/", badgeController.getBadges);
 
 router.post("/findBadge", badgeController.findBadge);
 
-router.get(
+router.post(
   "/generateBadge",
   passport.authenticate("jwt", { session: false }),
   badgeController.generateBadge
@@ -15,6 +15,10 @@ router.get(
 
 router.get("/checkBadge", badgeController.checkBadge);
 
-router.post("/newBadge", badgeController.newBadge);
+router.post(
+  "/newBadge",
+  passport.authenticate("jwt", { session: false }),
+  badgeController.newBadge
+);
 
 module.exports = router;

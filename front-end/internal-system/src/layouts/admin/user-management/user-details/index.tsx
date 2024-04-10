@@ -29,7 +29,7 @@ import Label from "../../../../components/fields/input/label";
 import Alert from "../../../../components/alert";
 
 //Reducers
-import { updateUser, removeTab } from "../../../../states/users/tab";
+import { removeTab } from "../../../../states/users/tab";
 
 //Libs
 import AxiosInstance from "../../../../lib/axios";
@@ -44,6 +44,7 @@ import "./styles.scss";
 interface UserDetailsProps {
 	newTabIndex: MutableRefObject<number>;
 	record?: UserDataType;
+	activeKey: number;
 	setActiveKey: Dispatch<SetStateAction<number>>;
 }
 
@@ -52,26 +53,24 @@ type UserDetailsTypeZod = z.infer<typeof UserDetailsZod>;
 const { confirm } = Modal;
 
 const closeTab = (
-	_id: string | undefined,
+	_id: string,
 	newTabIndex: MutableRefObject<number>,
 	tabs: TabItems[],
+	activeKey: number,
 	dispatch: Dispatch<UnknownAction>,
 	setActiveKey: Dispatch<SetStateAction<number>>,
 ) => {
-	const newActiveKey = --newTabIndex.current;
-	const newItems = [...tabs];
-	const index = newItems.map((e) => e.userData!._id).indexOf(_id!);
-	if (index !== -1) {
-		newItems.splice(index, 1);
-		dispatch(removeTab(newItems));
-	}
-	setActiveKey(newActiveKey);
+	newTabIndex.current = newTabIndex.current - 1;
+	let newItems = tabs.filter((e: any) => e.userData._id !== _id);
+	dispatch(removeTab(newItems));
+	setActiveKey(activeKey - 1);
 };
 
 const showDeleteConfirm = (
-	_id: string | undefined,
+	_id: string,
 	newTabIndex: MutableRefObject<number>,
 	tabs: TabItems[],
+	activeKey: number,
 	dispatch: Dispatch<UnknownAction>,
 	setActiveKey: Dispatch<SetStateAction<number>>,
 	setAlertMsg: Dispatch<SetStateAction<string>>,
@@ -85,22 +84,19 @@ const showDeleteConfirm = (
 		okType: "danger",
 		cancelText: "No",
 		onOk() {
+			closeTab(_id, newTabIndex, tabs, activeKey, dispatch, setActiveKey);
 			AxiosInstance.delete("/user/delete", {
 				data: {
-					_id: !_id && _id,
+					_id,
 				},
-			})
-				.then((res) => {
-					closeTab(_id, newTabIndex, tabs, dispatch, setActiveKey);
-				})
-				.catch((err) => {
-					setAlertMsg(
-						err?.response?.data?.error ||
-							err?.response?.data?.errors ||
-							"Something went wrong.",
-					);
-					setAlertOpen(true);
-				});
+			}).catch((err) => {
+				setAlertMsg(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
+				setAlertOpen(true);
+			});
 		},
 		onCancel() {
 			console.log("Cancel");
@@ -111,6 +107,7 @@ const showDeleteConfirm = (
 export default function UserDetails({
 	record,
 	newTabIndex,
+	activeKey,
 	setActiveKey,
 }: UserDetailsProps) {
 	// Alert State
@@ -207,7 +204,9 @@ export default function UserDetails({
 		})
 			.then((res) => {
 				setStatus(true);
-				setAlertMsg(res.data.message);
+				setAlertMsg(
+					`User ${res.data.user.username} has been updated successfully.`,
+				);
 				setAlertOpen(!alertOpen);
 				setDisabledInputs(!disabledInputs);
 			})
@@ -500,6 +499,7 @@ export default function UserDetails({
 												record!._id,
 												newTabIndex,
 												tabs,
+												activeKey,
 												dispatch,
 												setActiveKey,
 												setAlertMsg,

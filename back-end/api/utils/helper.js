@@ -25,7 +25,8 @@ const ACCESS_TOKEN_EXPIRATION = "20m";
 const REFRESH_TOKEN_EXPIRATION = "7d";
 const bucketName = "visiflow";
 
-const local_ip = '192.168.1.4';
+// const local_ip = "192.168.1.4"; //? Why 192.168.1.4?
+const local_ip = "localhost";
 
 // Lazy-loaded storage
 let storage;
@@ -310,10 +311,10 @@ function uploadFileToGCS(bufferData, fileName) {
     file.save(bufferData, {
       contentType: "image/jpeg",
     });
-    
+
     return `https://storage.googleapis.com/${bucketName}/${fileName}`;
   } catch (error) {
-    return error
+    return error;
   }
 }
 
@@ -324,7 +325,10 @@ function generateFileName(visitor, type) {
 
 //Generate image Buffer
 function createImageBuffer(imageData) {
-  return Buffer.from(imageData.replace(/^data:image\/\w+;base64,/, ""), "base64");
+  return Buffer.from(
+    imageData.replace(/^data:image\/\w+;base64,/, ""),
+    "base64"
+  );
 }
 
 //End of Image Upload Section
@@ -467,7 +471,6 @@ async function createSystemLog(id, type, status) {
     }
 
     await SystemLog.create({
-
       user_id: userDB._id,
       name: {
         first_name: userDB.name.first_name,
@@ -475,9 +478,8 @@ async function createSystemLog(id, type, status) {
       },
       role: userDB.role,
       type: type,
-      status: status
+      status: status,
     });
-
   } catch (error) {
     console.error(error);
     return false;
@@ -486,24 +488,28 @@ async function createSystemLog(id, type, status) {
 
 //Visitor Duplicate Validation
 async function validateDuplicate(visitors, res) {
-
-  const validateDuplicate = visitors.map(async visitor => {
+  const validateDuplicate = visitors.map(async (visitor) => {
     try {
       // Check if visitor has an existing record
-      const visitorDB = await Visitor.findOne({"visitor_details.email": visitor.visitor_details.email});
+      const visitorDB = await Visitor.findOne({
+        "visitor_details.email": visitor.visitor_details.email,
+      });
 
       // Check if email is used by another visitor
       if (visitorDB) {
-        const { first_name, middle_name, last_name } = visitorDB.visitor_details.name;
+        const { first_name, middle_name, last_name } =
+          visitorDB.visitor_details.name;
         const { email } = visitor.visitor_details;
 
-        const isDuplicate = visitor.visitor_details.name.first_name === first_name &&
-                            (visitor.visitor_details.name.middle_name || "") === (middle_name || "") &&
-                            visitor.visitor_details.name.last_name === last_name;
+        const isDuplicate =
+          visitor.visitor_details.name.first_name === first_name &&
+          (visitor.visitor_details.name.middle_name || "") ===
+            (middle_name || "") &&
+          visitor.visitor_details.name.last_name === last_name;
 
-        return isDuplicate ? 
-          `Visitor using ${email} already has an existing record` :
-          `${email} has already been used by another visitor`;
+        return isDuplicate
+          ? `Visitor using ${email} already has an existing record`
+          : `${email} has already been used by another visitor`;
       }
     } catch (error) {
       console.error("Error while validating duplicate:", error);
@@ -513,12 +519,13 @@ async function validateDuplicate(visitors, res) {
 
   try {
     const validationResults = await Promise.all(validateDuplicate);
-    return validationResults.filter(result => result !== undefined);
+    return validationResults.filter((result) => result !== undefined);
   } catch (error) {
-    return res.status(500).json({ error: "Error while validating duplicates:", error });
+    return res
+      .status(500)
+      .json({ error: "Error while validating duplicates:", error });
   }
 }
-
 
 module.exports = {
   hashPassword,
@@ -538,5 +545,5 @@ module.exports = {
   createNotification,
   generateFileName,
   createImageBuffer,
-  validateDuplicate
+  validateDuplicate,
 };
