@@ -3,13 +3,10 @@ const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 
 // Imports
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const QRCode = require("qrcode");
 const nodemailer = require("nodemailer");
 
 // Models
-const RefreshToken = require("../models/refreshToken");
 const Badge = require("../models/badge");
 const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
@@ -20,12 +17,9 @@ const SystemLog = require("../models/systemLogs");
 // Google Cloud Storage
 const { Storage } = require("@google-cloud/storage");
 
-// Constants
-const ACCESS_TOKEN_EXPIRATION = "20m";
-const REFRESH_TOKEN_EXPIRATION = "7d";
 const bucketName = "visiflow";
 
-// const local_ip = "192.168.1.4"; //? Why 192.168.1.4?
+// const local_ip = "192.168.1.4"; 
 const local_ip = "localhost";
 
 // Lazy-loaded storage
@@ -50,58 +44,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.MAILER_PASSWORD,
   },
 });
-
-// Environtment Variables
-const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
-
-// Hash password function
-function hashPassword(password) {
-  const salt = bcrypt.genSaltSync();
-  return bcrypt.hashSync(password, salt);
-}
-
-// Compare password function
-function comparePassword(raw, hash) {
-  return bcrypt.compareSync(raw, hash);
-}
-
-// Generate access token function
-function generateAccessToken(user) {
-  const jwtPayload = {
-    sub: user._id,
-    role: user.role,
-  };
-  return jwt.sign(jwtPayload, ACCESS_TOKEN_SECRET, {
-    expiresIn: ACCESS_TOKEN_EXPIRATION,
-  });
-}
-
-// Generate refresh token function
-function generateRefreshToken(user) {
-  const jwtPayload = {
-    sub: user._id,
-  };
-  return jwt.sign(jwtPayload, REFRESH_TOKEN_SECRET, {
-    expiresIn: REFRESH_TOKEN_EXPIRATION,
-  });
-}
-
-// Store refresh token function
-async function storeRefreshToken(token, userId) {
-  const refreshToken = new RefreshToken({ token, userId });
-  await refreshToken.save();
-}
-
-// Verify refresh token function
-async function verifyRefreshToken(token) {
-  try {
-    const decoded = jwt.verify(token, REFRESH_TOKEN_SECRET);
-    return decoded.sub;
-  } catch (error) {
-    return null;
-  }
-}
 
 // Generate QR code function, found in badge controller
 // use in walk-in visitor
@@ -426,17 +368,17 @@ async function createNotification(visitor, type, io) {
     : `${visitor[0].name.last_name}, ${visitor[0].name.first_name} ${visitor[0].name.middle_name}`;
 
   const hostName =
-    visitor.purpose?.who.join(", ") || visitorDB?.purpose?.who.join(", ") || "";
-  const date = visitor.purpose?.when || visitorDB?.when || "";
-  const time_in = visitor.expected_time_in || visitorDB?.expected_time_in || "";
+    visitor.purpose.who.join(", ") || visitorDB.purpose.who.join(", ") || "";
+  const date = visitor.purpose?.when || visitorDB.when || "";
+  const time_in = visitor.expected_time_in || visitorDB.expected_time_in || "";
   const time_out =
     visitor.expected_time_out || visitorDB?.expected_time_out || "";
   const location =
-    visitor.purpose?.where.join(", ") ||
-    visitorDB?.purpose?.where.join(", ") ||
+    visitor.purpose.where.join(", ") ||
+    visitorDB?.purpose.where.join(", ") ||
     "";
   const purpose =
-    visitor.purpose?.what?.join(", ") || visitorDB.purpose?.what?.join(", ");
+    visitor.purpose.what.join(", ") || visitorDB.purpose.what.join(", ");
   const visitorType = visitor.visitor_type;
 
   const notificationContent = {
@@ -528,12 +470,6 @@ async function validateDuplicate(visitors, res) {
 }
 
 module.exports = {
-  hashPassword,
-  comparePassword,
-  generateAccessToken,
-  generateRefreshToken,
-  storeRefreshToken,
-  verifyRefreshToken,
   generateVisitorQRCode,
   generateVisitorQRAndEmail,
   updateLog,

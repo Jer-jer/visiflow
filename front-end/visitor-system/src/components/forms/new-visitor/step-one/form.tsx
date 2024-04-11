@@ -28,7 +28,6 @@ import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 import type { DatePickerProps } from "antd";
-import { VisitorStatus, VisitorType } from "../../../../utils/enums";
 
 // Utils
 import { formatDateObjToString } from "../../../../utils";
@@ -92,45 +91,8 @@ function StepOneForm({
 					setVisitors((prevVisitors) => [
 						...prevVisitors,
 						{
+							...mainVisitor,
 							visitor_no: i + 2,
-							visitor_details: {
-								name: {
-									first_name: "",
-									middle_name: "",
-									last_name: "",
-								},
-
-								email: "",
-								phone: "",
-								address: {
-									house: "",
-									street: "",
-									brgy: "",
-									city: "",
-									province: "",
-									country: "",
-								},
-								time_in: "",
-								time_out: "",
-							},
-							// companions_details: [],
-							expected_time_in: new Date(),
-							expected_time_out: new Date(),
-							purpose: {
-								what: [],
-								when: new Date(),
-								where: [],
-								who: [],
-							},
-							termsConditions: false,
-							plate_num: null,
-							id_picture: {
-								front: "",
-								back: "",
-								selfie: "",
-							},
-							status: VisitorStatus.InProgress,
-							visitor_type: VisitorType.PreRegistered,
 						},
 					]);
 				}
@@ -178,45 +140,57 @@ function StepOneForm({
 		switch (purpose) {
 			case "what":
 				setVisitors((preVisitors) => {
-					let updatedVisitors = [...preVisitors];
-					for (let x = 0; x < updatedVisitors.length; x++) {
-						updatedVisitors[x].purpose.what = value as string[];
-					}
-
-					return updatedVisitors;
+					return preVisitors.map((visitor) => {
+						return {
+							...visitor,
+							purpose: {
+								...visitor.purpose,
+								what: value as string[],
+							},
+						};
+					});
 				});
 				setValue("what", value as string[]);
 				break;
 			case "when":
 				setVisitors((preVisitors) => {
-					let updatedVisitors = [...preVisitors];
-					for (let x = 0; x < updatedVisitors.length; x++) {
-						updatedVisitors[x].purpose.when = value as Date;
-					}
-
-					return updatedVisitors;
+					return preVisitors.map((visitor) => {
+						return {
+							...visitor,
+							purpose: {
+								...visitor.purpose,
+								when: value as Date,
+							},
+						};
+					});
 				});
 				setValue("when", value as Date);
 				break;
 			case "where":
 				setVisitors((preVisitors) => {
-					let updatedVisitors = [...preVisitors];
-					for (let x = 0; x < updatedVisitors.length; x++) {
-						updatedVisitors[x].purpose.where = value as string[];
-					}
-
-					return updatedVisitors;
+					return preVisitors.map((visitor) => {
+						return {
+							...visitor,
+							purpose: {
+								...visitor.purpose,
+								where: value as string[],
+							},
+						};
+					});
 				});
 				setValue("where", value as string[]);
 				break;
 			case "who":
 				setVisitors((preVisitors) => {
-					let updatedVisitors = [...preVisitors];
-					for (let x = 0; x < updatedVisitors.length; x++) {
-						updatedVisitors[x].purpose.who = value as string[];
-					}
-
-					return updatedVisitors;
+					return preVisitors.map((visitor) => {
+						return {
+							...visitor,
+							purpose: {
+								...visitor.purpose,
+								who: value as string[],
+							},
+						};
+					});
 				});
 				setValue("who", value as string[]);
 				break;

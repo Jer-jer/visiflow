@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const User = require("../models/user");
-const { hashPassword, createSystemLog } = require("../utils/helper");
+const { createSystemLog } = require("../utils/helper");
+const { hashPassword } = require("../utils/authUtils");
 const { filterData } = require("../middleware/filterData");
 const {
   validateUser,
