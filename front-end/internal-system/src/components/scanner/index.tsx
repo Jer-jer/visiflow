@@ -52,8 +52,14 @@ export default function Scanner({ onQRstatus }: any) {
 					scanner.clear();
 				}
 				setScanResult(result);
+
+				// Retrieve JWT token from local storage
+				const token = localStorage.getItem("token");
+
+				// Append JWT token as a query parameter to the scanned URL
+				const redirectUrl = `${result}&token=${token}`;
 				// Redirect to the scanned link
-				window.location.href = result;
+				window.location.href = redirectUrl;
 			}
 		} else {
 			onQRstatus("Invalid QR");
