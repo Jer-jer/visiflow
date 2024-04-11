@@ -1,13 +1,13 @@
 require("dotenv").config();
 
 const User = require("../models/user");
-const {
+const { 
   generateAccessToken,
   generateRefreshToken,
   storeRefreshToken,
-  verifyRefreshToken,
-  createSystemLog,
-} = require("../utils/helper");
+  verifyRefreshToken, 
+} = require('../utils/authUtils');
+const { createSystemLog } = require("../utils/helper");
 
 exports.login = async (req, res) => {
   const user_id = req.user._id;
