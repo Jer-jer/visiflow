@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
-import { useDispatch, useSelector } from "react-redux";
 
 //Layouts
 import LoggedIn from "./layouts/logged-in";
@@ -24,12 +22,6 @@ import QRScanner from "./pages/guard/qr-scanner";
 import PreregisteredQR from "./pages/guard/preregistered-qr";
 import VisitorStatus from "./pages/guard/visitor-status";
 
-// Interface
-import type { RootState } from "./store";
-
-// Reducers
-import { changeRole } from "./states/roles";
-
 //Assets
 import { LoadingOutlined } from "@ant-design/icons";
 
@@ -39,27 +31,11 @@ import "./App.scss";
 function App() {
 	const [loading, setLoading] = useState(true);
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
-	const isAdmin = useSelector((state: RootState) => state.isAdmin);
-	const dispatch = useDispatch();
 
 	useEffect(() => {
 		const token = localStorage.getItem("token");
 
-		if (token) {
-			const decoded: any = jwtDecode(token);
-			setIsLoggedIn(true);
-
-			/*
-			 * Roles:
-			 * admin
-			 * security
-			 */
-			if (decoded.role === "admin") {
-				dispatch(changeRole(true));
-			}
-		} else {
-			setIsLoggedIn(false);
-		}
+		token ? setIsLoggedIn(true) : setIsLoggedIn(false);
 
 		setLoading(false);
 	}, []);
@@ -74,7 +50,7 @@ function App() {
 				<LoggedIn>
 					<Routes>
 						<Route path="/notifications" element={<NotificationsPage />} />
-						{isAdmin ? (
+						{localStorage.getItem("mode") === "admin" ? (
 							<>
 								<Route path="/" element={<Navigate to="/dashboard" />} />
 								<Route path="/dashboard" element={<Dashboard />} />

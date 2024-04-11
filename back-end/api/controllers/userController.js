@@ -1,15 +1,11 @@
 const mongoose = require("mongoose");
 const User = require("../models/user");
-const { 
-  hashPassword,
-  createSystemLog 
-} = require('../utils/helper');
+const { hashPassword, createSystemLog } = require("../utils/helper");
 const { filterData } = require("../middleware/filterData");
-const { 
-  validateUser, 
-  validationResult 
+const {
+  validateUser,
+  validationResult,
 } = require("../middleware/dataValidation");
-
 
 exports.getUsers = async (req, res) => {
   try {
@@ -17,15 +13,26 @@ exports.getUsers = async (req, res) => {
     return res.status(200).json({ users });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Failed to retrieve users from the database" });
+    return res
+      .status(500)
+      .json({ error: "Failed to retrieve users from the database" });
   }
 };
 
 exports.addUser = async (req, res) => {
-  const { first_name, middle_name, last_name, username, email, password, phone, role } = req.body;
+  const {
+    first_name,
+    middle_name,
+    last_name,
+    username,
+    email,
+    password,
+    phone,
+    role,
+  } = req.body;
   const ObjectId = mongoose.Types.ObjectId;
   const user_id = req.user._id;
-  const log_type = 'add_user';
+  const log_type = "add_user";
 
   await Promise.all(validateUser.map((validation) => validation.run(req)));
 
@@ -34,11 +41,11 @@ exports.addUser = async (req, res) => {
     return res.status(400).json({ errors: errors.array()[0].msg });
   }
 
-  const userDB = await User.findOne({ email: email});
+  const userDB = await User.findOne({ email: email });
   if (userDB) {
-    return res.status(409).json({ error: 'User already exists' });
+    return res.status(409).json({ error: "User already exists" });
   }
-  
+
   try {
     const hashedPassword = hashPassword(password);
     const _id = new ObjectId();
@@ -47,7 +54,7 @@ exports.addUser = async (req, res) => {
       _id,
       name: {
         first_name,
-        middle_name,
+        middle_name: middle_name || "",
         last_name,
       },
       username: username || (first_name + last_name).toLowerCase(),
@@ -57,18 +64,18 @@ exports.addUser = async (req, res) => {
       role,
     });
 
-    await createSystemLog(user_id, log_type, 'success');
-    res.status(201).json({ User: filterData(newUser), id: _id });
+    await createSystemLog(user_id, log_type, "success");
+    res.status(201).json({ user: filterData(newUser), id: _id });
   } catch (error) {
     console.error(error);
-    await createSystemLog(user_id, log_type, 'failed');
+    await createSystemLog(user_id, log_type, "failed");
     return res.status(500).json({ error: "Failed to create a new user" });
   }
 };
 
 exports.findUser = async (req, res) => {
   const { _id } = req.body;
-  
+
   try {
     const userDB = await User.findById(_id, "-password");
 
@@ -77,7 +84,6 @@ exports.findUser = async (req, res) => {
     } else {
       return res.status(404).json({ error: "User not found" });
     }
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to find user by ID" });
@@ -85,47 +91,60 @@ exports.findUser = async (req, res) => {
 };
 
 exports.updateUser = async (req, res) => {
-  const { _id, first_name, middle_name, last_name, username, email, phone, role } = req.body;
+  const {
+    _id,
+    first_name,
+    middle_name,
+    last_name,
+    username,
+    password,
+    email,
+    phone,
+    role,
+  } = req.body;
   const user_id = req.user._id;
-  const log_type = 'update_user';
+  const log_type = "update_user";
 
   try {
     const userDB = await User.findById(_id);
     if (!userDB) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" });
     }
-    
+
+    const hashedPassword = hashPassword(password);
+
     const updateFields = {
       name: {
         first_name: first_name || userDB.first_name,
-        middle_name: middle_name || userDB.middle_name,
+        middle_name: middle_name || userDB.middle_name || "",
         last_name: last_name || userDB.last_name,
       },
       username: username || userDB.username,
+      password: password ? hashedPassword : userDB.password,
       email: email || userDB.email,
       phone: phone || userDB.phone,
-      role: role || userDB.role
-  }
+      role: role || userDB.role,
+    };
 
     const filteredUpdateFields = Object.fromEntries(
-        Object.entries(updateFields).filter(([key, value]) => value !== undefined)
+      Object.entries(updateFields).filter(([key, value]) => value !== undefined)
     );
-    
+
     if (Object.keys(filteredUpdateFields).length === 0) {
-        return res.status(400).json({ error: "No valid fields to update" });
+      return res.status(400).json({ error: "No valid fields to update" });
     }
-        
+
     const updatedUser = await User.findByIdAndUpdate(
       _id,
       filteredUpdateFields,
       { new: true }
     );
 
-    await createSystemLog(user_id, log_type, 'success');
-    res.status(201).json({ User: filterData(updatedUser) });
+    await createSystemLog(user_id, log_type, "success");
+    res.status(201).json({ user: filterData(updatedUser) });
   } catch (error) {
     console.error(error);
-    await createSystemLog(user_id, log_type, 'failed');
+    await createSystemLog(user_id, log_type, "failed");
     return res.status(500).json({ error: "Failed to update user" });
   }
 };
@@ -133,22 +152,22 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   const { _id } = req.body;
   const user_id = req.user._id;
-  const log_type = 'delete_user';
-  
+  const log_type = "delete_user";
+
   try {
-    const userDB = await User.findOneAndDelete(_id);
+    const userDB = await User.findByIdAndDelete(_id);
+    // const userDB = await User.findById(_id);
 
     if (userDB) {
-      await createSystemLog(user_id, log_type, 'success');
+      await createSystemLog(user_id, log_type, "success");
       return res.status(204).send();
     } else {
-      await createSystemLog(user_id, log_type, 'failed');
+      await createSystemLog(user_id, log_type, "failed");
       return res.status(404).json({ error: "User not found" });
     }
-
   } catch (error) {
     console.error(error);
-    await createSystemLog(user_id, log_type, 'failed');
+    await createSystemLog(user_id, log_type, "failed");
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };

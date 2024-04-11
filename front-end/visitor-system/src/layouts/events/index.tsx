@@ -113,18 +113,35 @@ export default function Events() {
 				name: searchValue,
 			});
 			const data = response.data.event;
-			const convertedData: EventsProps[] = data.map((event: any) => ({
-				header: {
+			const convertedData: EventsProps[] = data.map((event: any) => {
+				const endDate = new Date(event.endDate);
+				const endTime = new Date(event.endTime);
+
+				endDate.setHours(endTime.getHours());
+				endDate.setMinutes(endTime.getMinutes());
+
+				const startDate = new Date(event.startDate);
+				const startTime = new Date(event.startTime);
+
+				startDate.setHours(startTime.getHours());
+				startDate.setMinutes(startTime.getMinutes());
+
+				const header = {
 					title: event.name,
-					startDate: new Date(event.startDate),
-					endDate: new Date(event.endDate),
+					startDate: startDate,
+					endDate: endDate,
 					loc: event.locationID,
-				},
-				desc: event.description,
-				img: event.eventImg,
-			  }));
+				};
+
+				// Return the updated event object
+				return {
+					header: header,
+					desc: event.description,
+					img: event.eventImg,
+				};
+			});
 			setEvent(convertedData);
-			setEventToday(convertedData);
+			convertEvent(convertedData);
 		} catch (error) {
 			console.error("Error fetching events:", error);
 		}

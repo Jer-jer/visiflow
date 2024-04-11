@@ -27,14 +27,14 @@ exports.findBadge = async (req, res) => {
   res.status(200).json({ badge });
 };
 
-//TODO Create Generate Badge button
 exports.generateBadge = async (req, res) => {
+  const { qty } = req.body;
   try {
     // const clientIP = req.ip;
     const user_id = req.user._id;
     const log_type = "generate_badge";
 
-    for (let counter = 0; counter < badgeQty; counter++) {
+    for (let counter = 0; counter < qty; counter++) {
       await generateVisitorQRCode(counter);
     }
 
@@ -61,11 +61,11 @@ exports.newBadge = async (req, res) => {
     });
 
     createSystemLog(user_id, log_type, "success");
-    return res.send(200).json({ Badge: badge });
+    return res.sendStatus(200);
   } catch (error) {
     console.error(error);
     createSystemLog(user_id, log_type, "success");
-    return res.send(500).json({ Error: error });
+    return res.sendStatus(500);
   }
 };
 

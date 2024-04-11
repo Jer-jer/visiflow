@@ -25,7 +25,8 @@ const ACCESS_TOKEN_EXPIRATION = "20m";
 const REFRESH_TOKEN_EXPIRATION = "7d";
 const bucketName = "visiflow";
 
-const local_ip = '192.168.1.4';
+// const local_ip = "192.168.1.4";
+const local_ip = "localhost";
 
 // Lazy-loaded storage
 let storage;
@@ -324,7 +325,10 @@ function generateFileName(visitor, type) {
 
 //Generate image Buffer
 function createImageBuffer(imageData) {
-  return Buffer.from(imageData.replace(/^data:image\/\w+;base64,/, ""), "base64");
+  return Buffer.from(
+    imageData.replace(/^data:image\/\w+;base64,/, ""),
+    "base64"
+  );
 }
 
 //End of Image Upload Section
@@ -467,7 +471,6 @@ async function createSystemLog(id, type, status) {
     }
 
     await SystemLog.create({
-
       user_id: userDB._id,
       name: {
         first_name: userDB.name.first_name,
@@ -475,9 +478,8 @@ async function createSystemLog(id, type, status) {
       },
       role: userDB.role,
       type: type,
-      status: status
+      status: status,
     });
-
   } catch (error) {
     console.error(error);
     return false;

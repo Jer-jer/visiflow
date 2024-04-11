@@ -56,7 +56,6 @@ export const companionSlice = createSlice({
 			.addCase(fetchCompanions.fulfilled, (state, action) => {
 				state.companions = action.payload.companions.map(
 					(visitor: VisitorDataType) => {
-						console.log(visitor._id);
 						return {
 							...visitor,
 							_id: visitor._id,

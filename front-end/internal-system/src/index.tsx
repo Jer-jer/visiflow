@@ -37,6 +37,12 @@ root.render(
 						defaultBorderColor: "#0db284",
 						defaultColor: "#0db284",
 					},
+					InputNumber: {
+						activeShadow: "#0db284",
+						activeBorderColor: "#0db284",
+						handleHoverColor: "#0db284",
+						hoverBorderColor: "#0db284",
+					},
 				},
 			}}
 		>

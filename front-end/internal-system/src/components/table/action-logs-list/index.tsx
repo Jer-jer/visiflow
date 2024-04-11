@@ -15,6 +15,7 @@ import {
 	actionType,
 	formatDateObjToString,
 	formatDateToISO,
+	formatDateString,
 } from "../../../utils";
 
 //Styles
@@ -67,12 +68,13 @@ export default function ActionLogsTable({ dateSearch }: ActionLogsTableProps) {
 			title: "Date",
 			dataIndex: "created_at",
 			sorter: (a, b) =>
-				formatDateToISO(a.created_at)!.localeCompare(
-					formatDateToISO(b.created_at)!,
+				formatDateToISO(new Date(a.created_at))!.localeCompare(
+					formatDateToISO(new Date(b.created_at))!,
 				),
 			render: (_, { created_at }) => {
 				return formatDateObjToString(created_at);
 			},
+			defaultSortOrder: "descend",
 		},
 	];
 

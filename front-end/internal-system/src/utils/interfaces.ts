@@ -80,7 +80,6 @@ export interface IDPictureProps {
 	selfie: string;
 }
 export interface VisitorDataType {
-	key: string;
 	_id: string;
 	visitor_details: VisitorDetailsProps;
 	companions?: string[];
@@ -136,6 +135,12 @@ export interface HomeEditor {
 	body: string;
 	prio: number;
 	createdAt: Date;
+}
+
+export interface Employee {
+	name: string;
+	email: string;
+	contact: string;
 }
 
 export interface OfficeSchedule {

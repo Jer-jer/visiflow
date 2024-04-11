@@ -131,20 +131,20 @@ exports.addVisitor = async (req, res) => {
         expected_time_out
       };
     });
-    
+
     try {
       const newVisitors = await Visitor.insertMany(newVisitorsData);
       mainVisitorId = newVisitors[0]._id;
-      companions.push(...newVisitors.slice(1).map(visitor => visitor._id));
+      companions.push(...newVisitors.slice(1).map((visitor) => visitor._id));
 
       if (companions.length > 0) {
-          await Visitor.updateOne(
-            { _id: mainVisitorId },
-            { $set: { companions: companions } }
-          );
+        await Visitor.updateOne(
+          { _id: mainVisitorId },
+          { $set: { companions: companions } }
+        );
       }
 
-      newVisitors.forEach(visitor => {
+      newVisitors.forEach((visitor) => {
         io.emit("newVisitor", visitor);
         if (visitor.visitor_type === "Pre-Registered") {
           createNotification(visitor, "pending", io);
@@ -167,7 +167,6 @@ exports.addVisitor = async (req, res) => {
         }
       }
     }
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: error });
@@ -356,23 +355,6 @@ exports.newRecurringVisitor = async (req, res) => {
         if (!errors.isEmpty()) {
           return res.status(400).json({ errors: errors.array()[0].msg });
         }
-
-        // const visitorDB = await Visitor.findOne({
-        //   "visitor_details.name.first_name":
-        //     visitors[x].visitor_details.name.first_name,
-        //   "visitor_details.name.middle_name": visitors[x].visitor_details.name
-        //     .middle_name
-        //     ? visitors[x].visitor_details.name.middle_name
-        //     : "",
-        //   "visitor_details.name.last_name":
-        //     visitors[x].visitor_details.name.last_name,
-        // });
-
-        // if (visitorDB) {
-        //   return res.status(409).json({
-        //     error: `Visitor ${visitors[x].visitor_details.name.last_name} already exists`,
-        //   });
-        // }
 
         //? Check if the companion already exists based on the returned findOne()
         const firstName = visitorDB.visitor_details.name.first_name;

@@ -3,15 +3,13 @@ const passport = require("passport");
 const router = express.Router();
 const badgeController = require("../controllers/badgeController");
 
+router.use(passport.authenticate("jwt", { session: false }));
+
 router.get("/", badgeController.getBadges);
 
 router.post("/findBadge", badgeController.findBadge);
 
-router.get(
-  "/generateBadge",
-  passport.authenticate("jwt", { session: false }),
-  badgeController.generateBadge
-);
+router.post("/generateBadge", badgeController.generateBadge);
 
 router.get("/checkBadge", badgeController.checkBadge);
 
