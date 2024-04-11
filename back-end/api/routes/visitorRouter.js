@@ -7,55 +7,25 @@ const VisitorController = require("../controllers/visitorController");
 const optionalAuth = (req, res, next) => {
   // Check if authentication is required
   if (req.query.auth === "true") {
-    // Example: Pass ?auth=true in the query for authentication
-    // Apply authentication middleware
     passport.authenticate("jwt", { session: false })(req, res, next);
   } else {
-    // Authentication not required, proceed to the next middleware
     next();
   }
 };
 
-router.get(
-  "/",
-  passport.authenticate("jwt", { session: false }),
-  VisitorController.getVisitors
-);
+//Routes with authentication
+router.use(passport.authenticate("jwt", { session: false }));
 
-router.post(
-  "/get-companions",
-  passport.authenticate("jwt", { session: false }),
-  VisitorController.getCompanions
-);
-
-router.post("/new", optionalAuth, VisitorController.addVisitor);
-
+router.get("/", VisitorController.getVisitors);
+router.post("/get-companions", VisitorController.getCompanions);
+router.post("/find", VisitorController.findVisitor);
+router.put("/update", VisitorController.updateVisitor);
+router.put("/update-status", VisitorController.updateStatus);
 router.post("/new-recurring", VisitorController.newRecurringVisitor);
-
 router.post("/find-email", VisitorController.findVisitorByEmail);
+router.delete("/delete", VisitorController.deleteVisitor);
 
-router.post(
-  "/find",
-  passport.authenticate("jwt", { session: false }),
-  VisitorController.findVisitor
-);
-
-router.put(
-  "/update",
-  passport.authenticate("jwt", { session: false }),
-  VisitorController.updateVisitor
-);
-
-router.put(
-  "/update-status",
-  passport.authenticate("jwt", { session: false }),
-  VisitorController.updateStatus
-);
-
-router.delete(
-  "/delete",
-  passport.authenticate("jwt", { session: false }),
-  VisitorController.deleteVisitor
-);
+// Routes with optional authentication
+router.post("/new", optionalAuth, VisitorController.addVisitor);
 
 module.exports = router;
