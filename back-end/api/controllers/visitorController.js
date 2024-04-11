@@ -170,7 +170,7 @@ exports.addVisitor = async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: error });
+    return res.status(500).json({ error: error });
   }
 };
 
