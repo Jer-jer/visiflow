@@ -21,11 +21,11 @@ const SystemLog = require("../models/systemLogs");
 const { Storage } = require("@google-cloud/storage");
 
 // Constants
-const ACCESS_TOKEN_EXPIRATION = "20m";
+const ACCESS_TOKEN_EXPIRATION = "15m";
 const REFRESH_TOKEN_EXPIRATION = "7d";
 const bucketName = "visiflow";
 
-// const local_ip = "192.168.1.4";
+// const local_ip = "192.168.1.4"; 
 const local_ip = "localhost";
 
 // Lazy-loaded storage
@@ -75,6 +75,15 @@ function generateAccessToken(user) {
   return jwt.sign(jwtPayload, ACCESS_TOKEN_SECRET, {
     expiresIn: ACCESS_TOKEN_EXPIRATION,
   });
+}
+
+function verifyAccessToken(token) {
+  try {
+    const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
+    return decoded;
+  } catch (error) {
+    return null;
+  }
 }
 
 // Generate refresh token function
@@ -480,6 +489,7 @@ async function createSystemLog(id, type, status) {
       type: type,
       status: status,
     });
+
   } catch (error) {
     console.error(error);
     return false;
@@ -529,6 +539,7 @@ module.exports = {
   generateRefreshToken,
   storeRefreshToken,
   verifyRefreshToken,
+  verifyAccessToken,
   generateVisitorQRCode,
   generateVisitorQRAndEmail,
   updateLog,
