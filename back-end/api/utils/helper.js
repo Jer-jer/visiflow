@@ -3,13 +3,10 @@ const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 
 // Imports
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const QRCode = require("qrcode");
 const nodemailer = require("nodemailer");
 
 // Models
-const RefreshToken = require("../models/refreshToken");
 const Badge = require("../models/badge");
 const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
@@ -20,9 +17,6 @@ const SystemLog = require("../models/systemLogs");
 // Google Cloud Storage
 const { Storage } = require("@google-cloud/storage");
 
-// Constants
-const ACCESS_TOKEN_EXPIRATION = "15m";
-const REFRESH_TOKEN_EXPIRATION = "7d";
 const bucketName = "visiflow";
 
 // const local_ip = "192.168.1.4"; 
@@ -50,67 +44,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.MAILER_PASSWORD,
   },
 });
-
-// Environtment Variables
-const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
-
-// Hash password function
-function hashPassword(password) {
-  const salt = bcrypt.genSaltSync();
-  return bcrypt.hashSync(password, salt);
-}
-
-// Compare password function
-function comparePassword(raw, hash) {
-  return bcrypt.compareSync(raw, hash);
-}
-
-// Generate access token function
-function generateAccessToken(user) {
-  const jwtPayload = {
-    sub: user._id,
-    role: user.role,
-  };
-  return jwt.sign(jwtPayload, ACCESS_TOKEN_SECRET, {
-    expiresIn: ACCESS_TOKEN_EXPIRATION,
-  });
-}
-
-function verifyAccessToken(token) {
-  try {
-    const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
-    return decoded;
-  } catch (error) {
-    return null;
-  }
-}
-
-// Generate refresh token function
-function generateRefreshToken(user) {
-  const jwtPayload = {
-    sub: user._id,
-  };
-  return jwt.sign(jwtPayload, REFRESH_TOKEN_SECRET, {
-    expiresIn: REFRESH_TOKEN_EXPIRATION,
-  });
-}
-
-// Store refresh token function
-async function storeRefreshToken(token, userId) {
-  const refreshToken = new RefreshToken({ token, userId });
-  await refreshToken.save();
-}
-
-// Verify refresh token function
-async function verifyRefreshToken(token) {
-  try {
-    const decoded = jwt.verify(token, REFRESH_TOKEN_SECRET);
-    return decoded.sub;
-  } catch (error) {
-    return null;
-  }
-}
 
 // Generate QR code function, found in badge controller
 // use in walk-in visitor
@@ -533,13 +466,6 @@ async function validateDuplicate(visitors, res) {
 
 
 module.exports = {
-  hashPassword,
-  comparePassword,
-  generateAccessToken,
-  generateRefreshToken,
-  storeRefreshToken,
-  verifyRefreshToken,
-  verifyAccessToken,
   generateVisitorQRCode,
   generateVisitorQRAndEmail,
   updateLog,

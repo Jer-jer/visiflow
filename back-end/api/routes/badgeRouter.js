@@ -1,7 +1,7 @@
 const express = require("express");
 const passport = require("passport");
 const router = express.Router();
-const { verifyAccessToken } = require("../utils/helper");
+const { verifyAccessToken } = require("../utils/authUtils");
 const badgeController = require("../controllers/badgeController");
 
 
