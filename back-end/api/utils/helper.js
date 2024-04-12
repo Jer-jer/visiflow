@@ -253,10 +253,10 @@ function uploadFileToGCS(bufferData, fileName) {
     file.save(bufferData, {
       contentType: "image/jpeg",
     });
-    
+
     return `https://storage.googleapis.com/${bucketName}/${fileName}`;
   } catch (error) {
-    return error
+    return error;
   }
 }
 
@@ -368,17 +368,17 @@ async function createNotification(visitor, type, io) {
     : `${visitor[0].name.last_name}, ${visitor[0].name.first_name} ${visitor[0].name.middle_name}`;
 
   const hostName =
-    visitor.purpose?.who.join(", ") || visitorDB?.purpose?.who.join(", ") || "";
-  const date = visitor.purpose?.when || visitorDB?.when || "";
-  const time_in = visitor.expected_time_in || visitorDB?.expected_time_in || "";
+    visitor.purpose.who.join(", ") || visitorDB.purpose.who.join(", ") || "";
+  const date = visitor.purpose?.when || visitorDB.when || "";
+  const time_in = visitor.expected_time_in || visitorDB.expected_time_in || "";
   const time_out =
     visitor.expected_time_out || visitorDB?.expected_time_out || "";
   const location =
-    visitor.purpose?.where.join(", ") ||
-    visitorDB?.purpose?.where.join(", ") ||
+    visitor.purpose.where.join(", ") ||
+    visitorDB?.purpose.where.join(", ") ||
     "";
   const purpose =
-    visitor.purpose?.what?.join(", ") || visitorDB.purpose?.what?.join(", ");
+    visitor.purpose.what.join(", ") || visitorDB.purpose.what.join(", ");
   const visitorType = visitor.visitor_type;
 
   const notificationContent = {
@@ -422,7 +422,6 @@ async function createSystemLog(id, type, status) {
       type: type,
       status: status,
     });
-
   } catch (error) {
     console.error(error);
     return false;
@@ -431,24 +430,28 @@ async function createSystemLog(id, type, status) {
 
 //Visitor Duplicate Validation
 async function validateDuplicate(visitors, res) {
-
-  const validateDuplicate = visitors.map(async visitor => {
+  const validateDuplicate = visitors.map(async (visitor) => {
     try {
       // Check if visitor has an existing record
-      const visitorDB = await Visitor.findOne({"visitor_details.email": visitor.visitor_details.email});
+      const visitorDB = await Visitor.findOne({
+        "visitor_details.email": visitor.visitor_details.email,
+      });
 
       // Check if email is used by another visitor
       if (visitorDB) {
-        const { first_name, middle_name, last_name } = visitorDB.visitor_details.name;
+        const { first_name, middle_name, last_name } =
+          visitorDB.visitor_details.name;
         const { email } = visitor.visitor_details;
 
-        const isDuplicate = visitor.visitor_details.name.first_name === first_name &&
-                            (visitor.visitor_details.name.middle_name || "") === (middle_name || "") &&
-                            visitor.visitor_details.name.last_name === last_name;
+        const isDuplicate =
+          visitor.visitor_details.name.first_name === first_name &&
+          (visitor.visitor_details.name.middle_name || "") ===
+            (middle_name || "") &&
+          visitor.visitor_details.name.last_name === last_name;
 
-        return isDuplicate ? 
-          `Visitor using ${email} already has an existing record` :
-          `${email} has already been used by another visitor`;
+        return isDuplicate
+          ? `Visitor using ${email} already has an existing record`
+          : `${email} has already been used by another visitor`;
       }
     } catch (error) {
       console.error("Error while validating duplicate:", error);
@@ -458,12 +461,13 @@ async function validateDuplicate(visitors, res) {
 
   try {
     const validationResults = await Promise.all(validateDuplicate);
-    return validationResults.filter(result => result !== undefined);
+    return validationResults.filter((result) => result !== undefined);
   } catch (error) {
-    return res.status(500).json({ error: "Error while validating duplicates:", error });
+    return res
+      .status(500)
+      .json({ error: "Error while validating duplicates:", error });
   }
 }
-
 
 module.exports = {
   generateVisitorQRCode,
@@ -477,5 +481,5 @@ module.exports = {
   createNotification,
   generateFileName,
   createImageBuffer,
-  validateDuplicate
+  validateDuplicate,
 };

@@ -11,7 +11,7 @@ const {
   createNotification,
   generateFileName,
   createImageBuffer,
-  validateDuplicate
+  validateDuplicate,
 } = require("../utils/helper");
 const { Buffer } = require("node:buffer");
 const Notification = require("../models/notification");
@@ -64,7 +64,7 @@ exports.addVisitor = async (req, res) => {
   const io = req.io;
 
   if (!visitors || visitors.length === 0) {
-    return res.status(400).json({ error: 'No visitors provided' });
+    return res.status(400).json({ error: "No visitors provided" });
   }
 
   try {
@@ -73,11 +73,13 @@ exports.addVisitor = async (req, res) => {
     let mainVisitorId;
 
     // Bulk data validation
-    await Promise.all(visitors.map(visitor => 
-      Promise.all(
-        validateVisitor.map((validation) => validation.run(visitor))
+    await Promise.all(
+      visitors.map((visitor) =>
+        Promise.all(
+          validateVisitor.map((validation) => validation.run(visitor))
+        )
       )
-    ));
+    );
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -93,19 +95,30 @@ exports.addVisitor = async (req, res) => {
     const [frontId, backId, selfieId] = await Promise.all([
       //Upload images to Google Cloud Storage
       uploadFileToGCS(
-        createImageBuffer(mainVisitor.id_picture.front), 
-        generateFileName(mainVisitor, "front")),
+        createImageBuffer(mainVisitor.id_picture.front),
+        generateFileName(mainVisitor, "front")
+      ),
       uploadFileToGCS(
-        createImageBuffer(mainVisitor.id_picture.back), 
-        generateFileName(mainVisitor, "back")),
+        createImageBuffer(mainVisitor.id_picture.back),
+        generateFileName(mainVisitor, "back")
+      ),
       uploadFileToGCS(
-        createImageBuffer(mainVisitor.id_picture.selfie), 
-        generateFileName(mainVisitor, "selfie")),
+        createImageBuffer(mainVisitor.id_picture.selfie),
+        generateFileName(mainVisitor, "selfie")
+      ),
     ]);
-    
+
     const newVisitorsData = visitors.map((visitor, index) => {
       // Visitor creation
-      const { visitor_details, plate_num, purpose, visitor_type, status, expected_time_in, expected_time_out } = visitor;
+      const {
+        visitor_details,
+        plate_num,
+        purpose,
+        visitor_type,
+        status,
+        expected_time_in,
+        expected_time_out,
+      } = visitor;
       return {
         _id: new ObjectId(),
         visitor_details: {
@@ -128,7 +141,7 @@ exports.addVisitor = async (req, res) => {
           selfie: index === 0 ? selfieId : "",
         },
         expected_time_in,
-        expected_time_out
+        expected_time_out,
       };
     });
 
@@ -153,7 +166,8 @@ exports.addVisitor = async (req, res) => {
         }
       });
 
-      if (!res.headersSent) { // Check if headers have been sent before sending the response
+      if (!res.headersSent) {
+        // Check if headers have been sent before sending the response
         return res.status(201).json({ visitors: newVisitors });
       }
     } catch (error) {

@@ -4,23 +4,22 @@ const router = express.Router();
 const { verifyAccessToken } = require("../utils/authUtils");
 const badgeController = require("../controllers/badgeController");
 
-
 router.use("/checkBadge", (req, res, next) => {
-    const { token } = req.query;
+  const { token } = req.query;
 
-    if (!token) {
-        return res.status(401).json({ Error: 'Unauthorized user' });
-    }
-    
-    try {
+  if (!token) {
+    return res.status(401).json({ Error: "Unauthorized user" });
+  }
+
+  try {
     const decoded = verifyAccessToken(token);
-    req.user = decoded;        
+    req.user = decoded;
 
     next();
-    } catch (error) {
-        console.error(error.message);
-        return res.status(401).json({ Error: 'Unauthorized user' });
-    }
+  } catch (error) {
+    console.error(error.message);
+    return res.status(401).json({ Error: "Unauthorized user" });
+  }
 });
 
 router.get("/checkBadge", badgeController.checkBadge);

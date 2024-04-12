@@ -13,17 +13,14 @@ const optionalAuth = (req, res, next) => {
   }
 };
 
-//Routes with authentication
-router.use(passport.authenticate("jwt", { session: false }));
-
-router.get("/", VisitorController.getVisitors);
-router.post("/get-companions", VisitorController.getCompanions);
-router.post("/find", VisitorController.findVisitor);
-router.put("/update", VisitorController.updateVisitor);
-router.put("/update-status", VisitorController.updateStatus);
-router.post("/new-recurring", VisitorController.newRecurringVisitor);
-router.post("/find-email", VisitorController.findVisitorByEmail);
-router.delete("/delete", VisitorController.deleteVisitor);
+router.get("/", passport.authenticate("jwt", { session: false }), VisitorController.getVisitors);
+router.post("/get-companions", passport.authenticate("jwt", { session: false }), VisitorController.getCompanions);
+router.post("/find", passport.authenticate("jwt", { session: false }), VisitorController.findVisitor);
+router.put("/update", passport.authenticate("jwt", { session: false }), VisitorController.updateVisitor);
+router.put("/update-status", passport.authenticate("jwt", { session: false }), VisitorController.updateStatus);
+router.post("/new-recurring", passport.authenticate("jwt", { session: false }), VisitorController.newRecurringVisitor);
+router.post("/find-email", passport.authenticate("jwt", { session: false }), VisitorController.findVisitorByEmail);
+router.delete("/delete", passport.authenticate("jwt", { session: false }), VisitorController.deleteVisitor);
 
 // Routes with optional authentication
 router.post("/new", optionalAuth, VisitorController.addVisitor);
