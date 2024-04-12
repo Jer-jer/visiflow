@@ -120,16 +120,17 @@ export default function StepThree({
 						})
 						.catch((err: any) => {
 							setLoading(false);
-							if (err.response) {
-								error(
-									err.response.data.error._message ||
-										err.response.data.error ||
-										err.response.data.errors ||
-										"Something went wrong",
-								);
-							} else {
-								error("Something went wrong.");
-							}
+							console.error("Error");
+							// if (err.response) {
+							// 	error(
+							// 		err.response.data.error._message ||
+							// 			err.response.data.error ||
+							// 			err.response.data.errors ||
+							// 			"Something went wrong",
+							// 	);
+							// } else {
+							// 	error("Something went wrong.");
+							// }
 						});
 				}
 			},
