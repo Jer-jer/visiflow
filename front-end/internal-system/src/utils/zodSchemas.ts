@@ -41,10 +41,6 @@ export interface WalkInFormInterfaceZod {
 	where: string[];
 	who: string[];
 	expected_time_out: Date;
-	// visitor_type: VisitorType;
-	// status: VisitorStatus;
-	// id_pic: string;
-	// plate_num_pic?: string;
 }
 
 export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
@@ -132,10 +128,6 @@ export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
 
 	plate_num: z.string().optional().nullable(),
 
-	// visitor_type: z.nativeEnum(VisitorType),
-
-	// status: z.nativeEnum(VisitorStatus),
-
 	what: z
 		.string({
 			required_error: '"What" is required.',
@@ -162,19 +154,6 @@ export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
 		.nonempty({
 			message: '"Who" is required.',
 		}),
-
-	// id_pic: z
-	// 	.string({
-	// 		required_error: "ID picture is required.",
-	// 		invalid_type_error: "ID picture must not have a number.",
-	// 	})
-	// 	.min(1, "ID picture is required."),
-
-	// plate_num_pic: z
-	// 	.string({
-	// 		invalid_type_error: "ID picture must not have a number.",
-	// 	})
-	// 	.optional(),
 });
 
 export interface VisitorDetailsInterfaceZod {
