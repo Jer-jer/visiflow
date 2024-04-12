@@ -143,6 +143,10 @@ export interface Employee {
 	contact: string;
 }
 
+export interface Reason {
+	reason: string;
+}
+
 export interface OfficeSchedule {
 	name: string;
 	roomNo: string;
@@ -157,4 +161,9 @@ export interface EventsSchedule {
 	endDate: string;
 	startTime: string;
 	endTime: string;
+}
+
+export interface Building {
+	name: string;
+	roomNo: string;
 }
