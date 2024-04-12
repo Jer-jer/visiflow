@@ -116,12 +116,13 @@ const columns: TableProps<NotificationProps>["columns"] = [
 		dataIndex: "created_at",
 		key: "created_at",
 		sorter: (a, b) =>
-			formatDateToISO(a.created_at)!.localeCompare(
-				formatDateToISO(b.created_at)!,
+			formatDateToISO(new Date(a.created_at))!.localeCompare(
+				formatDateToISO(new Date(b.created_at))!,
 			),
 		render(value, record, index) {
 			return formatDateObjToString(record.created_at);
 		},
+		defaultSortOrder: "descend",
 	},
 ];
 

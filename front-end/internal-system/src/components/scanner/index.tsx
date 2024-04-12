@@ -41,20 +41,25 @@ export default function Scanner({ onQRstatus }: any) {
 
 	function success(result: string) {
 		if (isValidUrl(result)) {
-			console.log(result);
-			if (qr_id != undefined) {
+			if (qr_id !== undefined) {
 				onQRstatus("Visitor Form is Ongoing");
-			} else if (result == "time-out" || result == "time-in") {
+			} else if (result === "time-out" || result === "time-in") {
 				onQRstatus("Successfully Timed-In/Out");
-			} else if (result == "time-outFailed" || result == "time-inFailed") {
+			} else if (result === "time-outFailed" || result === "time-inFailed") {
 				onQRstatus("Time-In/Out Failed");
 			} else {
 				if (scanner) {
 					scanner.clear();
 				}
 				setScanResult(result);
+
+				// Retrieve JWT token from local storage
+				const token = localStorage.getItem("token");
+
+				// Append JWT token as a query parameter to the scanned URL
+				const redirectUrl = `${result}&token=${token}`;
 				// Redirect to the scanned link
-				window.location.href = result;
+				window.location.href = redirectUrl;
 			}
 		} else {
 			onQRstatus("Invalid QR");

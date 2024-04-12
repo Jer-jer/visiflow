@@ -1,6 +1,7 @@
 const Badge = require("../models/badge");
 const {
   generateVisitorQRCode,
+  verifyAccessToken,
   updateLog,
   createSystemLog,
 } = require("../utils/helper");
@@ -27,14 +28,16 @@ exports.findBadge = async (req, res) => {
   res.status(200).json({ badge });
 };
 
-//TODO Create Generate Badge button
 exports.generateBadge = async (req, res) => {
+  const { qty } = req.body;
+
+  //check if qty > 0
   try {
     // const clientIP = req.ip;
     const user_id = req.user._id;
     const log_type = "generate_badge";
 
-    for (let counter = 0; counter < badgeQty; counter++) {
+    for (let counter = 0; counter < qty; counter++) {
       await generateVisitorQRCode(counter);
     }
 
@@ -61,23 +64,24 @@ exports.newBadge = async (req, res) => {
     });
 
     createSystemLog(user_id, log_type, "success");
-    return res.send(200).json({ Badge: badge });
+    return res.sendStatus(200);
   } catch (error) {
     console.error(error);
     createSystemLog(user_id, log_type, "success");
-    return res.send(500).json({ Error: error });
+    return res.sendStatus(500);
   }
 };
 
 exports.checkBadge = async (req, res) => {
   const { qr_id, visitor_id } = req.query;
+
   let badge;
   let type;
 
-  if(!req.user) {
-    return res.status(401).json({ Error: 'Unauthorized user' });
+  if (!req.user) {
+    return res.status(401).json({ Error: "Unauthorized user" });
   }
-  
+
   if (qr_id !== undefined) {
     badge = await Badge.findOne({ qr_id: qr_id });
     if (!badge) {
@@ -97,5 +101,5 @@ exports.checkBadge = async (req, res) => {
   }
 
   const _id = visitor_id !== undefined ? visitor_id : qr_id;
-  updateLog(badge._id, _id, type, req.user._id, res);
+  updateLog(badge._id, _id, type, req.user.sub, res);
 };

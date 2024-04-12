@@ -77,8 +77,8 @@ export default function VisitorLogsTable({
 			dataIndex: "timeIn",
 			key: "timeIn",
 			sorter: (a, b) =>
-				formatDateToISO(a.check_in_time)!.localeCompare(
-					formatDateToISO(b.check_in_time)!,
+				formatDateToISO(new Date(a.check_in_time))!.localeCompare(
+					formatDateToISO(new Date(b.check_in_time))!,
 				),
 		},
 		{
@@ -86,8 +86,8 @@ export default function VisitorLogsTable({
 			dataIndex: "timeOut",
 			key: "timeOut",
 			sorter: (a, b) =>
-				formatDateToISO(a.check_out_time)!.localeCompare(
-					formatDateToISO(b.check_out_time)!,
+				formatDateToISO(new Date(a.check_out_time))!.localeCompare(
+					formatDateToISO(new Date(b.check_out_time))!,
 				),
 		},
 	];
