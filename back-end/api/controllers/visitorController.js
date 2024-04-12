@@ -2,7 +2,6 @@ const Visitor = require("../models/visitor");
 const {
   validateVisitor,
   validationResult,
-  handleValidationErrors
 } = require("../middleware/dataValidation");
 const {
   generateVisitorQRAndEmail,
@@ -68,7 +67,6 @@ exports.addVisitor = async (req, res, next) => {
     return res.status(400).json({ error: "No visitors provided" });
   }
 
-  
   try {
     const mainVisitor = visitors[0];
     let companions = [];
@@ -163,19 +161,12 @@ exports.addVisitor = async (req, res, next) => {
         }
       });
 
-      if (!res.headersSent) {
-        // Check if headers have been sent before sending the response
-        return res.status(201).json({ visitors: newVisitors });
-      }
+      return res.status(201).json({ visitors: newVisitors });  
     } catch (error) {
       if (error.code === 11000) {
-        if (!res.headersSent) {
-          return res.status(409).json({ error: "Duplicate key error" });
-        }
+        return res.status(409).json({ error: "Duplicate key error" });  
       } else {
-        if (!res.headersSent) {
-          return res.status(500).json({ error: "Internal Server Error" });
-        }
+        return res.status(500).json({ error: "Internal Server Error" });
       }
     }
   } catch (error) {
