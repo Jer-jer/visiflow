@@ -2,6 +2,7 @@ const Visitor = require("../models/visitor");
 const {
   validateVisitor,
   validationResult,
+  handleValidationErrors
 } = require("../middleware/dataValidation");
 const {
   generateVisitorQRAndEmail,
@@ -59,7 +60,7 @@ exports.getCompanions = async (req, res) => {
   }
 };
 
-exports.addVisitor = async (req, res) => {
+exports.addVisitor = async (req, res, next) => {
   const { visitors } = req.body;
   const io = req.io;
 
@@ -67,29 +68,25 @@ exports.addVisitor = async (req, res) => {
     return res.status(400).json({ error: "No visitors provided" });
   }
 
+  
   try {
     const mainVisitor = visitors[0];
     let companions = [];
     let mainVisitorId;
 
     // Bulk data validation
-    await Promise.all(
-      visitors.map((visitor) =>
-        Promise.all(
-          validateVisitor.map((validation) => validation.run(visitor))
-        )
-      )
-    );
+    await Promise.all(validateVisitor.map(validation => validation.run(req)));
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array()[0].msg });
-    }
-
-    const duplicateErrors = await validateDuplicate(visitors, res);
+      const err = errors.array().map(error => error.msg);
+      return res.status(409).json({ error: err[0] });
+    } 
+    
+    const duplicateErrors = await validateDuplicate(visitors, res); 
 
     if (duplicateErrors.length > 0) {
-      return res.status(409).json({ error: duplicateErrors[0] });
+      return res.status(409).json({ error: duplicateErrors[0]});
     }
 
     const [frontId, backId, selfieId] = await Promise.all([
