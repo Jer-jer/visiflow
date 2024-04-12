@@ -179,7 +179,8 @@ export default function VisitorManagementLayout() {
 	};
 
 	const add = (record: VisitorDataType) => {
-		const newActiveKey = ++newTabIndex.current;
+		const newActiveKey = newTabIndex.current + 1;
+		newTabIndex.current++;
 
 		dispatch(addTab({ newActiveKey, visitor: record }));
 
@@ -235,6 +236,7 @@ export default function VisitorManagementLayout() {
 					>
 						<VisitorDetails
 							record={tab.visitorData}
+							activeKey={activeKey}
 							setActiveKey={setActiveKey}
 							newTabIndex={newTabIndex}
 						/>

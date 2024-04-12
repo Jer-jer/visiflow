@@ -6,14 +6,14 @@ import React, {
 	useEffect,
 } from "react";
 import { NavLink } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 
 //Components
 import Header from "../../components/header";
 import Sidebar, { SidebarItem } from "../../components/sidebar";
 
 // Store
-import { AppDispatch, RootState } from "../../store";
+import { AppDispatch } from "../../store";
 
 // Actions
 import { fetchVisitors } from "../../states/visitors";
@@ -26,7 +26,6 @@ import {
 	UserGroup,
 	Users,
 	Edit,
-	Camera,
 	QRScanner,
 	PreregisterQR,
 	Form,
@@ -51,8 +50,6 @@ function LoggedIn({ children }: LoggedInProps) {
 
 	const dispatch = useDispatch<AppDispatch>();
 
-	const isAdmin = useSelector((state: RootState) => state.isAdmin);
-
 	useEffect(() => {
 		dispatch(fetchVisitors());
 	}, []);
@@ -68,7 +65,7 @@ function LoggedIn({ children }: LoggedInProps) {
 		<WidthContext.Provider value={width}>
 			<div className="flex h-60">
 				<Sidebar expanded={expanded} setExpanded={setExpanded}>
-					{isAdmin ? (
+					{localStorage.getItem("mode") === "admin" ? (
 						<>
 							<NavLink to="/dashboard">
 								{({ isActive }) => (

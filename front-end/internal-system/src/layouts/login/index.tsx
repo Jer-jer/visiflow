@@ -68,6 +68,7 @@ function LoginLayout() {
 
 				switch (role) {
 					case "admin":
+						localStorage.setItem("mode", "admin");
 						window.location.reload();
 						break;
 					case "security":

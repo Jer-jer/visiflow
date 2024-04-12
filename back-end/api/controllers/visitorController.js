@@ -11,7 +11,7 @@ const {
   createNotification,
   generateFileName,
   createImageBuffer,
-  validateDuplicate
+  validateDuplicate,
 } = require("../utils/helper");
 const { Buffer } = require("node:buffer");
 const Notification = require("../models/notification");
@@ -59,12 +59,12 @@ exports.getCompanions = async (req, res) => {
   }
 };
 
-exports.addVisitor = async (req, res) => {
+exports.addVisitor = async (req, res, next) => {
   const { visitors } = req.body;
   const io = req.io;
 
   if (!visitors || visitors.length === 0) {
-    return res.status(400).json({ error: 'No visitors provided' });
+    return res.status(400).json({ error: "No visitors provided" });
   }
 
   try {
@@ -73,39 +73,47 @@ exports.addVisitor = async (req, res) => {
     let mainVisitorId;
 
     // Bulk data validation
-    await Promise.all(visitors.map(visitor => 
-      Promise.all(
-        validateVisitor.map((validation) => validation.run(visitor))
-      )
-    ));
+    await Promise.all(validateVisitor.map(validation => validation.run(req)));
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array()[0].msg });
-    }
-
-    const duplicateErrors = await validateDuplicate(visitors, res);
+      const err = errors.array().map(error => error.msg);
+      return res.status(409).json({ error: err[0] });
+    } 
+    
+    const duplicateErrors = await validateDuplicate(visitors, res); 
 
     if (duplicateErrors.length > 0) {
-      return res.status(409).json({ error: duplicateErrors[0] });
+      return res.status(409).json({ error: duplicateErrors[0]});
     }
 
     const [frontId, backId, selfieId] = await Promise.all([
       //Upload images to Google Cloud Storage
       uploadFileToGCS(
-        createImageBuffer(mainVisitor.id_picture.front), 
-        generateFileName(mainVisitor, "front")),
+        createImageBuffer(mainVisitor.id_picture.front),
+        generateFileName(mainVisitor, "front")
+      ),
       uploadFileToGCS(
-        createImageBuffer(mainVisitor.id_picture.back), 
-        generateFileName(mainVisitor, "back")),
+        createImageBuffer(mainVisitor.id_picture.back),
+        generateFileName(mainVisitor, "back")
+      ),
       uploadFileToGCS(
-        createImageBuffer(mainVisitor.id_picture.selfie), 
-        generateFileName(mainVisitor, "selfie")),
+        createImageBuffer(mainVisitor.id_picture.selfie),
+        generateFileName(mainVisitor, "selfie")
+      ),
     ]);
-    
+
     const newVisitorsData = visitors.map((visitor, index) => {
       // Visitor creation
-      const { visitor_details, plate_num, purpose, visitor_type, status, expected_time_in, expected_time_out } = visitor;
+      const {
+        visitor_details,
+        plate_num,
+        purpose,
+        visitor_type,
+        status,
+        expected_time_in,
+        expected_time_out,
+      } = visitor;
       return {
         _id: new ObjectId(),
         visitor_details: {
@@ -128,23 +136,23 @@ exports.addVisitor = async (req, res) => {
           selfie: index === 0 ? selfieId : "",
         },
         expected_time_in,
-        expected_time_out
+        expected_time_out,
       };
     });
-    
+
     try {
       const newVisitors = await Visitor.insertMany(newVisitorsData);
       mainVisitorId = newVisitors[0]._id;
-      companions.push(...newVisitors.slice(1).map(visitor => visitor._id));
+      companions.push(...newVisitors.slice(1).map((visitor) => visitor._id));
 
       if (companions.length > 0) {
-          await Visitor.updateOne(
-            { _id: mainVisitorId },
-            { $set: { companions: companions } }
-          );
+        await Visitor.updateOne(
+          { _id: mainVisitorId },
+          { $set: { companions: companions } }
+        );
       }
 
-      newVisitors.forEach(visitor => {
+      newVisitors.forEach((visitor) => {
         io.emit("newVisitor", visitor);
         if (visitor.visitor_type === "Pre-Registered") {
           createNotification(visitor, "pending", io);
@@ -153,24 +161,17 @@ exports.addVisitor = async (req, res) => {
         }
       });
 
-      if (!res.headersSent) { // Check if headers have been sent before sending the response
-        return res.status(201).json({ visitors: newVisitors });
-      }
+      return res.status(201).json({ visitors: newVisitors });  
     } catch (error) {
       if (error.code === 11000) {
-        if (!res.headersSent) {
-          return res.status(409).json({ error: "Duplicate key error" });
-        }
+        return res.status(409).json({ error: "Duplicate key error" });  
       } else {
-        if (!res.headersSent) {
-          return res.status(500).json({ error: "Internal Server Error" });
-        }
+        return res.status(500).json({ error: "Internal Server Error" });
       }
     }
-
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: error });
+    return res.status(500).json({ error: error });
   }
 };
 
@@ -356,23 +357,6 @@ exports.newRecurringVisitor = async (req, res) => {
         if (!errors.isEmpty()) {
           return res.status(400).json({ errors: errors.array()[0].msg });
         }
-
-        // const visitorDB = await Visitor.findOne({
-        //   "visitor_details.name.first_name":
-        //     visitors[x].visitor_details.name.first_name,
-        //   "visitor_details.name.middle_name": visitors[x].visitor_details.name
-        //     .middle_name
-        //     ? visitors[x].visitor_details.name.middle_name
-        //     : "",
-        //   "visitor_details.name.last_name":
-        //     visitors[x].visitor_details.name.last_name,
-        // });
-
-        // if (visitorDB) {
-        //   return res.status(409).json({
-        //     error: `Visitor ${visitors[x].visitor_details.name.last_name} already exists`,
-        //   });
-        // }
 
         //? Check if the companion already exists based on the returned findOne()
         const firstName = visitorDB.visitor_details.name.first_name;

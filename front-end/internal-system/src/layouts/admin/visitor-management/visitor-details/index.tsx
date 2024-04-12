@@ -73,6 +73,7 @@ dayjs.extend(customParseFormat);
 interface VisitorDeetsProps {
 	newTabIndex: MutableRefObject<number>;
 	record: VisitorDataType;
+	activeKey: number;
 	setActiveKey: Dispatch<SetStateAction<number>>;
 }
 
@@ -102,6 +103,7 @@ const error = (message: string) => {
 export default function VisitorDetails({
 	newTabIndex,
 	record,
+	activeKey,
 	setActiveKey,
 }: VisitorDeetsProps) {
 	const expected_in = formatDateObjToString(record.expected_time_in);
@@ -454,14 +456,10 @@ export default function VisitorDetails({
 	});
 
 	const closeTab = (_id: string) => {
-		const newActiveKey = newTabIndex.current - 1;
-		const newItems = [...tabs];
-		const index = newItems.map((e) => e.visitorData._id).indexOf(_id);
-		if (index !== -1) {
-			newItems.splice(index, 1);
-			dispatch(removeTab(newItems));
-		}
-		setActiveKey(newActiveKey);
+		newTabIndex.current = newTabIndex.current - 1;
+		let newItems = tabs.filter((e: any) => e.visitorData._id !== _id);
+		dispatch(removeTab(newItems));
+		setActiveKey(activeKey - 1);
 	};
 
 	const showDeleteConfirm = (_id: string) => {
@@ -474,23 +472,22 @@ export default function VisitorDetails({
 			cancelText: "No",
 			onOk() {
 				closeTab(_id);
-				AxiosInstance.delete("/visitor/delete", {
-					data: {
-						_id,
-					},
-				})
-					.then((res) => {
-						dispatch(deleteVisitor(_id));
-						// closeTab(_id);
-					})
-					.catch((err) => {
-						setAlertOpen(!alertOpen);
-						setAlertMsg(
-							err?.response?.data?.error ||
-								err?.response?.data?.errors ||
-								"Something went wrong.",
-						);
-					});
+				// AxiosInstance.delete("/visitor/delete", {
+				// 	data: {
+				// 		_id,
+				// 	},
+				// })
+				// 	.then((res) => {
+				// 		dispatch(deleteVisitor(_id));
+				// 	})
+				// 	.catch((err) => {
+				// 		setAlertOpen(!alertOpen);
+				// 		setAlertMsg(
+				// 			err?.response?.data?.error ||
+				// 				err?.response?.data?.errors ||
+				// 				"Something went wrong.",
+				// 		);
+				// 	});
 			},
 			onCancel() {
 				console.log("Cancel");

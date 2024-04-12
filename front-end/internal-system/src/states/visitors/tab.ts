@@ -28,7 +28,7 @@ export const tabSlice = createSlice({
 			state.push(newTab);
 		},
 		removeTab: (state, action: PayloadAction<TabItems[]>) => {
-			return [...action.payload];
+			return action.payload;
 		},
 		updateVisitor: (
 			state,

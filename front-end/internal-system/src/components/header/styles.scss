@@ -106,6 +106,15 @@
     }
 }
 
+.badge-counter {
+    .ant-input-number-input-wrap {
+        .ant-input-number-input:focus {
+            border-color: var(--theme-primary);
+            box-shadow: var(--theme-primary);
+        }
+    }
+}
+
 @media (min-width: 200px) {
     .header-name {
         display: none;
