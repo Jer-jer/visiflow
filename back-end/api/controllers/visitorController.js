@@ -59,7 +59,7 @@ exports.getCompanions = async (req, res) => {
   }
 };
 
-exports.addVisitor = async (req, res) => {
+exports.addVisitor = async (req, res, next) => {
   const { visitors } = req.body;
   const io = req.io;
 
@@ -73,23 +73,18 @@ exports.addVisitor = async (req, res) => {
     let mainVisitorId;
 
     // Bulk data validation
-    await Promise.all(
-      visitors.map((visitor) =>
-        Promise.all(
-          validateVisitor.map((validation) => validation.run(visitor))
-        )
-      )
-    );
+    await Promise.all(validateVisitor.map(validation => validation.run(req)));
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array()[0].msg });
-    }
-
-    const duplicateErrors = await validateDuplicate(visitors, res);
+      const err = errors.array().map(error => error.msg);
+      return res.status(409).json({ error: err[0] });
+    } 
+    
+    const duplicateErrors = await validateDuplicate(visitors, res); 
 
     if (duplicateErrors.length > 0) {
-      return res.status(409).json({ error: duplicateErrors[0] });
+      return res.status(409).json({ error: duplicateErrors[0]});
     }
 
     const [frontId, backId, selfieId] = await Promise.all([
@@ -166,19 +161,12 @@ exports.addVisitor = async (req, res) => {
         }
       });
 
-      if (!res.headersSent) {
-        // Check if headers have been sent before sending the response
-        return res.status(201).json({ visitors: newVisitors });
-      }
+      return res.status(201).json({ visitors: newVisitors });  
     } catch (error) {
       if (error.code === 11000) {
-        if (!res.headersSent) {
-          return res.status(409).json({ error: "Duplicate key error" });
-        }
+        return res.status(409).json({ error: "Duplicate key error" });  
       } else {
-        if (!res.headersSent) {
-          return res.status(500).json({ error: "Internal Server Error" });
-        }
+        return res.status(500).json({ error: "Internal Server Error" });
       }
     }
   } catch (error) {

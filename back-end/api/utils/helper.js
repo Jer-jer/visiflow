@@ -428,8 +428,8 @@ async function createSystemLog(id, type, status) {
   }
 }
 
-//Visitor Duplicate Validation
-async function validateDuplicate(visitors, res) {
+// Visitor Duplicate Validation
+async function validateDuplicate(visitors, res) {  
   const validateDuplicate = visitors.map(async (visitor) => {
     try {
       // Check if visitor has an existing record
@@ -455,7 +455,7 @@ async function validateDuplicate(visitors, res) {
       }
     } catch (error) {
       console.error("Error while validating duplicate:", error);
-      throw error;
+      return error;
     }
   });
 
@@ -463,9 +463,7 @@ async function validateDuplicate(visitors, res) {
     const validationResults = await Promise.all(validateDuplicate);
     return validationResults.filter((result) => result !== undefined);
   } catch (error) {
-    return res
-      .status(500)
-      .json({ error: "Error while validating duplicates:", error });
+    return res.json({ error: "Error while validating duplicates:", error });
   }
 }
 
