@@ -77,7 +77,6 @@ module.exports = {
     validateAnnouncements,
     validateOffices,
     validateEmployees,
-    handleValidationErrors, 
     validationResult, 
     validateReasons
 };

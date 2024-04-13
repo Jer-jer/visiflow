@@ -1,12 +1,18 @@
 import React, { Dispatch, SetStateAction } from "react";
+import z from "zod";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 //Interfaces
-import { type UseFormRegister, type FieldErrors } from "react-hook-form";
-import { WalkInFormInterfaceZod } from "../../../utils/zodSchemas";
+import { useForm } from "react-hook-form";
+import {
+	WalkInFormZod,
+	WalkInFormInterfaceZod,
+} from "../../../utils/zodSchemas";
+import type { DatePickerProps } from "antd";
 
 //Components
 import { Button, Form, Modal, Image, Input, Select, DatePicker } from "antd";
@@ -14,12 +20,18 @@ import Alert from "../../alert";
 
 //Styles
 import "./styles.scss";
+import { GuardVisitorDataType } from "../../../utils/interfaces";
+import { VisitorStatus, VisitorType } from "../../../utils/enums";
+import AxiosInstance from "../../../lib/axios";
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
 dayjs.extend(customParseFormat);
 
-interface NewWalkInProps {
+type WalkInFormTypeZod = z.infer<typeof WalkInFormZod>;
+
+interface RecurringProps {
+	visitor: GuardVisitorDataType;
 	isSuccessOpen: boolean;
 	alertOpen: boolean;
 	status: boolean;
@@ -36,38 +48,218 @@ interface NewWalkInProps {
 		label: string;
 		value: string;
 	}[];
-	errors: FieldErrors<WalkInFormInterfaceZod>;
-	register: UseFormRegister<WalkInFormInterfaceZod>;
+	qr_id: number;
 	setAlertOpen: Dispatch<SetStateAction<boolean>>;
-	onSubmit: (
-		e?: React.BaseSyntheticEvent<object, any, any> | undefined,
-	) => Promise<void>;
 	handleSuccessOk: () => void;
-	updateInput: (
-		value: string | [string, string] | string[] | Date | any,
-		property: string,
-	) => void;
-	handlePurpose: (purpose: string, value: string | string[]) => void;
-	onChange: (date: dayjs.Dayjs, dateString: string | string[]) => void;
+	setLoading: Dispatch<SetStateAction<boolean>>;
+	setIsSuccessOpen: Dispatch<SetStateAction<boolean>>;
+	setStatus: Dispatch<SetStateAction<boolean>>;
+	setAlertMsg: Dispatch<SetStateAction<string>>;
 }
 
-function NewWalkIn({
+function RecurringVisitor({
+	visitor,
 	isSuccessOpen,
 	alertOpen,
 	status,
 	alertMsg,
-	errors,
 	whatOptions,
 	whereOptions,
 	whoOptions,
-	register,
+	qr_id,
 	setAlertOpen,
-	onSubmit,
 	handleSuccessOk,
-	updateInput,
-	handlePurpose,
-	onChange,
-}: NewWalkInProps) {
+	setLoading,
+	setIsSuccessOpen,
+	setStatus,
+	setAlertMsg,
+}: RecurringProps) {
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+		setValue,
+	} = useForm<WalkInFormTypeZod>({
+		defaultValues: {
+			first_name: visitor.visitor_details.name.first_name,
+			middle_name: visitor.visitor_details.name.middle_name
+				? visitor.visitor_details.name.middle_name
+				: "",
+			last_name: visitor.visitor_details.name.last_name,
+			email: visitor.visitor_details.email,
+			phone: visitor.visitor_details.phone,
+			plate_num: visitor.plate_num,
+			house: visitor.visitor_details.address.house,
+			street: visitor.visitor_details.address.street,
+			brgy: visitor.visitor_details.address.brgy,
+			city: visitor.visitor_details.address.city,
+			province: visitor.visitor_details.address.province,
+			country: visitor.visitor_details.address.country,
+			what: visitor.purpose.what,
+			who: visitor.purpose.who,
+			where: visitor.purpose.where,
+			expected_time_out: new Date(),
+		},
+		resolver: zodResolver(WalkInFormZod),
+	});
+
+	const updateInput = (
+		value: string | [string, string] | string[] | Date | any,
+		property: string,
+	) => {
+		switch (property) {
+			case "first_name":
+				setValue(property, value as string);
+				break;
+			case "middle_name":
+				setValue(property, value as string);
+				break;
+			case "last_name":
+				setValue(property, value as string);
+				break;
+			case "phone":
+				setValue(property, value as string);
+				break;
+			case "email":
+				setValue(property, value as string);
+				break;
+			case "house":
+				setValue(property, value as string);
+				break;
+			case "street":
+				setValue(property, value as string);
+				break;
+			case "brgy":
+				setValue(property, value as string);
+				break;
+			case "city":
+				setValue(property, value as string);
+				break;
+			case "province":
+				setValue(property, value as string);
+				break;
+			case "country":
+				setValue(property, value as string);
+				break;
+			case "expected_time_out":
+				setValue(property, value as Date);
+				break;
+			case "plate_num":
+				setValue(property, value as string);
+				break;
+			case "what":
+				setValue(property, value as string[]);
+				break;
+			case "where":
+				setValue(property, value as string[]);
+				break;
+			case "who":
+				setValue(property, value as string[]);
+				break;
+		}
+	};
+
+	const handlePurpose = (purpose: string, value: string | string[]) => {
+		switch (purpose) {
+			case "what":
+				setValue("what", value as string[]);
+				break;
+			case "where":
+				setValue("where", value as string[]);
+				break;
+			case "who":
+				setValue("who", value as string[]);
+				break;
+			default:
+				console.error("Something went wrong");
+		}
+	};
+
+	const onChange: DatePickerProps["onChange"] = (date, dateString) => {
+		updateInput(new Date(dateString as string), "expected_time_out");
+	};
+
+	const saveAction = (zodData: WalkInFormInterfaceZod) => {
+		setLoading(true);
+		AxiosInstance.post("/new-recurring-walk-in", {
+			_id: visitor._id,
+			visitor_details: {
+				name: {
+					first_name: zodData.first_name,
+					middle_name: zodData.middle_name,
+					last_name: zodData.last_name,
+				},
+				address: {
+					house: zodData.house,
+					street: zodData.street,
+					brgy: zodData.brgy,
+					city: zodData.city,
+					province: zodData.province,
+					country: zodData.country,
+				},
+				email: zodData.email,
+				phone: zodData.phone,
+			},
+			expected_time_in: new Date(),
+			expected_time_out: new Date(zodData.expected_time_out),
+			plate_num: zodData.plate_num,
+			purpose: {
+				what: zodData.what,
+				when: new Date(),
+				where: zodData.where,
+				who: zodData.who,
+			},
+			status: VisitorStatus.Approved,
+			visitor_type: VisitorType.WalkIn,
+		})
+			.then((res) => {
+				AxiosInstance.post("/badge/newBadge", {
+					visitor_id: res.data.visitor._id,
+					qr_id: qr_id,
+				})
+					.then((res) => {
+						setLoading(false);
+						setIsSuccessOpen(true);
+					})
+					.catch((err) => {
+						setLoading(false);
+						setStatus(false);
+						setAlertOpen(true);
+						if (err && err.reponse) {
+							const errorMessage =
+								err.response.data.error ||
+								err.response.data.errors ||
+								"Something went wrong processing the badge";
+
+							setAlertMsg(errorMessage);
+						}
+						const errorMessage = "Something went wrong processing the badge";
+
+						setAlertMsg(errorMessage);
+					});
+			})
+			.catch((err) => {
+				setLoading(false);
+				setStatus(false);
+				setAlertOpen(true);
+				if (err && err.reponse) {
+					const errorMessage =
+						err.response.data.error ||
+						err.response.data.errors ||
+						"Something went wrong processing the visitor";
+
+					setAlertMsg(errorMessage);
+				}
+				const errorMessage = "Something went wrong processing the visitor";
+
+				setAlertMsg(errorMessage);
+			});
+	};
+
+	const onSubmit = handleSubmit((data) => {
+		saveAction(data);
+	});
+
 	return (
 		<>
 			<Modal
@@ -135,6 +327,7 @@ function NewWalkIn({
 												<Input
 													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[30px]"
 													size="large"
+													defaultValue={visitor.visitor_details.name.first_name}
 													{...register("first_name")}
 													onChange={(e) =>
 														updateInput(e.target.value, "first_name")
@@ -154,6 +347,9 @@ function NewWalkIn({
 												<Input
 													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[13px]"
 													size="large"
+													defaultValue={
+														visitor.visitor_details.name.middle_name
+													}
 													{...register("middle_name")}
 													onChange={(e) =>
 														updateInput(e.target.value, "middle_name")
@@ -173,6 +369,7 @@ function NewWalkIn({
 												<Input
 													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[31px]"
 													size="large"
+													defaultValue={visitor.visitor_details.name.last_name}
 													{...register("last_name")}
 													onChange={(e) =>
 														updateInput(e.target.value, "last_name")
@@ -192,6 +389,7 @@ function NewWalkIn({
 												<Input
 													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[64px]"
 													size="large"
+													defaultValue={visitor.visitor_details.email}
 													{...register("email")}
 													onChange={(e) => updateInput(e.target.value, "email")}
 												/>
@@ -209,6 +407,7 @@ function NewWalkIn({
 												<Input
 													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[42px]"
 													size="large"
+													defaultValue={visitor.visitor_details.phone}
 													{...register("phone")}
 													onChange={(e) => updateInput(e.target.value, "phone")}
 												/>
@@ -226,6 +425,7 @@ function NewWalkIn({
 												<Input
 													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[16px] md:w-[230px]"
 													size="large"
+													defaultValue={visitor.plate_num ?? ""}
 													{...register("plate_num")}
 													onChange={(e) =>
 														updateInput(e.target.value, "plate_num")
@@ -247,6 +447,7 @@ function NewWalkIn({
 												<Input
 													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[24px]"
 													size="large"
+													defaultValue={visitor.visitor_details.address.house}
 													{...register("house")}
 													onChange={(e) => updateInput(e.target.value, "house")}
 												/>
@@ -263,6 +464,7 @@ function NewWalkIn({
 												<Input
 													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[39.5px]"
 													size="large"
+													defaultValue={visitor.visitor_details.address.street}
 													{...register("street")}
 													onChange={(e) =>
 														updateInput(e.target.value, "street")
@@ -281,6 +483,7 @@ function NewWalkIn({
 												<Input
 													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[18.5px]"
 													size="large"
+													defaultValue={visitor.visitor_details.address.brgy}
 													{...register("brgy")}
 													onChange={(e) => updateInput(e.target.value, "brgy")}
 												/>
@@ -297,6 +500,7 @@ function NewWalkIn({
 												<Input
 													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[52px]"
 													size="large"
+													defaultValue={visitor.visitor_details.address.city}
 													{...register("city")}
 													onChange={(e) => updateInput(e.target.value, "city")}
 												/>
@@ -313,6 +517,9 @@ function NewWalkIn({
 												<Input
 													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[23px]"
 													size="large"
+													defaultValue={
+														visitor.visitor_details.address.province
+													}
 													{...register("province")}
 													onChange={(e) =>
 														updateInput(e.target.value, "province")
@@ -331,6 +538,7 @@ function NewWalkIn({
 												<Input
 													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[27px]"
 													size="large"
+													defaultValue={visitor.visitor_details.address.country}
 													{...register("country")}
 													onChange={(e) =>
 														updateInput(e.target.value, "country")
@@ -476,4 +684,4 @@ function NewWalkIn({
 	);
 }
 
-export default NewWalkIn;
+export default RecurringVisitor;

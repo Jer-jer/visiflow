@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 // Interface
 import type { SearchProps } from "antd/es/input/Search";
@@ -85,8 +84,6 @@ function RecurringVisitor() {
 		},
 	]);
 
-	const navigate = useNavigate();
-
 	//? If form is error
 	const [error, setError] = useState(false);
 
@@ -103,7 +100,7 @@ function RecurringVisitor() {
 		setLoading(true);
 		if (value) {
 			setError(false);
-			AxiosInstance.post("/visitor/find-email", {
+			AxiosInstance.post("/visitor/find-recurring", {
 				email: value,
 			})
 				.then((res) => {

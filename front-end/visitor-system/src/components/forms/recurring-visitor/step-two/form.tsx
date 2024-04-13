@@ -16,9 +16,6 @@ import {
 	type FieldErrors,
 } from "react-hook-form";
 
-// Utils
-import { mainOrCompanion } from "../../../../utils";
-
 // Assets
 import { LoadingOutlined } from "@ant-design/icons";
 
@@ -107,15 +104,18 @@ export default function StepTwoForm({
 		switch (property) {
 			case "firstName":
 				setValue(property, value);
-				updatedVisitors.name.first_name = value;
+				updatedVisitors.name.first_name =
+					value[0].toUpperCase() + value.slice(1);;
 				break;
 			case "middleName":
 				setValue(property, value);
-				updatedVisitors.name.middle_name = value;
+				updatedVisitors.name.middle_name =
+					value[0].toUpperCase() + value.slice(1);;
 				break;
 			case "lastName":
 				setValue(property, value);
-				updatedVisitors.name.last_name = value;
+				updatedVisitors.name.last_name =
+					value[0].toUpperCase() + value.slice(1);;
 				break;
 			case "email":
 				setValue(property, value);
