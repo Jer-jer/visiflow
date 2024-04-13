@@ -28,7 +28,6 @@ import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 import type { DatePickerProps } from "antd";
-import { VisitorStatus, VisitorType } from "../../../../utils/enums";
 
 // Utils
 import { formatDateObjToString } from "../../../../utils";
@@ -82,6 +81,7 @@ function StepOneForm({
 				setVisitors((prevVisitors) => [
 					...prevVisitors,
 					{
+						...mainVisitor,
 						visitor_no: i + 2,
 						visitor_details: {
 							name: {
@@ -103,23 +103,12 @@ function StepOneForm({
 							time_in: "",
 							time_out: "",
 						},
-						expected_time_in: new Date(),
-						expected_time_out: new Date(),
-						purpose: {
-							what: [],
-							when: new Date(),
-							where: [],
-							who: [],
-						},
-						termsConditions: false,
-						plate_num: null,
+						plate_num: "",
 						id_picture: {
 							front: "",
 							back: "",
 							selfie: "",
 						},
-						status: VisitorStatus.InProgress,
-						visitor_type: VisitorType.PreRegistered,
 					},
 				]);
 			}

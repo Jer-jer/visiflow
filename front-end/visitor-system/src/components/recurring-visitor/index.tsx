@@ -63,7 +63,6 @@ function RecurringVisitor() {
 				time_in: "",
 				time_out: "",
 			},
-			// companions_details: [],
 			expected_time_in: new Date(),
 			expected_time_out: new Date(),
 			purpose: {
@@ -73,7 +72,7 @@ function RecurringVisitor() {
 				who: [],
 			},
 			termsConditions: false,
-			plate_num: null,
+			plate_num: "",
 			id_picture: {
 				front: "",
 				back: "",

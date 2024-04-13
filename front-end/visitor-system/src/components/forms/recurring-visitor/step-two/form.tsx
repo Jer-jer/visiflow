@@ -105,17 +105,17 @@ export default function StepTwoForm({
 			case "firstName":
 				setValue(property, value);
 				updatedVisitors.name.first_name =
-					value[0].toUpperCase() + value.slice(1);;
+					value[0].toUpperCase() + value.slice(1);
 				break;
 			case "middleName":
 				setValue(property, value);
 				updatedVisitors.name.middle_name =
-					value[0].toUpperCase() + value.slice(1);;
+					value[0].toUpperCase() + value.slice(1);
 				break;
 			case "lastName":
 				setValue(property, value);
 				updatedVisitors.name.last_name =
-					value[0].toUpperCase() + value.slice(1);;
+					value[0].toUpperCase() + value.slice(1);
 				break;
 			case "email":
 				setValue(property, value);
@@ -155,7 +155,7 @@ export default function StepTwoForm({
 
 		setVisitors((preVisitors) => {
 			let updateVisitors = preVisitors.map((visitor, index) => {
-				if (index === visitorNo - 1) {
+				if (visitor.visitor_no === visitorNo) {
 					return {
 						...visitor,
 						visitor_details: updatedVisitors,

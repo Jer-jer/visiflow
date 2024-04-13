@@ -84,6 +84,7 @@ export default function StepThree({
 		confirm({
 			title: "Do you want to proceed?",
 			icon: <ExclamationCircleFilled />,
+			content: <p>Please make sure you have put everything you need</p>,
 			onOk() {
 				if (
 					visitors.filter((visitor: VisitorDataType) =>
@@ -124,7 +125,7 @@ export default function StepThree({
 							console.error(err);
 							if (err.response) {
 								error(
-										err.response.data.error ||
+									err.response.data.error ||
 										err.response.data.errors ||
 										"Something went wrong",
 								);
@@ -146,7 +147,7 @@ export default function StepThree({
 			This form will close after ${secondsToGo} second.`,
 			onOk() {
 				clearInterval(timer);
-				window.location.reload();
+				// window.location.reload();
 			},
 		});
 
@@ -161,7 +162,7 @@ export default function StepThree({
 		setTimeout(() => {
 			clearInterval(timer);
 			instance.destroy();
-			window.location.reload();
+			// window.location.reload();
 		}, secondsToGo * 1000);
 	};
 

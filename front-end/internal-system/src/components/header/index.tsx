@@ -106,6 +106,7 @@ export default function Header() {
 
 						return {
 							key: uniqueKey,
+							_id: notif._id,
 							name: notif.content.visitor_name,
 							message: uniqueKey, //? React-Notifications-Menu library uses this for their key
 							actualMessage: notificationMessage(notif.type, notif.content),
@@ -166,6 +167,7 @@ export default function Header() {
 			dispatch(
 				addNotif({
 					key: uniqueKey,
+					_id: value._id,
 					name: value.content.visitor_name,
 					message: notificationMessage(value.type, value.content),
 					time_in: value.content.time_in,
@@ -202,15 +204,16 @@ export default function Header() {
 		//? Check if the notification is already read
 		if (notif.is_read) return;
 		AxiosInstance.put("/notification/update", {
-			_id: notif.key,
+			_id: notif._id,
 			is_read: true,
-		}).catch((err) => {
-			error(
-				err?.response?.data?.error ||
-					err?.response?.data?.errors ||
-					"Something went wrong with updating the notification.",
-			);
 		});
+		// .catch((err) => {
+		// 	error(
+		// 		err?.response?.data?.error ||
+		// 			err?.response?.data?.errors ||
+		// 			"Something went wrong with updating the notification.",
+		// 	);
+		// });
 
 		dispatch(readNotif(notif.key));
 	};

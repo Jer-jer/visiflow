@@ -102,7 +102,6 @@ export default function StepThree({
 					);
 					error("Some companions are not filled.");
 				} else {
-					console.log("visitors", visitors)
 					setLoading(true);
 					AxiosInstance.post("/visitor/new-recurring", {
 						visitors: visitors.map((visitor: VisitorDataType) => ({

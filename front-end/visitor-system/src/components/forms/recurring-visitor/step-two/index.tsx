@@ -293,7 +293,6 @@ export default function StepTwo({
 	});
 
 	return (
-		//TODO Continue working with Step 2
 		<Form name="Step Two Form" onFinish={onSubmit} autoComplete="off">
 			{visitors.length === 1 ? (
 				<h1 className="font-700 mb-[10px] text-[28px] !text-[#FD4A4A]">
@@ -330,7 +329,7 @@ export default function StepTwo({
 					{visitors.length > 1 && (
 						<>
 							<Checkbox className="w-fit" checked={byBulk} onChange={onChange}>
-								Upload File
+								Or, upload an excel file with multiple visitor details
 							</Checkbox>
 							{byBulk && (
 								<>

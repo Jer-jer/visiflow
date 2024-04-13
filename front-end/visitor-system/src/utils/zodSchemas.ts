@@ -190,22 +190,14 @@ export const StepTwoZod: ZodType<StepTwoData> = z.object({
 		.regex(/^[a-zA-Z]+/, {
 			message: "Barangay must not be empty or contain any numerals.",
 		}),
-	city: z
-		.string({
-			required_error: "City is required.",
-			invalid_type_error: "City must not have a number.",
-		})
-		.regex(/^[a-zA-Z]+/, {
-			message: "City must not be empty or contain any numerals.",
-		}),
-	province: z
-		.string({
-			required_error: "Province is required.",
-			invalid_type_error: "Province must not have a number.",
-		})
-		.regex(/^[a-zA-Z]+/, {
-			message: "Province must not be empty or contain any numerals.",
-		}),
+	city: z.string({
+		required_error: "City is required.",
+		invalid_type_error: "City must not have a number.",
+	}),
+	province: z.string({
+		required_error: "Province is required.",
+		invalid_type_error: "Province must not have a number.",
+	}),
 	country: z
 		.string({
 			required_error: "Country is required.",
@@ -291,14 +283,10 @@ export const StepTwoRecurringZod: ZodType<StepTwoRecurringData> = z.object({
 
 	house: z.string().optional(),
 	street: z.string().optional(),
-	brgy: z
-		.string({
-			required_error: "Barangay is required.",
-			invalid_type_error: "Barangay must not have a number.",
-		})
-		.regex(/^[a-zA-Z]+/, {
-			message: "Barangay must not be empty or contain any numerals.",
-		}),
+	brgy: z.string({
+		required_error: "Barangay is required.",
+		invalid_type_error: "Barangay must not have a number.",
+	}),
 	city: z
 		.string({
 			required_error: "City is required.",
