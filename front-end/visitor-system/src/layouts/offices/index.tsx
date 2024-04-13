@@ -143,7 +143,7 @@ export default function Offices() {
 				dayOp: days.filter((day, index) => office.openday[index]).join(", "),
 				pic: office.pic,
 				email: office.email,
-				location: office.roomNo,
+				location: `${office.build}, Floor ${office.floor}, ${office.roomNo}`,
 				contact: office.contact,
 				img: office.officeImg,
 			}));
