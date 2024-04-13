@@ -18,9 +18,12 @@ router.post("/get-companions", passport.authenticate("jwt", { session: false }),
 router.post("/find", passport.authenticate("jwt", { session: false }), VisitorController.findVisitor);
 router.put("/update", passport.authenticate("jwt", { session: false }), VisitorController.updateVisitor);
 router.put("/update-status", passport.authenticate("jwt", { session: false }), VisitorController.updateStatus);
-router.post("/new-recurring", passport.authenticate("jwt", { session: false }), VisitorController.newRecurringVisitor);
-router.post("/find-email", passport.authenticate("jwt", { session: false }), VisitorController.findVisitorByEmail);
+router.post("/new-recurring-walk-in", passport.authenticate("jwt", { session: false }), VisitorController.newRecurringWalkInVisitor);
 router.delete("/delete", passport.authenticate("jwt", { session: false }), VisitorController.deleteVisitor);
+
+// Doesn't require authentication
+router.post("/new-recurring", VisitorController.newRecurringPRVisitor);
+router.post("/find-recurring", VisitorController.findRecurring);
 
 // Routes with optional authentication
 router.post("/new", optionalAuth, VisitorController.addVisitor);
