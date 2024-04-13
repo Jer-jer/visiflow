@@ -202,70 +202,6 @@ export default function OfficeSchedDetails({
 		}
 	};
 
-	useEffect(() => {
-		fetchAllPersonnel();
-		fetchAllBuildings();
-	}, [])
-
-	const fetchAllPersonnel = async () => {
-		try {
-			const response = await AxiosInstace.get('/employees/')
-			const data = response.data.employees
-			
-			setEmployees(data);
-		  } catch (error) {
-			console.error('Error fetching employees:', error);
-		  }
-	}
-
-	const fetchAllBuildings = async () => {
-		try {
-			const response = await AxiosInstace.get('/buildings/')
-			const data = response.data.buildings
-			
-			setBuildings(data);
-		  } catch (error) {
-			console.error('Error fetching buildings:', error);
-		  }
-	}
-
-	const onChangeSelectedPic = (selectedOption: any) => {
-		setPic(selectedOption);
-		assignEmail(selectedOption);
-	
-	}
-
-	const onChangeSelectedBuilding = (selectedOption: any) => {
-		setBuild(selectedOption);
-		assignFloorMax(selectedOption);
-	}
-
-	const assignEmail = (selected: any) => {
-		const selectedEmployee = employee.find((emp: any) => emp.name === selected);
-		
-		if (selectedEmployee) {
-			setEmail(selectedEmployee.email);
-		} else {
-			setEmail('');
-		}
-	}
-
-	const assignFloorMax = (selected: any) => {
-		const selectedFloor = building.find((b: any) => b.name === selected);
-		
-		if (selectedFloor) {
-			setFloorMax(selectedFloor.roomNo);
-		} else {
-			setFloorMax(0);
-		}
-	}
-
-	const filterOption = (input: string, option?: { label: string; value: string }) =>
-	{
-		return (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
-	}
-  		
-
 	return (
 		<div className="mr-[135px] flex flex-col gap-[35px] pt-[25px]">
 			<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
@@ -316,6 +252,17 @@ export default function OfficeSchedDetails({
 									options={employee ? employee.map((emp: any) => ({
 										value: emp.name,
 										label: emp.name
+									})) : []}
+									disabled={disabledInputs}
+								/> */}
+								<Select
+									className="input w-[57%] h-[38px] rounded-[5px] p-0"
+									key={JSON.stringify(employee)}
+									onChange={onChangeSelected}
+									defaultValue={pic}
+									options={employee ? employee.map((emp: any) => ({
+										value: emp.name,
+										label: <span>{emp.name}</span>
 									})) : []}
 									disabled={disabledInputs}
 								/>

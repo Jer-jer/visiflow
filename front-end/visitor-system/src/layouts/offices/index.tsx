@@ -153,10 +153,6 @@ export default function Offices() {
 		}
 	};
 
-	// useEffect(() => {
-	// 	console.log("test", office)
-	// }, [office])
-
 	const handleSearch = async () => {
 		try {
 			const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -211,7 +207,13 @@ export default function Offices() {
 								hoverable
 								key={key}
 								className="bg-[#DFEAEF] hover:cursor-default md:max-w-[700px] lg:max-w-[700px]"
-								cover={<img alt="example" src={off.img} className="w-full h-64 object-cover" />}
+								cover={
+									<img
+										alt="example"
+										src={off.img}
+										className="h-64 w-full object-cover"
+									/>
+								}
 							>
 								<Meta
 									className=""

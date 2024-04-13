@@ -1,7 +1,7 @@
 import "./styles.scss";
 
 
-import React, { useEffect } from 'react';
+import React from 'react';
 
 
 const GoogleTranslateComponent: React.FC = () => {  

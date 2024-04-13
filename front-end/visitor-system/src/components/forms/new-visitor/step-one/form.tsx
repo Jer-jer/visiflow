@@ -96,18 +96,20 @@ function StepOneForm({
 			setValue("visitorNo", value);
 		}
 
-		if (value !== null && value > 0) {
-			if (value > visitorNo) {
-				for (let i = 0; i < value - visitorNo; i++) {
-					setVisitors((prevVisitors) => [
-						...prevVisitors,
-						{
-							...mainVisitor,
-							visitor_no: i + 2,
-						},
-					]);
-				}
-			} else if (value < visitorNo) {
+		if (value > visitorNo) {
+			for (let i = 0; i < value - visitorNo; i++) {
+				setVisitors((prevVisitors) => [
+					...prevVisitors,
+					{
+						...mainVisitor,
+						visitor_no: i + 2,
+					},
+				]);
+			}
+		} else if (value === null || value < visitorNo) {
+			if (value === 0 || value === null) {
+				setVisitors((prevVisitor) => prevVisitor.slice(0, 1));
+			} else {
 				setVisitors((prevVisitor) =>
 					prevVisitor.slice(prevVisitor.length - value, prevVisitor.length),
 				);

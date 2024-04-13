@@ -5,10 +5,7 @@ import axios from "axios";
 import { Input, Divider, Form, Select, Tooltip } from "antd";
 
 // Interfaces
-import {
-	VisitorDataType,
-	VisitorDetailsProps,
-} from "../../../../utils/interfaces";
+import { VisitorDataType } from "../../../../utils/interfaces";
 import type { StepTwoData } from "../../../../utils/zodSchemas";
 import {
 	type UseFormRegister,
@@ -28,8 +25,7 @@ interface AddressSelectProps {
 }
 
 interface FormProps {
-	visitorNo: number;
-	visitorDetails: VisitorDetailsProps;
+	visitorDetails: VisitorDataType;
 	increment: number;
 	errors: FieldErrors<StepTwoData>;
 	register: UseFormRegister<StepTwoData>;
@@ -38,7 +34,6 @@ interface FormProps {
 }
 
 export default function StepTwoForm({
-	visitorNo,
 	visitorDetails,
 	increment,
 	errors,
@@ -76,92 +71,99 @@ export default function StepTwoForm({
 				setLoadCountries(false);
 			});
 
-		if (visitorDetails.address.province && visitorDetails.address.city) {
-			onChangeCountry(visitorDetails.address.country);
-			onChangeState(visitorDetails.address.province);
+		if (
+			visitorDetails.visitor_details.address.province &&
+			visitorDetails.visitor_details.address.city
+		) {
+			onChangeCountry(visitorDetails.visitor_details.address.country);
+			onChangeState(visitorDetails.visitor_details.address.province);
 		}
 	}, []);
 
 	useEffect(() => {
-		setValue("firstName", visitorDetails.name.first_name);
-		setValue("middleName", visitorDetails.name.middle_name);
-		setValue("lastName", visitorDetails.name.last_name);
-		setValue("email", visitorDetails.email);
-		setValue("mobile", visitorDetails.phone);
-		setValue("house", visitorDetails.address.house);
-		setValue("street", visitorDetails.address.street);
-		setValue("brgy", visitorDetails.address.brgy);
-		setValue("city", visitorDetails.address.city);
-		setValue("province", visitorDetails.address.province);
-		setValue("country", visitorDetails.address.country);
+		setValue("firstName", visitorDetails.visitor_details.name.first_name);
+		setValue("middleName", visitorDetails.visitor_details.name.middle_name);
+		setValue("lastName", visitorDetails.visitor_details.name.last_name);
+		setValue("email", visitorDetails.visitor_details.email);
+		setValue("mobile", visitorDetails.visitor_details.phone);
+		setValue("house", visitorDetails.visitor_details.address.house);
+		setValue("street", visitorDetails.visitor_details.address.street);
+		setValue("brgy", visitorDetails.visitor_details.address.brgy);
+		setValue("city", visitorDetails.visitor_details.address.city);
+		setValue("province", visitorDetails.visitor_details.address.province);
+		setValue("country", visitorDetails.visitor_details.address.country);
 	}, [visitorDetails]);
 
 	const updateData = (value: string, property: string) => {
-		let updatedVisitors = visitorDetails;
+		/*
+		 * Deep copy the visitorDetails object
+		 * To prevent other tabs utilizing the same object to be updated
+		 */
+		let updatedVisitors = JSON.parse(JSON.stringify(visitorDetails));
 
 		switch (property) {
 			case "firstName":
 				setValue(property, value);
-				updatedVisitors.name.first_name = value[0].toUpperCase() + value.slice(1);
+				updatedVisitors.visitor_details.name.first_name = value;
 				break;
 			case "middleName":
 				setValue(property, value);
-				updatedVisitors.name.middle_name =
-					value[0].toUpperCase() + value.slice(1);;
+				updatedVisitors.visitor_details.name.middle_name = value;
 				break;
 			case "lastName":
 				setValue(property, value);
-				updatedVisitors.name.last_name =
-					value[0].toUpperCase() + value.slice(1);;
+				updatedVisitors.visitor_details.name.last_name = value;
 				break;
 			case "email":
 				setValue(property, value);
-				updatedVisitors.email = value;
+				updatedVisitors.visitor_details.email = value;
 				break;
 			case "mobile":
 				setValue(property, value);
-				updatedVisitors.phone = value;
+				updatedVisitors.visitor_details.phone = value;
 				break;
 			case "house":
 				setValue(property, value);
-				updatedVisitors.address.house = value;
+				updatedVisitors.visitor_details.address.house = value;
 				break;
 			case "street":
 				setValue(property, value);
-				updatedVisitors.address.street = value;
+				updatedVisitors.visitor_details.address.street = value;
 				break;
 			case "brgy":
 				setValue(property, value);
-				updatedVisitors.address.brgy = value;
+				updatedVisitors.visitor_details.address.brgy = value;
 				break;
 			case "city":
 				setValue(property, value);
-				updatedVisitors.address.city = value;
+				updatedVisitors.visitor_details.address.city = value;
 				break;
 			case "province":
 				setValue(property, value);
-				updatedVisitors.address.province = value;
+				updatedVisitors.visitor_details.address.province = value;
 				break;
 			case "country":
 				setValue(property, value);
-				updatedVisitors.address.country = value;
+				updatedVisitors.visitor_details.address.country = value;
 				break;
 			default:
 				console.error("Something went wrong");
 		}
 
 		setVisitors((preVisitors) => {
-			let updateVisitors = preVisitors.map((visitor, index) => {
-				if (index === visitorNo - 1) {
+			return preVisitors.map((visitor, index) => {
+				if (visitor.visitor_no === visitorDetails.visitor_no) {
 					return {
 						...visitor,
-						visitor_details: updatedVisitors,
+						visitor_details: {
+							...updatedVisitors.visitor_details,
+							time_in: "",
+							time_out: "",
+						},
 					};
 				}
 				return visitor;
 			});
-
-			return updateVisitors;
 		});
 	};
 
@@ -196,7 +198,7 @@ export default function StepTwoForm({
 		setLoadCities(true);
 		axios
 			.post("https://countriesnow.space/api/v0.1/countries/state/cities", {
-				country: visitorDetails.address.country,
+				country: visitorDetails.visitor_details.address.country,
 				state: value,
 			})
 			.then((response) => {
@@ -254,7 +256,7 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("firstName")}
-								value={visitorDetails.name.first_name}
+								value={visitorDetails.visitor_details.name.first_name}
 								onChange={(event: any) =>
 									updateData(event.target.value, "firstName")
 								}
@@ -285,7 +287,7 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("middleName")}
-								value={visitorDetails.name.middle_name}
+								value={visitorDetails.visitor_details.name.middle_name}
 								onChange={(event: any) =>
 									updateData(event.target.value, "middleName")
 								}
@@ -316,7 +318,7 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("lastName")}
-								value={visitorDetails.name.last_name}
+								value={visitorDetails.visitor_details.name.last_name}
 								onChange={(event: any) =>
 									updateData(event.target.value, "lastName")
 								}
@@ -347,7 +349,7 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("email")}
-								value={visitorDetails.email}
+								value={visitorDetails.visitor_details.email}
 								onChange={(event: any) =>
 									updateData(event.target.value, "email")
 								}
@@ -378,7 +380,7 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("mobile")}
-								value={visitorDetails.phone}
+								value={visitorDetails.visitor_details.phone}
 								onChange={(event: any) =>
 									updateData(event.target.value, "mobile")
 								}
@@ -410,7 +412,7 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("house")}
-								value={visitorDetails.address.house}
+								value={visitorDetails.visitor_details.address.house}
 								onChange={(event: any) =>
 									updateData(event.target.value, "house")
 								}
@@ -441,7 +443,7 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("street")}
-								value={visitorDetails.address.street}
+								value={visitorDetails.visitor_details.address.street}
 								onChange={(event: any) =>
 									updateData(event.target.value, "street")
 								}
@@ -473,7 +475,7 @@ export default function StepTwoForm({
 									key={increment}
 									className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 									{...register("brgy")}
-									value={visitorDetails.address.brgy}
+									value={visitorDetails.visitor_details.address.brgy}
 									onChange={(event: any) =>
 										updateData(event.target.value, "brgy")
 									}
@@ -493,7 +495,7 @@ export default function StepTwoForm({
 							errors?.city ? "items-start" : "items-center"
 						} justify-between gap-[5%]`}
 					>
-						{visitorDetails.address.province ? (
+						{visitorDetails.visitor_details.address.province ? (
 							<>
 								<span
 									className={`w-[120px] ${
@@ -512,7 +514,7 @@ export default function StepTwoForm({
 											key={increment}
 											className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 											{...register("city")}
-											value={visitorDetails.address.city}
+											value={visitorDetails.visitor_details.address.city}
 											onChange={(event: any) =>
 												updateData(event.target.value, "city")
 											}
@@ -524,7 +526,9 @@ export default function StepTwoForm({
 											className="address text-[#0C0D0D] hover:!text-[#0C0D0D]"
 											showSearch
 											allowClear
-											defaultValue={visitorDetails.address.city || null}
+											defaultValue={
+												visitorDetails.visitor_details.address.city || null
+											}
 											onChange={onChangeCity}
 											options={cities}
 											filterOption={filterCity}
@@ -549,7 +553,7 @@ export default function StepTwoForm({
 							errors?.province ? "items-start" : "items-center"
 						} justify-between gap-[5%]`}
 					>
-						{visitorDetails.address.country ? (
+						{visitorDetails.visitor_details.address.country ? (
 							<>
 								<span
 									className={`w-[120px] ${
@@ -569,7 +573,7 @@ export default function StepTwoForm({
 												key={increment}
 												className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 												{...register("province")}
-												value={visitorDetails.address.province}
+												value={visitorDetails.visitor_details.address.province}
 												onChange={(event: any) =>
 													updateData(event.target.value, "province")
 												}
@@ -583,7 +587,10 @@ export default function StepTwoForm({
 												className="address text-[#0C0D0D] hover:!text-[#0C0D0D]"
 												showSearch
 												allowClear
-												defaultValue={visitorDetails.address.province || null}
+												defaultValue={
+													visitorDetails.visitor_details.address.province ||
+													null
+												}
 												onChange={onChangeState}
 												options={states}
 												filterOption={filterState}
@@ -626,7 +633,7 @@ export default function StepTwoForm({
 									key={increment}
 									className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 									{...register("country")}
-									value={visitorDetails.address.country}
+									value={visitorDetails.visitor_details.address.country}
 									onChange={(event: any) =>
 										updateData(event.target.value, "country")
 									}
@@ -638,8 +645,10 @@ export default function StepTwoForm({
 									className="address text-[#0C0D0D] hover:!text-[#0C0D0D]"
 									showSearch
 									allowClear
-									placeholder={visitorDetails.address.country}
-									defaultValue={visitorDetails.address.country || null}
+									placeholder={visitorDetails.visitor_details.address.country}
+									defaultValue={
+										visitorDetails.visitor_details.address.country || null
+									}
 									onChange={onChangeCountry}
 									options={countries}
 									filterOption={filterCountry}

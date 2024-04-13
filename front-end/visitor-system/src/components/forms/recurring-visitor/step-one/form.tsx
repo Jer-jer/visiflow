@@ -28,10 +28,12 @@ import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 import type { DatePickerProps } from "antd";
-import { VisitorStatus, VisitorType } from "../../../../utils/enums";
 
 // Utils
 import { formatDateObjToString } from "../../../../utils";
+
+// Assets
+import { LeftOutlined } from "@ant-design/icons";
 
 // Styles
 import "./styles.scss";
@@ -82,6 +84,7 @@ function StepOneForm({
 				setVisitors((prevVisitors) => [
 					...prevVisitors,
 					{
+						...mainVisitor,
 						visitor_no: i + 2,
 						visitor_details: {
 							name: {
@@ -103,23 +106,12 @@ function StepOneForm({
 							time_in: "",
 							time_out: "",
 						},
-						expected_time_in: new Date(),
-						expected_time_out: new Date(),
-						purpose: {
-							what: [],
-							when: new Date(),
-							where: [],
-							who: [],
-						},
-						termsConditions: false,
-						plate_num: null,
+						plate_num: "",
 						id_picture: {
 							front: "",
 							back: "",
 							selfie: "",
 						},
-						status: VisitorStatus.InProgress,
-						visitor_type: VisitorType.PreRegistered,
 					},
 				]);
 			}
@@ -496,7 +488,15 @@ function StepOneForm({
 				)}
 			</div>
 
-			<div className="mr-[30px] flex items-center justify-center gap-2 lg:mr-0 lg:w-[80%] lg:justify-end">
+			<div className="mr-[30px] flex flex-col-reverse items-center justify-center gap-2 lg:mr-0 lg:w-[80%] lg:flex-row lg:justify-between">
+				<Button
+					type="link"
+					className="flex items-center justify-center p-0 text-primary-500 hover:!text-primary-300"
+					onClick={() => window.location.reload()}
+				>
+					<LeftOutlined />
+					Go Back
+				</Button>
 				<div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row">
 					<Button
 						className="w-[inherit] bg-primary-500"

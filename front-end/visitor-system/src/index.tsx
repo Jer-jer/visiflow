@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import reportWebVitals from "./reportWebVitals";
 import { ConfigProvider } from "antd";
-import Kommunicate from "@kommunicate/kommunicate-chatbot-plugin";
 import { BrowserRouter } from "react-router-dom";
 
 import { App } from "antd";
@@ -12,11 +11,6 @@ import MainApp from "./App";
 
 // Styles
 import "./index.scss";
-
-// Kommunicate.init("1533584fa23c162f32fe0da228affe252", {
-// 	automaticChatOpenOnNavigation: true,
-// 	popupWidget: true,
-// });
 
 const root = ReactDOM.createRoot(
 	document.getElementById("root") as HTMLElement,
