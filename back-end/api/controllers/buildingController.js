@@ -16,7 +16,7 @@ exports.getBuildings = async (req, res) => {
 };
 
 exports.addBuilding = async (req, res) => {
-    const { name, roomNo } = req.body;
+    const { name, roomNo} = req.body;
 
     await Promise.all(validateBldgLoc.map(validation => validation.run(req)));
 
@@ -28,7 +28,7 @@ exports.addBuilding = async (req, res) => {
     try {
         const newBuilding = await BuildingLoc.create({ 
             name,
-            roomNo
+            roomNo,
         });
 
         res.status(201).json({ Building: newBuilding });
@@ -61,6 +61,22 @@ exports.findBuilding = async (req, res) => {
     }
 };
 
+//Find Announcements by Title
+exports.getBuildingsbyName = async (req, res) => {
+    try {
+        const {name} = req.body;
+        const regex = new RegExp(name, 'i');
+        const searchBuildings = await BuildingLoc.find({name: regex});
+        if(searchBuildings) {
+            return res.status(201).json({ buildings: searchBuildings });
+        } else {
+            return res.status(404).json({ error: 'Building not found'});
+        }
+    } catch (error) {
+        return res.status(500).json({ error: 'Internal Server Error '});
+    }
+};
+
 exports.updateBuilding = async (req, res) => {
     const { _id, name, roomNo} = req.body;
 
@@ -72,7 +88,7 @@ exports.updateBuilding = async (req, res) => {
 
         const updateFields = {
             name: name || buildingDB.name,
-            roomNo: roomNo || buildingDB.roomNo
+            roomNo: roomNo || buildingDB.roomNo,
         }
 
         const filteredUpdateFields = Object.fromEntries(

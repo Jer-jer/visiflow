@@ -3,13 +3,15 @@ import React, { useEffect, useState } from "react";
 
 //Interfaces
 import type { ColumnsType } from "antd/es/table";
-import { Employee } from "../../../../utils/interfaces";
+import { Employee, Building, EventsSchedule, Reason } from "../../../../utils/interfaces";
 
 //Components
-import { Table, Button, Modal, Input } from "antd";
+import { Table, Button, Modal, Input, Tabs } from "antd";
+import type { TabsProps } from 'antd';
 
 //Layout
 import EmployeeDetails from "../../../../layouts/admin/home-editor/employee-details";
+import BuildingDetails from "../../../../layouts/admin/home-editor/building-details";
 
 //Assets
 import { ExclamationCircleFilled } from "@ant-design/icons";
@@ -21,6 +23,7 @@ import "./styles.scss";
 import { AsyncThunkAction, createAsyncThunk } from "@reduxjs/toolkit";
 import AxiosInstace from "../../../../lib/axios";
 import { AsyncThunkConfig } from "@reduxjs/toolkit/dist/createAsyncThunk";
+import ReasonDetails from "../../../../layouts/admin/home-editor/reason-details";
 
 //fetch all announcements
 // export const fetchAnnouncements = createAsyncThunk(
@@ -39,36 +42,158 @@ export default function EmployeeList() {
 	const [pageDetail, setPageDetail] = useState<any>();
 	const [openDetails, setOpenDetails] = useState(false);
 	//stated variable for useEffect
-	const [data, setData] = useState<any>([]);
+	const [employeesData, setEmployeesData] = useState<any>([]);
+	const [buildingsData, setBuildingsData] = useState<any>([]);
+	const [reasonsData, setReasonsData] = useState<any>([]);
+
 	const [employees, setEmployees] = useState<Employee[]>([]);
+	const [buildings, setBuildings] = useState<Building[]>([]);
+	const [reasons, setReasons] = useState<Reason[]>([]);
+
+	const [activeKey, setActiveKey] = useState("1");
+	const [activeTab, setActiveTab] = useState<any>([]);
+	const [columns, setColumns] = useState<any>();
+	
+	
+
 	// const [users, setUsers] = useState<HomeEditor[]>([]);
 	const [searchValue, setSearchValue] = useState("");
 
 	  useEffect(() => {
-		if(searchValue == "") {
-			fetchAndSetEmployees();
+		const fetchData = async () => {
+			if (searchValue === "") {
+				let employees = await fetchAndSetEmployees();
+				let reasons = await fetchAndSetReasons();
+				let buildings = await fetchAndSetBuildings();
+
+				if (activeKey === "1") {
+					console.log("employee ", employees);
+					setActiveTab(employees);
+					console.log("active ", activeTab);
+				} else if (activeKey === "2") {
+					setActiveTab(reasons);
+				} else if (activeKey === "3") {
+					setActiveTab(buildings);
+				}
+			}
+		};
+	
+		fetchData();
+	}, [searchValue, activeKey])
+
+	useEffect(() => {
+		// Update columns based on activeTab
+		if (activeTab === employees) {
+			setColumns(employeeColumns);
+		} else if (activeTab === reasons) {
+			setColumns(reasonColumns);
+		} else if (activeTab === buildings) {
+			setColumns(buildingColumns);
 		}
-	}, [searchValue])
-//For getting announcements from back-end
+	}, [activeTab]);
+	
+//For getting employees/the whos from back-end
 	  //async is used for keyword await
 	  const fetchAndSetEmployees = async () => {
 		try {
 			const response = await AxiosInstace.get('/employees/')
 			const data = response.data.employees
-
+			
 			//getting only the data we want
 			const convertedData: Employee[] = data.map((employee: any) => ({
 				name: employee.name,
 				email: employee.email,
 				contact: employee.contact,
 			  }));
-			setData(data);
+			setEmployeesData(data);
 			setEmployees(convertedData);
+			return convertedData;
 		  } catch (error) {
 			console.error('Error fetching employees:', error);
 		  }
+		  return null;
 	  };
 
+	  const fetchAndSetReasons = async () => {
+		try {
+			const response = await AxiosInstace.get('/reasons/')
+			const data = response.data.reasons
+
+			//getting only the data we want
+			const convertedData: Reason[] = data.map((reason: any) => ({
+				reason: reason.reason,
+			  }));
+			setReasonsData(data);
+			setReasons(convertedData);
+			return convertedData;
+		  } catch (error) {
+			console.error('Error fetching reasons:', error);
+		  }
+		  return null;
+	  };
+	
+//getting data from buildings/ the where
+	  const fetchAndSetBuildings = async () => {
+		try {
+			const response = await AxiosInstace.get('/buildings/')
+			const data = response.data.buildings
+
+			//getting only the data we want
+			const convertedData: Building[] = data.map((building: any) => ({
+				name: building.name,
+				roomNo: building.roomNo,
+			  }));
+			setBuildingsData(data);
+			setBuildings(convertedData);
+			return convertedData;
+		  } catch (error) {
+			console.error('Error fetching buildings:', error);
+		  }
+		  return null;
+	  };
+
+	  useEffect(() => {
+		//console.log(activeTab);
+	  });
+
+	//   Edit New
+	  const onChange = (key: string) => {
+		setActiveKey(key);
+		
+		changeActiveTab(key);
+	  };
+
+	  const changeActiveTab = (key: string) => {
+		if(key === "1"){
+			setActiveTab(employees);
+			setColumns(employeeColumns);
+		} else if (key === "2") {
+			setActiveTab(reasons);
+			setColumns(reasonColumns);
+		} else if(key === "3") {
+			setActiveTab(buildings);
+			setColumns(buildingColumns);
+		}
+	  }
+
+	  const items: TabsProps['items'] = [
+		{
+		  key: '1',
+		  label: 'Who',
+		  children: '',
+		},
+		{
+		  key: '2',
+		  label: 'What',
+		  children: '',
+		},
+		{
+		  key: '3',
+		  label: 'Where',
+		  children: '',
+		},
+	  ];
+	  
 	  const showDeleteConfirm = async(data: any) => {
 		confirm({
 			title: "Are you sure you want to delete this?",
@@ -92,21 +217,56 @@ export default function EmployeeList() {
 	};
 
 	const handleSearch = async() => {
-		try {
-			const response = await AxiosInstace.post('/employees/search', {name: searchValue})
-			const data = response.data.employees
-
-			//getting only the data we want
-			const convertedData: Employee[] = data.map((employee: any) => ({
-				name: employee.name,
-				email: employee.email,
-				contact: employee.contact,
-			  }));
-			setData(data);
-			setEmployees(convertedData);
-		  } catch (error) {
+		if(activeKey === '1') {
+			try {
+				const response = await AxiosInstace.post('/employees/search', {name: searchValue})
+				const data = response.data.employees
+	
+				//getting only the data we want
+				const convertedData: Employee[] = data.map((employee: any) => ({
+					name: employee.name,
+					email: employee.email,
+					contact: employee.contact,
+					}));
+				setEmployeesData(data);
+				setEmployees(convertedData);
+				setActiveTab(convertedData);
+			} catch (error) {
 			console.error('Error fetching employees:', error);
-		  }
+			}
+		} else if(activeKey === '2') {
+			try {
+				const response = await AxiosInstace.post('/reasons/search', {reason: searchValue})
+				const data = response.data.reasons
+	
+				//getting only the data we want
+				const convertedData: Reason[] = data.map((reason: any) => ({
+					reason: reason.reason,
+				  }));
+				setReasonsData(data);
+				setReasons(convertedData);
+				setActiveTab(convertedData);
+			  } catch (error) {
+				console.error('Error fetching reasons:', error);
+			  }
+		} else if(activeKey === '3') {
+			try {
+				const response = await AxiosInstace.post('/buildings/search', {name: searchValue})
+				const data = response.data.buildings
+
+				//getting only the data we want
+				const convertedData: Building[] = data.map((building: any) => ({
+					name: building.name,
+					roomNo: building.roomNo,
+				}));
+				setBuildingsData(data);
+				setBuildings(convertedData);
+				setActiveTab(convertedData);
+			} catch (error) {
+			console.error('Error fetching buildings:', error);
+			}
+		}
+		
 	}
 
 	const edit = (record: any) => {
@@ -114,12 +274,12 @@ export default function EmployeeList() {
 		setOpenDetails(!openDetails);
 	};
 
-	const newEmployee = () => {
+	const addNew = () => {
 		setPageDetail(undefined);
 		setOpenDetails(!openDetails);
 	};
 	
-	const columns: ColumnsType<Employee> = [
+	const employeeColumns: ColumnsType<Employee> = [
 		{
 			title: "Name",
 			dataIndex: "name",
@@ -134,7 +294,7 @@ export default function EmployeeList() {
 		},
 		{
 			title: (
-				<Button onClick={newEmployee} className="w-[20%]" type="primary">
+				<Button onClick={addNew} className="w-[20%]" type="primary">
 					Add
 				</Button>
 			),
@@ -142,11 +302,69 @@ export default function EmployeeList() {
 			width: "30%",
 			render: (_, record) => (
 				<>
-					<Button className="mr-[3%] w-[20%]" onClick={() => edit(data[employees.indexOf(record)])}>
+					<Button className="mr-[3%] w-[20%]" onClick={() => edit(employeesData[employees.indexOf(record)])}>
 						View
 					</Button>
 					{/* _ is the column data */}
-					<Button onClick={() => showDeleteConfirm(data[employees.indexOf(record)])} danger>
+					<Button onClick={() => showDeleteConfirm(employeesData[employees.indexOf(record)])} danger>
+						Delete
+					</Button>
+				</>
+			),
+		},
+	];
+
+	const buildingColumns: ColumnsType<Building> = [
+		{
+			title: "Name",
+			dataIndex: "name",
+		},
+		{
+			title: "Room No.",
+			dataIndex: "roomNo",
+		},
+		{
+			title: (
+				<Button onClick={addNew} className="w-[20%]" type="primary">
+					Add
+				</Button>
+			),
+			key: "action",
+			width: "30%",
+			render: (_, record) => (
+				<>
+					<Button className="mr-[3%] w-[20%]" onClick={() => edit(buildingsData[buildings.indexOf(record)])}>
+						View
+					</Button>
+					{/* _ is the column data */}
+					<Button onClick={() => showDeleteConfirm(buildingsData[buildings.indexOf(record)])} danger>
+						Delete
+					</Button>
+				</>
+			),
+		},
+	];
+
+	const reasonColumns: ColumnsType<Reason> = [
+		{
+			title: "Reason",
+			dataIndex: "reason",
+		},
+		{
+			title: (
+				<Button onClick={addNew} className="w-[20%]" type="primary">
+					Add
+				</Button>
+			),
+			key: "action",
+			width: "30%",
+			render: (_, record) => (
+				<>
+					<Button className="mr-[3%] w-[20%]" onClick={() => edit(reasonsData[reasons.indexOf(record)])}>
+						View
+					</Button>
+					{/* _ is the column data */}
+					<Button onClick={() => showDeleteConfirm(reasonsData[reasons.indexOf(record)])} danger>
 						Delete
 					</Button>
 				</>
@@ -170,22 +388,36 @@ export default function EmployeeList() {
 					<Button type="primary" className="search-button !bg-primary-500" onClick={handleSearch}>
 						Search
 					</Button>
+					<div className="editor-item-tab">
+						<Tabs defaultActiveKey={activeKey} items={items} onChange={onChange}/>
+					</div>
 				</div>
 			)}
 			<div className="mr-[50px]">
 				{!openDetails && (
 					<Table
 						columns={columns}
-						dataSource={employees}
+						dataSource={activeTab}
 						pagination={{ pageSize: 8 }}
 					/>
 				)}
 				{openDetails && (
+					activeKey === "1" ?
 					<EmployeeDetails
 					record={pageDetail}
 					setOpenDetails={setOpenDetails}
 					fetch={fetchAndSetEmployees}
 					/>
+					: (activeKey === "2" ? 
+					<ReasonDetails
+					record={pageDetail}
+					setOpenDetails={setOpenDetails}
+					fetch={fetchAndSetReasons}/> : 
+					<BuildingDetails
+					record={pageDetail}
+					setOpenDetails={setOpenDetails}
+					fetch={fetchAndSetBuildings}
+					/>)
 				)}
 			</div>
 		</div>

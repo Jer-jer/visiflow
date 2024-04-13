@@ -16,6 +16,10 @@ const validateBldgLoc = [
     body('roomNo').notEmpty().withMessage('Room Number is required').isString().withMessage("Room Number must be a String")
 ];
 
+const validateReasons = [
+    body('reason').notEmpty().withMessage('Reason is required').isString().withMessage("Reason must be a String"),
+];
+
 const validateOffices = [
     body('name').notEmpty().withMessage('Building Name is required').isString().withMessage("Building name must be a String"),
     body('roomNo').notEmpty().withMessage('Room Number is required').isString().withMessage("Room Number must be a String"),
@@ -73,5 +77,7 @@ module.exports = {
     validateAnnouncements,
     validateOffices,
     validateEmployees,
-    validationResult 
+    handleValidationErrors, 
+    validationResult, 
+    validateReasons
 };

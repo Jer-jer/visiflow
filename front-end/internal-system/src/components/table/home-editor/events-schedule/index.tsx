@@ -60,7 +60,6 @@ export default function EventsScheduleList() {
 		try {
 			const response = await AxiosInstace.get('/events/')
 			const data = response.data.event
-			console.log(response)
 
 			//getting only the data we want
 			const convertedData: EventsSchedule[] = data.map((event: any) => ({
