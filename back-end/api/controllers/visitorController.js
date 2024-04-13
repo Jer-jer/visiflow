@@ -32,6 +32,21 @@ exports.getVisitors = async (req, res) => {
   }
 };
 
+//For Current Visitors by Janusz
+exports.getCurrentVisitors = async (req, res) => {
+  try {
+    const visitors = await Visitor.find({ checkoutTime: null });
+    const io = req.io;
+
+    return res.status(200).json({ visitors });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Failed to retrieve visitors from the database" });
+  }
+};
+
 exports.getCompanions = async (req, res) => {
   const { visitor_id } = req.body;
 

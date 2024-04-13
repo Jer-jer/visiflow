@@ -82,7 +82,7 @@ function NewWalkIn({
 				<span>Sucessfully registered and timed-in visitor.</span>
 			</Modal>
 			<div
-				className={`transition-alert absolute z-[1] w-[380px] scale-y-0 ease-in-out ${
+				className={`transition-alert absolute z-[1] ml-[-38px] mt-[-92px] w-[380px] scale-y-0 ease-in-out ${
 					alertOpen && "scale-y-100"
 				}`}
 			>
@@ -99,6 +99,7 @@ function NewWalkIn({
 					setOpen={setAlertOpen}
 				/>
 			</div>
+
 			<Form name="Visitor Details" onFinish={onSubmit} autoComplete="off">
 				<div className="mb-[35px] ml-2 mt-3 flex">
 					<div className="w-[380px] flex-auto md:w-[761px]">

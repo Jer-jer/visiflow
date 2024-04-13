@@ -396,20 +396,27 @@ export default function VisitorFormLayout() {
 			<OuterContainer header="VISITOR FORM">
 				<InnerContainer>
 					{!isNew && !isRecurring && (
-						<div className="mb-[20px] flex h-full items-center justify-center gap-5">
+						<div className="mb-[60px] mt-[25px] flex h-full items-center justify-center gap-5">
 							<Button
 								type="primary"
-								className="w-[inherit] bg-primary-500"
+								className="h-[inherit] w-[inherit] bg-primary-500 md:text-lg"
 								onClick={(e) => isNewOrRecurring(true, false)}
 							>
 								New Visitor
 							</Button>
 							<Button
 								type="primary"
-								className="w-[inherit] bg-primary-500"
+								className="h-[inherit] w-[inherit] bg-primary-500 md:text-lg"
 								onClick={(e) => isNewOrRecurring(false, true)}
 							>
 								Recurring Visitor
+							</Button>
+							<Button
+								type="primary"
+								className="h-[inherit] w-[inherit] !bg-red-500 md:text-lg"
+								href="/"
+							>
+								CANCEL
 							</Button>
 						</div>
 					)}
