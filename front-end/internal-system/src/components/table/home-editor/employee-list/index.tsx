@@ -67,9 +67,7 @@ export default function EmployeeList() {
 				let buildings = await fetchAndSetBuildings();
 
 				if (activeKey === "1") {
-					console.log("employee ", employees);
 					setActiveTab(employees);
-					console.log("active ", activeTab);
 				} else if (activeKey === "2") {
 					setActiveTab(reasons);
 				} else if (activeKey === "3") {
@@ -111,8 +109,12 @@ export default function EmployeeList() {
 		  } catch (error) {
 			console.error('Error fetching employees:', error);
 		  }
-		  return null;
 	  };
+
+	  const fetchAndSetEmployeesActive = async () => {
+		let employees = await fetchAndSetEmployees();
+		setActiveTab(employees);
+	  }
 
 	  const fetchAndSetReasons = async () => {
 		try {
@@ -129,8 +131,12 @@ export default function EmployeeList() {
 		  } catch (error) {
 			console.error('Error fetching reasons:', error);
 		  }
-		  return null;
 	  };
+
+	  const fetchAndSetReasonsActive = async () => {
+		let reasons = await fetchAndSetReasons();
+		setActiveTab(reasons);
+	  }
 	
 //getting data from buildings/ the where
 	  const fetchAndSetBuildings = async () => {
@@ -149,8 +155,12 @@ export default function EmployeeList() {
 		  } catch (error) {
 			console.error('Error fetching buildings:', error);
 		  }
-		  return null;
 	  };
+
+	  const fetchAndSetBuildingsActive = async () => {
+		let buildings = await fetchAndSetBuildings();
+		setActiveTab(buildings);
+	  }
 
 	  useEffect(() => {
 		//console.log(activeTab);
@@ -194,7 +204,7 @@ export default function EmployeeList() {
 		},
 	  ];
 	  
-	  const showDeleteConfirm = async(data: any) => {
+	const showDeleteConfirmEmployee = async(data: any) => {
 		confirm({
 			title: "Are you sure you want to delete this?",
 			className: "confirm-buttons",
@@ -205,9 +215,53 @@ export default function EmployeeList() {
 			async onOk() {
 				try {
 					await AxiosInstace.delete('/employees/delete', { data: { _id: data._id } }); 
-					fetchAndSetEmployees();
+					fetchAndSetEmployeesActive();
 				  } catch (error) {
 					console.error('Error deleting employees:', error);
+				  }
+			},
+			onCancel() {
+				console.log("Cancel");
+			},
+		});
+	};
+
+	const showDeleteConfirmReason = async(data: any) => {
+		confirm({
+			title: "Are you sure you want to delete this?",
+			className: "confirm-buttons",
+			icon: <ExclamationCircleFilled className="!text-error-500" />,
+			okText: "Yes",
+			okType: "danger",
+			cancelText: "No",
+			async onOk() {
+				try {
+					await AxiosInstace.delete('/reasons/delete', { data: { _id: data._id } }); 
+					fetchAndSetReasonsActive();
+				  } catch (error) {
+					console.error('Error deleting reasons:', error);
+				  }
+			},
+			onCancel() {
+				console.log("Cancel");
+			},
+		});
+	};
+
+	const showDeleteConfirmBuilding = async(data: any) => {
+		confirm({
+			title: "Are you sure you want to delete this?",
+			className: "confirm-buttons",
+			icon: <ExclamationCircleFilled className="!text-error-500" />,
+			okText: "Yes",
+			okType: "danger",
+			cancelText: "No",
+			async onOk() {
+				try {
+					await AxiosInstace.delete('/buildings/delete', { data: { _id: data._id } }); 
+					fetchAndSetBuildingsActive();
+				  } catch (error) {
+					console.error('Error deleting buildings:', error);
 				  }
 			},
 			onCancel() {
@@ -276,7 +330,7 @@ export default function EmployeeList() {
 
 	const addNew = () => {
 		setPageDetail(undefined);
-		setOpenDetails(!openDetails);
+		setOpenDetails(true);
 	};
 	
 	const employeeColumns: ColumnsType<Employee> = [
@@ -306,7 +360,7 @@ export default function EmployeeList() {
 						View
 					</Button>
 					{/* _ is the column data */}
-					<Button onClick={() => showDeleteConfirm(employeesData[employees.indexOf(record)])} danger>
+					<Button onClick={() => showDeleteConfirmEmployee(employeesData[employees.indexOf(record)])} danger>
 						Delete
 					</Button>
 				</>
@@ -320,7 +374,7 @@ export default function EmployeeList() {
 			dataIndex: "name",
 		},
 		{
-			title: "Room No.",
+			title: "Number of Floors",
 			dataIndex: "roomNo",
 		},
 		{
@@ -337,7 +391,7 @@ export default function EmployeeList() {
 						View
 					</Button>
 					{/* _ is the column data */}
-					<Button onClick={() => showDeleteConfirm(buildingsData[buildings.indexOf(record)])} danger>
+					<Button onClick={() => showDeleteConfirmBuilding(buildingsData[buildings.indexOf(record)])} danger>
 						Delete
 					</Button>
 				</>
@@ -364,7 +418,7 @@ export default function EmployeeList() {
 						View
 					</Button>
 					{/* _ is the column data */}
-					<Button onClick={() => showDeleteConfirm(reasonsData[reasons.indexOf(record)])} danger>
+					<Button onClick={() => showDeleteConfirmReason(reasonsData[reasons.indexOf(record)])} danger>
 						Delete
 					</Button>
 				</>
@@ -406,17 +460,17 @@ export default function EmployeeList() {
 					<EmployeeDetails
 					record={pageDetail}
 					setOpenDetails={setOpenDetails}
-					fetch={fetchAndSetEmployees}
+					fetch={fetchAndSetEmployeesActive}
 					/>
 					: (activeKey === "2" ? 
 					<ReasonDetails
 					record={pageDetail}
 					setOpenDetails={setOpenDetails}
-					fetch={fetchAndSetReasons}/> : 
+					fetch={fetchAndSetReasonsActive}/> : 
 					<BuildingDetails
 					record={pageDetail}
 					setOpenDetails={setOpenDetails}
-					fetch={fetchAndSetBuildings}
+					fetch={fetchAndSetBuildingsActive}
 					/>)
 				)}
 			</div>

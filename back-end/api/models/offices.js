@@ -4,6 +4,8 @@ const Schema = mongoose.Schema;
 const OfficesSchema = new Schema({
     name: { type: String, require: true },
     roomNo: { type: String, require: true },
+    build:{ type: String, require: true },
+    floor:{ type: String, require: true },
     //person in charge
     pic: { type: String, require: true },
     contact: { type: String, require: true },
