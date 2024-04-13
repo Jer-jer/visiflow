@@ -7,9 +7,11 @@ const ObjectId = Schema.Types.ObjectId;
 
 const badgeSchema = new Schema({
     visitor_id: { type: ObjectId, ref: 'visitor', require: true },
-    qr_id: { type: Number},
+    qr_id: { type: ObjectId },
     is_active: { type: Boolean, require: true, default: true},
     is_valid: { type: Boolean, requrie: true, default: true},
+    expected_time_in: { type: Date, sparse: true },
+    expected_time_out: { type: Date, sparse: true },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 });

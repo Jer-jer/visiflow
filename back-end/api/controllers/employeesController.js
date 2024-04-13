@@ -1,15 +1,7 @@
-const express = require("express");//for import of express package
-const bodyParser = require("body-parser");
+require('dotenv').config();
 const Employees = require('../models/employees');
-const { validateEmployees, handleValidationErrors, validationResult } = require('../middleware/dataValidation');
-
-// function sanitizeData(announcements) {
-//     return {
-//         _id: announcements._id,
-//         title: announcements.title,
-//         message: announcements.message
-//     };
-// }
+const { sendEmail } = require('../utils/helper');
+const { validateEmployees,  validationResult } = require('../middleware/dataValidation');
 
 //Get list of announcements
 exports.getAllEmployees = async (req, res) => {
@@ -121,4 +113,26 @@ exports.deleteEmployees = async (req, res) => {
       } catch (error) {
         return res.status(500).json({ error: 'Internal Server Error' });
       }
+}
+
+exports.notifyPOI = async (req, res) => {
+  try {
+    const { recipients, subject, message } = req.body;
+
+    await Promise.all(
+      recipients.map(async (recipient) => {
+        const mailOptions = {
+          from: process.env.MAILER,
+          to: recipient,
+          subject: subject,
+          text: message
+        };
+        await sendEmail(mailOptions);
+      })
+    );
+
+    return res.status(200).json({ message: 'Emails sent successfully' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to notify person of interest.' });
+  }
 }
