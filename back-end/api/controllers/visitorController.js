@@ -15,6 +15,7 @@ const {
 } = require("../utils/helper");
 const { Buffer } = require("node:buffer");
 const Notification = require("../models/notification");
+const Badge = require("../models/badge");
 const mongoose = require("mongoose");
 
 const ObjectId = mongoose.Types.ObjectId;
@@ -73,18 +74,18 @@ exports.addVisitor = async (req, res, next) => {
     let mainVisitorId;
 
     // Bulk data validation
-    await Promise.all(validateVisitor.map(validation => validation.run(req)));
+    await Promise.all(validateVisitor.map((validation) => validation.run(req)));
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      const err = errors.array().map(error => error.msg);
+      const err = errors.array().map((error) => error.msg);
       return res.status(409).json({ error: err[0] });
-    } 
-    
-    const duplicateErrors = await validateDuplicate(visitors, res); 
+    }
+
+    const duplicateErrors = await validateDuplicate(visitors, res);
 
     if (duplicateErrors.length > 0) {
-      return res.status(409).json({ error: duplicateErrors[0]});
+      return res.status(409).json({ error: duplicateErrors[0] });
     }
 
     const [frontId, backId, selfieId] = await Promise.all([
@@ -161,10 +162,10 @@ exports.addVisitor = async (req, res, next) => {
         }
       });
 
-      return res.status(201).json({ visitors: newVisitors });  
+      return res.status(201).json({ visitors: newVisitors });
     } catch (error) {
       if (error.code === 11000) {
-        return res.status(409).json({ error: "Duplicate key error" });  
+        return res.status(409).json({ error: "Duplicate key error" });
       } else {
         return res.status(500).json({ error: "Internal Server Error" });
       }
@@ -194,12 +195,15 @@ exports.findVisitor = async (req, res) => {
 
 //? This controller is used by the visitor system and guard system for looking recurring visitors
 exports.findRecurring = async (req, res) => {
-  const { email, last_name } = req.body;
+  const { visitor, email, last_name } = req.body;
 
   try {
-    if (email) {
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    const isEmail = emailRegex.test(visitor);
+
+    if (isEmail) {
       const visitorDB = await Visitor.findOne({
-        "visitor_details.email": email,
+        "visitor_details.email": visitor,
       });
 
       if (visitorDB) {
@@ -212,9 +216,10 @@ exports.findRecurring = async (req, res) => {
       } else {
         return res.status(404).json({ error: "Visitor not found" });
       }
-    } else if (last_name) {
+    } else if (!isEmail) {
       const visitorDB = await Visitor.find({
-        "visitor_details.name.last_name": last_name,
+        "visitor_details.name.last_name":
+          visitor[0].toUpperCase() + visitor.slice(1),
       });
 
       if (visitorDB) {
@@ -222,17 +227,18 @@ exports.findRecurring = async (req, res) => {
           _id: visitor._id,
           visitor_details: visitor.visitor_details,
           plate_num: visitor.plate_num,
+          id_picture: visitor.id_picture,
         }));
 
         return res.status(200).json({
-          success: "Visitor found",
+          success: "Visitor/s found",
           visitors: visitors,
         });
       } else {
         return res.status(404).json({ error: "Visitor not found" });
       }
     } else {
-      return res.status(400).json({ error: "No valid fields to search" });
+      return res.status(400).json({ error: "Information entered is invalid" });
     }
   } catch (error) {
     console.error(error);
@@ -351,6 +357,8 @@ exports.newRecurringPRVisitor = async (req, res) => {
             error: `${visitors[x].visitor_details.email} has already been used by another visitor`,
           });
 
+        console.log("visitorsss", visitors[x]);
+
         const updatedVisitor = await Visitor.findByIdAndUpdate(
           visitorDB._id,
           {
@@ -457,7 +465,9 @@ exports.newRecurringPRVisitor = async (req, res) => {
     }
 
     const updatedMainVisitor = await Visitor.findByIdAndUpdate(
-      new ObjectId(visitors[0].id),
+      visitors[0].id
+        ? new ObjectId(visitors[0].id)
+        : new ObjectId(visitors[0].key),
       {
         id_picture: {
           front: frontId,
@@ -570,6 +580,19 @@ exports.updateStatus = async (req, res) => {
       return res.status(404).json({ error: "Visitor not found" });
     }
 
+    if (Array.isArray(companions) && companions.length > 0) {
+      companions.forEach(async (companion) => {
+        const companionDB = await Visitor.findById(companion);
+        if (!companionDB) {
+          return res.status(404).json({ error: "Companion not found" });
+        }
+
+        companionDB.status = status;
+
+        await companionDB.save();
+      });
+    }
+
     visitorDB.status = status;
 
     await visitorDB.save();
@@ -612,6 +635,17 @@ exports.updateStatus = async (req, res) => {
       }
     } else if (status === "Declined") {
       try {
+        const badge = await Badge.findOne({
+          visitor_id: new ObjectId(visitorDB._id),
+        });
+
+        if (badge) {
+          await Badge.updateMany(
+            { visitor_id: new ObjectId(visitorDB._id) },
+            { is_valid: false }
+          );
+        }
+
         sendEmail({
           from: process.env.MAILER,
           to: email,
@@ -619,15 +653,19 @@ exports.updateStatus = async (req, res) => {
           text: message,
         });
 
-        if (companions && companions.length > 0) {
-          for (const companion of companions) {
+        if (Array.isArray(companions) && companions.length > 0) {
+          companions.forEach(async (companion) => {
+            const companionDB = await Visitor.findById(companion);
+            if (!companionDB) {
+              return res.status(404).json({ error: "Companion not found" });
+            }
             sendEmail({
               from: process.env.MAILER,
-              to: companion.email,
+              to: companionDB.visitor_details.email,
               subject: "Pre-Registration Declined",
               text: message,
             });
-          }
+          });
         }
 
         const declinedNotif = await Notification.create({
