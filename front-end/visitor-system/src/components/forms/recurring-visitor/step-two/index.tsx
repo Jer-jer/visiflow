@@ -21,14 +21,11 @@ import {
 	VisitorDataType,
 	VisitorDetailsProps,
 } from "../../../../utils/interfaces";
-import { StepTwoData, StepTwoZod } from "../../../../utils/zodSchemas";
+import { StepTwoRecurringData, StepTwoZod } from "../../../../utils/zodSchemas";
 import type { CheckboxProps } from "antd";
 
 // Components
 import StepForm from "./form";
-
-// Utils
-import { tabName } from "../../../../utils";
 
 // Styles
 import "./styles.scss";
@@ -94,9 +91,20 @@ export default function StepTwo({
 		handleSubmit,
 		setValue,
 		formState: { errors },
-	} = useForm<StepTwoData>({
+	} = useForm<StepTwoRecurringData>({
 		resolver: zodResolver(StepTwoZod),
 		defaultValues: {
+			firstName: mainVisitor.visitor_details.name.first_name,
+			middleName: mainVisitor.visitor_details.name.middle_name,
+			lastName: mainVisitor.visitor_details.name.last_name,
+			email: mainVisitor.visitor_details.email,
+			mobile: mainVisitor.visitor_details.phone,
+			house: mainVisitor.visitor_details.address.house,
+			street: mainVisitor.visitor_details.address.street,
+			brgy: mainVisitor.visitor_details.address.brgy,
+			city: mainVisitor.visitor_details.address.city,
+			province: mainVisitor.visitor_details.address.province,
+			country: mainVisitor.visitor_details.address.country,
 			front: mainVisitor.id_picture.front,
 			back: mainVisitor.id_picture.back,
 			selfie: mainVisitor.id_picture.selfie,
@@ -285,6 +293,7 @@ export default function StepTwo({
 	};
 
 	const nextStep = () => {
+		console.log("NEXT FCKING STEP");
 		setProgress((prev) => prev + 1);
 	};
 
@@ -311,7 +320,7 @@ export default function StepTwo({
 							children: (
 								<StepForm
 									visitorNo={visitor.visitor_no}
-									visitorDetails={visitor.visitor_details}
+									visitor={visitor}
 									increment={i}
 									errors={errors}
 									register={register}
@@ -329,7 +338,7 @@ export default function StepTwo({
 					{visitors.length > 1 && (
 						<>
 							<Checkbox className="w-fit" checked={byBulk} onChange={onChange}>
-								Or, upload an excel file with multiple visitor details
+								Or, upload an excel file with multiple visitors
 							</Checkbox>
 							{byBulk && (
 								<>
@@ -734,26 +743,32 @@ export default function StepTwo({
 										: "!bg-primary-500"
 								}`}
 								type="primary"
+								htmlType="submit"
 							>
 								Next
 							</Button>
 						</Tooltip>
 					) : (
-						<Button
-							className="w-full bg-primary-500 lg:w-[inherit]"
-							type="primary"
-							htmlType="submit"
-						>
-							Next
-						</Button>
+						<>
+							{visitors && visitors.length === 1 ? (
+								<Button
+									className="w-full bg-primary-500 lg:w-[inherit]"
+									type="primary"
+									onClick={nextStep}
+								>
+									Next
+								</Button>
+							) : (
+								<Button
+									className="w-full bg-primary-500 lg:w-[inherit]"
+									type="primary"
+									htmlType="submit"
+								>
+									Next
+								</Button>
+							)}
+						</>
 					)}
-					{/* <Button
-						className="w-[inherit] bg-primary-500"
-						type="primary"
-						htmlType="submit"
-					>
-						Next
-					</Button> */}
 				</div>
 			</div>
 		</Form>

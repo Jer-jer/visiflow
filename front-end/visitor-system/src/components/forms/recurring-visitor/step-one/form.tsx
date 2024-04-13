@@ -32,6 +32,9 @@ import type { DatePickerProps } from "antd";
 // Utils
 import { formatDateObjToString } from "../../../../utils";
 
+// Assets
+import { LeftOutlined } from "@ant-design/icons";
+
 // Styles
 import "./styles.scss";
 
@@ -485,7 +488,15 @@ function StepOneForm({
 				)}
 			</div>
 
-			<div className="mr-[30px] flex items-center justify-center gap-2 lg:mr-0 lg:w-[80%] lg:justify-end">
+			<div className="mr-[30px] flex flex-col-reverse items-center justify-center gap-2 lg:mr-0 lg:w-[80%] lg:flex-row lg:justify-between">
+				<Button
+					type="link"
+					className="flex items-center justify-center p-0 text-primary-500 hover:!text-primary-300"
+					onClick={() => window.location.reload()}
+				>
+					<LeftOutlined />
+					Go Back
+				</Button>
 				<div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row">
 					<Button
 						className="w-[inherit] bg-primary-500"

@@ -95,12 +95,15 @@ export default function StepTwoForm({
 	}, [visitorDetails]);
 
 	const updateData = (value: string, property: string) => {
+		/*
+		 * Deep copy the visitorDetails object
+		 * To prevent other tabs utilizing the same object to be updated
+		 */
 		let updatedVisitors = JSON.parse(JSON.stringify(visitorDetails));
 
 		switch (property) {
 			case "firstName":
 				setValue(property, value);
-				// updatedVisitors.name.first_name = value[0].toUpperCase() + value.slice(1);
 				updatedVisitors.visitor_details.name.first_name = value;
 				break;
 			case "middleName":

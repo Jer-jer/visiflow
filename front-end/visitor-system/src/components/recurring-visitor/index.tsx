@@ -11,6 +11,7 @@ import Stepper from "../stepper";
 import StepOne from "../forms/recurring-visitor/step-one";
 import StepTwo from "../forms/recurring-visitor/step-two";
 import StepThree from "../forms/recurring-visitor/step-three";
+import VisitorFoundList from "../visitor-found-list";
 
 // Lib
 import AxiosInstance from "../../lib/axios";
@@ -32,6 +33,7 @@ const errorModal = (message: string) => {
 
 function RecurringVisitor() {
 	const [visitorFound, setVisitorFound] = useState(false);
+	const [foundMultiple, setFoundMultiple] = useState(false);
 
 	const [loading, setLoading] = useState(false);
 
@@ -88,11 +90,13 @@ function RecurringVisitor() {
 
 	const recurringOk = () => {
 		setFoundRecurring(false);
+		setFoundMultiple(false);
 		setVisitorFound(true);
 	};
 
 	const recurringCancel = () => {
 		setFoundRecurring(false);
+		setFoundMultiple(false);
 	};
 
 	const onSearch: SearchProps["onSearch"] = (value, _e, info) => {
@@ -100,23 +104,54 @@ function RecurringVisitor() {
 		if (value) {
 			setError(false);
 			AxiosInstance.post("/visitor/find-recurring", {
-				email: value,
+				visitor: value,
 			})
 				.then((res) => {
 					if (res.status === 200) {
-						setVisitors((prev) => {
-							const updatedVisitor = prev.map((visitor, index) => ({
-								...visitor,
-								id: res.data.visitor_id,
-								id_picture: res.data.id_picture,
-								visitor_details: {
-									...visitor.visitor_details,
-									name: res.data.name,
-								},
-							}));
-							return updatedVisitor;
-						});
-						setFoundRecurring(true);
+						if (res.data.visitors) {
+							const respVisitors: VisitorDataType[] = res.data.visitors.map(
+								(visitor: VisitorDataType, index: number) => ({
+									key: visitor._id,
+									visitor_no: index + 1,
+									visitor_details: visitor.visitor_details,
+									expected_time_in: new Date(),
+									expected_time_out: new Date(),
+									purpose: {
+										what: [],
+										when: new Date(),
+										where: [],
+										who: [],
+									},
+									plate_num: visitor.plate_num,
+									id_picture: {
+										front: visitor.id_picture.front,
+										back: visitor.id_picture.back,
+										selfie: visitor.id_picture.selfie,
+									},
+									termsConditions: false,
+									status: VisitorStatus.InProgress,
+									visitor_type: VisitorType.PreRegistered,
+								}),
+							);
+
+							setVisitors(respVisitors);
+							setFoundMultiple(true);
+						} else {
+							setVisitors((prev) => {
+								const updatedVisitor = prev.map((visitor, index) => ({
+									...visitor,
+									id: res.data.visitor_id,
+									id_picture: res.data.id_picture,
+									visitor_details: {
+										...visitor.visitor_details,
+										name: res.data.name,
+									},
+								}));
+								return updatedVisitor;
+							});
+
+							setFoundRecurring(true);
+						}
 					}
 					setLoading(false);
 				})
@@ -152,31 +187,39 @@ function RecurringVisitor() {
 				</div>
 			</Modal>
 			{!visitorFound ? (
-				<div className="flex h-full w-full items-center justify-center">
+				<div className="flex h-full w-full flex-col items-center justify-center gap-10">
 					{loading ? (
 						<LoadingOutlined className="text-[128px] text-primary-500" />
 					) : (
-						<div className="flex flex-col items-center gap-3">
-							<Tooltip title={error ? "Must be filled" : ""}>
-								<Search
-									className="search-visitor"
-									status={error ? "error" : ""}
-									placeholder="Enter your email"
-									allowClear
-									onSearch={onSearch}
-									style={{ width: 300 }}
-									type="email"
+						<>
+							<div className="flex flex-col items-center gap-3">
+								<Tooltip title={error ? "Must be filled" : ""}>
+									<Search
+										className="search-visitor"
+										status={error ? "error" : ""}
+										placeholder="Enter your lastname or email"
+										allowClear
+										onSearch={onSearch}
+										style={{ width: 300 }}
+									/>
+								</Tooltip>
+								<Button
+									type="link"
+									className="flex items-center justify-center text-primary-500 hover:!text-primary-300"
+									onClick={() => window.location.reload()}
+								>
+									<LeftOutlined />
+									Go Back
+								</Button>
+							</div>
+							{!foundRecurring && foundMultiple && (
+								<VisitorFoundList
+									visitors={visitors}
+									setVisitorFound={setVisitorFound}
+									setVisitors={setVisitors}
 								/>
-							</Tooltip>
-							<Button
-								type="link"
-								className="flex items-center justify-center text-primary-500 hover:!text-primary-300"
-								onClick={() => window.location.reload()}
-							>
-								<LeftOutlined />
-								Go Back
-							</Button>
-						</div>
+							)}
+						</>
 					)}
 				</div>
 			) : (

@@ -105,10 +105,16 @@ export default function StepThree({
 							visitor_details: {
 								...visitor.visitor_details,
 								name: {
-									...visitor.visitor_details.name,
+									first_name:
+										visitor.visitor_details.name.first_name[0].toUpperCase() +
+										visitor.visitor_details.name.first_name.slice(1),
 									middle_name: visitor.visitor_details.name.middle_name
-										? visitor.visitor_details.name.middle_name
+										? visitor.visitor_details.name.middle_name[0].toUpperCase() +
+											visitor.visitor_details.name.middle_name.slice(1)
 										: "",
+									last_name:
+										visitor.visitor_details.name.last_name[0].toUpperCase() +
+										visitor.visitor_details.name.last_name.slice(1),
 								},
 								phone: visitor.visitor_details.phone.toString(),
 							},
@@ -147,7 +153,7 @@ export default function StepThree({
 			This form will close after ${secondsToGo} second.`,
 			onOk() {
 				clearInterval(timer);
-				// window.location.reload();
+				window.location.reload();
 			},
 		});
 
@@ -162,7 +168,7 @@ export default function StepThree({
 		setTimeout(() => {
 			clearInterval(timer);
 			instance.destroy();
-			// window.location.reload();
+			window.location.reload();
 		}, secondsToGo * 1000);
 	};
 

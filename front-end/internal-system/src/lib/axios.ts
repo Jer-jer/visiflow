@@ -9,12 +9,10 @@ const AxiosInstance = axios.create({
 	headers: {
 		Authorization: `Bearer ${token!}`,
 	},
-	timeout: 1000,
 });
 
 export const AxiosLoginInstance = axios.create({
 	baseURL: "http://localhost:5000",
-	timeout: 1000,
 });
 
 AxiosInstance.interceptors.response.use(
