@@ -55,6 +55,7 @@ function App() {
 								<Route path="/" element={<Navigate to="/dashboard" />} />
 								<Route path="/dashboard" element={<Dashboard />} />
 								<Route path="/statistics" element={<Statistics />} />
+								<Route path="/schedules" element={<Schedules />} />
 								<Route
 									path="/visitor-management"
 									element={<VisitorManagement />}

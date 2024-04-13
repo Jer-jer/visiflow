@@ -1,7 +1,5 @@
-const express = require("express");//for import of express package
-const bodyParser = require("body-parser");
 const Reasons = require('../models/reasons');
-const { validateReasons, handleValidationErrors, validationResult } = require('../middleware/dataValidation');
+const { validateReasons, validationResult } = require('../middleware/dataValidation');
 
 // function sanitizeData(announcements) {
 //     return {

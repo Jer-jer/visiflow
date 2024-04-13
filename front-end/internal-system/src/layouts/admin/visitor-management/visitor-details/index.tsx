@@ -143,6 +143,16 @@ export default function VisitorDetails({
 	//? Width Context
 	const width = useContext(WidthContext);
 
+	//? Notify POI Message
+	const recipient: string[] = record.purpose.who;
+	const subject: string = "Meeting Appointment via Pre-Registration"
+	const message: string = `You have a request appointment with a visitor. Please confirm the appointment. Thank you! 
+
+What: ${record.purpose.what.map((what) => what).join(", ")} 
+When: ${record.purpose.when}
+Where: ${record.purpose.where.map((where) => where).join(", ")}
+Who: ${record.purpose.who.map((who) => who).join(", ")}`;
+
 	// Store Related variables
 	const tabs: any = useSelector((state: RootState) => state.visitorTabs);
 	const { companions } = useSelector((state: RootState) => state.companions);
@@ -347,7 +357,7 @@ export default function VisitorDetails({
 			_id: record._id,
 			status: visitorStatusUpdate,
 			email: record.visitor_details.email,
-			// companions: record.companion_details,
+			companions: record.companions,
 			message: visitorMessage,
 		})
 			.then((res) => {
@@ -377,6 +387,33 @@ export default function VisitorDetails({
 				);
 			});
 	};
+
+	const sendPOIEmail = () => {
+		console.log("Send Email to POI");
+
+		//TODO Update recipient to contain actual email
+		//TODO Update message who to contain actual names
+		// AxiosInstance.post("/notifyPOI", {
+		// 	recipient,
+		// 	subject,
+		// 	message,
+		// })
+		// 	.then((res) => {
+		// 		setStatus(true);
+		// 		setAlertMsg("Successfully Sent Email to POI");
+		// 		setAlertOpen(true);
+		// 		setNotifyPOIOpen(false);
+		// 	})
+		// 	.catch((err) => {
+		// 		setStatus(false);
+		// 		setAlertOpen(true);
+		// 		setAlertMsg(
+		// 			err?.response?.data?.error ||
+		// 				err?.response?.data?.errors ||
+		// 				"Something went wrong.",
+		// 		);
+		// 	});
+	}
 
 	const saveAction = (
 		zodData?: VisitorDetailsInterfaceZod,
@@ -472,22 +509,22 @@ export default function VisitorDetails({
 			cancelText: "No",
 			onOk() {
 				closeTab(_id);
-				// AxiosInstance.delete("/visitor/delete", {
-				// 	data: {
-				// 		_id,
-				// 	},
-				// })
-				// 	.then((res) => {
-				// 		dispatch(deleteVisitor(_id));
-				// 	})
-				// 	.catch((err) => {
-				// 		setAlertOpen(!alertOpen);
-				// 		setAlertMsg(
-				// 			err?.response?.data?.error ||
-				// 				err?.response?.data?.errors ||
-				// 				"Something went wrong.",
-				// 		);
-				// 	});
+				AxiosInstance.delete("/visitor/delete", {
+					data: {
+						_id,
+					},
+				})
+					.then((res) => {
+						dispatch(deleteVisitor(_id));
+					})
+					.catch((err) => {
+						setAlertOpen(!alertOpen);
+						setAlertMsg(
+							err?.response?.data?.error ||
+								err?.response?.data?.errors ||
+								"Something went wrong.",
+						);
+					});
 			},
 			onCancel() {
 				console.log("Cancel");
@@ -1182,14 +1219,10 @@ export default function VisitorDetails({
 												open={notifyPOIOpen}
 												setOpen={setNotifyPOIOpen}
 												modalHeader="Notify Person of Interest"
-												subject="Meeting Appointment via Pre-Registration"
-												message={`You have a request appointment with a visitor. Please confirm the appointment. Thank you! 
-
-What: ${record.purpose.what.map((what) => what).join(", ")} 
-When: ${record.purpose.when}
-Where: ${record.purpose.where.map((where) => where).join(", ")}
-Who: ${record.purpose.who.map((who) => who).join(", ")}`}
+												subject={subject}
+												message={message}
 												disabled={true}
+												onOk={sendPOIEmail}
 											/>
 											<Notify
 												emailInput={record.visitor_details.email}
