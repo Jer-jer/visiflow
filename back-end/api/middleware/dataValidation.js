@@ -16,6 +16,10 @@ const validateBldgLoc = [
     body('roomNo').notEmpty().withMessage('Room Number is required').isString().withMessage("Room Number must be a String")
 ];
 
+const validateReasons = [
+    body('reason').notEmpty().withMessage('Reason is required').isString().withMessage("Reason must be a String"),
+];
+
 const validateOffices = [
     body('name').notEmpty().withMessage('Building Name is required').isString().withMessage("Building name must be a String"),
     body('roomNo').notEmpty().withMessage('Room Number is required').isString().withMessage("Room Number must be a String"),
@@ -52,7 +56,7 @@ const validateVisitor = [
     body('visitors.*.visitor_details.address.country').isString().withMessage('Country must be a string').notEmpty().withMessage('Country is required'),
     body('visitors.*.visitor_details.email').isEmail().withMessage('Must be a valid email'),
     body('visitors.*.visitor_details.phone').isString().withMessage('Phone must be a string').notEmpty().withMessage('Phone number is required'),
-    body('visitors.*.companions').isArray().withMessage('Companions must be an array'),
+    body('visitors.*.companions').isArray().withMessage('Companions must be an array').optional(),
     body('visitors.*.visitor_type').isString().withMessage('Visitor type must be a string').isIn(['Pre-Registered', 'Walk-In']).withMessage('Invalid Visitor Type'),
     body('visitors.*.status').isString().withMessage('Status must be a string').isIn(['Approved', 'In Progress', 'Declined']).withMessage('Invalid Status'),
     body('visitors.*.purpose').isObject().withMessage('Purpose must be an object').notEmpty().withMessage('Purpose is required'),
@@ -73,5 +77,6 @@ module.exports = {
     validateAnnouncements,
     validateOffices,
     validateEmployees,
-    validationResult 
+    validationResult, 
+    validateReasons
 };
