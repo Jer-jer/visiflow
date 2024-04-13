@@ -16,9 +16,6 @@ import {
 	type FieldErrors,
 } from "react-hook-form";
 
-// Utils
-import { mainOrCompanion } from "../../../../utils";
-
 // Assets
 import { LoadingOutlined } from "@ant-design/icons";
 
@@ -97,54 +94,25 @@ export default function StepTwoForm({
 		setValue("city", visitorDetails.address.city);
 		setValue("province", visitorDetails.address.province);
 		setValue("country", visitorDetails.address.country);
-		// if (increment === 0) {
-		// 	if (mainVisitor) {
-		// 		setValue("firstName", mainVisitor.name.first_name);
-		// 		setValue("middleName", mainVisitor.name.middle_name);
-		// 		setValue("lastName", mainVisitor.name.last_name);
-		// 		setValue("email", mainVisitor.email);
-		// 		setValue("mobile", mainVisitor.phone);
-		// 		setValue("house", mainVisitor.address.house);
-		// 		setValue("street", mainVisitor.address.street);
-		// 		setValue("brgy", mainVisitor.address.brgy);
-		// 		setValue("city", mainVisitor.address.city);
-		// 		setValue("province", mainVisitor.address.province);
-		// 		setValue("country", mainVisitor.address.country);
-		// 	}
-		// } else if (increment > 0) {
-		// 	if (companions[increment - 1]) {
-		// 		setValue("firstName", companions[increment - 1].name.first_name);
-		// 		setValue("middleName", companions[increment - 1].name.middle_name);
-		// 		setValue("lastName", companions[increment - 1].name.last_name);
-		// 		setValue("email", companions[increment - 1].email);
-		// 		setValue("mobile", companions[increment - 1].phone);
-		// 		setValue("house", companions[increment - 1].address.house);
-		// 		setValue("street", companions[increment - 1].address.street);
-		// 		setValue("brgy", companions[increment - 1].address.brgy);
-		// 		setValue("city", companions[increment - 1].address.city);
-		// 		setValue("province", companions[increment - 1].address.province);
-		// 		setValue("country", companions[increment - 1].address.country);
-		// 	}
-		// }
 	}, [visitorDetails]);
 
 	const updateData = (value: string, property: string) => {
-		// const updatedVisitors = mainOrCompanion(increment, mainVisitor, companions);
 		let updatedVisitors = visitorDetails;
-		// let updatedCompanions = companions;
 
 		switch (property) {
 			case "firstName":
 				setValue(property, value);
-				updatedVisitors.name.first_name = value;
+				updatedVisitors.name.first_name = value[0].toUpperCase() + value.slice(1);
 				break;
 			case "middleName":
 				setValue(property, value);
-				updatedVisitors.name.middle_name = value;
+				updatedVisitors.name.middle_name =
+					value[0].toUpperCase() + value.slice(1);;
 				break;
 			case "lastName":
 				setValue(property, value);
-				updatedVisitors.name.last_name = value;
+				updatedVisitors.name.last_name =
+					value[0].toUpperCase() + value.slice(1);;
 				break;
 			case "email":
 				setValue(property, value);

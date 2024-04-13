@@ -95,6 +95,7 @@ export interface VisitorDataType {
 }
 
 export interface GuardVisitorDataType {
+	_id: string;
 	visitor_details: VisitorDetailsProps;
 	expected_time_out: Date;
 	purpose: PurposeProps;

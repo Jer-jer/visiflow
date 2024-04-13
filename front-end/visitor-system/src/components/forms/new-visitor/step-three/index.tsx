@@ -109,6 +109,7 @@ export default function StepThree({
 										? visitor.visitor_details.name.middle_name
 										: "",
 								},
+								phone: visitor.visitor_details.phone.toString(),
 							},
 						})),
 					})
@@ -120,17 +121,16 @@ export default function StepThree({
 						})
 						.catch((err: any) => {
 							setLoading(false);
-							console.error("Error");
-							// if (err.response) {
-							// 	error(
-							// 		err.response.data.error._message ||
-							// 			err.response.data.error ||
-							// 			err.response.data.errors ||
-							// 			"Something went wrong",
-							// 	);
-							// } else {
-							// 	error("Something went wrong.");
-							// }
+							console.error(err);
+							if (err.response) {
+								error(
+										err.response.data.error ||
+										err.response.data.errors ||
+										"Something went wrong",
+								);
+							} else {
+								error("Something went wrong.");
+							}
 						});
 				}
 			},
@@ -146,7 +146,7 @@ export default function StepThree({
 			This form will close after ${secondsToGo} second.`,
 			onOk() {
 				clearInterval(timer);
-				// window.location.reload();
+				window.location.reload();
 			},
 		});
 
@@ -161,7 +161,7 @@ export default function StepThree({
 		setTimeout(() => {
 			clearInterval(timer);
 			instance.destroy();
-			// window.location.reload();
+			window.location.reload();
 		}, secondsToGo * 1000);
 	};
 
