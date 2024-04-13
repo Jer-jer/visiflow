@@ -322,9 +322,6 @@ exports.updateVisitor = async (req, res) => {
 exports.newRecurringPRVisitor = async (req, res) => {
   const { visitors } = req.body;
 
-  // const user_id = req.user._id;
-  // const log_type = "update_visitor";
-
   const io = req.io;
   let companions = [];
 
@@ -383,33 +380,15 @@ exports.newRecurringPRVisitor = async (req, res) => {
           return res.status(400).json({ errors: errors.array()[0].msg });
         }
 
-        //? Check if the companion already exists based on the returned findOne()
-        const firstName = visitorDB.visitor_details.name.first_name;
-        const middleName = visitorDB.visitor_details.name.middle_name
-          ? visitorDB.visitor_details.name.middle_name
-          : "";
-        const lastName = visitorDB.visitor_details.name.last_name;
-
-        const duplicateCompanion =
-          visitors[x].visitor_details.name.first_name === firstName &&
-          visitors[x].visitor_details.name.middle_name === middleName &&
-          visitors[x].visitor_details.name.last_name === lastName;
-
-        if (duplicateCompanion) {
-          return res.status(409).json({
-            error: `Visitor ${visitors[x].visitor_details.name.last_name} already exists`,
-          });
-        }
-
         const newVisitor = await Visitor.create({
           _id: new ObjectId(),
           visitor_details: {
             name: {
-              first_name: visitors[x].visitor_details.first_name,
-              middle_name: visitors[x].visitor_details.middle_name
-                ? visitors[x].visitor_details.middle_name
+              first_name: visitors[x].visitor_details.name.first_name,
+              middle_name: visitors[x].visitor_details.name.middle_name
+                ? visitors[x].visitor_details.name.middle_name
                 : "",
-              last_name: visitors[x].visitor_details.last_name,
+              last_name: visitors[x].visitor_details.name.last_name,
             },
             address: {
               street: visitors[x].visitor_details.address.street,
@@ -441,14 +420,6 @@ exports.newRecurringPRVisitor = async (req, res) => {
         companions.push(newVisitor._id);
 
         createNotification(newVisitor, "pending", io);
-        // if (newVisitor.visitor_type === "Pre-Registered") {
-        //   createNotification(newVisitor, "pending", io);
-        // } else if (newVisitor.visitor_type === "Walk-In") {
-        //   //For walk in
-        //   const user_id = req.user._id;
-        //   const log_type = "add_visitor";
-        //   createSystemLog(user_id, log_type, "success");
-        // }
       }
     }
 
@@ -510,15 +481,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
 
     io.emit("newVisitor", updatedMainVisitor);
 
-    if (updatedMainVisitor.visitor_type === "Pre-Registered") {
-      createNotification(updatedMainVisitor, "pending", io);
-    } else if (updatedMainVisitor.visitor_type === "Walk-In") {
-      //? TBD If Guard System will utilize it
-      //For walk in
-      const user_id = req.user._id;
-      const log_type = "add_visitor";
-      createSystemLog(user_id, log_type, "success");
-    }
+    createNotification(updatedMainVisitor, "pending", io);
 
     res.status(201).json({ message: "Success" });
   } catch (error) {
