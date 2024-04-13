@@ -34,3 +34,20 @@ $placeholder: (
         }
     }
 }
+
+.search-visitor {
+    .ant-input-wrapper {
+        .ant-input-outlined {
+            .ant-input {
+                background-color: transparent !important;
+            }
+        }
+
+        .ant-input-group-addon {
+            .ant-btn {
+                height: 33.6px;
+            }
+        }
+
+    }
+}

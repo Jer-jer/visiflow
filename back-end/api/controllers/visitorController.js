@@ -11,7 +11,7 @@ const {
   createNotification,
   generateFileName,
   createImageBuffer,
-  validateDuplicate
+  validateDuplicate,
 } = require("../utils/helper");
 const { Buffer } = require("node:buffer");
 const Notification = require("../models/notification");
@@ -59,12 +59,12 @@ exports.getCompanions = async (req, res) => {
   }
 };
 
-exports.addVisitor = async (req, res) => {
+exports.addVisitor = async (req, res, next) => {
   const { visitors } = req.body;
   const io = req.io;
 
   if (!visitors || visitors.length === 0) {
-    return res.status(400).json({ error: 'No visitors provided' });
+    return res.status(400).json({ error: "No visitors provided" });
   }
 
   try {
@@ -73,21 +73,18 @@ exports.addVisitor = async (req, res) => {
     let mainVisitorId;
 
     // Bulk data validation
-    await Promise.all(visitors.map(visitor => 
-      Promise.all(
-        validateVisitor.map((validation) => validation.run(visitor))
-      )
-    ));
+    await Promise.all(validateVisitor.map(validation => validation.run(req)));
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array()[0].msg });
-    }
-
-    const duplicateErrors = await validateDuplicate(visitors, res);
+      const err = errors.array().map(error => error.msg);
+      return res.status(409).json({ error: err[0] });
+    } 
+    
+    const duplicateErrors = await validateDuplicate(visitors, res); 
 
     if (duplicateErrors.length > 0) {
-      return res.status(409).json({ error: duplicateErrors[0] });
+      return res.status(409).json({ error: duplicateErrors[0]});
     }
 
     if (
@@ -101,19 +98,30 @@ exports.addVisitor = async (req, res) => {
     const [frontId, backId, selfieId] = await Promise.all([
       //Upload images to Google Cloud Storage
       uploadFileToGCS(
-        createImageBuffer(mainVisitor.id_picture.front), 
-        generateFileName(mainVisitor, "front")),
+        createImageBuffer(mainVisitor.id_picture.front),
+        generateFileName(mainVisitor, "front")
+      ),
       uploadFileToGCS(
-        createImageBuffer(mainVisitor.id_picture.back), 
-        generateFileName(mainVisitor, "back")),
+        createImageBuffer(mainVisitor.id_picture.back),
+        generateFileName(mainVisitor, "back")
+      ),
       uploadFileToGCS(
-        createImageBuffer(mainVisitor.id_picture.selfie), 
-        generateFileName(mainVisitor, "selfie")),
+        createImageBuffer(mainVisitor.id_picture.selfie),
+        generateFileName(mainVisitor, "selfie")
+      ),
     ]);
-    
+
     const newVisitorsData = visitors.map((visitor, index) => {
       // Visitor creation
-      const { visitor_details, plate_num, purpose, visitor_type, status, expected_time_in, expected_time_out } = visitor;
+      const {
+        visitor_details,
+        plate_num,
+        purpose,
+        visitor_type,
+        status,
+        expected_time_in,
+        expected_time_out,
+      } = visitor;
       return {
         _id: new ObjectId(),
         visitor_details: {
@@ -136,7 +144,7 @@ exports.addVisitor = async (req, res) => {
           selfie: index === 0 ? selfieId : "",
         },
         expected_time_in,
-        expected_time_out
+        expected_time_out,
       };
     });
 
@@ -161,18 +169,12 @@ exports.addVisitor = async (req, res) => {
         }
       });
 
-      if (!res.headersSent) { // Check if headers have been sent before sending the response
-        return res.status(201).json({ visitors: newVisitors });
-      }
+      return res.status(201).json({ visitors: newVisitors });  
     } catch (error) {
       if (error.code === 11000) {
-        if (!res.headersSent) {
-          return res.status(409).json({ error: "Duplicate key error" });
-        }
+        return res.status(409).json({ error: "Duplicate key error" });  
       } else {
-        if (!res.headersSent) {
-          return res.status(500).json({ error: "Internal Server Error" });
-        }
+        return res.status(500).json({ error: "Internal Server Error" });
       }
     }
   } catch (error) {
@@ -198,23 +200,47 @@ exports.findVisitor = async (req, res) => {
   }
 };
 
-exports.findVisitorByEmail = async (req, res) => {
-  const { email } = req.body;
+//? This controller is used by the visitor system and guard system for looking recurring visitors
+exports.findRecurring = async (req, res) => {
+  const { email, last_name } = req.body;
 
   try {
-    const visitorDB = await Visitor.findOne({
-      "visitor_details.email": email,
-    });
-
-    if (visitorDB) {
-      return res.status(200).json({
-        success: "Visitor found",
-        visitor_id: visitorDB._id,
-        id_picture: visitorDB.id_picture,
-        name: visitorDB.visitor_details.name,
+    if (email) {
+      const visitorDB = await Visitor.findOne({
+        "visitor_details.email": email,
       });
+
+      if (visitorDB) {
+        return res.status(200).json({
+          success: "Visitor found",
+          visitor_id: visitorDB._id,
+          id_picture: visitorDB.id_picture,
+          name: visitorDB.visitor_details.name,
+        });
+      } else {
+        return res.status(404).json({ error: "Visitor not found" });
+      }
+    } else if (last_name) {
+      const visitorDB = await Visitor.find({
+        "visitor_details.name.last_name": last_name,
+      });
+
+      if (visitorDB) {
+        const visitors = visitorDB.map((visitor) => ({
+          _id: visitor._id,
+          visitor_details: visitor.visitor_details,
+          plate_num: visitor.plate_num,
+        }));
+
+        return res.status(200).json({
+          success: "Visitor found",
+          visitors: visitors,
+        });
+      } else {
+        return res.status(404).json({ error: "Visitor not found" });
+      }
     } else {
-      return res.status(404).json({ error: "Visitor not found" });
+      return res.status(400).json({ error: "No valid fields to search" });
     }
   } catch (error) {
     console.error(error);
@@ -300,11 +326,9 @@ exports.updateVisitor = async (req, res) => {
   }
 };
 
-exports.newRecurringVisitor = async (req, res) => {
+//? Used by the visitor system for updating recurring visitors in pre-registration
+exports.newRecurringPRVisitor = async (req, res) => {
   const { visitors } = req.body;
-
-  // const user_id = req.user._id;
-  // const log_type = "update_visitor";
 
   const io = req.io;
   let companions = [];
@@ -364,33 +388,15 @@ exports.newRecurringVisitor = async (req, res) => {
           return res.status(400).json({ errors: errors.array()[0].msg });
         }
 
-        //? Check if the companion already exists based on the returned findOne()
-        const firstName = visitorDB.visitor_details.name.first_name;
-        const middleName = visitorDB.visitor_details.name.middle_name
-          ? visitorDB.visitor_details.name.middle_name
-          : "";
-        const lastName = visitorDB.visitor_details.name.last_name;
-
-        const duplicateCompanion =
-          visitors[x].visitor_details.name.first_name === firstName &&
-          visitors[x].visitor_details.name.middle_name === middleName &&
-          visitors[x].visitor_details.name.last_name === lastName;
-
-        if (duplicateCompanion) {
-          return res.status(409).json({
-            error: `Visitor ${visitors[x].visitor_details.name.last_name} already exists`,
-          });
-        }
-
         const newVisitor = await Visitor.create({
           _id: new ObjectId(),
           visitor_details: {
             name: {
-              first_name: visitors[x].visitor_details.first_name,
-              middle_name: visitors[x].visitor_details.middle_name
-                ? visitors[x].visitor_details.middle_name
+              first_name: visitors[x].visitor_details.name.first_name,
+              middle_name: visitors[x].visitor_details.name.middle_name
+                ? visitors[x].visitor_details.name.middle_name
                 : "",
-              last_name: visitors[x].visitor_details.last_name,
+              last_name: visitors[x].visitor_details.name.last_name,
             },
             address: {
               street: visitors[x].visitor_details.address.street,
@@ -421,14 +427,7 @@ exports.newRecurringVisitor = async (req, res) => {
 
         companions.push(newVisitor._id);
 
-        if (newVisitor.visitor_type === "Pre-Registered") {
-          createNotification(newVisitor, "pending", io);
-        } else if (newVisitor.visitor_type === "Walk-In") {
-          //For walk in
-          const user_id = req.user._id;
-          const log_type = "add_visitor";
-          createSystemLog(user_id, log_type, "success");
-        }
+        createNotification(newVisitor, "pending", io);
       }
     }
 
@@ -490,17 +489,54 @@ exports.newRecurringVisitor = async (req, res) => {
 
     io.emit("newVisitor", updatedMainVisitor);
 
-    if (updatedMainVisitor.visitor_type === "Pre-Registered") {
-      createNotification(updatedMainVisitor, "pending", io);
-    } else if (updatedMainVisitor.visitor_type === "Walk-In") {
-      //? TBD If Guard System will utilize it
-      //For walk in
-      const user_id = req.user._id;
-      const log_type = "add_visitor";
-      createSystemLog(user_id, log_type, "success");
-    }
+    createNotification(updatedMainVisitor, "pending", io);
 
     res.status(201).json({ message: "Success" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to update visitor" });
+  }
+};
+
+exports.newRecurringWalkInVisitor = async (req, res) => {
+  const {
+    _id,
+    visitor_details,
+    expected_time_in,
+    expected_time_out,
+    plate_num,
+    purpose,
+    status,
+    visitor_type,
+  } = req.body;
+
+  const user_id = req.user._id;
+
+  try {
+    const updatedVisitor = await Visitor.findByIdAndUpdate(
+      _id,
+      {
+        visitor_details: visitor_details,
+        purpose: purpose,
+        expected_time_in: expected_time_in,
+        expected_time_out: expected_time_out,
+        plate_num: plate_num,
+        status: status,
+        visitor_type: visitor_type,
+      },
+      { new: true }
+    );
+
+    if (!updatedVisitor) {
+      return res.status(500).json({
+        error: `Failed to register ${visitors[0].visitor_details.name.last_name}. Please try again.`,
+      });
+    }
+
+    const log_type = "update_visitor";
+    createSystemLog(user_id, log_type, "success");
+
+    res.status(201).json({ message: "Success", visitor: updatedVisitor });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to update visitor" });

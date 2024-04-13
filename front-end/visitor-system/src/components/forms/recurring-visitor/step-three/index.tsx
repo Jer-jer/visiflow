@@ -102,6 +102,7 @@ export default function StepThree({
 					);
 					error("Some companions are not filled.");
 				} else {
+					console.log("visitors", visitors)
 					setLoading(true);
 					AxiosInstance.post("/visitor/new-recurring", {
 						visitors: visitors.map((visitor: VisitorDataType) => ({
@@ -114,6 +115,7 @@ export default function StepThree({
 										? visitor.visitor_details.name.middle_name
 										: "",
 								},
+								phone: visitor.visitor_details.phone.toString(),
 							},
 						})),
 					})
@@ -123,10 +125,10 @@ export default function StepThree({
 						})
 						.catch((err: any) => {
 							setLoading(false);
+							console.error(err);
 							if (err.response) {
 								error(
-									err.response.data.error._message ||
-										err.response.data.error ||
+									err.response.data.error ||
 										err.response.data.errors ||
 										"Something went wrong",
 								);

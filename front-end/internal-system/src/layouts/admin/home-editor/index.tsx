@@ -61,7 +61,7 @@ export default function HomeEditorLayout() {
 				<Tabs.TabPane
 					className="w-full"
 					closable={false}
-					tab="Employee List"
+					tab="Visitor Form List"
 					key="4"
 				>
 					<EmployeeList />

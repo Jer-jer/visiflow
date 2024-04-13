@@ -11,6 +11,8 @@ router.get("/", BuildingLocController.getBuildings);
 
 router.post("/new", BuildingLocController.addBuilding);
 
+router.post("/search", BuildingLocController.getBuildingsbyName);
+
 router.post("/find", BuildingLocController.findBuilding);
 
 router.put("/update", BuildingLocController.updateBuilding);

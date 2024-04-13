@@ -46,7 +46,6 @@ export default function StepThree({
 	const { handleSubmit } = useForm({
 		defaultValues: {
 			visitor_details: mainVisitor.visitor_details,
-			// companion_details: visitors.companions_details,
 			expected_time_in: new Date(mainVisitor.expected_time_in),
 			expected_time_out: new Date(mainVisitor.expected_time_out),
 			purpose: {
@@ -99,7 +98,7 @@ export default function StepThree({
 					error("Some companions are not filled.");
 				} else {
 					setLoading(true);
-					AxiosInstance.post("/visitor/new", {
+					AxiosInstance.post("/visitor/new?auth=false", {
 						visitors: visitors.map((visitor: VisitorDataType) => ({
 							...visitor,
 							visitor_details: {
@@ -110,18 +109,21 @@ export default function StepThree({
 										? visitor.visitor_details.name.middle_name
 										: "",
 								},
+								phone: visitor.visitor_details.phone.toString(),
 							},
 						})),
 					})
 						.then((res: any) => {
-							setLoading(false);
-							successMessage("Sucessfully Registered");
+							if (res.status === 204 || res.status === 201) {
+								setLoading(false);
+								successMessage("Sucessfully Registered");
+							}
 						})
 						.catch((err: any) => {
 							setLoading(false);
+							console.error(err);
 							if (err.response) {
 								error(
-									err.response.data.error._message ||
 										err.response.data.error ||
 										err.response.data.errors ||
 										"Something went wrong",

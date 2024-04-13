@@ -1,0 +1,60 @@
+.ant-tabs-tab {
+    width: 150px;
+    border-radius: 15px 15px 0 0;
+    justify-content: center;
+    background: #343436 !important;
+    box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.11);
+}
+
+.ant-tabs-tab-btn {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff
+}
+
+.ant-tabs-tab-btn[aria-selected="true"] {
+    text-shadow: none
+}
+
+.ant-tabs-tab-active {
+    background: #fff !important;
+}
+
+.ant-tabs-nav {
+    margin: 0 !important;
+}
+
+.ant-tabs-content-holder {
+    background: #fff;
+    box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.11);
+    border: none !important;
+    border-radius: 0 8px 8px 8px;
+}
+
+.ant-tabs-nav-add {
+    border: none !important;
+}
+
+.search-button {
+    border-radius: 15px;
+}
+
+.custom-textarea:hover {
+    border-color: transparent !important;
+}
+
+$placeholder: (
+    '.custom-textarea::-webkit-input-placeholder',
+    '.custom-textarea:-moz-placeholder',
+    '.custom-textarea::-moz-placeholder',
+    '.custom-textarea:-ms-input-placeholder',
+    '.custom-textarea::input-placeholder',
+    '.custom-textarea::placeholder'
+);
+
+@each $selector in $placeholder {
+    #{$selector} {
+        color: #0C0D0D !important;
+        font-weight: 600;
+    }
+}

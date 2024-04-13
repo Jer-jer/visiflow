@@ -131,7 +131,7 @@ export default function Home() {
 				</div>
 			</div>
 			{desktopMedia.matches ? (
-				<div className="mb-[50px] flex flex-wrap items-center justify-center gap-[36px]">
+				<div className="mb-[50px] flex flex-row-reverse flex-wrap-reverse items-center justify-center gap-[36px]">
 					{announcement.map((announce, index) => (
 						<HomeBox
 							key={index}
