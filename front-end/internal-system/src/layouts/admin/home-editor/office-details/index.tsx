@@ -9,7 +9,7 @@ import type { UploadChangeParam } from "antd/es/upload";
 //Layouts
 
 //Components
-import { Button, Dropdown, Modal, DatePicker, message, Image, MenuProps} from "antd";
+import { Button, Dropdown, Modal, DatePicker, message, Image, MenuProps, Select} from "antd";
 import Input from "../../../../components/fields/input/input";
 import Label from "../../../../components/fields/input/label";
 import AxiosInstace from "../../../../lib/axios";
@@ -94,6 +94,8 @@ export default function OfficeSchedDetails({
 	const [image, setImage] = useState<string | ArrayBuffer | null>(null);
 	const [imageUrl, setImageUrl] = useState<string>(record === undefined ? "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png" : record?.officeImg);
 	const [savedRecord, setSavedRecord] = useState(record);
+
+	const [employee, setEmployees] = useState<any>([]);
 
 	//Alert State
 	const [alertOpen, setAlertOpen] = useState(false);
@@ -192,6 +194,37 @@ export default function OfficeSchedDetails({
 		}
 	};
 
+	useEffect(() => {
+		fetchAllPersonnel();
+	}, [])
+
+	const fetchAllPersonnel = async () => {
+		try {
+			const response = await AxiosInstace.get('/employees/')
+			const data = response.data.employees
+			
+			setEmployees(data);
+		  } catch (error) {
+			console.error('Error fetching employees:', error);
+		  }
+	}
+
+	const onChangeSelected = (selectedOption: any) => {
+		setPic(selectedOption);
+		assignEmail(selectedOption);
+	
+	}
+
+	const assignEmail = (selected: any) => {
+		const selectedEmployee = employee.find((emp: any) => emp.name === selected);
+		
+		if (selectedEmployee) {
+			setEmail(selectedEmployee.email);
+		} else {
+			setEmail('');
+		}
+	}
+
 	return (
 		<div className="mr-[135px] flex flex-col gap-[35px] pt-[25px]">
 			<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
@@ -232,13 +265,24 @@ export default function OfficeSchedDetails({
 								<Label spanStyling="text-black font-medium text-[16px]">
 									Personnel in Charge
 								</Label>
-								<Input
+								{/* <Input
 									inputType="text"
 									inputStyling="input w-[57%] h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
 									placeHolder={record?.pic}
 									input={pic}
 									setInput={setPic}
 									visitorMngmnt
+									disabled={disabledInputs}
+								/> */}
+								<Select
+									className="input w-[57%] h-[38px] rounded-[5px] p-0"
+									key={JSON.stringify(employee)}
+									onChange={onChangeSelected}
+									defaultValue={pic}
+									options={employee ? employee.map((emp: any) => ({
+										value: emp.name,
+										label: <span>{emp.name}</span>
+									})) : []}
 									disabled={disabledInputs}
 								/>
 							</div>
@@ -264,12 +308,12 @@ export default function OfficeSchedDetails({
 								</Label>
 								<Input
 									inputType="text"
-									inputStyling="input w-[57%] h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
+									inputStyling="w-[57%] h-[38px] rounded-[5px] border-cyan-800"
 									placeHolder={record?.email}
 									input={email}
 									setInput={setEmail}
 									visitorMngmnt
-									disabled={disabledInputs}
+									disabled={true}
 								/>
 							</div>
 							<div className="flex w-full justify-between">
