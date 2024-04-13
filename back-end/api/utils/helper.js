@@ -86,7 +86,7 @@ async function generateVisitorQRAndEmail(visitorId, message) {
     badges.push(visitorBadge);
 
     // Generate QR Codes for companions
-    if (visitor.companion_details.length > 0) {
+    if (visitor.companions.length > 0) {
       const companionBadges = await Promise.all(
         visitor.companion_details.map((companion) =>
           generateQRAndEmail(companion, message)
@@ -125,6 +125,8 @@ async function generateBadge(visitor) {
   const badge = new Badge({
     visitor_id: visitor._id,
     qr_id: null,
+    expected_time_in: visitor.expected_time_in,
+    expected_time_out: visitor.expected_time_out,
     is_active: false,
     is_valid: true,
   });
@@ -205,6 +207,7 @@ async function updateLog(badgeId, _id, type, user_id, res) {
         { badge_id: badge._id },
         { $set: { check_out_time: new Date() } }
       );
+
       await Badge.updateOne(
         { _id: badge._id },
         { $set: { qr_id: null, is_active: false, is_valid: false } }
@@ -218,6 +221,10 @@ async function updateLog(badgeId, _id, type, user_id, res) {
     }
   } else {
     if (type === "pre-reg") {
+      if(badge.expected_time_in > Date.now()) {
+        return res.status(400).json({ error: `Visitor expected time in is on ${badge.expected_time_in}`});
+      }
+      
       await VisitorLogs.create({
         badge_id: badge._id,
         check_in_time: new Date(),
@@ -237,8 +244,6 @@ async function updateLog(badgeId, _id, type, user_id, res) {
       }
     }
   }
-
-  callback();
 }
 
 //Image Upload Section

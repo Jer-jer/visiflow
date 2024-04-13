@@ -1,6 +1,6 @@
-const express = require("express");//for import of express package
-const bodyParser = require("body-parser");
+
 const Employees = require('../models/employees');
+const { sendEmail } = require('../utils/helper');
 const { validateEmployees, handleValidationErrors, validationResult } = require('../middleware/dataValidation');
 
 // function sanitizeData(announcements) {
@@ -10,6 +10,12 @@ const { validateEmployees, handleValidationErrors, validationResult } = require(
 //         message: announcements.message
 //     };
 // }
+
+// notify poi
+
+// mailOption -> 
+
+// sendEmail
 
 //Get list of announcements
 exports.getAllEmployees = async (req, res) => {
