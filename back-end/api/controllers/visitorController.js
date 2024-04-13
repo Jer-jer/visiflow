@@ -16,7 +16,7 @@ const {
 const { Buffer } = require("node:buffer");
 const Notification = require("../models/notification");
 const mongoose = require("mongoose");
-const { findOne } = require("../models/user");
+
 const ObjectId = mongoose.Types.ObjectId;
 
 exports.getVisitors = async (req, res) => {
@@ -152,12 +152,12 @@ exports.addVisitor = async (req, res, next) => {
         );
       }
 
-      newVisitors.forEach((visitor) => {
+      newVisitors.forEach(async (visitor) => {
         io.emit("newVisitor", visitor);
         if (visitor.visitor_type === "Pre-Registered") {
           createNotification(visitor, "pending", io);
         } else {
-          createSystemLog(req.user._id, "add_visitor", "success");
+          await createSystemLog(req.user._id, "add_visitor", "success");
         }
       });
 
