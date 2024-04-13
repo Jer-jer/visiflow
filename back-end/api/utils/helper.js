@@ -3,13 +3,10 @@ const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 
 // Imports
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const QRCode = require("qrcode");
 const nodemailer = require("nodemailer");
 
 // Models
-const RefreshToken = require("../models/refreshToken");
 const Badge = require("../models/badge");
 const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
@@ -20,12 +17,10 @@ const SystemLog = require("../models/systemLogs");
 // Google Cloud Storage
 const { Storage } = require("@google-cloud/storage");
 
-// Constants
-const ACCESS_TOKEN_EXPIRATION = "20m";
-const REFRESH_TOKEN_EXPIRATION = "7d";
 const bucketName = "visiflow";
 
-const local_ip = 'localhost';
+// const local_ip = "192.168.1.4"; 
+const local_ip = "localhost";
 
 // Lazy-loaded storage
 let storage;
@@ -49,58 +44,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.MAILER_PASSWORD,
   },
 });
-
-// Environtment Variables
-const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
-
-// Hash password function
-function hashPassword(password) {
-  const salt = bcrypt.genSaltSync();
-  return bcrypt.hashSync(password, salt);
-}
-
-// Compare password function
-function comparePassword(raw, hash) {
-  return bcrypt.compareSync(raw, hash);
-}
-
-// Generate access token function
-function generateAccessToken(user) {
-  const jwtPayload = {
-    sub: user._id,
-    role: user.role,
-  };
-  return jwt.sign(jwtPayload, ACCESS_TOKEN_SECRET, {
-    expiresIn: ACCESS_TOKEN_EXPIRATION,
-  });
-}
-
-// Generate refresh token function
-function generateRefreshToken(user) {
-  const jwtPayload = {
-    sub: user._id,
-  };
-  return jwt.sign(jwtPayload, REFRESH_TOKEN_SECRET, {
-    expiresIn: REFRESH_TOKEN_EXPIRATION,
-  });
-}
-
-// Store refresh token function
-async function storeRefreshToken(token, userId) {
-  const refreshToken = new RefreshToken({ token, userId });
-  await refreshToken.save();
-}
-
-// Verify refresh token function
-async function verifyRefreshToken(token) {
-  try {
-    const decoded = jwt.verify(token, REFRESH_TOKEN_SECRET);
-    return decoded.sub;
-  } catch (error) {
-    return null;
-  }
-}
 
 // Generate QR code function, found in badge controller
 // use in walk-in visitor
@@ -298,19 +241,39 @@ async function updateLog(badgeId, _id, type, user_id, res) {
   callback();
 }
 
+//Image Upload Section
+
+//Function to upload image to Google Cloud Storage
 function uploadFileToGCS(bufferData, fileName) {
   const storage = getStorage();
   const bucket = storage.bucket(bucketName);
   const file = bucket.file(fileName);
 
-  file.save(bufferData, {
-    contentType: "image/jpeg",
-  });
-
-  const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
-
-  return publicUrl;
+  try {
+    file.save(bufferData, {
+      contentType: "image/jpeg",
+    });
+    
+    return `https://storage.googleapis.com/${bucketName}/${fileName}`;
+  } catch (error) {
+    return error
+  }
 }
+
+//Generates the image file name
+function generateFileName(visitor, type) {
+  return `${Date.now()}_${visitor.visitor_details.name.last_name.toUpperCase()}_${type}.jpg`;
+}
+
+//Generate image Buffer
+function createImageBuffer(imageData) {
+  return Buffer.from(
+    imageData.replace(/^data:image\/\w+;base64,/, ""),
+    "base64"
+  );
+}
+
+//End of Image Upload Section
 
 function isThirtyMinutesBefore(time_in) {
   const currentDate = new Date();
@@ -450,7 +413,6 @@ async function createSystemLog(id, type, status) {
     }
 
     await SystemLog.create({
-
       user_id: userDB._id,
       name: {
         first_name: userDB.name.first_name,
@@ -458,7 +420,7 @@ async function createSystemLog(id, type, status) {
       },
       role: userDB.role,
       type: type,
-      status: status
+      status: status,
     });
 
   } catch (error) {
@@ -467,13 +429,43 @@ async function createSystemLog(id, type, status) {
   }
 }
 
+//Visitor Duplicate Validation
+async function validateDuplicate(visitors, res) {
+
+  const validateDuplicate = visitors.map(async visitor => {
+    try {
+      // Check if visitor has an existing record
+      const visitorDB = await Visitor.findOne({"visitor_details.email": visitor.visitor_details.email});
+
+      // Check if email is used by another visitor
+      if (visitorDB) {
+        const { first_name, middle_name, last_name } = visitorDB.visitor_details.name;
+        const { email } = visitor.visitor_details;
+
+        const isDuplicate = visitor.visitor_details.name.first_name === first_name &&
+                            (visitor.visitor_details.name.middle_name || "") === (middle_name || "") &&
+                            visitor.visitor_details.name.last_name === last_name;
+
+        return isDuplicate ? 
+          `Visitor using ${email} already has an existing record` :
+          `${email} has already been used by another visitor`;
+      }
+    } catch (error) {
+      console.error("Error while validating duplicate:", error);
+      throw error;
+    }
+  });
+
+  try {
+    const validationResults = await Promise.all(validateDuplicate);
+    return validationResults.filter(result => result !== undefined);
+  } catch (error) {
+    return res.status(500).json({ error: "Error while validating duplicates:", error });
+  }
+}
+
+
 module.exports = {
-  hashPassword,
-  comparePassword,
-  generateAccessToken,
-  generateRefreshToken,
-  storeRefreshToken,
-  verifyRefreshToken,
   generateVisitorQRCode,
   generateVisitorQRAndEmail,
   updateLog,
@@ -482,4 +474,8 @@ module.exports = {
   timeOutReminder,
   sendEmail,
   createSystemLog,
+  createNotification,
+  generateFileName,
+  createImageBuffer,
+  validateDuplicate
 };

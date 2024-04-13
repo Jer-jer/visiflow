@@ -159,7 +159,7 @@ export default function UserManagementLayout() {
 	const createUser = () => {
 		AxiosInstance.post("/user/new", {
 			first_name: " ",
-			middle_name: " ",
+			middle_name: "",
 			last_name: " ",
 			username: " ",
 			email: "mail@mail.com",
@@ -169,7 +169,7 @@ export default function UserManagementLayout() {
 			.then((res) => {
 				const newActiveKey = ++newTabIndex.current;
 
-				dispatch(addTab({ newActiveKey, user: res.data.newUser }));
+				dispatch(addTab({ newActiveKey, user: res.data.user }));
 
 				setActiveKey(newActiveKey);
 			})
@@ -267,6 +267,7 @@ export default function UserManagementLayout() {
 					>
 						<UserDetails
 							record={item.userData}
+							activeKey={activeKey}
 							setActiveKey={setActiveKey}
 							newTabIndex={newTabIndex}
 						/>

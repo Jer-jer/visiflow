@@ -29,7 +29,7 @@ import type { Dayjs } from "dayjs";
 import type { DatePickerProps } from "antd";
 
 // Utils
-import { formatDateObjToString, formatDateString } from "../../../../utils";
+import { formatDateObjToString } from "../../../../utils";
 
 //Layouts
 import VisitorLogs from "../visitor-logs";
@@ -73,6 +73,7 @@ dayjs.extend(customParseFormat);
 interface VisitorDeetsProps {
 	newTabIndex: MutableRefObject<number>;
 	record: VisitorDataType;
+	activeKey: number;
 	setActiveKey: Dispatch<SetStateAction<number>>;
 }
 
@@ -102,6 +103,7 @@ const error = (message: string) => {
 export default function VisitorDetails({
 	newTabIndex,
 	record,
+	activeKey,
 	setActiveKey,
 }: VisitorDeetsProps) {
 	const expected_in = formatDateObjToString(record.expected_time_in);
@@ -143,6 +145,11 @@ export default function VisitorDetails({
 
 	// Store Related variables
 	const tabs: any = useSelector((state: RootState) => state.visitorTabs);
+	const { companions } = useSelector((state: RootState) => state.companions);
+	const companionDetails = companions.map(
+		(companion) => companion.visitor_details,
+	);
+
 	const dispatch = useDispatch();
 
 	// Retrieve Logs
@@ -340,7 +347,7 @@ export default function VisitorDetails({
 			_id: record._id,
 			status: visitorStatusUpdate,
 			email: record.visitor_details.email,
-			companions: record.companion_details,
+			// companions: record.companion_details,
 			message: visitorMessage,
 		})
 			.then((res) => {
@@ -386,7 +393,6 @@ export default function VisitorDetails({
 			last_name: zodData
 				? zodData.last_name
 				: record.visitor_details.name.last_name,
-			companion_details: record.companion_details,
 			phone: zodData ? zodData.phone : record.visitor_details.phone,
 			email: zodData ? zodData.email : record.visitor_details.email,
 			house_no: zodData ? zodData.house : record.visitor_details.address.house,
@@ -450,14 +456,10 @@ export default function VisitorDetails({
 	});
 
 	const closeTab = (_id: string) => {
-		const newActiveKey = newTabIndex.current - 1;
-		const newItems = [...tabs];
-		const index = newItems.map((e) => e.visitorData._id).indexOf(_id);
-		if (index !== -1) {
-			newItems.splice(index, 1);
-			dispatch(removeTab(newItems));
-		}
-		setActiveKey(newActiveKey);
+		newTabIndex.current = newTabIndex.current - 1;
+		let newItems = tabs.filter((e: any) => e.visitorData._id !== _id);
+		dispatch(removeTab(newItems));
+		setActiveKey(activeKey - 1);
 	};
 
 	const showDeleteConfirm = (_id: string) => {
@@ -470,23 +472,22 @@ export default function VisitorDetails({
 			cancelText: "No",
 			onOk() {
 				closeTab(_id);
-				AxiosInstance.delete("/visitor/delete", {
-					data: {
-						_id,
-					},
-				})
-					.then((res) => {
-						dispatch(deleteVisitor(_id));
-						// closeTab(_id);
-					})
-					.catch((err) => {
-						setAlertOpen(!alertOpen);
-						setAlertMsg(
-							err?.response?.data?.error ||
-								err?.response?.data?.errors ||
-								"Something went wrong.",
-						);
-					});
+				// AxiosInstance.delete("/visitor/delete", {
+				// 	data: {
+				// 		_id,
+				// 	},
+				// })
+				// 	.then((res) => {
+				// 		dispatch(deleteVisitor(_id));
+				// 	})
+				// 	.catch((err) => {
+				// 		setAlertOpen(!alertOpen);
+				// 		setAlertMsg(
+				// 			err?.response?.data?.error ||
+				// 				err?.response?.data?.errors ||
+				// 				"Something went wrong.",
+				// 		);
+				// 	});
 			},
 			onCancel() {
 				console.log("Cancel");
@@ -1143,7 +1144,7 @@ export default function VisitorDetails({
 										purpose={record.purpose}
 									/>
 									{/* Optional only for visitors with companions */}
-									{record.companion_details!.length > 0 && (
+									{companions.length > 0 && (
 										<>
 											<Button
 												type="primary"
@@ -1192,7 +1193,7 @@ Who: ${record.purpose.who.map((who) => who).join(", ")}`}
 											/>
 											<Notify
 												emailInput={record.visitor_details.email}
-												companionRecords={record.companion_details}
+												companionRecords={companionDetails}
 												modalHeader="Notify Visitor"
 												subject="Pre-Registration Application Feedback"
 												message={visitorMessage}

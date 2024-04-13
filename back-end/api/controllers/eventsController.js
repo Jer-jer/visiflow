@@ -3,6 +3,9 @@ const {
     validateEvents, 
     validationResult 
 } = require('../middleware/dataValidation');
+const {
+    uploadFileToGCS,
+} = require("../utils/helper");
 
 
 exports.getEvents = async (req, res) => {
@@ -16,7 +19,7 @@ exports.getEvents = async (req, res) => {
 };
 
 exports.addEvent = async (req, res) => {
-    const { name, startDate, endDate,startTime, endTime, locationID, description } = req.body;
+    const { name, startDate, endDate,startTime, endTime, locationID, description, eventImg } = req.body;
 
     await Promise.all(validateEvents.map(validation => validation.run(req)));
 
@@ -26,6 +29,16 @@ exports.addEvent = async (req, res) => {
     }
 
     try {
+        const [eventpic] = await Promise.all([
+            uploadFileToGCS(
+                Buffer.from(
+                eventImg.replace(/^data:image\/\w+;base64,/, ""),
+                "base64"
+                ),
+                `${Date.now()}_${name.toUpperCase()}_event.jpg`
+            )
+        ]);
+
         const newEvent = await Event.create({
             name,
             startDate,
@@ -33,10 +46,14 @@ exports.addEvent = async (req, res) => {
             startTime,
             endTime,
             locationID,
-            description
+            description,
+            eventImg: eventpic
         });
 
         res.status(201).json({ event: newEvent });
+
+        
+
         
     } catch (error) {
         console.error(error);
@@ -63,12 +80,26 @@ exports.findEvent = async (req, res) => {
 };
 
 exports.updateEvent = async (req, res) => {
-    const { _id, name, startDate, endDate, startTime, endTime, locationID, description} = req.body;
+    const { _id, name, startDate, endDate, startTime, endTime, locationID, description, eventImg} = req.body;
 
     try {
         const eventDB = await Event.findById(_id);
         if (!eventDB) {
             return res.status(404).json({ error: 'Event not found' });
+        }
+
+        let img = eventImg;
+        if(img == null){
+            const [eventpic] = await Promise.all([
+                uploadFileToGCS(
+                    Buffer.from(
+                    eventImg.replace(/^data:image\/\w+;base64,/, ""),
+                    "base64"
+                    ),
+                    `${Date.now()}_${name.toUpperCase()}_event.jpg`
+                )
+            ]);
+            img = eventpic;
         }
 
         const updateFields = {
@@ -78,8 +109,8 @@ exports.updateEvent = async (req, res) => {
             startTime: startTime || eventDB.startTime,
             endTime: endTime || eventDB.endTime,
             locationID: locationID || eventDB.locationID,
-            description: description || eventDB.description
-
+            description: description || eventDB.description,
+            eventImg: img
         }
         
         const filteredUpdateFields = Object.fromEntries(

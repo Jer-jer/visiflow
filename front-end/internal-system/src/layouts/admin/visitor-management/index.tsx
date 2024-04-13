@@ -152,8 +152,6 @@ const VisitorList = ({ addTab }: VisitorProps) => {
 	);
 };
 
-//TODO
-//!Fix: Tabs in user also opened when opening a tab in visitors
 export default function VisitorManagementLayout() {
 	const [activeKey, setActiveKey]: any = useState(1);
 	const newTabIndex = useRef(1);
@@ -181,7 +179,8 @@ export default function VisitorManagementLayout() {
 	};
 
 	const add = (record: VisitorDataType) => {
-		const newActiveKey = ++newTabIndex.current;
+		const newActiveKey = newTabIndex.current + 1;
+		newTabIndex.current++;
 
 		dispatch(addTab({ newActiveKey, visitor: record }));
 
@@ -237,6 +236,7 @@ export default function VisitorManagementLayout() {
 					>
 						<VisitorDetails
 							record={tab.visitorData}
+							activeKey={activeKey}
 							setActiveKey={setActiveKey}
 							newTabIndex={newTabIndex}
 						/>

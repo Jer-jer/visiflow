@@ -423,13 +423,11 @@ export const UserDetailsZod: ZodType<UserDetailsInterfaceZod> = z.object({
 		.min(1, { message: "Please enter a first name." }),
 	middle_name: z
 		.string({
-			required_error: "Middle Name is required.",
 			invalid_type_error: "Middle Name must not have number.",
 		})
-		.regex(/^[a-zA-Z\s]/, {
+		.regex(/^[a-zA-Z\s]*$/, {
 			message: "Must not contain any numerals.",
 		})
-		.min(1, { message: "Please enter a middle name." })
 		.optional(),
 	last_name: z
 		.string({
@@ -455,7 +453,10 @@ export const UserDetailsZod: ZodType<UserDetailsInterfaceZod> = z.object({
 	email: z
 		.string()
 		.email({ message: "Invalid email address." })
-		.min(1, { message: "Please enter an email." }),
+		.min(1, { message: "Please enter an email." })
+		.refine((data) => data !== "mail@mail.com", {
+			message: "Your email must not be mail@mail.com",
+		}),
 	phone: z.coerce
 		.string({
 			required_error: "Mobile Number is required.",

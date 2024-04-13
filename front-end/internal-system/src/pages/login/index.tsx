@@ -1,16 +1,12 @@
-import React, { Dispatch, SetStateAction } from "react";
+import React from "react";
 
 //Layout
 import LoginLayout from "../../layouts/login";
 
-interface LoginProps {
-	setIsAdmin: Dispatch<SetStateAction<boolean>>;
-}
-
-function Login({ setIsAdmin }: LoginProps) {
+function Login() {
 	return (
 		<div>
-			<LoginLayout setIsAdmin={setIsAdmin} />
+			<LoginLayout />
 		</div>
 	);
 }

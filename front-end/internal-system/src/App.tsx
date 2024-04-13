@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
 
 //Layouts
 import LoggedIn from "./layouts/logged-in";
@@ -32,21 +31,12 @@ import "./App.scss";
 function App() {
 	const [loading, setLoading] = useState(true);
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
-	const [isAdmin, setIsAdmin] = useState(false);
 
 	useEffect(() => {
 		const token = localStorage.getItem("token");
 
-		if (token) {
-			const decoded: any = jwtDecode(token);
-			setIsLoggedIn(true);
+		token ? setIsLoggedIn(true) : setIsLoggedIn(false);
 
-			if (decoded.role === "admin") {
-				setIsAdmin(true);
-			}
-		} else {
-			setIsLoggedIn(false);
-		}
 		setLoading(false);
 	}, []);
 
@@ -57,10 +47,10 @@ function App() {
 					<LoadingOutlined className="text-[128px] text-primary-500" />
 				</div>
 			) : isLoggedIn ? (
-				<LoggedIn isAdmin={isAdmin} setIsAdmin={setIsAdmin}>
+				<LoggedIn>
 					<Routes>
 						<Route path="/notifications" element={<NotificationsPage />} />
-						{isAdmin ? (
+						{localStorage.getItem("mode") === "admin" ? (
 							<>
 								<Route path="/" element={<Navigate to="/dashboard" />} />
 								<Route path="/dashboard" element={<Dashboard />} />
@@ -86,7 +76,7 @@ function App() {
 				</LoggedIn>
 			) : (
 				<Routes>
-					<Route path="/" element={<Login setIsAdmin={setIsAdmin} />} />
+					<Route path="/" element={<Login />} />
 					<Route path="*" element={<Navigate to="/" />} />
 				</Routes>
 			)}

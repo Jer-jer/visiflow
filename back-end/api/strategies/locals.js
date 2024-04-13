@@ -4,7 +4,7 @@ const { Strategy } = require('passport-local').Strategy;
 const JwtStrategy = require('passport-jwt').Strategy;
 const { ExtractJwt } = require('passport-jwt');
 const User = require('../models/user');
-const { comparePassword } = require('../utils/helper');
+const { comparePassword } = require('../utils/authUtils');
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
@@ -33,7 +33,7 @@ passport.use(
                 if(!username || !password) throw new Error('Missing Credentials');
                 const userDB = await User.findOne({username});
                 if(userDB) {
-                    console.log(userDB);
+                    // console.log(userDB);
                     const isValid = comparePassword(password, userDB.password);
                     if(isValid) {
                       console.log('User Authenticated');

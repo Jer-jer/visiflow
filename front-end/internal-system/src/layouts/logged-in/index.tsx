@@ -26,7 +26,6 @@ import {
 	UserGroup,
 	Users,
 	Edit,
-	Camera,
 	QRScanner,
 	PreregisterQR,
 	Form,
@@ -39,14 +38,12 @@ import "./styles.scss";
 export const WidthContext = createContext(0);
 
 interface LoggedInProps {
-	isAdmin: boolean;
-	setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
 	children: React.ReactNode;
 }
 
 export let expandedWidth: number;
 
-function LoggedIn({ isAdmin, setIsAdmin, children }: LoggedInProps) {
+function LoggedIn({ children }: LoggedInProps) {
 	const [expanded, setExpanded] = useState(false);
 	const [width, setWidth] = useState(0);
 	const ref = useRef<HTMLDivElement>(null);
@@ -68,7 +65,7 @@ function LoggedIn({ isAdmin, setIsAdmin, children }: LoggedInProps) {
 		<WidthContext.Provider value={width}>
 			<div className="flex h-60">
 				<Sidebar expanded={expanded} setExpanded={setExpanded}>
-					{isAdmin ? (
+					{localStorage.getItem("mode") === "admin" ? (
 						<>
 							<NavLink to="/dashboard">
 								{({ isActive }) => (
@@ -127,7 +124,7 @@ function LoggedIn({ isAdmin, setIsAdmin, children }: LoggedInProps) {
 						</>
 					) : (
 						<>
-							<NavLink to="/">
+							<NavLink to="/qr-scanner">
 								{({ isActive }) => (
 									<SidebarItem
 										icon={<QRScanner />}
@@ -168,7 +165,7 @@ function LoggedIn({ isAdmin, setIsAdmin, children }: LoggedInProps) {
 				</Sidebar>
 				<div className="h-fit min-w-0 flex-1">
 					<div>
-						<Header setIsAdmin={setIsAdmin} />
+						<Header />
 					</div>
 					{/* Main content Here */}
 					<div id="parentDiv" className="children" ref={ref}>

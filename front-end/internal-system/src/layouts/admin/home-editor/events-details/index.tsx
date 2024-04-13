@@ -41,6 +41,7 @@ dayjs.extend(customParseFormat);
 interface EventsSchedDetailsProps {
 	record?: any;
 	setOpenDetails: Dispatch<SetStateAction<boolean>>;
+	fetch: () => void;
 }
 
 const { confirm } = Modal;
@@ -84,27 +85,22 @@ const showDeleteConfirm = () => {
 export default function EventsSchedDetails({
 	record,
 	setOpenDetails,
+	fetch,
 }: EventsSchedDetailsProps) {
 	//Form States
-	const [name, setName] = useState("");
-	const [startDate, setStartDate] = useState(record === undefined ? new Date() : record?.startDate);
-	const [endDate, setEndDate] = useState(record === undefined ? new Date() : record?.endDate);
-	const [startTime, setStartTime] = useState(record === undefined ? new Date() : record?.startTime);
-	const [endTime, setEndTime] = useState(record === undefined ? new Date() : record?.endTime);
-	const [locationId, setLocationId] = useState("");
-	const [description, setDescription] = useState("");
+	const [name, setName] = useState(record?.name === undefined ? "" : record?.name);
+	const [startDate, setStartDate] = useState(record?.startDate === undefined ? new Date() : record?.startDate);
+	const [endDate, setEndDate] = useState(record?.endDate === undefined ? new Date() : record?.endDate);
+	const [startTime, setStartTime] = useState(record?.startTime === undefined ? new Date() : record?.startTime);
+	const [endTime, setEndTime] = useState(record?.endTime === undefined ? new Date() : record?.endTime);
+	const [locationId, setLocationId] = useState(record?.locationID === undefined ? "" : record?.locationID);
+	const [description, setDescription] = useState(record?.description === undefined ? "" : record?.description);
 
 	//Image States
 	const [loading, setLoading] = useState(false);
-	const [imageUrl, setImageUrl] = useState<string>();
-	const [fileList, setFileList] = useState<UploadFile[]>([
-		{
-			uid: "-1",
-			name: "image.png",
-			status: "done",
-			url: "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
-		},
-	]);
+	const [image, setImage] = useState<string | ArrayBuffer | null>(null);
+	const [imageUrl, setImageUrl] = useState<string>(record === undefined ? "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png" : record?.eventImg);
+	const [savedRecord, setSavedRecord] = useState(record);
 
 	//Alert State
 	const [alertOpen, setAlertOpen] = useState(false);
@@ -113,21 +109,6 @@ export default function EventsSchedDetails({
 
 	const { RangePicker } = DatePicker;
 
-	const handleChange: UploadProps["onChange"] = (
-		info: UploadChangeParam<UploadFile>,
-	) => {
-		if (info.file.status === "uploading") {
-			setLoading(true);
-			return;
-		}
-		if (info.file.status === "done") {
-			// Get this url from response in real world.
-			getBase64(info.file.originFileObj as RcFile, (url) => {
-				setLoading(false);
-				setImageUrl(url);
-			});
-		}
-	};
 
 	const editOrCancel = () => {
 		if (!disabledInputs) {
@@ -139,69 +120,48 @@ export default function EventsSchedDetails({
 		setDisabledInputs(!disabledInputs);
 	};
 
-	useEffect(() => {
-		console.log(record)
-		console.log("name:", name)
-		console.log("startDate:", startDate)
-		console.log("endDate:", endDate)
-		console.log("startTime:", startTime)
-		console.log("endTime:", endTime)
-		console.log("locationID:", locationId)
-		console.log("description:", description)
-	}, [])
-
 	const saveAction = async() => {
-		//This needs to be customized to whatever the DB returns
-		console.log("name:", name)
-		console.log("startDate:", startDate)
-		console.log("endDate:", endDate)
-		console.log("startTime:", startTime)
-		console.log("endTime:", endTime)
-		console.log("locationID:", locationId)
-		console.log("description:", description)
-		if(record === undefined) {
+		if(savedRecord=== undefined) {
 			try {
-				await AxiosInstace.post('/events/new', { 
+				const response = await AxiosInstace.post('/events/new', { 
 					name: name,
 					startDate: startDate,
 					endDate: endDate,
 					startTime: startTime,
 					endTime: endTime,
 					locationID: locationId,
-            		description: description
+            		description: description,
+					eventImg: image
 				}); 
+				setSavedRecord(response.data.event);
 			} catch (error) {
 			console.error('Error in adding event:', error);
 			}
 		} else { // updating record
 			try {
 				await AxiosInstace.put('/events/update', { 
-					_id: record?._id,
+					_id: record === undefined ? savedRecord._id : record._id,
 					name: name === "" ? record?.name : name,
 					startDate: startDate,
 					endDate: endDate,
 					startTime: startTime,
 					endTime: endTime,
 					locationID: locationId,
-					description: description
-            		// userID: userID
+					description: description,
+            		// userID: userID,
+					eventImg: image === null ? record?.eventImg : image,
 				}); 
 			} catch (error) {
 			console.error('Error in updating event:', error);
 			}
 		}
 
+		fetch();
+
 		setAlertOpen(!alertOpen);
 
 		setDisabledInputs(!disabledInputs);
 	};
-
-	const uploadButton = (
-		<div>
-			{loading ? <LoadingOutlined /> : <PlusOutlined />}
-			<div style={{ marginTop: 8 }}>Upload</div>
-		</div>
-	);
 
 	const handleChangeRange = (date: any) => {
 		setStartTime(date[0]);
@@ -215,6 +175,21 @@ export default function EventsSchedDetails({
 	const handleChangeEndDate = (date: any) => {
 		setEndDate(date);
 	}
+
+	const handleImageUpload = (event: any) => {
+		const file = event.target.files[0];
+		const reader = new FileReader();
+	
+		reader.onloadend = () => {
+		const base64String = reader.result;
+		setImage(base64String);
+		setImageUrl(URL.createObjectURL(file));
+		};
+	
+		if (file) {
+		reader.readAsDataURL(file);
+		}
+	};
 
 	return (
 		<div className="mr-[135px] flex flex-col gap-[35px] pt-[25px]">
@@ -314,6 +289,7 @@ export default function EventsSchedDetails({
 							<TextArea
 								className="custom-textarea input h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
 								placeholder={record?.description}
+								value={description}
 								onChange={(e) => setDescription(e.target.value)}
 								rows={8}
 								disabled={disabledInputs}
@@ -324,25 +300,21 @@ export default function EventsSchedDetails({
 						{disabledInputs ? (
 							<Image
 								width={200}
-								src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"
+								src={imageUrl}
 							/>
 						) : (
-							<Upload
-								name="avatar"
-								listType="picture-card"
-								className="avatar-uploader w-[353px]"
-								showUploadList={false}
-								action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
-								beforeUpload={beforeUpload}
-								onChange={handleChange}
-								fileList={fileList}
-							>
-								{imageUrl ? (
-									<img src={imageUrl} alt="avatar" style={{ width: "100%" }} />
-								) : (
-									uploadButton
+							<div>
+								<input type="file" accept="image/*" onChange={handleImageUpload} />
+								{image && (
+									<div>
+									<h2>Uploaded Image:</h2>
+									<Image
+										width={280}
+										src={image.toString()}
+									/>
+									</div>
 								)}
-							</Upload>
+							</div>
 						)}
 					</div>
 				</div>

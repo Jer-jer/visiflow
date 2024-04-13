@@ -1,14 +1,14 @@
 const { body, validationResult } = require('express-validator');
 
 const validateUser = [
-    body('first_name').isString().withMessage('Invalid First name').notEmpty().withMessage('First name is required'),
-    body('middle_name').isString().withMessage('Invalid Middle name').notEmpty().withMessage('Middle name is required'),
-    body('last_name').isString().withMessage('Invalid Last name').notEmpty().withMessage('Last name is required'),
+    body('name.first_name').isString().withMessage('Invalid First name').notEmpty().withMessage('First name is required'),
+    body('name.middle_name').isString().withMessage('Invalid Middle name').optional(),
+    body('name.last_name').isString().withMessage('Invalid Last name').notEmpty().withMessage('Last name is required'),
     body('username').optional().notEmpty().isString().withMessage('Username is required'),
     body('email').isEmail().withMessage('Must be a valid email'),
     body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
     body('phone').isLength({ min: 11 }).withMessage('Phone number must be at least 11 digits').isString().withMessage('Invalid Phone number').notEmpty().withMessage('Phone number is required'),
-    body('role').optional().isString().isIn(['admin', 'employee']).withMessage('Invalid role')
+    body('role').optional().isString().isIn(['admin', 'security']).withMessage('Invalid role')
 ];
 
 const validateBldgLoc = [
@@ -20,14 +20,18 @@ const validateOffices = [
     body('name').notEmpty().withMessage('Building Name is required').isString().withMessage("Building name must be a String"),
     body('roomNo').notEmpty().withMessage('Room Number is required').isString().withMessage("Room Number must be a String"),
     body('pic').notEmpty().withMessage('Personnel in charge is required').isString().withMessage("Personnel's name must be a String"),
-    body('contact').notEmpty().withMessage('Contact Number is required').isString().withMessage("Contact Number must be a String")
+    body('contact').isLength({ min: 11 }).withMessage('Phone number must be at least 11 digits').notEmpty().withMessage('Contact Number is required').isString().withMessage("Contact Number must be a String")
 ];
 
 const validateAnnouncements = [
     body('title').notEmpty().withMessage('Title is required').isString().withMessage("Title must be a String"),
     body('message').notEmpty().withMessage('Message is required').isString().withMessage("Message must be a String")
 ];
-
+const validateEmployees = [
+    body('name').notEmpty().withMessage('Name is required').isString().withMessage("Name must be a String"),
+    body('email').notEmpty().withMessage('Email is required').isEmail().withMessage("Email must be valid"),
+    body('contact').isLength({ min: 11 }).withMessage('Phone number must be at least 11 digits').notEmpty().withMessage('Phone Number is required').isString().withMessage("Phone Number must be a String")
+];
 const validateEvents = [
     body('name').notEmpty().withMessage('Event name is required').isString().withMessage('Event name must be a string'),
     body('locationID').isString().withMessage('Location ID must be a string').notEmpty().withMessage('Location ID is required'),
@@ -77,6 +81,7 @@ module.exports = {
     validateEvents,
     validateAnnouncements,
     validateOffices,
+    validateEmployees,
     handleValidationErrors, 
     validationResult 
 };

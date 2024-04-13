@@ -1,11 +1,11 @@
-import React, { Dispatch, SetStateAction, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import useSound from "use-sound";
 import Notifications from "react-notifications-menu";
+import { jwtDecode } from "jwt-decode";
 
 //Components
-import { Modal } from "antd";
+import { Modal, Tooltip, InputNumber } from "antd";
 import CustomDropdown from "../dropdown";
 
 //Interfaces
@@ -16,6 +16,7 @@ import {
 	fetchNotifs,
 } from "../../states/notifications";
 import type { AppDispatch, RootState } from "../../store";
+import type { InputNumberProps } from "antd";
 
 //Reducers
 import { add } from "../../states/visitors";
@@ -34,13 +35,11 @@ import { socket } from "./../../lib/socket";
 
 //Assets
 import { Account } from "../../assets/svg";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import NotificationSound from "../../assets/notification.wav";
 
 //Styles
 import "./styles.scss";
-interface HeaderProps {
-	setIsAdmin: Dispatch<SetStateAction<boolean>>;
-}
 
 const error = (message: string) => {
 	Modal.error({
@@ -50,34 +49,66 @@ const error = (message: string) => {
 	});
 };
 
-export default function Header({ setIsAdmin }: HeaderProps) {
+export default function Header() {
 	//? Socket Connection
 	const [isConnected, setIsConnected] = useState(socket.connected);
+	const [isAdmin, setIsAdmin] = useState(false);
+	const [noOfBadges, setNoOfBadges] = useState(0);
+
+	//Modal States
+	const [isGenModalOpen, setIsGenModalOpen] = useState(false);
+	const [success, setSuccess] = useState(false);
 
 	//? Redux
 	const notifications = useSelector((state: RootState) => state.notifications);
 
-	//? Determine if the user is an admin
-	const wasAdmin = localStorage.getItem("role");
-
 	const [play] = useSound(NotificationSound, { volume: 1, soundEnabled: true });
-
-	const navigate = useNavigate();
 
 	const dispatch = useDispatch<AppDispatch>();
 
-	const initialNotificaions = () => {
+	const onChangeBadges: InputNumberProps["onChange"] = (value) => {
+		setNoOfBadges(value as number);
+	};
+
+	const showGenModal = () => {
+		setIsGenModalOpen(true);
+	};
+
+	const handleSuccessOk = () => {
+		setSuccess(false);
+	};
+
+	const handleGenOk = () => {
+		AxiosInstance.post("/badge/generateBadge", { qty: noOfBadges })
+			.then((res) => {
+				setSuccess(true);
+				setIsGenModalOpen(false);
+			})
+			.then((err) => {
+				console.error("Something went wrong");
+				setIsGenModalOpen(false);
+			});
+	};
+
+	const handleGenCancel = () => {
+		setIsGenModalOpen(false);
+	};
+
+	const initialNotifications = () => {
 		AxiosInstance.get("/notification")
 			.then((res) => {
 				const unreadNotifications = res.data.notifications.filter(
 					(notif: NotificationProps) => !notif.is_read,
 				);
 				const notifications: NotificationStoreProps[] = unreadNotifications.map(
-					(notif: NotificationProps) => {
+					(notif: NotificationProps, index: number) => {
+						const uniqueKey = `${notif.type}-${notif.created_at}-${index}`;
+
 						return {
-							key: notif._id,
+							key: uniqueKey,
 							name: notif.content.visitor_name,
-							message: notificationMessage(notif.type, notif.content),
+							message: uniqueKey, //? React-Notifications-Menu library uses this for their key
+							actualMessage: notificationMessage(notif.type, notif.content),
 							time_in: notif.content.time_in,
 							time_out: notif.content.time_out,
 							receivedTime: notif.created_at,
@@ -98,6 +129,25 @@ export default function Header({ setIsAdmin }: HeaderProps) {
 	};
 
 	useEffect(() => {
+		const token = localStorage.getItem("token");
+
+		if (token) {
+			const decoded: any = jwtDecode(token);
+
+			/*
+			 * Roles:
+			 * admin
+			 * security
+			 */
+			if (decoded.role === "admin") {
+				setIsAdmin(true);
+			} else {
+				setIsAdmin(false);
+			}
+		}
+	}, []);
+
+	useEffect(() => {
 		//? Real-Time Watcher
 		function onConnect() {
 			setIsConnected(true);
@@ -112,9 +162,10 @@ export default function Header({ setIsAdmin }: HeaderProps) {
 		}
 
 		function onNewNotification(value: any) {
+			const uniqueKey = `${value.type}-${value.created_at}-${notifications.length}`;
 			dispatch(
 				addNotif({
-					key: value._id,
+					key: uniqueKey,
 					name: value.content.visitor_name,
 					message: notificationMessage(value.type, value.content),
 					time_in: value.content.time_in,
@@ -127,7 +178,7 @@ export default function Header({ setIsAdmin }: HeaderProps) {
 			play();
 		}
 
-		initialNotificaions();
+		initialNotifications();
 
 		socket.on("connect", onConnect);
 		socket.on("disconnect", onDisconnect);
@@ -143,10 +194,8 @@ export default function Header({ setIsAdmin }: HeaderProps) {
 	}, []);
 
 	const logout = () => {
-		wasAdmin && localStorage.removeItem("role");
-		localStorage.removeItem("token");
-		localStorage.removeItem("refreshToken");
 		window.location.reload();
+		localStorage.clear();
 	};
 
 	const readNotification = (notif: NotificationStoreProps) => {
@@ -194,43 +243,91 @@ export default function Header({ setIsAdmin }: HeaderProps) {
 				</a>
 			</div>
 			<div className="flex-none">
-				<Notifications
-					data={notifications}
-					icon="https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-ios7-bell-512.png"
-					header={{
-						title: "Notifications",
-						option: { text: "", onClick: () => console.log("Clicked") },
-					}}
-					viewAllBtn={{
-						text: "View All",
-						linkTo: "/notifications",
-					}}
-					notificationCard={(data: any) => (
-						<div
-							key={data.data.key}
-							className="notification flex flex-row items-end justify-between gap-[2px] px-[10px] py-[8px] transition hover:bg-primary-500"
-							onMouseLeave={() => readNotification(data.data)}
+				<Modal
+					title={
+						<span className="text-[24px] font-semibold text-primary-500">
+							Success
+						</span>
+					}
+					open={success}
+					onOk={handleSuccessOk}
+				>
+					<span>Sucessfully generated {noOfBadges} badges</span>
+				</Modal>
+				<Modal
+					title={
+						<span className="text-[24px] font-semibold text-primary-500">
+							Generate Badges
+						</span>
+					}
+					open={isGenModalOpen}
+					onOk={handleGenOk}
+					onCancel={handleGenCancel}
+				>
+					<div className="mt-[20px]">
+						<span>
+							How many?{" "}
+							<InputNumber
+								className="badge-counter"
+								min={0}
+								max={40}
+								defaultValue={noOfBadges}
+								onChange={onChangeBadges}
+							/>
+						</span>
+					</div>
+				</Modal>
+				{isAdmin && (
+					<Tooltip title="Generate Badges">
+						<button
+							title="Generate Badges"
+							className="btn btn-ghost pr-[1rem] hover:bg-transparent"
+							onClick={showGenModal}
 						>
-							<div className="flex w-full flex-col justify-center">
-								<span className="font-bold">
-									{notificationType(data.data.type)}
-								</span>
-								<span>
-									<span className="font-bold">{data.data.name}</span>{" "}
-									{data.data.message}{" "}
+							<PlusCircleOutlined style={{ fontSize: "17px" }} />
+						</button>
+					</Tooltip>
+				)}
+
+				<div className="pr-[1rem]">
+					<Notifications
+						data={notifications}
+						icon="https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-ios7-bell-512.png"
+						header={{
+							title: "Notifications",
+							option: { text: "", onClick: () => console.log("Clicked") },
+						}}
+						viewAllBtn={{
+							text: "View All",
+							linkTo: "/notifications",
+						}}
+						notificationCard={(data: any) => (
+							<div
+								key={data.data.key}
+								className="notification flex flex-row items-end justify-between gap-[2px] px-[10px] py-[8px] transition hover:bg-primary-500"
+								onMouseLeave={() => readNotification(data.data)}
+							>
+								<div className="flex w-full flex-col justify-center">
 									<span className="font-bold">
-										{notifType(data.data.type, data.data)}
+										{notificationType(data.data.type)}
 									</span>
-								</span>
+									<span>
+										<span className="font-bold">{data.data.name}</span>{" "}
+										{data.data.actualMessage}{" "}
+										<span className="font-bold">
+											{notifType(data.data.type, data.data)}
+										</span>
+									</span>
+								</div>
+								{!data.data.is_read && (
+									<span className="unread inline pr-[10px] font-semibold text-primary-500">
+										NEW
+									</span>
+								)}
 							</div>
-							{!data.data.is_read && (
-								<span className="unread inline pr-[10px] font-semibold text-primary-500">
-									NEW
-								</span>
-							)}
-						</div>
-					)}
-				/>
+						)}
+					/>
+				</div>
 
 				<CustomDropdown
 					overlayClassName="account-dropdown"
@@ -240,30 +337,30 @@ export default function Header({ setIsAdmin }: HeaderProps) {
 							label: (
 								<button
 									onClick={() => {
-										setIsAdmin(true);
-										navigate("/dashboard");
+										localStorage.setItem("mode", "admin");
+										window.location.href = "/dashboard";
 									}}
-									disabled={!wasAdmin}
+									disabled={!isAdmin}
 								>
 									Admin System
 								</button>
 							),
-							disabled: !wasAdmin,
+							disabled: !isAdmin,
 						},
 						{
 							key: "2",
 							label: (
 								<button
 									onClick={() => {
-										setIsAdmin(false);
-										navigate("/");
+										localStorage.setItem("mode", "security");
+										window.location.href = "/qr-scanner";
 									}}
-									disabled={!wasAdmin}
+									disabled={!isAdmin}
 								>
 									Guard System
 								</button>
 							),
-							disabled: !wasAdmin,
+							disabled: !isAdmin,
 						},
 						{
 							key: "3",
@@ -271,10 +368,7 @@ export default function Header({ setIsAdmin }: HeaderProps) {
 						},
 					]}
 				>
-					<div
-						tabIndex={0}
-						className="avatar btn btn-circle btn-ghost hover:bg-transparent"
-					>
+					<div tabIndex={0} className="pr-[1rem] hover:cursor-pointer">
 						<Account />
 					</div>
 				</CustomDropdown>

@@ -23,7 +23,8 @@ exports.getAllAnnouncements = async (req, res) => {
 
 //Create new announcements
 exports.createNewAnnouncements = async (req, res) => {
-    // Run validation middleware
+    const { title, message, prio } = req.body;
+
     await Promise.all(validateAnnouncements.map(validation => validation.run(req)));
 
     const errors = validationResult(req);
@@ -31,35 +32,21 @@ exports.createNewAnnouncements = async (req, res) => {
         return res.status(400).json({ errors: errors.array()[0].msg });
     }
 
-    
-    
-    try {
-        const { 
-            title, 
-            message
-        } = req.body;
-        
-        // //check if the bldgLoc already exists
-        // const existingbldgLoc = await BuildingLoc.findOne({ name, roomNo });
-        // if (existingbldgLoc) {
-        //     return res.status(400).json({ error: 'Bldg Loc already exists' });
-        // }
+    const existingAnnouncement = await Announcements.findOne({ title, message });
+        if (existingAnnouncement) {
+            return res.status(400).json({ error: 'Announcement already exists' });
+        }
 
-        const newAnnounce = new Announcements({ 
-            title, 
-            message
+    try {
+        const newAnnounce = await Announcements.create({ 
+            title, message, prio
         });
 
+        res.status(201).json({ Announcements: newAnnounce });
 
-        const createdAnnouncements = await newAnnounce.save();
-
-        if (createdAnnouncements) {
-            return res.status(201).json({ announcement: sanitizeData(createdAnnouncements) });
-        } else {
-            return res.status(400).json({ error: 'Failed to Create new User' });
-        }
-    } catch (err) {
-        return res.status(500).json({ error: 'Internal Server Error'});
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Failed to create new Announcement" });
     }
 };
 //Find Announcements by Title
@@ -80,7 +67,12 @@ exports.getAnnouncementsByTitle = async (req, res) => {
 
 exports.updateAnnouncements = async (req, res) => {
     try {
-        const { _id, title, message} = req.body;
+        const { _id, title, message, prio} = req.body;
+
+        const existingAnnouncement = await Announcements.findOne({ title, message });
+        if (existingAnnouncement) {
+            return res.status(400).json({ error: 'Announcement already exists' });
+        }
 
         const announce = await Announcements.findById(_id);
 
@@ -90,7 +82,8 @@ exports.updateAnnouncements = async (req, res) => {
 
         const updateFields = {
             title: title !== undefined ? title : announce.title,
-            message: message !== undefined ? message : announce.message
+            message: message !== undefined ? message : announce.message,
+            prio: prio !== undefined ? prio : announce.prio
         }
         
         const filteredUpdateFields = Object.fromEntries(
@@ -103,7 +96,8 @@ exports.updateAnnouncements = async (req, res) => {
 
         const updatedAnnouncements = await Announcements.findByIdAndUpdate(_id, filteredUpdateFields, { new: true });
 
-        return res.status(201).json({ announce: sanitizeData(updatedAnnouncements)});
+        return res.status(201).json({ announce:updatedAnnouncements});
+
     } catch (error) {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
