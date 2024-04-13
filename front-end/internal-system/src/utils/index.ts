@@ -93,6 +93,8 @@ export const actionType = (type: UserActionLogType) => {
 			return "Log Out";
 		case "generate_badge":
 			return "Generate Badge";
+		case "add_announce":
+			return "Added Announcement";
 		default:
 			return "Unknown";
 	}
