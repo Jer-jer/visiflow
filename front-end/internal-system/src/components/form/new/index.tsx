@@ -440,6 +440,11 @@ function NewWalkIn({
 															)}
 															format="YYYY-MM-DD hh:mm A"
 															onChange={onChange}
+															disabledDate={(current) => {
+																return (
+																	current && current < dayjs().startOf("day")
+																);
+															}}
 														/>
 													</div>
 													{errors?.expected_time_out && (

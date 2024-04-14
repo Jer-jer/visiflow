@@ -168,40 +168,47 @@ export default function VisitorFormLayout() {
 	const onSearch: SearchProps["onSearch"] = (value, _e, info) => {
 		setLoading(true);
 		if (value) {
+			const isEmail = /^\S+@\S+\.\S+$/;
 			setError(false);
-			AxiosInstance.post("/visitor/find-recurring", {
-				last_name: value[0].toUpperCase() + value.slice(1),
-			})
-				.then((res) => {
-					if (res.status === 200) {
-						const respVisitors: GuardVisitorDataType[] = res.data.visitors.map(
-							(visitor: GuardVisitorDataType) => ({
-								key: visitor._id,
-								_id: visitor._id,
-								visitor_details: visitor.visitor_details,
-								plate_num: visitor.plate_num,
-								purpose: {
-									what: [],
-									when: new Date(),
-									where: [],
-									who: [],
-								},
-								expected_time_out: new Date(),
-								status: VisitorStatus.Approved,
-								visitor_type: VisitorType.WalkIn,
-							}),
-						);
 
-						setVisitors(respVisitors);
-						setVisitorsFound(true);
-					}
-					setLoading(false);
+			if (isEmail.test(value)) {
+				errorModal("Email not accepted");
+				setVisitorsFound(false);
+				setLoading(false);
+			} else {
+				AxiosInstance.post("/visitor/find-recurring", {
+					visitor: value[0].toUpperCase() + value.slice(1),
 				})
-				.catch(() => {
-					errorModal("Visitor not found");
-					setVisitorsFound(false);
-					setLoading(false);
-				});
+					.then((res) => {
+						if (res.status === 200) {
+							const respVisitors: GuardVisitorDataType[] =
+								res.data.visitors.map((visitor: GuardVisitorDataType) => ({
+									key: visitor._id,
+									_id: visitor._id,
+									visitor_details: visitor.visitor_details,
+									plate_num: visitor.plate_num,
+									purpose: {
+										what: [],
+										when: new Date(),
+										where: [],
+										who: [],
+									},
+									expected_time_out: new Date(),
+									status: VisitorStatus.Approved,
+									visitor_type: VisitorType.WalkIn,
+								}));
+
+							setVisitors(respVisitors);
+							setVisitorsFound(true);
+						}
+						setLoading(false);
+					})
+					.catch(() => {
+						errorModal("Visitor not found");
+						setVisitorsFound(false);
+						setLoading(false);
+					});
+			}
 		} else {
 			setLoading(false);
 			setError(true);
