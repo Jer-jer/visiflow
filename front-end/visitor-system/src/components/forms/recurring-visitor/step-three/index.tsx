@@ -131,13 +131,8 @@ export default function StepThree({
 						})
 						.catch((err: any) => {
 							setLoading(false);
-							console.error(err);
 							if (err.response) {
-								error(
-									err.response.data.error ||
-										err.response.data.errors ||
-										"Something went wrong",
-								);
+								error(err.response.data.error || "Something went wrong");
 							} else {
 								error("Something went wrong.");
 							}
