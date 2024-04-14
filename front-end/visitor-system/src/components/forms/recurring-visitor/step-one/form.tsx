@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import dayjs from "dayjs";
 
 // Components
@@ -31,6 +31,8 @@ import type { DatePickerProps } from "antd";
 
 // Utils
 import { formatDateObjToString } from "../../../../utils";
+import { SelectOption } from "../../../../utils/interfaces";
+import AxiosInstance from "../../../../lib/axios";
 
 // Assets
 import { LeftOutlined } from "@ant-design/icons";
@@ -73,6 +75,10 @@ function StepOneForm({
 	setVisitorNo,
 	setVisitors,
 }: FormProps) {
+	const [whoList, setWhoList] = useState<SelectOption[]>([]);
+	const [whatList, setWhatList] = useState<SelectOption[]>([]);
+	const [whereList, setWhereList] = useState<SelectOption[]>([]);
+
 	const { RangePicker } = DatePicker;
 	const timeFormat = "hh:mm A";
 
@@ -212,6 +218,92 @@ function StepOneForm({
 	const onChangeDate: DatePickerProps["onChange"] = (date, dateString) =>
 		handlePurpose("when", new Date(dateString as string));
 
+	useEffect(() => {
+		fetchAndSetEmployees();
+		fetchAndSetReasons();
+		getWhere();
+	}, []);
+
+	const fetchAndSetEmployees = async () => {
+		try {
+			const response = await AxiosInstance.get("/employees/");
+			const data = response.data.employees;
+
+			const convertedData: SelectOption[] = data.map((employee: any) => ({
+				value: employee.name,
+				label: employee.name,
+			}));
+			setWhoList(convertedData);
+		} catch (error) {
+			console.error("Error fetching employees:", error);
+		}
+	};
+
+	const fetchAndSetReasons = async () => {
+		try {
+			const response = await AxiosInstance.get("/reasons/");
+			const data = response.data.reasons;
+
+			//getting only the data we want
+			const convertedData: SelectOption[] = data.map((purpose: any) => ({
+				value: purpose.reason,
+				label: purpose.reason,
+			}));
+			setWhatList(convertedData);
+		} catch (error) {
+			console.error("Error fetching reasons:", error);
+		}
+	};
+
+	const fetchAndSetBuildings = async () => {
+		try {
+			const response = await AxiosInstance.get("/buildings/");
+			const data = response.data.buildings;
+
+			//getting only the data we want
+			const convertedData: SelectOption[] = data.map((building: any) => ({
+				value: building.name,
+				label: building.name,
+			}));
+			return convertedData;
+		} catch (error) {
+			console.error("Error fetching buildings:", error);
+		}
+	};
+
+	const fetchAndSetOffices = async () => {
+		try {
+			const response = await AxiosInstance.get("/offices/");
+			const data = response.data.office;
+
+			//getting only the data we want
+			const convertedData: SelectOption[] = data.map((office: any) => ({
+				value: `${office.name} - ${office.build}, Floor ${office.floor}, ${office.roomNo}`,
+				label: `${office.name} - ${office.build}, Floor ${office.floor}, ${office.roomNo}`,
+			}));
+			return convertedData;
+		} catch (error) {
+			console.error("Error fetching offices:", error);
+		}
+	};
+
+	const getWhere = async () => {
+		let buildingsPromise = fetchAndSetBuildings();
+		let officesPromise = fetchAndSetOffices();
+
+		let buildings = await buildingsPromise;
+		let offices = await officesPromise;
+
+		console.log("buildings", buildings);
+		console.log("offices", offices);
+
+		if (buildings !== undefined && offices !== undefined) {
+			let combinedArray = [...buildings, ...offices];
+			console.log("combinedArray", combinedArray);
+			setWhereList(combinedArray);
+		}
+	};
+
 	return (
 		<>
 			<Form.Item>
@@ -320,20 +412,7 @@ function StepOneForm({
 							listHeight={128}
 							defaultValue={mainVisitor.purpose.what}
 							onChange={(value: string[]) => handlePurpose("what", value)}
-							options={[
-								{
-									value: "meeting",
-									label: "Meeting",
-								},
-								{
-									value: "intramurals",
-									label: "Intramurals",
-								},
-								{
-									value: "conference",
-									label: "Conference",
-								},
-							]}
+							options={whatList}
 						/>
 						{errors?.what && (
 							<p className="mt-1 text-sm text-red-500">{errors.what.message}</p>
@@ -349,20 +428,7 @@ function StepOneForm({
 							placeholder="Where"
 							defaultValue={mainVisitor.purpose.where}
 							onChange={(value: string[]) => handlePurpose("where", value)}
-							options={[
-								{
-									value: "gym",
-									label: "Gymnasium",
-								},
-								{
-									value: "office_of_the_president",
-									label: "Office of the President",
-								},
-								{
-									value: "guard_house",
-									label: "Guard House",
-								},
-							]}
+							options={whereList}
 						/>
 						{errors?.where && (
 							<p className="mt-1 text-sm text-red-500">
@@ -401,16 +467,7 @@ function StepOneForm({
 							placeholder="Who"
 							defaultValue={mainVisitor.purpose.who}
 							onChange={(value: string[]) => handlePurpose("who", value)}
-							options={[
-								{
-									value: "john_doe",
-									label: "Dr. John Doe",
-								},
-								{
-									value: "lucy_grimm",
-									label: "Lucy Grimm",
-								},
-							]}
+							options={whoList}
 						/>
 						{errors?.who && (
 							<p className="mt-1 text-sm text-red-500">{errors.who.message}</p>

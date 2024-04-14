@@ -329,7 +329,7 @@ export default function VisitorFormLayout() {
 			.then((res) => {
 				AxiosInstance.post("/badge/newBadge", {
 					visitor_id: res.data.visitors[0]._id,
-					qr_id: parseInt(qr_id as string),
+					qr_id: qr_id,
 				})
 					.then((res) => {
 						// setStatus(true);
@@ -345,7 +345,6 @@ export default function VisitorFormLayout() {
 						if (err && err.reponse) {
 							const errorMessage =
 								err.response.data.error ||
-								err.response.data.errors ||
 								"Something went wrong processing the badge";
 
 							setAlertMsg(errorMessage);
@@ -363,7 +362,6 @@ export default function VisitorFormLayout() {
 				if (err && err.response) {
 					const errorMessage =
 						err.response.data.error ||
-						err.response.data.errors ||
 						"Something went wrong processing the visitor";
 					setAlertMsg(errorMessage);
 				}

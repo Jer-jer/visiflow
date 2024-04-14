@@ -202,7 +202,6 @@ export default function CompanionDetails({
 				setAlertOpen(true);
 				setAlertMsg(
 					err?.response?.data?.error ||
-						err?.response?.data?.errors ||
 						"Something went wrong.",
 				);
 			});
@@ -241,7 +240,6 @@ export default function CompanionDetails({
 				setAlertOpen(true);
 				setAlertMsg(
 					err?.response?.data?.error ||
-						err?.response?.data?.errors ||
 						"Something went wrong.",
 				);
 			});
