@@ -109,33 +109,35 @@ function RecurringVisitor() {
 				.then((res) => {
 					if (res.status === 200) {
 						if (res.data.visitors) {
-							const respVisitors: VisitorDataType[] = res.data.visitors.map(
-								(visitor: VisitorDataType, index: number) => ({
-									key: visitor._id,
-									visitor_no: index + 1,
-									visitor_details: visitor.visitor_details,
-									expected_time_in: new Date(),
-									expected_time_out: new Date(),
-									purpose: {
-										what: [],
-										when: new Date(),
-										where: [],
-										who: [],
-									},
-									plate_num: visitor.plate_num,
-									id_picture: {
-										front: visitor.id_picture.front,
-										back: visitor.id_picture.back,
-										selfie: visitor.id_picture.selfie,
-									},
-									termsConditions: false,
-									status: VisitorStatus.InProgress,
-									visitor_type: VisitorType.PreRegistered,
-								}),
-							);
+							if (res.data.visitors.length >= 1) {
+								const respVisitors: VisitorDataType[] = res.data.visitors.map(
+									(visitor: VisitorDataType, index: number) => ({
+										key: visitor._id,
+										visitor_no: index + 1,
+										visitor_details: visitor.visitor_details,
+										expected_time_in: new Date(),
+										expected_time_out: new Date(),
+										purpose: {
+											what: [],
+											when: new Date(),
+											where: [],
+											who: [],
+										},
+										plate_num: visitor.plate_num,
+										id_picture: {
+											front: visitor.id_picture.front,
+											back: visitor.id_picture.back,
+											selfie: visitor.id_picture.selfie,
+										},
+										termsConditions: false,
+										status: VisitorStatus.InProgress,
+										visitor_type: VisitorType.PreRegistered,
+									}),
+								);
 
-							setVisitors(respVisitors);
-							setFoundMultiple(true);
+								setVisitors(respVisitors);
+								setFoundMultiple(true);
+							} else throw new Error("Visitor not found");
 						} else {
 							setVisitors((prev) => {
 								const updatedVisitor = prev.map((visitor, index) => ({

@@ -9,6 +9,7 @@ import Home from "./layouts/home";
 import Offices from "./layouts/offices";
 import PreRegister from "./layouts/pre-register";
 import Events from "./layouts/events";
+import UnknownPage from "./layouts/404";
 
 // Styles
 import "./App.scss";
@@ -63,6 +64,7 @@ function App() {
 					<Route path="/pre-register" element={<PreRegister />} />
 					<Route path="/offices" element={<Offices />} />
 					<Route path="/events" element={<Events />} />
+					<Route path="*" element={<UnknownPage />} />
 				</Routes>
 			</div>
 		</>

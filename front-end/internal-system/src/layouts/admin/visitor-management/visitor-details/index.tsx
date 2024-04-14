@@ -31,12 +31,12 @@ import type { DatePickerProps } from "antd";
 // Utils
 import { formatDateObjToString } from "../../../../utils";
 import { SelectOption } from "../../../../utils/interfaces";
-import AxiosInstace from "../../../../lib/axios";
 
 //Layouts
 import VisitorLogs from "../visitor-logs";
 import VisitorCompanions from "../visitor-companions";
 import Notify from "../notify";
+import NotifyPOI from "../notify-poi";
 import Identification from "../identification";
 
 //Components
@@ -61,6 +61,7 @@ import { addLog, removeLogs } from "../../../../states/logs/visitor";
 
 //Assets
 import { ExclamationCircleFilled } from "@ant-design/icons";
+import { LoadingOutlined } from "@ant-design/icons";
 
 //Styles
 import "./styles.scss";
@@ -108,10 +109,13 @@ export default function VisitorDetails({
 	activeKey,
 	setActiveKey,
 }: VisitorDeetsProps) {
+	//Loading
+	const [loading, setLoading] = useState(false);
+
+	const [emailRecipient, setEmailRecipient] = useState([]);
 	const [whoList, setWhoList] = useState<SelectOption[]>([]);
 	const [whatList, setWhatList] = useState<SelectOption[]>([]);
 	const [whereList, setWhereList] = useState<SelectOption[]>([]);
-
 
 	const expected_in = formatDateObjToString(record.expected_time_in);
 	const expected_out = formatDateObjToString(record.expected_time_out);
@@ -151,14 +155,103 @@ export default function VisitorDetails({
 	const width = useContext(WidthContext);
 
 	//? Notify POI Message
-	const recipient: string[] = record.purpose.who;
-	const subject: string = "Meeting Appointment via Pre-Registration"
+	const fetchAndSetEmployees = async () => {
+		try {
+			const response = await AxiosInstance.get("/employees/");
+			const data = response.data.employees;
+
+			const convertedData: SelectOption[] = data.map((employee: any) => ({
+				value: employee.name,
+				label: employee.name,
+			}));
+			setEmailRecipient(
+				data.filter((x: any) =>
+					record.purpose.who.some((y: string) => x.name === y),
+				),
+			);
+			setWhoList(convertedData);
+		} catch (error) {
+			console.error("Error fetching employees:", error);
+		}
+	};
+
+	const fetchAndSetReasons = async () => {
+		try {
+			const response = await AxiosInstance.get("/reasons/");
+			const data = response.data.reasons;
+
+			//getting only the data we want
+			const convertedData: SelectOption[] = data.map((purpose: any) => ({
+				value: purpose.reason,
+				label: purpose.reason,
+			}));
+			setWhatList(convertedData);
+		} catch (error) {
+			console.error("Error fetching reasons:", error);
+		}
+	};
+
+	const fetchAndSetBuildings = async () => {
+		try {
+			const response = await AxiosInstance.get("/buildings/");
+			const data = response.data.buildings;
+
+			//getting only the data we want
+			const convertedData: SelectOption[] = data.map((building: any) => ({
+				value: building.name,
+				label: building.name,
+			}));
+			return convertedData;
+		} catch (error) {
+			console.error("Error fetching buildings:", error);
+		}
+	};
+
+	const fetchAndSetOffices = async () => {
+		try {
+			const response = await AxiosInstance.get("/offices/");
+			const data = response.data.office;
+
+			//getting only the data we want
+			const convertedData: SelectOption[] = data.map((office: any) => ({
+				value: `${office.name} - ${office.build}, Floor ${office.floor}, ${office.roomNo}`,
+				label: `${office.name} - ${office.build}, Floor ${office.floor}, ${office.roomNo}`,
+			}));
+			return convertedData;
+		} catch (error) {
+			console.error("Error fetching buildings:", error);
+		}
+	};
+
+	const getWhere = async () => {
+		let buildingsPromise = fetchAndSetBuildings();
+		let officesPromise = fetchAndSetOffices();
+
+		let buildings = await buildingsPromise;
+		let offices = await officesPromise;
+
+		if (buildings !== undefined && offices !== undefined) {
+			let combinedArray = [...buildings, ...offices];
+			setWhereList(combinedArray);
+		}
+	};
+
+	useEffect(() => {
+		fetchAndSetEmployees();
+		fetchAndSetReasons();
+		getWhere();
+	}, []);
+
+	const recipient: SelectOption[] = whoList
+		? whoList.filter((who, index) => who.label === record.purpose.who[index])
+		: [];
+	const subject: string = "Meeting Appointment via Pre-Registration";
 	const message: string = `You have a request appointment with a visitor. Please confirm the appointment. Thank you! 
 
 What: ${record.purpose.what.map((what) => what).join(", ")} 
-When: ${record.purpose.when}
+When: ${formatDateObjToString(record.purpose.when)}
 Where: ${record.purpose.where.map((where) => where).join(", ")}
-Who: ${record.purpose.who.map((who) => who).join(", ")}`;
+Who: ${recipient.map((who) => who.label).join(", ")}`;
 
 	// Store Related variables
 	const tabs: any = useSelector((state: RootState) => state.visitorTabs);
@@ -360,6 +453,7 @@ Who: ${record.purpose.who.map((who) => who).join(", ")}`;
 	};
 
 	const updateStatus = () => {
+		setLoading(true);
 		AxiosInstance.put("/visitor/update-status", {
 			_id: record._id,
 			status: visitorStatusUpdate,
@@ -368,6 +462,7 @@ Who: ${record.purpose.who.map((who) => who).join(", ")}`;
 			message: visitorMessage,
 		})
 			.then((res) => {
+				setLoading(false);
 				setStatus(true);
 				if (visitorStatusUpdate !== VisitorStatus.InProgress)
 					setAlertMsg(
@@ -385,6 +480,7 @@ Who: ${record.purpose.who.map((who) => who).join(", ")}`;
 				setNotifyVisitorOpen(false);
 			})
 			.catch((err) => {
+				setLoading(false);
 				setStatus(false);
 				setAlertOpen(true);
 				setAlertMsg(
@@ -396,31 +492,34 @@ Who: ${record.purpose.who.map((who) => who).join(", ")}`;
 	};
 
 	const sendPOIEmail = () => {
-		console.log("Send Email to POI");
+		setLoading(true);
+		const emailToSend: string[] = emailRecipient.map(
+			(email: any) => email.email,
+		);
 
-		//TODO Update recipient to contain actual email
-		//TODO Update message who to contain actual names
-		// AxiosInstance.post("/notifyPOI", {
-		// 	recipient,
-		// 	subject,
-		// 	message,
-		// })
-		// 	.then((res) => {
-		// 		setStatus(true);
-		// 		setAlertMsg("Successfully Sent Email to POI");
-		// 		setAlertOpen(true);
-		// 		setNotifyPOIOpen(false);
-		// 	})
-		// 	.catch((err) => {
-		// 		setStatus(false);
-		// 		setAlertOpen(true);
-		// 		setAlertMsg(
-		// 			err?.response?.data?.error ||
-		// 				err?.response?.data?.errors ||
-		// 				"Something went wrong.",
-		// 		);
-		// 	});
-	}
+		AxiosInstance.post("employees/notifyPOI", {
+			recipients: emailToSend,
+			subject,
+			message,
+		})
+			.then((res) => {
+				setLoading(false);
+				setStatus(true);
+				setAlertMsg("Successfully Sent Email to POI");
+				setAlertOpen(true);
+				setNotifyPOIOpen(false);
+			})
+			.catch((err) => {
+				setLoading(false);
+				setStatus(false);
+				setAlertOpen(true);
+				setAlertMsg(
+					err?.response?.data?.error ||
+						err?.response?.data?.errors ||
+						"Something went wrong.",
+				);
+			});
+	};
 
 	const saveAction = (
 		zodData?: VisitorDetailsInterfaceZod,
@@ -539,95 +638,11 @@ Who: ${record.purpose.who.map((who) => who).join(", ")}`;
 		});
 	};
 
-	useEffect(() => {
-		fetchAndSetEmployees();
-		fetchAndSetReasons();
-		getWhere();
-	}, []);
-
-	const fetchAndSetEmployees = async () => {
-		try {
-			const response = await AxiosInstance.get('/employees/')
-			const data = response.data.employees
-			
-			const convertedData: SelectOption[] = data.map((employee: any) => ({
-				value: employee.name,
-				label: employee.name,
-			  }));
-			setWhoList(convertedData);
-			
-		} catch (error) {
-			console.error('Error fetching employees:', error);
-		}
-	};
-
-	const fetchAndSetReasons = async () => {
-		try {
-			const response = await AxiosInstance.get('/reasons/')
-			const data = response.data.reasons
-
-			//getting only the data we want
-			const convertedData: SelectOption[] = data.map((purpose: any) => ({
-				value: purpose.reason,
-				label: purpose.reason,
-			  }));
-			setWhatList(convertedData);
-		  } catch (error) {
-			console.error('Error fetching reasons:', error);
-		  }
-	  };
-
-	  const fetchAndSetBuildings = async () => {
-		try {
-			const response = await AxiosInstance.get('/buildings/')
-			const data = response.data.buildings
-
-			//getting only the data we want
-			const convertedData: SelectOption[] = data.map((building: any) => ({
-				value: building.name,
-				label: building.name,
-			  }));
-			return convertedData
-		  } catch (error) {
-			console.error('Error fetching buildings:', error);
-		  }
-	  };
-
-	  const fetchAndSetOffices = async () => {
-		try {
-			const response = await AxiosInstance.get('/offices/')
-			const data = response.data.office
-
-			//getting only the data we want
-			const convertedData: SelectOption[] = data.map((office: any) => ({
-				value: `${office.name} - ${office.build}, Floor ${office.floor}, ${office.roomNo}`,
-				label: `${office.name} - ${office.build}, Floor ${office.floor}, ${office.roomNo}`,
-			  }));
-			return convertedData
-		  } catch (error) {
-			console.error('Error fetching buildings:', error);
-		  }
-	  }
-
-	  const getWhere = async () => {
-		let buildingsPromise = fetchAndSetBuildings();
-		let officesPromise = fetchAndSetOffices();
-
-		let buildings = await buildingsPromise;
-		let offices = await officesPromise;
-
-		console.log('buildings', buildings)
-		console.log('offices', offices)
-
-		if (buildings !== undefined && offices !== undefined) {
-			let combinedArray = [...buildings, ...offices];
-			console.log('combinedArray', combinedArray)
-			setWhereList(combinedArray);
-		}
-	  }
-
 	return (
 		<div className="visitor-details">
+			{loading && (
+				<LoadingOutlined className="absolute left-[45%] top-[20%] z-[10000] text-[164px] text-primary-500" />
+			)}
 			<div
 				className={`transition-alert absolute z-[1] w-full scale-y-0 ease-in-out ${
 					alertOpen && "scale-y-100"
@@ -1265,8 +1280,8 @@ Who: ${record.purpose.who.map((who) => who).join(", ")}`;
 												Notify Person of Interest
 											</Button>
 											{/* Change Email Input to OIC of the Office */}
-											<Notify
-												emailInput={record.purpose.who}
+											<NotifyPOI
+												emailInput={emailRecipient}
 												open={notifyPOIOpen}
 												setOpen={setNotifyPOIOpen}
 												modalHeader="Notify Person of Interest"
