@@ -124,7 +124,6 @@ export default function Header() {
 			.catch((err) => {
 				error(
 					err?.response?.data?.error ||
-						err?.response?.data?.errors ||
 						"Something went wrong with displaying notifications. Please refresh the page",
 				);
 			});
@@ -208,13 +207,6 @@ export default function Header() {
 			_id: notif._id,
 			is_read: true,
 		});
-		// .catch((err) => {
-		// 	error(
-		// 		err?.response?.data?.error ||
-		// 			err?.response?.data?.errors ||
-		// 			"Something went wrong with updating the notification.",
-		// 	);
-		// });
 
 		dispatch(readNotif(notif.key));
 	};

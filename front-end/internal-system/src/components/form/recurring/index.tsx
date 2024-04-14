@@ -228,7 +228,6 @@ function RecurringVisitor({
 						if (err && err.reponse) {
 							const errorMessage =
 								err.response.data.error ||
-								err.response.data.errors ||
 								"Something went wrong processing the badge";
 
 							setAlertMsg(errorMessage);

@@ -90,11 +90,7 @@ const showDeleteConfirm = (
 					_id,
 				},
 			}).catch((err) => {
-				setAlertMsg(
-					err?.response?.data?.error ||
-						err?.response?.data?.errors ||
-						"Something went wrong.",
-				);
+				setAlertMsg(err?.response?.data?.error || "Something went wrong.");
 				setAlertOpen(true);
 			});
 		},
@@ -212,11 +208,7 @@ export default function UserDetails({
 			})
 			.catch((err) => {
 				setStatus(false);
-				setAlertMsg(
-					err?.response?.data?.error ||
-						err?.response?.data?.errors ||
-						"Something went wrong.",
-				);
+				setAlertMsg(err?.response?.data?.error || "Something went wrong.");
 			});
 	};
 
