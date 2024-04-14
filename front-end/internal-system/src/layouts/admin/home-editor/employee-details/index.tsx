@@ -6,10 +6,13 @@ import { HomeEditor } from "../../../../utils/interfaces";
 //Layouts
 
 //Components
-import { Button, Modal, InputNumber } from "antd";
+import { Button, Modal, InputNumber, Form } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import Input from "../../../../components/fields/input/input";
 import Label from "../../../../components/fields/input/label";
+//zod for display error
+import z from "zod";
+import {useForm} from "react-hook-form";
 
 //Assets
 import { ExclamationCircleFilled, LeftOutlined } from "@ant-design/icons";
@@ -17,6 +20,8 @@ import { ExclamationCircleFilled, LeftOutlined } from "@ant-design/icons";
 //Styles
 import "./styles.scss";
 import AxiosInstace from "../../../../lib/axios";
+import { EmployeeDetailsZod, EmployeesZod } from "../../../../utils/zodSchemas";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 interface PageDetailsProps {
 	record?: any;
@@ -53,6 +58,15 @@ export default function EmployeeDetails({
 	const [email, setEmail] = useState(record === undefined ? "" : record?.email);
 	const [contact, setContact] = useState(record === undefined ? "" : record?.contact);
 	const [savedRecord, setSavedRecord] = useState(record);
+	const {
+		register,
+		handleSubmit,
+		setValue,
+		formState: { errors },
+	} = useForm<EmployeesZod>({
+		resolver: zodResolver(EmployeeDetailsZod),
+	});
+
 
 	//Alert State
 	const [alertOpen, setAlertOpen] = useState(false);
@@ -105,8 +119,27 @@ export default function EmployeeDetails({
 
 		setDisabledInputs(!disabledInputs);
 	};
+	const onSubmit = handleSubmit((data) => {
+		saveAction();
+	});
+
+	const handleName = (value: any) => {
+		setName(value);
+		setValue("name", value);
+	}
+
+	const handleEmail = (value: any) => {
+		setEmail(value);
+		setValue("email", value);
+	}
+
+	const handleContact = (value: any) => {
+		setContact(value);
+		setValue("contact", value);
+	}
 
 	return (
+		<Form name="EmployeeList" onFinish={onSubmit} autoComplete="off">
 		<div className="mr-[135px] flex flex-col gap-[35px] pt-[25px]">
 			<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
 				<div className="flex w-[80%] flex-col gap-[20px]">
@@ -118,16 +151,28 @@ export default function EmployeeDetails({
 							>
 								Name
 							</Label>
+							<div className="flex w-full items-start">
+							<div className="flex w-full flex-col">
 							<Input
 								inputType="text"
 								inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500 w-[40%]"
 								placeHolder={record?.title}
+								//data to be accepted by zod to validate
+								{...register("name")}
 								input={name}
-								setInput={setName}
+								setInput={handleName}
 								visitorMngmnt
 								disabled={disabledInputs}
 							/>
+							{/* zod */}
+							{errors?.name && (
+								<p className="mt-1 text-sm text-red-500">
+									{errors.name?.message}
+								</p>
+							)}
+							</div>
 						</div>
+					</div>
 					</div>
 					<div className="flex w-full gap-[60px]">
 						<div className="flex w-full items-start">
@@ -137,15 +182,23 @@ export default function EmployeeDetails({
 							>
 								Email
 							</Label>
+							<div className="flex w-full flex-col">
 							<Input
 								inputType="text"
 								inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500 w-[40%]"
 								placeHolder={record?.email}
+								{...register("email")}
 								input={email}
-								setInput={setEmail}
+								setInput={handleEmail}
 								visitorMngmnt
 								disabled={disabledInputs}
 							/>
+							{errors?.email && (
+								<p className="mt-1 text-sm text-red-500">
+									{errors.email?.message}
+								</p>
+							)}
+							</div>
 						</div>
 					</div>
 					<div className="flex w-full gap-[60px]">
@@ -156,15 +209,24 @@ export default function EmployeeDetails({
 							>
 								Contact Number
 							</Label>
+							<div className="flex w-full flex-col">
+								
 							<Input
 								inputType="text"
 								inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500 w-[40%]"
 								placeHolder={record?.contact}
+								{...register("contact")}
 								input={contact}
-								setInput={setContact}
+								setInput={handleContact}
 								visitorMngmnt
 								disabled={disabledInputs}
 							/>
+							{errors?.contact && (
+								<p className="mt-1 text-sm text-red-500">
+									{errors.contact?.message}
+								</p>
+							)}
+							</div>
 						</div>
 					</div>
 				</div>
@@ -180,7 +242,7 @@ export default function EmployeeDetails({
 								Delete
 							</Button>
 							<Button
-								onClick={saveAction}
+								htmlType="submit"
 								type="primary"
 								size="large"
 								className="search-button !rounded-[18px] !bg-primary-500"
@@ -212,5 +274,6 @@ export default function EmployeeDetails({
 				</div>
 			</div>
 		</div>
+		</Form>
 	);
 }

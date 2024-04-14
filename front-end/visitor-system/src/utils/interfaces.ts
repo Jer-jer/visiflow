@@ -88,3 +88,8 @@ export interface RecurringVisitorDataType {
 	termsConditions: boolean;
 	id_picture: IDPictureProps;
 }
+
+export interface SelectOption {
+	value: string,
+	label: string
+}

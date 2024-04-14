@@ -130,7 +130,7 @@ export default function BuildingDetails({
 								labelStyling="w-[15%]"
 								spanStyling="text-black font-medium text-[16px]"
 							>
-								Room No
+								Number of Floors
 							</Label>
 							<Input
 								inputType="text"

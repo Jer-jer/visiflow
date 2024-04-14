@@ -33,6 +33,8 @@ exports.addOffices = async (req, res) => {
         const { 
             name, 
             roomNo,
+            build,
+            floor,
             pic,
             contact,
             email,
@@ -61,6 +63,8 @@ exports.addOffices = async (req, res) => {
         const newOffice = new Offices({ 
             name, 
             roomNo,
+            build,
+            floor,
             pic,
             contact,
             email,
@@ -86,6 +90,8 @@ exports.updateOffices = async (req, res) => {
         const { _id, 
             name, 
             roomNo,
+            build,
+            floor,
             pic,
             contact,
             email,
@@ -121,6 +127,8 @@ exports.updateOffices = async (req, res) => {
         const updateFields = {
             name: name !== undefined ? name : office.name,
             roomNo: roomNo !== undefined ? roomNo : office.roomNo,
+            build: build !== undefined ? build : office.build,
+            floor: floor !== undefined ? floor : office.floor,
             pic: pic !== undefined ? pic : office.pic,
             contact: contact !== undefined ? contact : office.contact,
             email: email !== undefined ? email : office.email,
