@@ -1,6 +1,9 @@
 const express = require("express");//for import of express package
 const bodyParser = require("body-parser");
 const Announcements = require('../models/announcements');
+const {
+    createSystemLog,
+  } = require("../utils/helper");
 const { validateAnnouncements, handleValidationErrors, validationResult } = require('../middleware/dataValidation');
 
 // function sanitizeData(announcements) {
@@ -43,11 +46,13 @@ exports.createNewAnnouncements = async (req, res) => {
         });
 
         res.status(201).json({ Announcements: newAnnounce });
+        // createSystemLog(req.user._id, "add_announce", "success");
 
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "Failed to create new Announcement" });
     }
+
 };
 //Find Announcements by Title
 exports.getAnnouncementsByTitle = async (req, res) => {
@@ -69,10 +74,10 @@ exports.updateAnnouncements = async (req, res) => {
     try {
         const { _id, title, message, prio} = req.body;
 
-        const existingAnnouncement = await Announcements.findOne({ title, message });
-        if (existingAnnouncement) {
-            return res.status(400).json({ error: 'Announcement already exists' });
-        }
+        // const existingAnnouncement = await Announcements.findOne({ title, message });
+        // if (existingAnnouncement) {
+        //     return res.status(400).json({ error: 'Announcement already exists' });
+        // }
 
         const announce = await Announcements.findById(_id);
 

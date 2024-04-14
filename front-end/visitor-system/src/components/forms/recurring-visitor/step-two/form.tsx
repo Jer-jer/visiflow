@@ -5,10 +5,7 @@ import axios from "axios";
 import { Input, Divider, Form, Select, Tooltip } from "antd";
 
 // Interfaces
-import {
-	VisitorDataType,
-	VisitorDetailsProps,
-} from "../../../../utils/interfaces";
+import { VisitorDataType } from "../../../../utils/interfaces";
 import type { StepTwoData } from "../../../../utils/zodSchemas";
 import {
 	type UseFormRegister,
@@ -29,7 +26,7 @@ interface AddressSelectProps {
 
 interface FormProps {
 	visitorNo: number;
-	visitorDetails: VisitorDetailsProps;
+	visitor: VisitorDataType;
 	increment: number;
 	errors: FieldErrors<StepTwoData>;
 	register: UseFormRegister<StepTwoData>;
@@ -39,7 +36,7 @@ interface FormProps {
 
 export default function StepTwoForm({
 	visitorNo,
-	visitorDetails,
+	visitor,
 	increment,
 	errors,
 	register,
@@ -76,46 +73,48 @@ export default function StepTwoForm({
 				setLoadCountries(false);
 			});
 
-		if (visitorDetails.address.province && visitorDetails.address.city) {
-			onChangeCountry(visitorDetails.address.country);
-			onChangeState(visitorDetails.address.province);
+		if (
+			visitor.visitor_details.address.province &&
+			visitor.visitor_details.address.city
+		) {
+			onChangeCountry(visitor.visitor_details.address.country);
+			onChangeState(visitor.visitor_details.address.province);
 		}
 	}, []);
 
 	useEffect(() => {
-		setValue("firstName", visitorDetails.name.first_name);
-		setValue("middleName", visitorDetails.name.middle_name);
-		setValue("lastName", visitorDetails.name.last_name);
-		setValue("email", visitorDetails.email);
-		setValue("mobile", visitorDetails.phone);
-		setValue("house", visitorDetails.address.house);
-		setValue("street", visitorDetails.address.street);
-		setValue("brgy", visitorDetails.address.brgy);
-		setValue("city", visitorDetails.address.city);
-		setValue("province", visitorDetails.address.province);
-		setValue("country", visitorDetails.address.country);
-	}, [visitorDetails]);
+		setValue("firstName", visitor.visitor_details.name.first_name);
+		setValue("middleName", visitor.visitor_details.name.middle_name);
+		setValue("lastName", visitor.visitor_details.name.last_name);
+		setValue("email", visitor.visitor_details.email);
+		setValue("mobile", visitor.visitor_details.phone);
+		setValue("house", visitor.visitor_details.address.house);
+		setValue("street", visitor.visitor_details.address.street);
+		setValue("brgy", visitor.visitor_details.address.brgy);
+		setValue("city", visitor.visitor_details.address.city);
+		setValue("province", visitor.visitor_details.address.province);
+		setValue("country", visitor.visitor_details.address.country);
+	}, [visitor.visitor_details]);
 
 	const updateData = (value: string, property: string) => {
-		// const updatedVisitors = mainOrCompanion(increment, mainVisitor, companions);
-		const updatedVisitors = visitorDetails;
-		// let updatedCompanions = companions;
+		/*
+		 * Deep copy the visitor.visitor_details object
+		 * To prevent other tabs utilizing the same object to be updated
+		 */
+		let updatedVisitors = JSON.parse(JSON.stringify(visitor.visitor_details));
 
 		switch (property) {
 			case "firstName":
 				setValue(property, value);
-				updatedVisitors.name.first_name =
-					value[0].toUpperCase() + value.slice(1);;
+				updatedVisitors.name.first_name = value;
 				break;
 			case "middleName":
 				setValue(property, value);
-				updatedVisitors.name.middle_name =
-					value[0].toUpperCase() + value.slice(1);;
+				updatedVisitors.name.middle_name = value;
 				break;
 			case "lastName":
 				setValue(property, value);
-				updatedVisitors.name.last_name =
-					value[0].toUpperCase() + value.slice(1);;
+				updatedVisitors.name.last_name = value;
 				break;
 			case "email":
 				setValue(property, value);
@@ -134,7 +133,7 @@ export default function StepTwoForm({
 				updatedVisitors.address.street = value;
 				break;
 			case "brgy":
-				setValue(property, value);
+				// setValue(property, value);
 				updatedVisitors.address.brgy = value;
 				break;
 			case "city":
@@ -154,17 +153,19 @@ export default function StepTwoForm({
 		}
 
 		setVisitors((preVisitors) => {
-			let updateVisitors = preVisitors.map((visitor, index) => {
-				if (index === visitorNo - 1) {
+			return preVisitors.map((visitor) => {
+				if (visitor.visitor_no === visitorNo) {
 					return {
 						...visitor,
-						visitor_details: updatedVisitors,
+						visitor_details: {
+							...updatedVisitors,
+							time_in: "",
+							time_out: "",
+						},
 					};
 				}
 				return visitor;
 			});
-
-			return updateVisitors;
 		});
 	};
 
@@ -199,7 +200,7 @@ export default function StepTwoForm({
 		setLoadCities(true);
 		axios
 			.post("https://countriesnow.space/api/v0.1/countries/state/cities", {
-				country: visitorDetails.address.country,
+				country: visitor.visitor_details.address.country,
 				state: value,
 			})
 			.then((response) => {
@@ -257,7 +258,7 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("firstName")}
-								value={visitorDetails.name.first_name}
+								value={visitor.visitor_details.name.first_name}
 								onChange={(event: any) =>
 									updateData(event.target.value, "firstName")
 								}
@@ -288,7 +289,7 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("middleName")}
-								value={visitorDetails.name.middle_name}
+								value={visitor.visitor_details.name.middle_name}
 								onChange={(event: any) =>
 									updateData(event.target.value, "middleName")
 								}
@@ -319,7 +320,7 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("lastName")}
-								value={visitorDetails.name.last_name}
+								value={visitor.visitor_details.name.last_name}
 								onChange={(event: any) =>
 									updateData(event.target.value, "lastName")
 								}
@@ -350,7 +351,7 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("email")}
-								value={visitorDetails.email}
+								value={visitor.visitor_details.email}
 								onChange={(event: any) =>
 									updateData(event.target.value, "email")
 								}
@@ -381,7 +382,7 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("mobile")}
-								value={visitorDetails.phone}
+								value={visitor.visitor_details.phone}
 								onChange={(event: any) =>
 									updateData(event.target.value, "mobile")
 								}
@@ -413,7 +414,7 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("house")}
-								value={visitorDetails.address.house}
+								value={visitor.visitor_details.address.house}
 								onChange={(event: any) =>
 									updateData(event.target.value, "house")
 								}
@@ -444,7 +445,7 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("street")}
-								value={visitorDetails.address.street}
+								value={visitor.visitor_details.address.street}
 								onChange={(event: any) =>
 									updateData(event.target.value, "street")
 								}
@@ -476,7 +477,7 @@ export default function StepTwoForm({
 									key={increment}
 									className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 									{...register("brgy")}
-									value={visitorDetails.address.brgy}
+									value={visitor.visitor_details.address.brgy}
 									onChange={(event: any) =>
 										updateData(event.target.value, "brgy")
 									}
@@ -496,7 +497,7 @@ export default function StepTwoForm({
 							errors?.city ? "items-start" : "items-center"
 						} justify-between gap-[5%]`}
 					>
-						{visitorDetails.address.province ? (
+						{visitor.visitor_details.address.province ? (
 							<>
 								<span
 									className={`w-[120px] ${
@@ -515,7 +516,7 @@ export default function StepTwoForm({
 											key={increment}
 											className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 											{...register("city")}
-											value={visitorDetails.address.city}
+											value={visitor.visitor_details.address.city}
 											onChange={(event: any) =>
 												updateData(event.target.value, "city")
 											}
@@ -527,7 +528,9 @@ export default function StepTwoForm({
 											className="address text-[#0C0D0D] hover:!text-[#0C0D0D]"
 											showSearch
 											allowClear
-											defaultValue={visitorDetails.address.city || null}
+											defaultValue={
+												visitor.visitor_details.address.city || null
+											}
 											onChange={onChangeCity}
 											options={cities}
 											filterOption={filterCity}
@@ -552,7 +555,7 @@ export default function StepTwoForm({
 							errors?.province ? "items-start" : "items-center"
 						} justify-between gap-[5%]`}
 					>
-						{visitorDetails.address.country ? (
+						{visitor.visitor_details.address.country ? (
 							<>
 								<span
 									className={`w-[120px] ${
@@ -572,7 +575,7 @@ export default function StepTwoForm({
 												key={increment}
 												className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 												{...register("province")}
-												value={visitorDetails.address.province}
+												value={visitor.visitor_details.address.province}
 												onChange={(event: any) =>
 													updateData(event.target.value, "province")
 												}
@@ -586,7 +589,9 @@ export default function StepTwoForm({
 												className="address text-[#0C0D0D] hover:!text-[#0C0D0D]"
 												showSearch
 												allowClear
-												defaultValue={visitorDetails.address.province || null}
+												defaultValue={
+													visitor.visitor_details.address.province || null
+												}
 												onChange={onChangeState}
 												options={states}
 												filterOption={filterState}
@@ -629,7 +634,7 @@ export default function StepTwoForm({
 									key={increment}
 									className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 									{...register("country")}
-									value={visitorDetails.address.country}
+									value={visitor.visitor_details.address.country}
 									onChange={(event: any) =>
 										updateData(event.target.value, "country")
 									}
@@ -641,8 +646,8 @@ export default function StepTwoForm({
 									className="address text-[#0C0D0D] hover:!text-[#0C0D0D]"
 									showSearch
 									allowClear
-									placeholder={visitorDetails.address.country}
-									defaultValue={visitorDetails.address.country || null}
+									placeholder={visitor.visitor_details.address.country}
+									defaultValue={visitor.visitor_details.address.country || null}
 									onChange={onChangeCountry}
 									options={countries}
 									filterOption={filterCountry}

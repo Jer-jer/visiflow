@@ -168,3 +168,8 @@ export interface Building {
 	name: string;
 	roomNo: string;
 }
+
+export interface SelectOption {
+	value: string,
+	label: string
+}

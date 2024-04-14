@@ -86,6 +86,7 @@ export default function StepThree({
 			title: "Do you want to proceed?",
 			icon: <ExclamationCircleFilled />,
 			onOk() {
+				console.log("VIISSTOORRRRRRR", visitors);
 				if (
 					visitors
 						.slice(1)
@@ -102,7 +103,6 @@ export default function StepThree({
 					);
 					error("Some companions are not filled.");
 				} else {
-					console.log("visitors", visitors)
 					setLoading(true);
 					AxiosInstance.post("/visitor/new-recurring", {
 						visitors: visitors.map((visitor: VisitorDataType) => ({
@@ -110,10 +110,16 @@ export default function StepThree({
 							visitor_details: {
 								...visitor.visitor_details,
 								name: {
-									...visitor.visitor_details.name,
+									first_name:
+										visitor.visitor_details.name.first_name[0].toUpperCase() +
+										visitor.visitor_details.name.first_name.slice(1),
 									middle_name: visitor.visitor_details.name.middle_name
-										? visitor.visitor_details.name.middle_name
+										? visitor.visitor_details.name.middle_name[0].toUpperCase() +
+											visitor.visitor_details.name.middle_name.slice(1)
 										: "",
+									last_name:
+										visitor.visitor_details.name.last_name[0].toUpperCase() +
+										visitor.visitor_details.name.last_name.slice(1),
 								},
 								phone: visitor.visitor_details.phone.toString(),
 							},
