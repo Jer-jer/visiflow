@@ -110,11 +110,11 @@ export default function CompanionLogs({
 							);
 						})
 						.catch((err) => {
-							warning(err?.response?.data?.error || "Visitor has no logs.");
+							warning(err.response.data.error);
 						});
 				})
 				.catch((err) => {
-					error(err?.response?.data?.error || "Something went wrong.");
+					error(err.response.data.error);
 				});
 		}
 	}, [companionId]);

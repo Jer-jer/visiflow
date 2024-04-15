@@ -163,10 +163,7 @@ function NotificationsLayout() {
 			})
 			.catch((err) => {
 				setLoading(false);
-				error(
-					err?.response?.data?.error ||
-						"Something went wrong with displaying the notifications list.",
-				);
+				error(err.response.data.error);
 			});
 	}, []);
 

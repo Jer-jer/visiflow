@@ -200,10 +200,7 @@ export default function CompanionDetails({
 			.catch((err) => {
 				setStatus(false);
 				setAlertOpen(true);
-				setAlertMsg(
-					err?.response?.data?.error ||
-						"Something went wrong.",
-				);
+				setAlertMsg(err?.response?.data?.error || "Something went wrong.");
 			});
 	};
 
@@ -238,10 +235,7 @@ export default function CompanionDetails({
 			.catch((err) => {
 				setStatus(false);
 				setAlertOpen(true);
-				setAlertMsg(
-					err?.response?.data?.error ||
-						"Something went wrong.",
-				);
+				setAlertMsg(err.response.data.error);
 			});
 	};
 

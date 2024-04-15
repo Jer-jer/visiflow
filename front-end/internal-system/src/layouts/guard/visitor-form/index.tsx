@@ -342,14 +342,7 @@ export default function VisitorFormLayout() {
 						setLoading(false);
 						setStatus(false);
 						setAlertOpen(true);
-						if (err && err.reponse) {
-							const errorMessage =
-								err.response.data.error ||
-								"Something went wrong processing the badge";
-
-							setAlertMsg(errorMessage);
-						}
-						const errorMessage = "Something went wrong processing the badge";
+						const errorMessage = err.response.data.error;
 
 						setAlertMsg(errorMessage);
 					});
@@ -359,14 +352,7 @@ export default function VisitorFormLayout() {
 				setStatus(false);
 				setAlertOpen(!alertOpen);
 
-				if (err && err.response) {
-					const errorMessage =
-						err.response.data.error ||
-						"Something went wrong processing the visitor";
-					setAlertMsg(errorMessage);
-				}
-
-				const errorMessage = "Something went wrong processing the visitor";
+				const errorMessage = err.response.data.error;
 				setAlertMsg(errorMessage);
 			});
 	};

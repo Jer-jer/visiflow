@@ -96,7 +96,7 @@ function LoginLayout() {
 	return (
 		<Form name="Login" onFinish={onSubmit}>
 			<div className="flex h-screen items-center justify-center">
-				<div className="loginContainer relative h-full w-[832px] flex-shrink-0 overflow-hidden rounded-md border bg-white lg:h-[624px]">
+				<div className="loginContainer relative h-full w-full flex-shrink-0 overflow-hidden rounded-md border bg-white lg:h-[624px] lg:w-[832px]">
 					<div className="flex h-full items-center justify-center">
 						<div className="absolute right-[340px] hidden md:right-[230px] md:block lg:right-[210px]">
 							<LoginPhoto />

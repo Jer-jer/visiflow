@@ -288,11 +288,11 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 						// dispatch(fetchLogs(logs));
 					})
 					.catch((err) => {
-						warning(err?.response?.data?.error || "Visitor has no logs.");
+						warning(err.response.data.error);
 					});
 			})
 			.catch((err) => {
-				error(err?.response?.data?.error || "Something went wrong.");
+				error(err.response.data.error);
 			});
 	}, []);
 
@@ -475,7 +475,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 				setLoading(false);
 				setStatus(false);
 				setAlertOpen(true);
-				setAlertMsg(err?.response?.data?.error || "Something went wrong.");
+				setAlertMsg(err.response.data.error);
 			});
 	};
 
@@ -501,7 +501,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 				setLoading(false);
 				setStatus(false);
 				setAlertOpen(true);
-				setAlertMsg(err?.response?.data?.error || "Something went wrong.");
+				setAlertMsg(err.response.data.error);
 			});
 	};
 
@@ -570,7 +570,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 			.catch((err) => {
 				setStatus(false);
 				setAlertOpen(true);
-				setAlertMsg(err?.response?.data?.error || "Something went wrong.");
+				setAlertMsg(err.response.data.error);
 			});
 	};
 
@@ -605,7 +605,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 					})
 					.catch((err) => {
 						setAlertOpen(!alertOpen);
-						setAlertMsg(err?.response?.data?.error || "Something went wrong.");
+						setAlertMsg(err.response.data.error);
 					});
 			},
 			onCancel() {

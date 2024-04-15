@@ -225,14 +225,7 @@ function RecurringVisitor({
 						setLoading(false);
 						setStatus(false);
 						setAlertOpen(true);
-						if (err && err.reponse) {
-							const errorMessage =
-								err.response.data.error ||
-								"Something went wrong processing the badge";
-
-							setAlertMsg(errorMessage);
-						}
-						const errorMessage = "Something went wrong processing the badge";
+						const errorMessage = err.response.data.error;
 
 						setAlertMsg(errorMessage);
 					});
@@ -241,15 +234,7 @@ function RecurringVisitor({
 				setLoading(false);
 				setStatus(false);
 				setAlertOpen(true);
-				if (err && err.reponse) {
-					const errorMessage =
-						err.response.data.error ||
-						err.response.data.errors ||
-						"Something went wrong processing the visitor";
-
-					setAlertMsg(errorMessage);
-				}
-				const errorMessage = "Something went wrong processing the visitor";
+				const errorMessage = err.response.data.error;
 
 				setAlertMsg(errorMessage);
 			});

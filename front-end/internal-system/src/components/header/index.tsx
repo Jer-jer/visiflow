@@ -123,7 +123,7 @@ export default function Header() {
 			})
 			.catch((err) => {
 				error(
-					err?.response?.data?.error ||
+					err.response.data.error ||
 						"Something went wrong with displaying notifications. Please refresh the page",
 				);
 			});
