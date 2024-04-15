@@ -33,7 +33,7 @@ export default function PendingAppointments({
 		navigate(`/visitor-management`);
 	};
 	return (
-		<div className="w-full !overflow-auto">
+		<div className="flex w-full scroll-m-0 flex-col-reverse !overflow-auto">
 			{pendingAppointments.map((item, index) => (
 				<div
 					key={index}
