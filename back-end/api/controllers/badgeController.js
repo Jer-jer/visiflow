@@ -8,6 +8,9 @@ const {
   updateLog,
   createSystemLog,
 } = require("../utils/helper");
+const archiver = require('archiver');
+const fs = require('fs');
+const tar = require('tar');
 
 const ObjectId = mongoose.Types.ObjectId;
 const badgeQty = 5;
@@ -44,13 +47,35 @@ exports.generateBadge = async (req, res) => {
     // const clientIP = req.ip;
     const user_id = req.user._id;
     const log_type = "generate_badge";
+    const archive = archiver('zip', {
+      zlib: { level: 9 } // compression level
+    });
 
-    for (let counter = 0; counter < qty; counter++) {
-      await generateVisitorQRCode(new ObjectId());
-    }
+    // create a file to stream archive data to.
+    const zipFilename = "badges.zip";
+    const output = fs.createWriteStream(zipFilename);
+    
+    res.attachment(zipFilename);
+    archive.pipe(res);
+    
+    output.on('close', function() {
+      return res.status(200).json({ message: `Generated ${qty} badges`, filename: zipFilename });
+    });
+    
+    output.on('error', function(error) {
+      console.error(`Error archiving QR codes: ${error.message}`);
+      return res.status(500).json({ error: error.message });
+    });
+  
+    const promises = Array.from({ length: qty }, () => generateVisitorQRCode(new ObjectId()));
 
-    await createSystemLog(user_id, log_type, "success");
-    return res.status(200).json({ message: `Generated ${badgeQty} of badges` });
+    const qrCodes = await Promise.all(promises);
+
+    qrCodes.forEach((qrCode, index) => {
+      archive.append(fs.createReadStream(qrCode), { name: `badge_${index}.png` });
+    });
+
+    archive.finalize();
   } catch (error) {
     console.error(error);
     await createSystemLog(user_id, log_type, "failed");
