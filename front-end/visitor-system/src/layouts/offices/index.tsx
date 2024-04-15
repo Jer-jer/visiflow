@@ -143,7 +143,7 @@ export default function Offices() {
 				dayOp: days.filter((day, index) => office.openday[index]).join(", "),
 				pic: office.pic,
 				email: office.email,
-				location: office.roomNo,
+				location: `${office.build}, Floor ${office.floor}, ${office.roomNo}`,
 				contact: office.contact,
 				img: office.officeImg,
 			}));
@@ -152,10 +152,6 @@ export default function Offices() {
 			console.error("Error fetching offices:", error);
 		}
 	};
-
-	// useEffect(() => {
-	// 	console.log("test", office)
-	// }, [office])
 
 	const handleSearch = async () => {
 		try {
@@ -211,7 +207,13 @@ export default function Offices() {
 								hoverable
 								key={key}
 								className="bg-[#DFEAEF] hover:cursor-default md:max-w-[700px] lg:max-w-[700px]"
-								cover={<img alt="example" src={off.img} className="w-full h-64 object-cover" />}
+								cover={
+									<img
+										alt="example"
+										src={off.img}
+										className="h-64 w-full object-cover"
+									/>
+								}
 							>
 								<Meta
 									className=""

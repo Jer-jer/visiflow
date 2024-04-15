@@ -9,6 +9,7 @@ export interface LoginInterfaceZod {
 	password: string;
 }
 
+
 export const LoginZod: ZodType<LoginInterfaceZod> = z.object({
 	username: z
 		.string({
@@ -444,4 +445,38 @@ export const UserDetailsZod: ZodType<UserDetailsInterfaceZod> = z.object({
 		.regex(/([0-9\-+\b])\w+/, { message: "Only numeric values allowed." })
 		.min(1, { message: "Please enter a phone number." }),
 	role: z.enum(["admin", "security"]),
+});
+
+export interface EmployeesZod {
+	name: string;
+	email: string;
+	contact: string;
+}
+//zod error checking display for employees
+export const EmployeeDetailsZod: ZodType<EmployeesZod> = z.object({
+	name: z
+		.string({
+			required_error: "Full Name is required.",
+			invalid_type_error: "Full Name must not have number.",
+		})
+		.min(2, { message: "Please enter a full name." })
+		.regex(/^[a-zA-Z]+/, {
+			message: "Must not be empty or contain any numerals.",
+		}),
+		
+	email: z
+		.string(
+		)
+		.min(1, { message: "Please enter an email." })
+		.email({ message: "Invalid email address." })
+		.refine((data) => data !== "mail@mail.com", {
+			message: "Your email must not be mail@mail.com",
+		}),
+	contact: z.coerce
+		.string({
+			required_error: "Mobile Number is required.",
+			invalid_type_error: "Mobile Number must not have a letter or symbol.",
+		})
+		.min(1, { message: "Please enter a phone number." })
+		.regex(/([0-9\-+\b])\w+/, { message: "Only numeric values allowed."}),
 });

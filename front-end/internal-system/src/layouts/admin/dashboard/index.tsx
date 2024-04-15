@@ -24,7 +24,7 @@ export default function DashboardLayout() {
 		<div className="mb-[35px] ml-2 mt-3 flex">
 			<div className="w-[761px] flex-auto">
 				<OuterContainer
-					containerStyling="overflow-scroll h-[100dvh]"
+					containerStyling="overflow-auto h-[100dvh]"
 					header="Summary"
 				>
 					<InnerContainer additionalStyles="rounded-[10px] border border-[#D0D2CC]">

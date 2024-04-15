@@ -142,11 +142,7 @@ export default function UserManagementLayout() {
 				setLoading(false);
 			})
 			.catch((err) => {
-				setAlertMsg(
-					err?.response?.data?.error ||
-						err?.response?.data?.errors ||
-						"Something went wrong.",
-				);
+				setAlertMsg(err?.response?.data?.error || "Something went wrong.");
 				setAlertOpen(!alertOpen);
 				setLoading(false);
 			});
@@ -174,11 +170,7 @@ export default function UserManagementLayout() {
 				setActiveKey(newActiveKey);
 			})
 			.catch((err) => {
-				setAlertMsg(
-					err?.response?.data?.error ||
-						err?.response?.data?.errors ||
-						"Something went wrong.",
-				);
+				setAlertMsg(err?.response?.data?.error || "Something went wrong.");
 				setAlertOpen(!alertOpen);
 			});
 	};

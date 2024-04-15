@@ -30,11 +30,13 @@ import type { DatePickerProps } from "antd";
 
 // Utils
 import { formatDateObjToString } from "../../../../utils";
+import { SelectOption } from "../../../../utils/interfaces";
 
 //Layouts
 import VisitorLogs from "../visitor-logs";
 import VisitorCompanions from "../visitor-companions";
 import Notify from "../notify";
+import NotifyPOI from "../notify-poi";
 import Identification from "../identification";
 
 //Components
@@ -59,6 +61,7 @@ import { addLog, removeLogs } from "../../../../states/logs/visitor";
 
 //Assets
 import { ExclamationCircleFilled } from "@ant-design/icons";
+import { LoadingOutlined } from "@ant-design/icons";
 
 //Styles
 import "./styles.scss";
@@ -106,6 +109,14 @@ export default function VisitorDetails({
 	activeKey,
 	setActiveKey,
 }: VisitorDeetsProps) {
+	//Loading
+	const [loading, setLoading] = useState(false);
+
+	const [emailRecipient, setEmailRecipient] = useState([]);
+	const [whoList, setWhoList] = useState<SelectOption[]>([]);
+	const [whatList, setWhatList] = useState<SelectOption[]>([]);
+	const [whereList, setWhereList] = useState<SelectOption[]>([]);
+
 	const expected_in = formatDateObjToString(record.expected_time_in);
 	const expected_out = formatDateObjToString(record.expected_time_out);
 	//Alert State
@@ -143,6 +154,105 @@ export default function VisitorDetails({
 	//? Width Context
 	const width = useContext(WidthContext);
 
+	//? Notify POI Message
+	const fetchAndSetEmployees = async () => {
+		try {
+			const response = await AxiosInstance.get("/employees/");
+			const data = response.data.employees;
+
+			const convertedData: SelectOption[] = data.map((employee: any) => ({
+				value: employee.name,
+				label: employee.name,
+			}));
+			setEmailRecipient(
+				data.filter((x: any) =>
+					record.purpose.who.some((y: string) => x.name === y),
+				),
+			);
+			setWhoList(convertedData);
+		} catch (error) {
+			console.error("Error fetching employees:", error);
+		}
+	};
+
+	const fetchAndSetReasons = async () => {
+		try {
+			const response = await AxiosInstance.get("/reasons/");
+			const data = response.data.reasons;
+
+			//getting only the data we want
+			const convertedData: SelectOption[] = data.map((purpose: any) => ({
+				value: purpose.reason,
+				label: purpose.reason,
+			}));
+			setWhatList(convertedData);
+		} catch (error) {
+			console.error("Error fetching reasons:", error);
+		}
+	};
+
+	const fetchAndSetBuildings = async () => {
+		try {
+			const response = await AxiosInstance.get("/buildings/");
+			const data = response.data.buildings;
+
+			//getting only the data we want
+			const convertedData: SelectOption[] = data.map((building: any) => ({
+				value: building.name,
+				label: building.name,
+			}));
+			return convertedData;
+		} catch (error) {
+			console.error("Error fetching buildings:", error);
+		}
+	};
+
+	const fetchAndSetOffices = async () => {
+		try {
+			const response = await AxiosInstance.get("/offices/");
+			const data = response.data.office;
+
+			//getting only the data we want
+			const convertedData: SelectOption[] = data.map((office: any) => ({
+				value: `${office.name} - ${office.build}, Floor ${office.floor}, ${office.roomNo}`,
+				label: `${office.name} - ${office.build}, Floor ${office.floor}, ${office.roomNo}`,
+			}));
+			return convertedData;
+		} catch (error) {
+			console.error("Error fetching buildings:", error);
+		}
+	};
+
+	const getWhere = async () => {
+		let buildingsPromise = fetchAndSetBuildings();
+		let officesPromise = fetchAndSetOffices();
+
+		let buildings = await buildingsPromise;
+		let offices = await officesPromise;
+
+		if (buildings !== undefined && offices !== undefined) {
+			let combinedArray = [...buildings, ...offices];
+			setWhereList(combinedArray);
+		}
+	};
+
+	useEffect(() => {
+		fetchAndSetEmployees();
+		fetchAndSetReasons();
+		getWhere();
+	}, []);
+
+	const recipient: SelectOption[] = whoList
+		? whoList.filter((who, index) => who.label === record.purpose.who[index])
+		: [];
+	const subject: string = "Meeting Appointment via Pre-Registration";
+	const message: string = `You have a request appointment with a visitor. Please confirm the appointment. Thank you! 
+
+What: ${record.purpose.what.map((what) => what).join(", ")} 
+When: ${formatDateObjToString(record.purpose.when)}
+Where: ${record.purpose.where.map((where) => where).join(", ")}
+Who: ${recipient.map((who) => who.label).join(", ")}`;
+
 	// Store Related variables
 	const tabs: any = useSelector((state: RootState) => state.visitorTabs);
 	const { companions } = useSelector((state: RootState) => state.companions);
@@ -178,19 +288,11 @@ export default function VisitorDetails({
 						// dispatch(fetchLogs(logs));
 					})
 					.catch((err) => {
-						warning(
-							err?.response?.data?.error ||
-								err?.response?.data?.errors ||
-								"Visitor has no logs.",
-						);
+						warning(err?.response?.data?.error || "Visitor has no logs.");
 					});
 			})
 			.catch((err) => {
-				error(
-					err?.response?.data?.error ||
-						err?.response?.data?.errors ||
-						"Something went wrong.",
-				);
+				error(err?.response?.data?.error || "Something went wrong.");
 			});
 	}, []);
 
@@ -343,14 +445,16 @@ export default function VisitorDetails({
 	};
 
 	const updateStatus = () => {
+		setLoading(true);
 		AxiosInstance.put("/visitor/update-status", {
 			_id: record._id,
 			status: visitorStatusUpdate,
 			email: record.visitor_details.email,
-			// companions: record.companion_details,
+			companions: record.companions,
 			message: visitorMessage,
 		})
 			.then((res) => {
+				setLoading(false);
 				setStatus(true);
 				if (visitorStatusUpdate !== VisitorStatus.InProgress)
 					setAlertMsg(
@@ -368,13 +472,36 @@ export default function VisitorDetails({
 				setNotifyVisitorOpen(false);
 			})
 			.catch((err) => {
+				setLoading(false);
 				setStatus(false);
 				setAlertOpen(true);
-				setAlertMsg(
-					err?.response?.data?.error ||
-						err?.response?.data?.errors ||
-						"Something went wrong.",
-				);
+				setAlertMsg(err?.response?.data?.error || "Something went wrong.");
+			});
+	};
+
+	const sendPOIEmail = () => {
+		setLoading(true);
+		const emailToSend: string[] = emailRecipient.map(
+			(email: any) => email.email,
+		);
+
+		AxiosInstance.post("employees/notifyPOI", {
+			recipients: emailToSend,
+			subject,
+			message,
+		})
+			.then((res) => {
+				setLoading(false);
+				setStatus(true);
+				setAlertMsg("Successfully Sent Email to POI");
+				setAlertOpen(true);
+				setNotifyPOIOpen(false);
+			})
+			.catch((err) => {
+				setLoading(false);
+				setStatus(false);
+				setAlertOpen(true);
+				setAlertMsg(err?.response?.data?.error || "Something went wrong.");
 			});
 	};
 
@@ -443,11 +570,7 @@ export default function VisitorDetails({
 			.catch((err) => {
 				setStatus(false);
 				setAlertOpen(true);
-				setAlertMsg(
-					err?.response?.data?.error ||
-						err?.response?.data?.errors ||
-						"Something went wrong.",
-				);
+				setAlertMsg(err?.response?.data?.error || "Something went wrong.");
 			});
 	};
 
@@ -472,22 +595,18 @@ export default function VisitorDetails({
 			cancelText: "No",
 			onOk() {
 				closeTab(_id);
-				// AxiosInstance.delete("/visitor/delete", {
-				// 	data: {
-				// 		_id,
-				// 	},
-				// })
-				// 	.then((res) => {
-				// 		dispatch(deleteVisitor(_id));
-				// 	})
-				// 	.catch((err) => {
-				// 		setAlertOpen(!alertOpen);
-				// 		setAlertMsg(
-				// 			err?.response?.data?.error ||
-				// 				err?.response?.data?.errors ||
-				// 				"Something went wrong.",
-				// 		);
-				// 	});
+				AxiosInstance.delete("/visitor/delete", {
+					data: {
+						_id,
+					},
+				})
+					.then((res) => {
+						dispatch(deleteVisitor(_id));
+					})
+					.catch((err) => {
+						setAlertOpen(!alertOpen);
+						setAlertMsg(err?.response?.data?.error || "Something went wrong.");
+					});
 			},
 			onCancel() {
 				console.log("Cancel");
@@ -497,6 +616,9 @@ export default function VisitorDetails({
 
 	return (
 		<div className="visitor-details">
+			{loading && (
+				<LoadingOutlined className="absolute left-[45%] top-[20%] z-[10000] text-[164px] text-primary-500" />
+			)}
 			<div
 				className={`transition-alert absolute z-[1] w-full scale-y-0 ease-in-out ${
 					alertOpen && "scale-y-100"
@@ -856,20 +978,7 @@ export default function VisitorDetails({
 													onChange={(value: string[]) =>
 														handleChange("what", value)
 													}
-													options={[
-														{
-															value: "meeting",
-															label: "Meeting",
-														},
-														{
-															value: "intramurals",
-															label: "Intramurals",
-														},
-														{
-															value: "conference",
-															label: "Conference",
-														},
-													]}
+													options={whatList}
 												/>
 												{errors?.what && (
 													<p className="mt-1 text-sm text-red-500">
@@ -910,28 +1019,7 @@ export default function VisitorDetails({
 													onChange={(value: string[]) =>
 														handleChange("where", value)
 													}
-													options={[
-														{
-															value: "gym",
-															label: "Gymnasium",
-														},
-														{
-															value: "office_of_the_president",
-															label: "Office of the President",
-														},
-														{
-															value: "guard_house",
-															label: "Guard House",
-														},
-														{
-															value: "conference_hall",
-															label: "Conference Hall",
-														},
-														{
-															value: "classroom",
-															label: "Classroom",
-														},
-													]}
+													options={whereList}
 												/>
 												{errors?.where && (
 													<p className="mt-1 text-sm text-red-500">
@@ -953,16 +1041,7 @@ export default function VisitorDetails({
 													onChange={(value: string[]) =>
 														handleChange("who", value)
 													}
-													options={[
-														{
-															value: "john_doe",
-															label: "Dr. John Doe",
-														},
-														{
-															value: "lucy_grimm",
-															label: "Lucy Grimm",
-														},
-													]}
+													options={whoList}
 												/>
 												{errors?.who && (
 													<p className="mt-1 text-sm text-red-500">
@@ -1177,19 +1256,15 @@ export default function VisitorDetails({
 												Notify Person of Interest
 											</Button>
 											{/* Change Email Input to OIC of the Office */}
-											<Notify
-												emailInput={record.purpose.who}
+											<NotifyPOI
+												emailInput={emailRecipient}
 												open={notifyPOIOpen}
 												setOpen={setNotifyPOIOpen}
 												modalHeader="Notify Person of Interest"
-												subject="Meeting Appointment via Pre-Registration"
-												message={`You have a request appointment with a visitor. Please confirm the appointment. Thank you! 
-
-What: ${record.purpose.what.map((what) => what).join(", ")} 
-When: ${record.purpose.when}
-Where: ${record.purpose.where.map((where) => where).join(", ")}
-Who: ${record.purpose.who.map((who) => who).join(", ")}`}
+												subject={subject}
+												message={message}
 												disabled={true}
+												onOk={sendPOIEmail}
 											/>
 											<Notify
 												emailInput={record.visitor_details.email}

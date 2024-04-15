@@ -64,9 +64,9 @@ export interface IDPictureProps {
 }
 
 export interface VisitorDataType {
+	_id?: string;
 	visitor_no: number;
 	visitor_details: VisitorDetailsProps;
-	// companions_details: VisitorDetailsProps[] | null;
 	expected_time_in: Date;
 	expected_time_out: Date;
 	purpose: PurposeProps;
@@ -79,7 +79,6 @@ export interface VisitorDataType {
 
 export interface RecurringVisitorDataType {
 	id: string;
-	// companions_details: VisitorDetailsProps[] | null;
 	expected_time_in: Date;
 	expected_time_out: Date;
 	purpose: PurposeProps;
@@ -88,4 +87,9 @@ export interface RecurringVisitorDataType {
 	visitor_type: VisitorType;
 	termsConditions: boolean;
 	id_picture: IDPictureProps;
+}
+
+export interface SelectOption {
+	value: string,
+	label: string
 }

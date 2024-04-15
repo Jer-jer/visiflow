@@ -84,6 +84,7 @@ export default function StepThree({
 		confirm({
 			title: "Do you want to proceed?",
 			icon: <ExclamationCircleFilled />,
+			content: <p>Please make sure you have put everything you need</p>,
 			onOk() {
 				if (
 					visitors.filter((visitor: VisitorDataType) =>
@@ -104,10 +105,16 @@ export default function StepThree({
 							visitor_details: {
 								...visitor.visitor_details,
 								name: {
-									...visitor.visitor_details.name,
+									first_name:
+										visitor.visitor_details.name.first_name[0].toUpperCase() +
+										visitor.visitor_details.name.first_name.slice(1),
 									middle_name: visitor.visitor_details.name.middle_name
-										? visitor.visitor_details.name.middle_name
+										? visitor.visitor_details.name.middle_name[0].toUpperCase() +
+											visitor.visitor_details.name.middle_name.slice(1)
 										: "",
+									last_name:
+										visitor.visitor_details.name.last_name[0].toUpperCase() +
+										visitor.visitor_details.name.last_name.slice(1),
 								},
 								phone: visitor.visitor_details.phone.toString(),
 							},
@@ -121,13 +128,8 @@ export default function StepThree({
 						})
 						.catch((err: any) => {
 							setLoading(false);
-							console.error(err);
 							if (err.response) {
-								error(
-										err.response.data.error ||
-										err.response.data.errors ||
-										"Something went wrong",
-								);
+								error(err.response.data.error || "Something went wrong");
 							} else {
 								error("Something went wrong.");
 							}

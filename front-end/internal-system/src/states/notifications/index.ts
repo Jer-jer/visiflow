@@ -6,6 +6,7 @@ import { NotificationType } from "../../utils/enums";
 
 export interface NotificationStoreProps {
 	key: string;
+	_id: string;
 	name: string;
 	message: string;
 	time_in: Date;

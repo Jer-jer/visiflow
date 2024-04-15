@@ -133,6 +133,7 @@ export default function VisitorListTable({
 			render: (_, { created_at }) => {
 				return formatDateObjToString(created_at);
 			},
+			defaultSortOrder: "descend",
 		},
 		{
 			title: "Status",

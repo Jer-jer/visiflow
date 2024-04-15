@@ -91,6 +91,7 @@ export default function StepTwo({
 		register,
 		handleSubmit,
 		setValue,
+		clearErrors,
 		formState: { errors },
 	} = useForm<StepTwoData>({
 		resolver: zodResolver(StepTwoZod),
@@ -284,11 +285,10 @@ export default function StepTwo({
 					const id = String(i + 1);
 					return {
 						label: tabName(id),
-						key: id,
+						key: visitor.visitor_no.toString(),
 						children: (
 							<StepForm
-								visitorDetails={visitor.visitor_details}
-								visitorNo={visitor.visitor_no}
+								visitorDetails={visitor}
 								increment={i}
 								errors={errors}
 								register={register}
@@ -302,7 +302,7 @@ export default function StepTwo({
 			<div className="mr-[30px] flex flex-col items-center justify-center gap-2 lg:mr-0 lg:w-[80%] lg:flex-row lg:justify-between">
 				<div className="flex w-full flex-col items-center gap-3 lg:w-auto lg:flex-row">
 					<Checkbox className="w-fit" checked={byBulk} onChange={onChange}>
-						Upload File
+						Or, upload an excel file with multiple visitors
 					</Checkbox>
 					{byBulk && (
 						<>
@@ -687,6 +687,7 @@ export default function StepTwo({
 										: "!bg-primary-500"
 								}`}
 								type="primary"
+								onClick={() => clearErrors()}
 							>
 								Next
 							</Button>

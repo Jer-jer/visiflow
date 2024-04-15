@@ -9,7 +9,7 @@ import type { UploadChangeParam } from "antd/es/upload";
 //Layouts
 
 //Components
-import { Button, Dropdown, Modal, DatePicker, message, Image, MenuProps, Select} from "antd";
+import { Button, Dropdown, Modal, DatePicker, message, Image, MenuProps, Select, InputNumber } from "antd";
 import Input from "../../../../components/fields/input/input";
 import Label from "../../../../components/fields/input/label";
 import AxiosInstace from "../../../../lib/axios";
@@ -87,6 +87,8 @@ export default function OfficeSchedDetails({
 	const [pic, setPic] = useState(record?.pic === undefined ? "" : record?.pic);
 	const [contact, setContact] = useState(record?.contact === undefined ? "" : record?.contact);
 	const [email, setEmail] = useState(record?.email === undefined ? "" : record?.email);
+	const [build, setBuild] = useState(record?.build === undefined ? "" : record?.build);
+	const [floor, setFloor] = useState(record?.floor === undefined ? "" : record?.floor);
 	const [opentime, setOpentime] = useState(record?.opentime === undefined ? new Date() : record?.opentime);
 	const [closetime, setClosetime] = useState(record?.closetime === undefined ? new Date() : record?.closetime);
 	const [openday, setOpenday] = useState(record?.openday === undefined ? new Array(7).fill(false) : record?.openday);
@@ -96,6 +98,8 @@ export default function OfficeSchedDetails({
 	const [savedRecord, setSavedRecord] = useState(record);
 
 	const [employee, setEmployees] = useState<any>([]);
+	const [building, setBuildings] = useState<any>([]);
+	const [floorMax, setFloorMax] = useState<any>();
 
 	//Alert State
 	const [alertOpen, setAlertOpen] = useState(false);
@@ -129,9 +133,11 @@ export default function OfficeSchedDetails({
 					contact: contact,
 					email: email,
 					opentime: opentime,
+					build: build,
+					floor: floor,
 					closetime: closetime,
 					openday: openday,
-					officeImg: image
+					officeImg: image,
 				}); 
 				setSavedRecord(response.data.office);
 			} catch (error) {
@@ -146,6 +152,8 @@ export default function OfficeSchedDetails({
 					pic: pic === "" ? record?.pic : pic,
 					contact: contact === "" ? record?.contact : contact,
 					email: email === "" ? record?.email : email,
+					build: build === "" ? record?.build : build,
+					floor: floor === "" ? record?.floor : floor,
 					opentime: opentime,
 					closetime: closetime,
 					openday: openday,
@@ -196,6 +204,7 @@ export default function OfficeSchedDetails({
 
 	useEffect(() => {
 		fetchAllPersonnel();
+		fetchAllBuildings();
 	}, [])
 
 	const fetchAllPersonnel = async () => {
@@ -209,10 +218,26 @@ export default function OfficeSchedDetails({
 		  }
 	}
 
-	const onChangeSelected = (selectedOption: any) => {
+	const fetchAllBuildings = async () => {
+		try {
+			const response = await AxiosInstace.get('/buildings/')
+			const data = response.data.buildings
+			
+			setBuildings(data);
+		  } catch (error) {
+			console.error('Error fetching buildings:', error);
+		  }
+	}
+
+	const onChangeSelectedPic = (selectedOption: any) => {
 		setPic(selectedOption);
 		assignEmail(selectedOption);
 	
+	}
+
+	const onChangeSelectedBuilding = (selectedOption: any) => {
+		setBuild(selectedOption);
+		assignFloorMax(selectedOption);
 	}
 
 	const assignEmail = (selected: any) => {
@@ -224,6 +249,22 @@ export default function OfficeSchedDetails({
 			setEmail('');
 		}
 	}
+
+	const assignFloorMax = (selected: any) => {
+		const selectedFloor = building.find((b: any) => b.name === selected);
+		
+		if (selectedFloor) {
+			setFloorMax(selectedFloor.roomNo);
+		} else {
+			setFloorMax(0);
+		}
+	}
+
+	const filterOption = (input: string, option?: { label: string; value: string }) =>
+	{
+		return (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
+	}
+  		
 
 	return (
 		<div className="mr-[135px] flex flex-col gap-[35px] pt-[25px]">
@@ -265,38 +306,35 @@ export default function OfficeSchedDetails({
 								<Label spanStyling="text-black font-medium text-[16px]">
 									Personnel in Charge
 								</Label>
-								{/* <Input
-									inputType="text"
-									inputStyling="input w-[57%] h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-									placeHolder={record?.pic}
-									input={pic}
-									setInput={setPic}
-									visitorMngmnt
-									disabled={disabledInputs}
-								/> */}
 								<Select
+									showSearch
 									className="input w-[57%] h-[38px] rounded-[5px] p-0"
-									key={JSON.stringify(employee)}
-									onChange={onChangeSelected}
+									onChange={onChangeSelectedPic}
 									defaultValue={pic}
+									optionFilterProp="children"
+									filterOption={filterOption}
 									options={employee ? employee.map((emp: any) => ({
 										value: emp.name,
-										label: <span>{emp.name}</span>
+										label: emp.name
 									})) : []}
 									disabled={disabledInputs}
 								/>
 							</div>
 							<div className="flex w-full justify-between">
 								<Label spanStyling="text-black font-medium text-[16px]">
-									Contact
+									Building Name
 								</Label>
-								<Input
-									inputType="text"
-									inputStyling="input w-[57%] h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-									placeHolder={record?.contact}
-									input={contact}
-									setInput={setContact}
-									visitorMngmnt
+								<Select
+									showSearch
+									className="input w-[57%] h-[38px] rounded-[5px] p-0"
+									onChange={onChangeSelectedBuilding}
+									defaultValue={build}
+									optionFilterProp="children"
+									filterOption={filterOption}
+									options={building ? building.map((b: any) => ({
+										value: b.name,
+										label: b.name
+									})) : []}
 									disabled={disabledInputs}
 								/>
 							</div>
@@ -317,39 +355,41 @@ export default function OfficeSchedDetails({
 								/>
 							</div>
 							<div className="flex w-full justify-between">
-							</div>
-							{/* <div className="flex w-full justify-between">
 								<Label spanStyling="text-black font-medium text-[16px]">
-									Availability
+									Floor No.
 								</Label>
-								{disabledInputs ? (
-									<Input
-										inputType="text"
-										inputStyling="input w-[57%] h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-										placeHolder={record?.availability}
-										input={availability}
-										setInput={setAvailability}
-										visitorMngmnt
-										disabled={disabledInputs}
-									/>
-								) : (
-									<Dropdown
-										menu={{ items: availabilityOptions }}
-										placement="bottomRight"
-										trigger={["click"]}
-									>
-										<Button
-											size="large"
-											className="w-[57%] !rounded-[5px] border-none bg-[#DFEAEF] font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
-										>
-											<div className="flex items-center justify-between gap-[10px]">
-												{record?.availability}
-												<ArrowDown />
-											</div>
-										</Button>
-									</Dropdown>
-								)}
-							</div> */}
+								<Select
+									showSearch
+									className="input w-[57%] h-[38px] rounded-[5px] p-0"
+									onChange={setFloor}
+									defaultValue={floor}
+									optionFilterProp="children"
+									filterOption={filterOption}
+									options={floorMax ? Array.from({ length: floorMax }, (_, index) => ({
+										value: (index + 1).toString(),
+										label: (index + 1).toString()
+									})) : []}
+									disabled={disabledInputs}
+								/>
+							</div>
+						</div>
+						<div className="flex gap-[80px]">
+							<div className="flex w-full justify-between">
+								<Label spanStyling="text-black font-medium text-[16px]">
+									Contact
+								</Label>
+								<Input
+									inputType="text"
+									inputStyling="input w-[57%] h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
+									placeHolder={record?.contact}
+									input={contact}
+									setInput={setContact}
+									visitorMngmnt
+									disabled={disabledInputs}
+								/>
+							</div>
+							<div className="flex w-full justify-between">
+							</div>
 						</div>
 						<div className="flex w-full gap-[75px]">
 							<Label spanStyling="text-black font-medium text-[16px]">
