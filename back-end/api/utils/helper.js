@@ -5,6 +5,7 @@ const ObjectId = mongoose.Types.ObjectId;
 // Imports
 const QRCode = require("qrcode");
 const nodemailer = require("nodemailer");
+const fs = require('fs').promises;
 
 // Models
 const Badge = require("../models/badge");
@@ -45,10 +46,11 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+
 // Generate QR code function, found in badge controller
 // use in walk-in visitor
 async function generateVisitorQRCode(badgeId) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const filename = `api/resource/badge/badge${badgeId}.png`;
     const uri = `http://${local_ip}:5000/badge/checkBadge?qr_id=${badgeId}`;
 
@@ -56,7 +58,7 @@ async function generateVisitorQRCode(badgeId) {
       filename,
       uri,
       { errorCorrectionLevel: "H" },
-      function (error) {
+      async function (error) {
         if (error) {
           console.error(
             `Error generating QR code for badge ${badgeId}: ${error.message}`
@@ -64,7 +66,13 @@ async function generateVisitorQRCode(badgeId) {
           reject(error);
         } else {
           console.log(`QR code saved for badge ${badgeId}`);
-          resolve();
+          try {
+            const imageData = await fs.readFile(filename);
+            resolve(filename); 
+          } catch (readError) {
+            console.error(`Error reading QR code image for badge ${badgeId}: ${readError.message}`);
+            reject(readError);
+          }
         }
       }
     );

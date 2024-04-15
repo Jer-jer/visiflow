@@ -57,8 +57,8 @@ interface FormProps {
 }
 
 interface SelectOption {
-	value: string,
-	label: string
+	value: string;
+	label: string;
 }
 
 dayjs.extend(weekday);
@@ -82,7 +82,6 @@ function StepOneForm({
 	const [whoList, setWhoList] = useState<SelectOption[]>([]);
 	const [whatList, setWhatList] = useState<SelectOption[]>([]);
 	const [whereList, setWhereList] = useState<SelectOption[]>([]);
-
 
 	const { RangePicker } = DatePicker;
 	const timeFormat = "hh:mm A";
@@ -223,84 +222,83 @@ function StepOneForm({
 
 	const fetchAndSetEmployees = async () => {
 		try {
-			const response = await AxiosInstance.get('/employees/')
-			const data = response.data.employees
-			
+			const response = await AxiosInstance.get("/employees/");
+			const data = response.data.employees;
+
 			const convertedData: SelectOption[] = data.map((employee: any) => ({
 				value: employee.name,
 				label: employee.name,
-			  }));
+			}));
 			setWhoList(convertedData);
-			
 		} catch (error) {
-			console.error('Error fetching employees:', error);
+			console.error("Error fetching employees:", error);
 		}
 	};
 
 	const fetchAndSetReasons = async () => {
 		try {
-			const response = await AxiosInstance.get('/reasons/')
-			const data = response.data.reasons
+			const response = await AxiosInstance.get("/reasons/");
+			const data = response.data.reasons;
 
 			//getting only the data we want
 			const convertedData: SelectOption[] = data.map((purpose: any) => ({
 				value: purpose.reason,
 				label: purpose.reason,
-			  }));
+			}));
 			setWhatList(convertedData);
-		  } catch (error) {
-			console.error('Error fetching reasons:', error);
-		  }
-	  };
+		} catch (error) {
+			console.error("Error fetching reasons:", error);
+		}
+	};
 
-	  const fetchAndSetBuildings = async () => {
+	const fetchAndSetBuildings = async () => {
 		try {
-			const response = await AxiosInstance.get('/buildings/')
-			const data = response.data.buildings
+			const response = await AxiosInstance.get("/buildings/");
+			const data = response.data.buildings;
 
 			//getting only the data we want
 			const convertedData: SelectOption[] = data.map((building: any) => ({
 				value: building.name,
 				label: building.name,
-			  }));
-			return convertedData
-		  } catch (error) {
-			console.error('Error fetching buildings:', error);
-		  }
-	  };
+			}));
+			return convertedData;
+		} catch (error) {
+			console.error("Error fetching buildings:", error);
+		}
+	};
 
-	  const fetchAndSetOffices = async () => {
+	const fetchAndSetOffices = async () => {
 		try {
-			const response = await AxiosInstance.get('/offices/')
-			const data = response.data.office
+			const response = await AxiosInstance.get("/offices/");
+			const data = response.data.office;
 
 			//getting only the data we want
 			const convertedData: SelectOption[] = data.map((office: any) => ({
 				value: `${office.name} - ${office.build}, Floor ${office.floor}, ${office.roomNo}`,
 				label: `${office.name} - ${office.build}, Floor ${office.floor}, ${office.roomNo}`,
-			  }));
-			return convertedData
-		  } catch (error) {
-			console.error('Error fetching buildings:', error);
-		  }
-	  }
+			}));
+			return convertedData;
+		} catch (error) {
+			console.error("Error fetching offices:", error);
+		}
+	};
 
-	  const getWhere = async () => {
+	const getWhere = async () => {
 		let buildingsPromise = fetchAndSetBuildings();
 		let officesPromise = fetchAndSetOffices();
 
 		let buildings = await buildingsPromise;
 		let offices = await officesPromise;
 
-		console.log('buildings', buildings)
-		console.log('offices', offices)
+		console.log("buildings", buildings);
+		console.log("offices", offices);
 
 		if (buildings !== undefined && offices !== undefined) {
 			let combinedArray = [...buildings, ...offices];
-			console.log('combinedArray', combinedArray)
+			console.log("combinedArray", combinedArray);
 			setWhereList(combinedArray);
 		}
-	  }
+	};
 
 	return (
 		<>

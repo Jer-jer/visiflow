@@ -50,6 +50,7 @@ const error = (message: string) => {
 };
 
 export default function Header() {
+	const desktopMedia = window.matchMedia("(min-width: 1024px)");
 	//? Socket Connection
 	const [isConnected, setIsConnected] = useState(socket.connected);
 	const [isAdmin, setIsAdmin] = useState(false);
@@ -123,7 +124,6 @@ export default function Header() {
 			.catch((err) => {
 				error(
 					err?.response?.data?.error ||
-						err?.response?.data?.errors ||
 						"Something went wrong with displaying notifications. Please refresh the page",
 				);
 			});
@@ -207,13 +207,6 @@ export default function Header() {
 			_id: notif._id,
 			is_read: true,
 		});
-		// .catch((err) => {
-		// 	error(
-		// 		err?.response?.data?.error ||
-		// 			err?.response?.data?.errors ||
-		// 			"Something went wrong with updating the notification.",
-		// 	);
-		// });
 
 		dispatch(readNotif(notif.key));
 	};
@@ -238,12 +231,21 @@ export default function Header() {
 	return (
 		<div className="navbar bg-base-100">
 			<div className="flex-1">
-				<a
-					href="/"
-					className="header-name btn btn-ghost text-base normal-case hover:bg-transparent md:text-xl"
-				>
-					Gullas Visitor Management System
-				</a>
+				{desktopMedia.matches ? (
+					<a
+						href="/"
+						className="header-name btn btn-ghost text-base normal-case hover:bg-transparent md:text-xl"
+					>
+						Gullas Visitor Management System
+					</a>
+				) : (
+					<a
+						href="/"
+						className="header-name btn btn-ghost text-base normal-case hover:bg-transparent md:text-xl"
+					>
+						Gullas VMS
+					</a>
+				)}
 			</div>
 			<div className="flex-none">
 				<Modal
@@ -273,7 +275,6 @@ export default function Header() {
 							<InputNumber
 								className="badge-counter"
 								min={0}
-								max={40}
 								defaultValue={noOfBadges}
 								onChange={onChangeBadges}
 							/>
