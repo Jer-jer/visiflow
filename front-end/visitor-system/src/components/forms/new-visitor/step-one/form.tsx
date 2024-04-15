@@ -31,6 +31,7 @@ import type { DatePickerProps } from "antd";
 
 // Utils
 import { formatDateObjToString } from "../../../../utils";
+import { SelectOption } from "../../../../utils/interfaces";
 import AxiosInstance from "../../../../lib/axios";
 
 // Assets
@@ -54,11 +55,6 @@ interface FormProps {
 
 	setVisitorNo: Dispatch<SetStateAction<number>>;
 	setVisitors: Dispatch<SetStateAction<VisitorDataType[]>>;
-}
-
-interface SelectOption {
-	value: string,
-	label: string
 }
 
 dayjs.extend(weekday);

@@ -26,8 +26,10 @@ exports.getAllAnnouncements = async (req, res) => {
 
 //Create new announcements
 exports.createNewAnnouncements = async (req, res) => {
-    const { title, message, prio } = req.body;
-
+    const { title, message, prio, } = req.body;
+    // const user_id = req.user._id;
+    // const log_type = "add_announce";
+    res.status(201).json(req.user);
     await Promise.all(validateAnnouncements.map(validation => validation.run(req)));
 
     const errors = validationResult(req);
@@ -45,8 +47,9 @@ exports.createNewAnnouncements = async (req, res) => {
             title, message, prio
         });
 
-        res.status(201).json({ Announcements: newAnnounce });
         // createSystemLog(req.user._id, "add_announce", "success");
+        res.status(201).json({ Announcements: newAnnounce });
+        
 
     } catch (error) {
         console.error(error);
