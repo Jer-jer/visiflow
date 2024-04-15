@@ -68,6 +68,27 @@ function NewWalkIn({
 	handlePurpose,
 	onChange,
 }: NewWalkInProps) {
+	const disabledDateTime = () => {
+		const currentHour = dayjs().hour();
+		const currentMinute = dayjs().minute();
+		const currentSecond = dayjs().second();
+
+		return {
+			disabledHours: () => range(0, currentHour),
+			disabledMinutes: (selectedHour: number) => {
+				if (selectedHour === currentHour) {
+					return range(0, currentMinute);
+				}
+				return [];
+			},
+		};
+	};
+
+	// Helper function to generate range array
+	const range = (start: number, end: number) => {
+		return Array.from({ length: end - start }, (_, i) => start + i);
+	};
+
 	return (
 		<>
 			<Modal
@@ -441,10 +462,9 @@ function NewWalkIn({
 															format="YYYY-MM-DD hh:mm A"
 															onChange={onChange}
 															disabledDate={(current) => {
-																return (
-																	current && current < dayjs().startOf("day")
-																);
+																return current < dayjs().startOf("day");
 															}}
+															disabledTime={disabledDateTime}
 														/>
 													</div>
 													{errors?.expected_time_out && (

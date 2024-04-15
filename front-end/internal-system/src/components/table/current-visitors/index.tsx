@@ -13,6 +13,7 @@ import { formatDateObjToString, formatDateToISO } from "../../../utils";
 //Styles
 import "../../../utils/variables.scss";
 import "./styles.scss";
+import AxiosInstance from "../../../lib/axios";
 
 interface CurrentVisitor {
 	key: string;
@@ -20,7 +21,6 @@ interface CurrentVisitor {
 	phone: string;
 	expected_time_in: string;
 	expected_time_out: string;
-	time_in: string;
 	status: string;
 }
 interface CurrentVisitorsTableProps {
@@ -36,17 +36,15 @@ export default function CurrentVisitorsTable({
 
 	useEffect(() => {
 		// Fetch visitors from backend
-		fetch("/visitor/get-current-visitors")
-			.then((res) => res.json())
-			.then((data) => {
-				// Map fetched visitors to match the structure of your table data
-				const mappedData = data.visitors.map((visitor: any) => ({
+		AxiosInstance.get("/visitor/get-current-visitors")
+			.then((res) => {
+				console.log(res.data.activeVisitors);
+				const mappedData = res.data.activeVisitors.map((visitor: any) => ({
 					key: visitor._id,
-					fullName: visitor.name,
-					phone: visitor.phone,
+					fullName: `${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name} ${visitor.visitor_details.name.last_name}`,
+					phone: visitor.visitor_details.phone,
 					expected_time_in: visitor.expected_time_in,
 					expected_time_out: visitor.expected_time_out,
-					time_in: visitor.time_in,
 					status: visitor.status,
 				}));
 				setData(mappedData);
