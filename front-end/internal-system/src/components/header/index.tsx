@@ -270,7 +270,6 @@ export default function Header() {
 							<InputNumber
 								className="badge-counter"
 								min={0}
-								max={40}
 								defaultValue={noOfBadges}
 								onChange={onChangeBadges}
 							/>
