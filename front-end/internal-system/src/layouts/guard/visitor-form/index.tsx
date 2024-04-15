@@ -438,7 +438,6 @@ export default function VisitorFormLayout() {
 						if (err && err.reponse) {
 							const errorMessage =
 								err.response.data.error ||
-								err.response.data.errors ||
 								"Something went wrong processing the badge";
 
 							setAlertMsg(errorMessage);
@@ -456,7 +455,6 @@ export default function VisitorFormLayout() {
 				if (err && err.response) {
 					const errorMessage =
 						err.response.data.error ||
-						err.response.data.errors ||
 						"Something went wrong processing the visitor";
 					setAlertMsg(errorMessage);
 				}

@@ -108,22 +108,13 @@ export default function CompanionLogs({
 									}),
 								),
 							);
-							// dispatch(fetchLogs(logs));
 						})
 						.catch((err) => {
-							warning(
-								err?.response?.data?.error ||
-									err?.response?.data?.errors ||
-									"Visitor has no logs.",
-							);
+							warning(err?.response?.data?.error || "Visitor has no logs.");
 						});
 				})
 				.catch((err) => {
-					error(
-						err?.response?.data?.error ||
-							err?.response?.data?.errors ||
-							"Something went wrong.",
-					);
+					error(err?.response?.data?.error || "Something went wrong.");
 				});
 		}
 	}, [companionId]);

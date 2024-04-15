@@ -1,4 +1,12 @@
 # dependencies
 node_modules
 .vscode
+.env
+back-end/.env
 **/*.env
+back-end/api/resource/badge
+back-end/.env
+front-end/internal-system/.env
+front-end/visitor-system/.env
+front-end/internal-system/build
+front-end/visitor-system/build

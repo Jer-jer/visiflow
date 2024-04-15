@@ -165,7 +165,6 @@ function NotificationsLayout() {
 				setLoading(false);
 				error(
 					err?.response?.data?.error ||
-						err?.response?.data?.errors ||
 						"Something went wrong with displaying the notifications list.",
 				);
 			});
