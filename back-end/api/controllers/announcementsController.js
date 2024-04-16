@@ -28,10 +28,9 @@ exports.getAllAnnouncements = async (req, res) => {
 
 //Create new announcements
 exports.createNewAnnouncements = async (req, res) => {
-    const { title, message, prio, } = req.body;
+    const { title, message, prio, userID} = req.body;
     // const user_id = req.user._id;
     // const log_type = "add_announce";
-    res.status(201).json(req.user);
     await Promise.all(validateAnnouncements.map(validation => validation.run(req)));
 
   const errors = validationResult(req);
@@ -50,8 +49,8 @@ exports.createNewAnnouncements = async (req, res) => {
       message,
       prio,
     });
-
-        // createSystemLog(req.user._id, "add_announce", "success");
+        // console.log("onload", req.user)
+        await createSystemLog(userID, "add_announce", "success");
         res.status(201).json({ Announcements: newAnnounce });
         
 
@@ -79,7 +78,7 @@ exports.getAnnouncementsByTitle = async (req, res) => {
 
 exports.updateAnnouncements = async (req, res) => {
   try {
-    const { _id, title, message, prio } = req.body;
+    const { _id, title, message, prio, userID } = req.body;
 
     // const existingAnnouncement = await Announcements.findOne({ title, message });
     // if (existingAnnouncement) {
@@ -111,8 +110,10 @@ exports.updateAnnouncements = async (req, res) => {
       filteredUpdateFields,
       { new: true }
     );
+    await createSystemLog(userID, "update_announce", "success");
 
     return res.status(201).json({ announce: updatedAnnouncements });
+
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
   }

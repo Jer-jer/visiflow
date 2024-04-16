@@ -30,7 +30,8 @@ const systemLogSchema = new Schema({
       "log_in",
       "log_out",
       "generate_badge",
-      // "add_announce"
+      "add_announce",
+      "update_announce"
     ],
     require: true,
   },

@@ -14,7 +14,6 @@ const tar = require('tar');
 
 const ObjectId = mongoose.Types.ObjectId;
 const badgeQty = 5;
-
 exports.getBadges = async (req, res) => {
   try {
     const badges = await Badge.find();
