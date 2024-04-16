@@ -149,7 +149,9 @@ export default function Offices() {
 			}));
 			setOffice(convertedData);
 		} catch (error) {
-			console.error("Error fetching offices:", error);
+			if (error) {
+				console.error("Error fetching offices:", error);
+			}
 		}
 	};
 
@@ -183,7 +185,9 @@ export default function Offices() {
 			}));
 			setOffice(convertedData);
 		} catch (error) {
-			console.error("Error fetching offices:", error);
+			if (error) {
+				console.error("Error fetching finding:", error);
+			}
 		}
 	};
 

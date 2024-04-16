@@ -1,6 +1,6 @@
 ## Story Title
 
-As a [user/role], I want [feature/desire] so that [benefit/reason].
+As a [user], I want [pre-register] so that I can prevent [lining] in the guard house.
 
 ### Acceptance Criteria
 

@@ -120,7 +120,9 @@ export default function Home() {
 			);
 			setAnnouncement(sortedAnnouncements);
 		} catch (error) {
-			console.error("Error fetching announcements:", error);
+			if (error) {
+				console.error("Error fetching announcements:", error);
+			}
 		}
 	};
 

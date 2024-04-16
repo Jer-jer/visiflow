@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
+import { isMobile } from "react-device-detect";
 
 //Interfaces
 import { type UseFormRegister, type FieldErrors } from "react-hook-form";
@@ -58,6 +59,18 @@ const videoConstraints = {
 	height: 720,
 	facingMode: "user"
   };
+
+  const selfieMode = {
+		width: 1280,
+		height: 720,
+		facingMode: "user",
+	};
+
+	const outMode = {
+		width: 1280,
+		height: 720,
+		facingMode: { exact: "environment" },
+	};
 
   const capitalizeEachWord  = (str: string) => {
     return str.split(' ').map((word: string) => {
@@ -257,10 +270,10 @@ function NewWalkIn({
 			<Form name="Visitor Details" onFinish={onSubmit} autoComplete="off">
 				<div className="mb-[35px] ml-2 mt-3 flex">
 					<div className="w-[380px] flex-auto md:w-[761px]">
-						<div className="mb-[35px] ml-[20px] mr-[25px] flex h-fit flex-col items-around justify-around gap-[30px] lg:flex-row lg:gap-[25px]">
+						<div className="items-around mb-[35px] ml-[20px] mr-[25px] flex h-fit flex-col justify-around gap-[30px] lg:flex-row lg:gap-[25px]">
 							<div className="flex flex-col items-center justify-center gap-[15px]">
 								<div className="relative h-[245px] w-[330px] md:h-[300px] md:w-[360px]">
-									<Image width="100%" height="100%" src={imageUrl}/>
+									<Image width="100%" height="100%" src={imageUrl} />
 									<Button
 										type="primary"
 										className="absolute ml-[-240px] mt-[200px] h-[40px] w-[155px] !rounded-[10px] !bg-primary-500 text-xs shadow-lg md:ml-[-260px] md:mt-[240px] md:h-[46px] md:w-[175px] md:text-lg"
@@ -268,53 +281,50 @@ function NewWalkIn({
 									>
 										<b>SCAN ID</b>
 									</Button>
-										<Modal
-											title="Scan ID"
-											open={isModalOpen}
-											onCancel={handleCancel}
-											width={642}
-											centered
-											footer={[
-												<Button
-													onClick={handleCancel}
-													className="mt-[-50px] !rounded-[5px] !bg-secondary-500 text-xs shadow-lg"
-													type="primary"
-												>
-													Cancel
-												</Button>
-											]}
-										>
-											<Spin
+									<Modal
+										title="Scan ID"
+										open={isModalOpen}
+										onCancel={handleCancel}
+										width={642}
+										centered
+										footer={[
+											<Button
+												onClick={handleCancel}
+												className="!bg-secondary-500 mt-[-50px] !rounded-[5px] text-xs shadow-lg"
+												type="primary"
+											>
+												Cancel
+											</Button>,
+										]}
+									>
+										<Spin
 											tip="Scanning in progress..."
 											spinning={loading}
 											delay={500}
-											>
-												{cameraActive && 
+										>
+											{cameraActive && (
 												<Webcam
 													audio={false}
 													height={720}
 													screenshotFormat="image/png"
 													width={1280}
-													videoConstraints={videoConstraints}
+													videoConstraints={isMobile ? outMode : selfieMode}
 													ref={webcamRef}
-												/>}
-												{!cameraActive && (
-													<img src={imageUrl} alt="Captured" />
-												)}
-												
-												<div className="flex justify-center">
-													<Button 
-														onClick={capture}
-														className="mt-[-50px] !rounded-[5px] !bg-primary-500 text-xs shadow-lg"
-														type="primary"
-													>
-														<b>Capture photo</b>
-													</Button>
-												</div>
-											</Spin>
-											
-										</Modal>
-									
+												/>
+											)}
+											{!cameraActive && <img src={imageUrl} alt="Captured" />}
+
+											<div className="flex justify-center">
+												<Button
+													onClick={capture}
+													className="mt-[-50px] !rounded-[5px] !bg-primary-500 text-xs shadow-lg"
+													type="primary"
+												>
+													<b>Capture photo</b>
+												</Button>
+											</div>
+										</Spin>
+									</Modal>
 								</div>
 							</div>
 
@@ -329,11 +339,9 @@ function NewWalkIn({
 													size="large"
 													{...register("first_name")}
 													value={firstName}
-													onChange={(e) =>
-														{
-															setFirstNameZod(e.target.value);
-														}
-													}
+													onChange={(e) => {
+														setFirstNameZod(e.target.value);
+													}}
 												/>
 											</div>
 											{errors?.first_name && (
@@ -351,11 +359,9 @@ function NewWalkIn({
 													size="large"
 													{...register("middle_name")}
 													value={middleName}
-													onChange={(e) =>
-														{
-															setMiddleNameZod(e.target.value);
-														}
-													}
+													onChange={(e) => {
+														setMiddleNameZod(e.target.value);
+													}}
 												/>
 											</div>
 											{errors?.middle_name && (
@@ -373,11 +379,9 @@ function NewWalkIn({
 													size="large"
 													{...register("last_name")}
 													value={lastName}
-													onChange={(e) =>
-														{
-															setLastNameZod(e.target.value);
-														}
-													}
+													onChange={(e) => {
+														setLastNameZod(e.target.value);
+													}}
 												/>
 											</div>
 											{errors?.last_name && (
