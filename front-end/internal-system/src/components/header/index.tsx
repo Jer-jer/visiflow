@@ -148,7 +148,7 @@ export default function Header() {
 			.catch((err) => {
 				if (err && err.response) {
 					const message = err.response.data.error;
-					err(message);
+					error(message);
 				}
 			});
 	};

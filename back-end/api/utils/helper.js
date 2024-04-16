@@ -450,7 +450,7 @@ async function validateDuplicate(visitors, res) {
     try {
       // Check if visitor has an existing record
       const visitorDB = await Visitor.findOne({
-        "visitor_details.email": visitor.visitor_details.email,
+        "visitor_details.email": visitor.visitor_details.email, 
       });
 
       // Check if email is used by another visitor

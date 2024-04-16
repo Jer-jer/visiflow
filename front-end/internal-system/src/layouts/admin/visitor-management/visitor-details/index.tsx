@@ -523,14 +523,16 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 		await AxiosInstance.put("/visitor/update", {
 			_id: record._id,
 			first_name: zodData
-				? zodData.first_name
-				: record.visitor_details.name.first_name,
+				? zodData.first_name[0].toUpperCase() + zodData.first_name.slice(1)
+				: record.visitor_details.name.first_name[0].toUpperCase() +
+					record.visitor_details.name.first_name.slice(1),
 			middle_name: zodData
 				? zodData.middle_name
 				: record.visitor_details.name.middle_name,
 			last_name: zodData
-				? zodData.last_name
-				: record.visitor_details.name.last_name,
+				? zodData.last_name[0].toUpperCase() + zodData.last_name.slice(1)
+				: record.visitor_details.name.last_name[0].toUpperCase() +
+					record.visitor_details.name.last_name.slice(1),
 			phone: zodData ? zodData.phone : record.visitor_details.phone,
 			email: zodData ? zodData.email : record.visitor_details.email,
 			house_no: zodData ? zodData.house : record.visitor_details.address.house,
