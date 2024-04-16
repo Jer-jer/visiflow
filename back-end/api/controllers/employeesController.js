@@ -136,10 +136,8 @@ exports.notifyPOI = async (req, res) => {
       })
     );
 
-    return res.status(200).json({ message: "Emails sent successfully" });
+    return res.status(200).json({ message: 'Emails sent successfully' });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ error: "Failed to notify person of interest." });
+    return res.status(500).json({ error: 'Failed to notify person of interest.' });
   }
-};
+}

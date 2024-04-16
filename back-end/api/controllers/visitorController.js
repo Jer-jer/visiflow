@@ -42,7 +42,7 @@ exports.getCurrentVisitors = async (req, res) => {
 
     const activeVisitors = await Visitor.find({ _id: { $in: activeVisitorIds } });
 
-    return res.status(200).json({ activeVisitors });
+    res.status(200).json({ activeVisitors });
   } catch (error) {
     console.error(error);
     return res
