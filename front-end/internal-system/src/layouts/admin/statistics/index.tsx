@@ -21,6 +21,9 @@ import StatisticsSummaryContent from "../../../components/stats-smmry-ctnt";
 import StatisticsSummaryContentAlt from "../../../components/stats-smmry-ctnt/alternative";
 import Select from "../../../components/select";
 
+//Libs
+import AxiosInstance from "../../../lib/axios";
+
 //Styles
 import "../../../utils/variables.scss";
 import "./styles.scss";

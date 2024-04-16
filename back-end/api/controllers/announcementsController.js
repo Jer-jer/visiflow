@@ -1,5 +1,3 @@
-const express = require("express"); //for import of express package
-const bodyParser = require("body-parser");
 const Announcements = require("../models/announcements");
 const { createSystemLog } = require("../utils/helper");
 const {
@@ -28,11 +26,11 @@ exports.getAllAnnouncements = async (req, res) => {
 
 //Create new announcements
 exports.createNewAnnouncements = async (req, res) => {
-  const { title, message, prio } = req.body;
-
-  await Promise.all(
-    validateAnnouncements.map((validation) => validation.run(req))
-  );
+    const { title, message, prio, } = req.body;
+    // const user_id = req.user._id;
+    // const log_type = "add_announce";
+    res.status(201).json(req.user);
+    await Promise.all(validateAnnouncements.map(validation => validation.run(req)));
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -51,12 +49,15 @@ exports.createNewAnnouncements = async (req, res) => {
       prio,
     });
 
-    res.status(201).json({ Announcements: newAnnounce });
-    // createSystemLog(req.user._id, "add_announce", "success");
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: "Failed to create new Announcement" });
-  }
+        // createSystemLog(req.user._id, "add_announce", "success");
+        res.status(201).json({ Announcements: newAnnounce });
+        
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Failed to create new Announcement" });
+    }
+
 };
 //Find Announcements by Title
 exports.getAnnouncementsByTitle = async (req, res) => {

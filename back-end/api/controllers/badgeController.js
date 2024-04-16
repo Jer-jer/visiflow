@@ -4,7 +4,6 @@ const Visitor = require("../models/visitor");
 const mongoose = require("mongoose");
 const {
   generateVisitorQRCode,
-  verifyAccessToken,
   updateLog,
   createSystemLog,
 } = require("../utils/helper");
@@ -19,18 +18,20 @@ exports.getBadges = async (req, res) => {
     res.status(200).json({ badges });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({ error: "Failed to retrieve badges from the database" });
+    return res.status(500).json({ error: "Failed to retrieve badges from the database" });
   }
 };
 
 exports.findBadge = async (req, res) => {
   const { visitor_id } = req.body;
-  const badge = await Badge.findOne({ visitor_id });
-  if (!badge)
-    return res.status(400).json({ error: "No badge assigned to this visitor" });
-  res.status(200).json({ badge });
+
+  try {
+    const badge = await Badge.findOne({ visitor_id });
+      
+    res.status(200).json({ badge });
+  } catch (error) {
+    return res.status(500).json({ error: "No badge assigned to this visitor" });
+  }
 };
 
 exports.generateBadge = async (req, res) => {

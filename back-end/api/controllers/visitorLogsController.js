@@ -45,9 +45,7 @@ exports.findVisitorLogs = async (req, res) => {
 
     return res.status(200).json({ visitorLogs });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ error: "Something went wrong fetching logs" });
+    return res.status(500).json({ error: "Something went wrong fetching logs" });
   }
 };
 
