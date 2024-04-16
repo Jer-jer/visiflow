@@ -92,6 +92,8 @@ export const actionType = (type: UserActionLogType) => {
 			return "Generate Badge";
 		case "add_announce":
 			return "Added Announcement";
+		case "update_announce":
+			return "Updated Announcement";
 		default:
 			return "Unknown";
 	}
