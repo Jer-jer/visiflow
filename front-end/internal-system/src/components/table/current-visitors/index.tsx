@@ -14,7 +14,7 @@ import { formatDateObjToString, formatDateToISO } from "../../../utils";
 import "../../../utils/variables.scss";
 import "./styles.scss";
 import AxiosInstance from "../../../lib/axios";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 
 interface CurrentVisitor {
 	key: string;
@@ -46,10 +46,9 @@ export default function CurrentVisitorsTable({
 					phone: visitor.visitor_details.phone,
 					expected_time_in: visitor.expected_time_in,
 					expected_time_out: visitor.expected_time_out,
-					status:
-						visitor.exceeded_time_out < dayjs().day
-							? "active"
-							: "exceeded_time_out",
+					status: dayjs(visitor.exceeded_time_out).isBefore(dayjs())
+						? "active"
+						: "exceeded_time_out",
 				}));
 				setData(mappedData);
 				//console.log(mappedData);

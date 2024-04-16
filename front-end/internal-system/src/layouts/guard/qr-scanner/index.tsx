@@ -12,8 +12,8 @@ import "../../../utils/variables.scss";
 import "./styles.scss";
 
 // eslint-disable-next-line no-restricted-globals
-// const parsed = queryString.parseUrl(window.location.pathname);
-// const statusPart = parsed.query.action;
+// const parsed = queryString.parse(location.search);
+// export const statusPart = parsed.action;
 // console.log(statusPart);
 
 export default function QrScannerLayout() {
@@ -29,6 +29,12 @@ export default function QrScannerLayout() {
 
 	function handleQRstatus(message: string) {
 		setStatus(false);
+		if (
+			message === "Successfully Timed-Out" ||
+			message === "Successfully Timed-In"
+		) {
+			setStatus(true);
+		}
 		setAlertMsg(message);
 		setAlertOpen(true);
 	}
