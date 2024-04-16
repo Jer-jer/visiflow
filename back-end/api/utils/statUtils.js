@@ -40,10 +40,10 @@ async function getVisitorList(date_01, date_02) {
 
     if (logs.length === 0) {
       return null;
-    } 
+    }
 
     const idArray = logs.length > 0 ? logs[0].visitor_id : [];
-    console.log(idArray);
+
     return idArray;
   } catch (error) {
     return error;
@@ -68,7 +68,7 @@ async function getVisitors(startDate, endDate) {
     return { errors };
   }
 
-  try { 
+  try {
     const idArray = await getVisitorList(date_01, date_02);
 
     if (idArray === null) {
@@ -96,11 +96,12 @@ async function getVisitors(startDate, endDate) {
       }
     ]);
 
-    return {visitors, errors};
+    return { visitors, errors };
   } catch (error) {
     return error;
   }
 }
+
 
 module.exports = {
   getVisitors,
