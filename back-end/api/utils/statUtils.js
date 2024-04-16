@@ -102,7 +102,6 @@ async function getVisitors(startDate, endDate) {
   }
 }
 
-
 module.exports = {
   getVisitors,
   getVisitorList
