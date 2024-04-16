@@ -47,12 +47,12 @@ export default function CurrentVisitorsTable({
 					expected_time_in: visitor.expected_time_in,
 					expected_time_out: visitor.expected_time_out,
 					status:
-						visitor.exceeded_time_out.hour() <= dayjs().hour &&
-						visitor.exceeded_time_out.minute() < dayjs().minute()
+						visitor.exceeded_time_out < dayjs().day
 							? "active"
 							: "exceeded_time_out",
 				}));
 				setData(mappedData);
+				//console.log(mappedData);
 			})
 			.catch((error) => {
 				console.error("Failed to fetch visitors:", error);

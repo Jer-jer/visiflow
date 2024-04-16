@@ -39,12 +39,14 @@ export default function Scanner({ onQRstatus }: any) {
 		};
 	}, []);
 
-	function success(result: string) {
+	function success(result: any) {
+		//console.log(result);
 		if (isValidUrl(result)) {
 			if (qr_id !== undefined) {
 				onQRstatus("Visitor Form is Ongoing");
 			} else if (result === "time-out" || result === "time-in") {
 				onQRstatus("Successfully Timed-In/Out");
+				window.location.href = "/qr-scanner";
 			} else if (result === "time-outFailed" || result === "time-inFailed") {
 				onQRstatus("Time-In/Out Failed");
 			} else {
@@ -71,7 +73,6 @@ export default function Scanner({ onQRstatus }: any) {
 	}
 
 	const desiredUrlPatterns = [
-		"http://localhost:3000/visitor-form/?qr_id=",
 		"http://localhost:5000/badge/checkBadge?visitor_id=",
 		"http://localhost:5000/badge/checkBadge?qr_id=",
 		// Add more desired URL patterns here if needed

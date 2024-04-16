@@ -222,7 +222,7 @@ async function updateLog(badgeId, _id, type, user_id, res) {
       );
 
       await createSystemLog(user_id, "time_out", "success");
-      return res.status(200).json({ message: "time-out" });
+      return res.redirect(`http://localhost:3000/qr-scanner?action=time-out`);
     } catch (error) {
       await createSystemLog(user_id, "time_out", "failed");
       return res.status(500).json({ Error: "time-outFailed" });
