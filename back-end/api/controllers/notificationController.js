@@ -7,9 +7,7 @@ exports.getNotifications = async (req, res) => {
     return res.status(200).json({ notifications: notifications });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({ error: "Failed to retrieve notifications from the database" });
+    return res.status(500).json({ error: "Failed to retrieve notifications from the database" });
   }
 };
 
