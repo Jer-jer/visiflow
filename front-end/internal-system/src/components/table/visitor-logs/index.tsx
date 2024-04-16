@@ -74,21 +74,32 @@ export default function VisitorLogsTable({
 		},
 		{
 			title: "Time In",
-			dataIndex: "timeIn",
-			key: "timeIn",
+			dataIndex: "check_in_time",
+			key: "check_in_time",
 			sorter: (a, b) =>
 				formatDateToISO(new Date(a.check_in_time))!.localeCompare(
 					formatDateToISO(new Date(b.check_in_time))!,
 				),
+			render(value, record, index) {
+				return record.check_in_time
+					? formatDateObjToString(record.check_in_time)
+					: "";
+			},
+			defaultSortOrder: "descend",
 		},
 		{
 			title: "Time Out",
-			dataIndex: "timeOut",
-			key: "timeOut",
+			dataIndex: "check_out_time",
+			key: "check_out_time",
 			sorter: (a, b) =>
 				formatDateToISO(new Date(a.check_out_time))!.localeCompare(
 					formatDateToISO(new Date(b.check_out_time))!,
 				),
+			render(value, record, index) {
+				return record.check_out_time
+					? formatDateObjToString(record.check_out_time)
+					: "";
+			},
 		},
 	];
 

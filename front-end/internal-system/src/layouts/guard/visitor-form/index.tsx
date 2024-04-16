@@ -165,11 +165,11 @@ export default function VisitorFormLayout() {
 	//? If form is error
 	const [error, setError] = useState(false);
 
-	const onSearch: SearchProps["onSearch"] = (value, _e, info) => {
+	const onSearch: SearchProps["onSearch"] = async (value, _e, info) => {
 		setLoading(true);
 		if (value) {
 			setError(false);
-			AxiosInstance.post("/visitor/find-recurring", {
+			await AxiosInstance.post("/visitor/find-recurring", {
 				last_name: value[0].toUpperCase() + value.slice(1),
 			})
 				.then((res) => {
@@ -284,9 +284,9 @@ export default function VisitorFormLayout() {
 		updateInput(new Date(dateString as string), "expected_time_out");
 	};
 
-	const saveAction = (zodData: WalkInFormInterfaceZod) => {
+	const saveAction = async (zodData: WalkInFormInterfaceZod) => {
 		setLoading(true);
-		AxiosInstance.post("/visitor/new?auth=true", {
+		await AxiosInstance.post("/visitor/new?auth=true", {
 			visitors: [
 				{
 					visitor_details: {
@@ -326,8 +326,8 @@ export default function VisitorFormLayout() {
 			],
 			// Add QR variable here
 		})
-			.then((res) => {
-				AxiosInstance.post("/badge/newBadge", {
+			.then(async (res) => {
+				await AxiosInstance.post("/badge/newBadge", {
 					visitor_id: res.data.visitors[0]._id,
 					qr_id: qr_id,
 				})
@@ -339,21 +339,25 @@ export default function VisitorFormLayout() {
 						setIsSuccessOpen(true);
 					})
 					.catch((err) => {
-						setLoading(false);
-						setStatus(false);
-						setAlertOpen(true);
-						const errorMessage = err.response.data.error;
+						if (err && err.response) {
+							setLoading(false);
+							setStatus(false);
+							setAlertOpen(true);
+							const errorMessage = err.response.data.error;
 
-						setAlertMsg(errorMessage);
+							setAlertMsg(errorMessage);
+						}
 					});
 			})
 			.catch((err) => {
-				setLoading(false);
-				setStatus(false);
-				setAlertOpen(!alertOpen);
+				if (err && err.response) {
+					setLoading(false);
+					setStatus(false);
+					setAlertOpen(true);
+					const errorMessage = err.response.data.error;
 
-				const errorMessage = err.response.data.error;
-				setAlertMsg(errorMessage);
+					setAlertMsg(errorMessage);
+				}
 			});
 	};
 

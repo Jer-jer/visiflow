@@ -142,9 +142,13 @@ export default function UserManagementLayout() {
 				setLoading(false);
 			})
 			.catch((err) => {
-				setAlertMsg(err.response.data.error);
-				setAlertOpen(!alertOpen);
-				setLoading(false);
+				if (err && err.response) {
+					const message = err.response.data.error;
+
+					setAlertMsg(message);
+					setAlertOpen(!alertOpen);
+					setLoading(false);
+				}
 			});
 	}, [tabs]);
 
@@ -152,8 +156,8 @@ export default function UserManagementLayout() {
 		setActiveKey(newActiveKey);
 	};
 
-	const createUser = () => {
-		AxiosInstance.post("/user/new", {
+	const createUser = async () => {
+		await AxiosInstance.post("/user/new", {
 			first_name: " ",
 			middle_name: "",
 			last_name: " ",
@@ -170,8 +174,11 @@ export default function UserManagementLayout() {
 				setActiveKey(newActiveKey);
 			})
 			.catch((err) => {
-				setAlertMsg(err.response.data.error);
-				setAlertOpen(!alertOpen);
+				if (err && err.response) {
+					const message = err.response.data.error;
+					setAlertMsg(message);
+					setAlertOpen(!alertOpen);
+				}
 			});
 	};
 

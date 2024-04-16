@@ -162,8 +162,11 @@ function NotificationsLayout() {
 				setLoading(false);
 			})
 			.catch((err) => {
-				setLoading(false);
-				error(err.response.data.error);
+				if (err && err.response) {
+					const message = err.response.data.error;
+					setLoading(false);
+					error(message);
+				}
 			});
 	}, []);
 

@@ -268,9 +268,9 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 		dispatch(removeLogs());
 
 		AxiosInstance.post(`/badge/findBadge`, { visitor_id: record._id })
-			.then((res) => {
+			.then(async (res) => {
 				const badge = res.data.badge;
-				AxiosInstance.post("/visitor/logs/find-visitor-logs", {
+				await AxiosInstance.post("/visitor/logs/find-visitor-logs", {
 					badge_id: badge._id,
 				})
 					.then((res) => {
@@ -285,14 +285,19 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 								}),
 							),
 						);
-						// dispatch(fetchLogs(logs));
 					})
 					.catch((err) => {
-						warning(err.response.data.error);
+						if (err && err.response) {
+							const message = err.response.data.error;
+							warning(message);
+						}
 					});
 			})
 			.catch((err) => {
-				error(err.response.data.error);
+				if (err && err.response) {
+					const message = err.response.data.error;
+					error(message);
+				}
 			});
 	}, []);
 
@@ -444,9 +449,9 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 		}
 	};
 
-	const updateStatus = () => {
+	const updateStatus = async () => {
 		setLoading(true);
-		AxiosInstance.put("/visitor/update-status", {
+		await AxiosInstance.put("/visitor/update-status", {
 			_id: record._id,
 			status: visitorStatusUpdate,
 			email: record.visitor_details.email,
@@ -472,20 +477,23 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 				setNotifyVisitorOpen(false);
 			})
 			.catch((err) => {
-				setLoading(false);
-				setStatus(false);
-				setAlertOpen(true);
-				setAlertMsg(err.response.data.error);
+				if (err && err.response.data.error) {
+					const message = err.response.data.error;
+					setLoading(false);
+					setStatus(false);
+					setAlertOpen(true);
+					setAlertMsg(message);
+				}
 			});
 	};
 
-	const sendPOIEmail = () => {
+	const sendPOIEmail = async () => {
 		setLoading(true);
 		const emailToSend: string[] = emailRecipient.map(
 			(email: any) => email.email,
 		);
 
-		AxiosInstance.post("employees/notifyPOI", {
+		await AxiosInstance.post("employees/notifyPOI", {
 			recipients: emailToSend,
 			subject,
 			message,
@@ -498,18 +506,21 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 				setNotifyPOIOpen(false);
 			})
 			.catch((err) => {
-				setLoading(false);
-				setStatus(false);
-				setAlertOpen(true);
-				setAlertMsg(err.response.data.error);
+				if (err && err.response) {
+					const message = err.response.data.error;
+					setLoading(false);
+					setStatus(false);
+					setAlertOpen(true);
+					setAlertMsg(message);
+				}
 			});
 	};
 
-	const saveAction = (
+	const saveAction = async (
 		zodData?: VisitorDetailsInterfaceZod,
 		visitorStatus?: VisitorStatus,
 	) => {
-		AxiosInstance.put("/visitor/update", {
+		await AxiosInstance.put("/visitor/update", {
 			_id: record._id,
 			first_name: zodData
 				? zodData.first_name
@@ -568,9 +579,12 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 				);
 			})
 			.catch((err) => {
-				setStatus(false);
-				setAlertOpen(true);
-				setAlertMsg(err.response.data.error);
+				if (err && err.response) {
+					const message = err.response.data.error;
+					setStatus(false);
+					setAlertOpen(true);
+					setAlertMsg(message);
+				}
 			});
 	};
 
@@ -604,8 +618,11 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 						dispatch(deleteVisitor(_id));
 					})
 					.catch((err) => {
-						setAlertOpen(!alertOpen);
-						setAlertMsg(err.response.data.error);
+						if (err && err.response) {
+							const message = err.response.data.error;
+							setAlertOpen(!alertOpen);
+							setAlertMsg(message);
+						}
 					});
 			},
 			onCancel() {

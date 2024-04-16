@@ -7,38 +7,38 @@ const validateUser = [
     body('username').optional().notEmpty().isString().withMessage('Username is required'),
     body('email').isEmail().withMessage('Must be a valid email'),
     body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
-    body('phone').isLength({ min: 11 }).withMessage('Phone number must be at least 11 digits').isString().withMessage('Invalid Phone number').notEmpty().withMessage('Phone number is required'),
+    body('phone').isLength({ min: 11 }).withMessage('Phone number must be at least 11 digits').isString().withMessage('Invalid Phone number').notEmpty().withMessage("There seems to be a problem with your phone number. Please make sure it doesn't contain special characters except '+' or '-'"),
     body('role').optional().isString().isIn(['admin', 'security']).withMessage('Invalid role')
 ];
 
 const validateBldgLoc = [
-    body('name').notEmpty().withMessage('Building Name is required').isString().withMessage("Building name must be a String"),
-    body('roomNo').notEmpty().withMessage('Room Number is required').isString().withMessage("Room Number must be a String")
+    body('name').notEmpty().withMessage('Building Name is required').isString().withMessage("There seems to be a problem with the building name. Please make sure it doesn't contain special characters"),
+    body('roomNo').notEmpty().withMessage('Room Number is required').isString().withMessage("There seems to be a problem with the room number. Please make sure it doesn't contain special characters")
 ];
 
 const validateReasons = [
-    body('reason').notEmpty().withMessage('Reason is required').isString().withMessage("Reason must be a String"),
+    body('reason').notEmpty().withMessage('Reason is required').isString().withMessage("There seems to be a problem with the reason. Please make sure it doesn't contain special characters"),
 ];
 
 const validateOffices = [
-    body('name').notEmpty().withMessage('Building Name is required').isString().withMessage("Building name must be a String"),
-    body('roomNo').notEmpty().withMessage('Room Number is required').isString().withMessage("Room Number must be a String"),
-    body('pic').notEmpty().withMessage('Personnel in charge is required').isString().withMessage("Personnel's name must be a String"),
-    body('contact').isLength({ min: 11 }).withMessage('Phone number must be at least 11 digits').notEmpty().withMessage('Contact Number is required').isString().withMessage("Contact Number must be a String")
+    body('name').notEmpty().withMessage('Building Name is required').isString().withMessage("There seems to be a problem with the building name. Please make sure it doesn't contain special characters"),
+    body('roomNo').notEmpty().withMessage('Room Number is required').isString().withMessage("There seems to be a problem with the room number. Please make sure it doesn't contain special characters"),
+    body('pic').notEmpty().withMessage('Personnel in charge is required').isString().withMessage("There seems to be a problem with the personnel's name. Please make sure it doesn't contain special characters"),
+    body('contact').isLength({ min: 11 }).withMessage('Phone number must be at least 11 digits').notEmpty().withMessage('Contact Number is required').isString().withMessage("There seems to be a problem with your phone number. Please make sure it doesn't contain special characters except '+' or '-'")
 ];
 
 const validateAnnouncements = [
-    body('title').notEmpty().withMessage('Title is required').isString().withMessage("Title must be a String"),
-    body('message').notEmpty().withMessage('Message is required').isString().withMessage("Message must be a String")
+    body('title').notEmpty().withMessage('Title is required').isString().withMessage("There seems to be a problem with the title. Please make sure it doesn't contain special characters"),
+    body('message').notEmpty().withMessage('Message is required').isString().withMessage("There seems to be a problem with the message. Please make sure it doesn't contain special characters")
 ];
 const validateEmployees = [
-    body('name').notEmpty().withMessage('Name is required').isString().withMessage("Name must be a String"),
+    body('name').notEmpty().withMessage('Name is required').isString().withMessage("There seems to be a problem processing the name. Please make sure it doesn't contain special characters"),
     body('email').notEmpty().withMessage('Email is required').isEmail().withMessage("Email must be valid"),
-    body('contact').isLength({ min: 11 }).withMessage('Phone number must be at least 11 digits').notEmpty().withMessage('Phone Number is required').isString().withMessage("Phone Number must be a String")
+    body('contact').isLength({ min: 11 }).withMessage('Phone number must be at least 11 digits').notEmpty().withMessage('Phone Number is required').isString().withMessage("There seems to be a problem with your phone number. Please make sure it doesn't contain special characters except '+' or '-'")
 ];
 const validateEvents = [
-    body('name').notEmpty().withMessage('Event name is required').isString().withMessage('Event name must be a string'),
-    body('locationID').isString().withMessage('Location ID must be a string').notEmpty().withMessage('Location ID is required'),
+    body('name').notEmpty().withMessage('Event name is required').isString().withMessage("There seems to be a problem with the title. Please make sure it doesn't contain special characters"),
+    body('locationID').isString().withMessage("There seems to be a problem with the location Id. Please make sure it doesn't contain special characters").notEmpty().withMessage('Location ID is required'),
     body('startDate').isISO8601().withMessage('Date is not the right format').notEmpty().withMessage('Data is required'),
     body('endDate').isISO8601().withMessage('Date is not the right format').notEmpty().withMessage('Data is required'),
     body('startTime').isISO8601().withMessage('Date is not the right format').notEmpty().withMessage('Data is required'),
@@ -46,16 +46,16 @@ const validateEvents = [
 ];
 
 const validateVisitor = [
-    body('visitors.*.visitor_details.name.first_name').isString().withMessage('First name must be a string').notEmpty().withMessage('First name is required'),
-    body('visitors.*.visitor_details.name.middle_name').isString().withMessage('Middle name must be a string').optional(),
-    body('visitors.*.visitor_details.name.last_name').isString().withMessage('Last name must be a string').notEmpty().withMessage('Last name is required'),
+    body('visitors.*.visitor_details.name.first_name').isString().withMessage("There seems to be a problem with your first name. Please make sure it doesn't contain special characters").notEmpty().withMessage('First name is required'),
+    body('visitors.*.visitor_details.name.middle_name').isString().withMessage("There seems to be a problem with your middle name. Please make sure it doesn't contain special characters").optional(),
+    body('visitors.*.visitor_details.name.last_name').isString().withMessage("There seems to be a problem with your last name. Please make sure it doesn't contain special characters").notEmpty().withMessage('Last name is required'),
     body('visitors.*.visitor_details.address').isObject().withMessage('Address must be an object'),
-    body('visitors.*.visitor_details.address.brgy').isString().withMessage('Barangay must be a string').notEmpty().withMessage('Barangay is required'),
-    body('visitors.*.visitor_details.address.city').isString().withMessage('City must be a string').notEmpty().withMessage('City is required'),
-    body('visitors.*.visitor_details.address.province').isString().withMessage('Province must be a string').notEmpty().withMessage('Province is required'),
-    body('visitors.*.visitor_details.address.country').isString().withMessage('Country must be a string').notEmpty().withMessage('Country is required'),
+    body('visitors.*.visitor_details.address.brgy').isString().withMessage("There seems to be a problem with your barangay. Please make sure it doesn't contain special characters").notEmpty().withMessage('Barangay is required'),
+    body('visitors.*.visitor_details.address.city').isString().withMessage("There seems to be a problem with your city. Please make sure it doesn't contain special characters").notEmpty().withMessage('City is required'),
+    body('visitors.*.visitor_details.address.province').isString().withMessage("There seems to be a problem with your province. Please make sure it doesn't contain special characters").notEmpty().withMessage('Province is required'),
+    body('visitors.*.visitor_details.address.country').isString().withMessage("There seems to be a problem with your country. Please make sure it doesn't contain special characters").notEmpty().withMessage('Country is required'),
     body('visitors.*.visitor_details.email').isEmail().withMessage('Must be a valid email').optional(),
-    body('visitors.*.visitor_details.phone').isString().withMessage('Phone must be a string').notEmpty().withMessage('Phone number is required'),
+    body('visitors.*.visitor_details.phone').isString().withMessage("There seems to be a problem with your phone number. Please make sure it doesn't contain special characters except '+' or '-'").notEmpty().withMessage('Phone number is required'),
     body('visitors.*.companions').optional().isArray().withMessage('Companions must be an array'),
     body('visitors.*.visitor_type').isString().withMessage('Visitor type must be a string').isIn(['Pre-Registered', 'Walk-In']).withMessage('Invalid Visitor Type'),
     body('visitors.*.status').isString().withMessage('Status must be a string').isIn(['Approved', 'In Progress', 'Declined']).withMessage('Invalid Status'),

@@ -91,9 +91,9 @@ export default function CompanionLogs({
 			dispatch(removeLogs());
 
 			AxiosInstance.post(`/badge/findBadge`, { visitor_id: companionId })
-				.then((res) => {
+				.then(async (res) => {
 					const badge = res.data.badge;
-					AxiosInstance.post("/visitor/logs/find-visitor-logs", {
+					await AxiosInstance.post("/visitor/logs/find-visitor-logs", {
 						badge_id: badge._id,
 					})
 						.then((res) => {
@@ -110,11 +110,19 @@ export default function CompanionLogs({
 							);
 						})
 						.catch((err) => {
-							warning(err.response.data.error);
+							if (err && err.response) {
+								const message = err.response.data.error;
+
+								warning(message);
+							}
 						});
 				})
 				.catch((err) => {
-					error(err.response.data.error);
+					if (err && err.response) {
+						const message = err.response.data.error;
+
+						error(message);
+					}
 				});
 		}
 	}, [companionId]);

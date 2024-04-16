@@ -66,7 +66,6 @@ export default function UserActionLogs({
 		AxiosInstance.post("/system-logs/find-user-logs", {
 			user_id: userId,
 		}).then((res) => {
-			// console.log(res.data.systemLogs);
 			dispatch(fetchUserLogs(res.data.systemLogs));
 		});
 

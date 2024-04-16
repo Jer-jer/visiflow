@@ -24,10 +24,10 @@ const badgeRouter = require("./api/routes/badgeRouter");
 const eventsRouter = require("./api/routes/eventsRouter");
 const announcementsRouter = require("./api/routes/announcementsRouter");
 const notificationRouter = require("./api/routes/notificationRouter");
-const systemLogRouter = require('./api/routes/systemLogRouter');
-const officesRouter = require('./api/routes/officesRouter');
-const employeesRouter = require('./api/routes/employeesRouter');
-const reasonRouter = require('./api/routes/reasonRouter');
+const systemLogRouter = require("./api/routes/systemLogRouter");
+const officesRouter = require("./api/routes/officesRouter");
+const employeesRouter = require("./api/routes/employeesRouter");
+const reasonRouter = require("./api/routes/reasonRouter");
 const { timeInReminder, timeOutReminder } = require("./api/utils/helper");
 
 // Create Express app
@@ -61,9 +61,9 @@ app.use("/events", eventsRouter);
 app.use("/announcements", announcementsRouter);
 app.use("/notification", notificationRouter);
 app.use("/system-logs", systemLogRouter);
-app.use('/offices', officesRouter);
-app.use('/employees', employeesRouter);
-app.use('/reasons', reasonRouter);
+app.use("/offices", officesRouter);
+app.use("/employees", employeesRouter);
+app.use("/reasons", reasonRouter);
 
 // Socket.io events
 // io.on("connection", (socket) => {
@@ -86,7 +86,7 @@ server.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 });
 
-// change to */5 * * * * * for testing every 5 mins
+// change to */n * * * * * for testing every n mins
 // 0 * * * * to every hour
 
 cron.schedule(
