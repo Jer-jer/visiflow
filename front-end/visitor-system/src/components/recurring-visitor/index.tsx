@@ -99,11 +99,11 @@ function RecurringVisitor() {
 		setFoundMultiple(false);
 	};
 
-	const onSearch: SearchProps["onSearch"] = (value, _e, info) => {
+	const onSearch: SearchProps["onSearch"] = async (value, _e, info) => {
 		setLoading(true);
 		if (value) {
 			setError(false);
-			AxiosInstance.post("/visitor/find-recurring", {
+			await AxiosInstance.post("/visitor/find-recurring", {
 				visitor: value,
 			})
 				.then((res) => {

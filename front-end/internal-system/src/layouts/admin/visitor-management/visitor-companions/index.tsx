@@ -55,26 +55,6 @@ export default function VisitorCompanions({
 		{ label: "Expected Check Out", key: "check_out" },
 	];
 
-	// const companionDetailsData = recordContext!.companion_details!.map(
-	// 	(companion) => {
-	// 		return {
-	// 			firstname: companion.name.first_name,
-	// 			middlename: companion.name.middle_name,
-	// 			lastname: companion.name.last_name,
-	// 			phone: companion.phone,
-	// 			email: companion.email,
-	// 			house: companion.address.house,
-	// 			street: companion.address.street,
-	// 			brgy: companion.address.brgy,
-	// 			city: companion.address.city,
-	// 			province: companion.address.province,
-	// 			country: companion.address.country,
-	// 			check_in: expectedIn,
-	// 			check_out: expectedOut,
-	// 		};
-	// 	},
-	// );
-
 	const companionDetailsData = companions.map((companion) => ({
 		firstname: companion.visitor_details.name.first_name,
 		middlename: companion.visitor_details.name.middle_name,
@@ -89,7 +69,7 @@ export default function VisitorCompanions({
 		country: companion.visitor_details.address.country,
 		check_in: expectedIn,
 		check_out: expectedOut,
-	}))
+	}));
 
 	return (
 		<StandardModal

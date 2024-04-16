@@ -235,7 +235,9 @@ function StepOneForm({
 			}));
 			setWhoList(convertedData);
 		} catch (error) {
-			console.error("Error fetching employees:", error);
+			if (error) {
+				console.error("Error fetching employees:", error);
+			}
 		}
 	};
 
@@ -251,7 +253,9 @@ function StepOneForm({
 			}));
 			setWhatList(convertedData);
 		} catch (error) {
-			console.error("Error fetching reasons:", error);
+			if (error) {
+				console.error("Error fetching reasons:", error);
+			}
 		}
 	};
 
@@ -267,7 +271,9 @@ function StepOneForm({
 			}));
 			return convertedData;
 		} catch (error) {
-			console.error("Error fetching buildings:", error);
+			if (error) {
+				console.error("Error fetching buildings:", error);
+			}
 		}
 	};
 
@@ -283,7 +289,9 @@ function StepOneForm({
 			}));
 			return convertedData;
 		} catch (error) {
-			console.error("Error fetching offices:", error);
+			if (error) {
+				console.error("Error fetching offices:", error);
+			}
 		}
 	};
 
