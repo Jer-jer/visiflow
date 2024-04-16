@@ -77,7 +77,7 @@ export default function VisitorLogs({
 			where: logs.purpose?.where.join(", "),
 			who: logs.purpose?.who.join(", "),
 			check_in_time: formatDateObjToString(logs.check_in_time),
-			check_out_time: formatDateObjToString(logs.check_out_time),
+			check_out_time: logs.check_out_time ? formatDateObjToString(logs.check_out_time) : "",
 		};
 	});
 
