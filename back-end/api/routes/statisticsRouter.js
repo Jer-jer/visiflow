@@ -12,4 +12,6 @@ router.get('/getYears', StatsController.getYears);
 
 router.get('/getWeeks', StatsController.getWeeks);
 
+router.post('/test', StatsController.test);
+
 module.exports = router;

@@ -68,7 +68,7 @@ async function generateVisitorQRCode(badgeId) {
           console.log(`QR code saved for badge ${badgeId}`);
           try {
             const imageData = await fs.readFile(filename);
-            resolve(filename); 
+            resolve(filename);
           } catch (readError) {
             console.error(`Error reading QR code image for badge ${badgeId}: ${readError.message}`);
             reject(readError);
@@ -229,10 +229,10 @@ async function updateLog(badgeId, _id, type, user_id, res) {
     }
   } else {
     if (type === "pre-reg") {
-      if(badge.expected_time_in > Date.now()) {
-        return res.status(400).json({ error: `Visitor expected time in is on ${badge.expected_time_in}`});
+      if (badge.expected_time_in > Date.now()) {
+        return res.status(400).json({ error: `Visitor expected time in is on ${badge.expected_time_in}` });
       }
-      
+
       await VisitorLogs.create({
         badge_id: badge._id,
         check_in_time: new Date(),
@@ -442,12 +442,12 @@ async function createSystemLog(id, type, status) {
 }
 
 // Visitor Duplicate Validation
-async function validateDuplicate(visitors, res) {  
+async function validateDuplicate(visitors, res) {
   const validateDuplicate = visitors.map(async (visitor) => {
     try {
       // Check if visitor has an existing record
       const visitorDB = await Visitor.findOne({
-        "visitor_details.email": visitor.visitor_details.email, 
+        "visitor_details.email": visitor.visitor_details.email,
       });
 
       // Check if email is used by another visitor
@@ -459,7 +459,7 @@ async function validateDuplicate(visitors, res) {
         const isDuplicate =
           visitor.visitor_details.name.first_name === first_name &&
           (visitor.visitor_details.name.middle_name || "") ===
-            (middle_name || "") &&
+          (middle_name || "") &&
           visitor.visitor_details.name.last_name === last_name;
 
         return isDuplicate

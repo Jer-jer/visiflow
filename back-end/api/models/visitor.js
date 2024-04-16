@@ -31,7 +31,7 @@ const IdPhoto = new Schema({
 const VisitorDetails = new Schema({
   name: { type: Name, required: true },
   address: { type: Address, required: true },
-  email: { type: String, require: true },
+  email: { type: String },
   phone: { type: String, require: true },
 });
 

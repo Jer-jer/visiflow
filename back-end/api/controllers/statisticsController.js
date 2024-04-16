@@ -51,6 +51,11 @@ exports.mostVisited = async (req, res) => {
         }
       },
       {
+        $project: {
+          "purpose.where": 1,
+        }
+      },
+      {
         $unwind: "$purpose.where"
       },
       {
@@ -64,13 +69,19 @@ exports.mostVisited = async (req, res) => {
           count: -1,
           "_id": 1
         }
-      }
+      },
+
     ]);
 
     const who = await Visitor.aggregate([
       {
         $match: {
           _id: { $in: visitors }
+        }
+      },
+      {
+        $project: {
+          "purpose.who": 1,
         }
       },
       {
@@ -94,6 +105,11 @@ exports.mostVisited = async (req, res) => {
       {
         $match: {
           _id: { $in: visitors }
+        }
+      },
+      {
+        $project: {
+          "purpose.what": 1,
         }
       },
       {
@@ -191,21 +207,73 @@ exports.getWeeks = async (req, res) => {
       {
         $project: {
           month: { $substr: ["$created_at", 5, 2] },
-          day: { $substr: ["$created_at", 8, 2] }
+          day: { $substr: ["$created_at", 8, 2] },
+          badge_id: 1
+        }
+      },
+      {
+        $lookup: {
+          from: "badges",
+          localField: "badge_id",
+          foreignField: "_id",
+          as: "badge"
         }
       },
       {
         $group: {
           _id: "$month",
-          weekSet: {
+          weeks: {
             $addToSet: {
               _id: "$day",
-              week1: { $cond: [{ $and: [{ $gte: ["$day", "01"] }, { $lte: ["$day", "07"] }] }, true, false] },
-              week2: { $cond: [{ $and: [{ $gte: ["$day", "08"] }, { $lte: ["$day", "14"] }] }, true, false] },
-              week3: { $cond: [{ $and: [{ $gte: ["$day", "15"] }, { $lte: ["$day", "21"] }] }, true, false] },
-              week4: { $cond: [{ $and: [{ $gte: ["$day", "22"] }, { $lte: ["$day", "31"] }] }, true, false] }
+              1: { $cond: [{ $and: [{ $gte: ["$day", "01"] }, { $lte: ["$day", "07"] }] }, true, false] },
+              2: { $cond: [{ $and: [{ $gte: ["$day", "08"] }, { $lte: ["$day", "14"] }] }, true, false] },
+              3: { $cond: [{ $and: [{ $gte: ["$day", "15"] }, { $lte: ["$day", "21"] }] }, true, false] },
+              4: { $cond: [{ $and: [{ $gte: ["$day", "22"] }, { $lte: ["$day", "31"] }] }, true, false] },
+              badges: "$badge_id"
             }
-          }
+          },
+        }
+      },
+      {
+        $unwind: "$weeks"
+      },
+      {
+        $project: {
+          _id: 1,
+          "weeks._id": 1,
+          "weeks.activeWeek": {
+            $cond: [
+              "$weeks.1",
+              "1",
+              {
+                $cond: [
+                  "$weeks.2",
+                  "2",
+                  {
+                    $cond: [
+                      "$weeks.3",
+                      "3",
+                      {
+                        $cond: ["$weeks.4", "4", null]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "weeks.badges": 1
+        }
+      },
+      {
+        $sort: {
+          "_id": 1,
+          "weeks._id": 1
+        }
+      },
+      {
+        $match: {
+          "weeks.activeWeek": { $ne: null }
         }
       }
     ]);
@@ -214,5 +282,21 @@ exports.getWeeks = async (req, res) => {
 
   } catch (error) {
     return res.status(500).json({ error: 'Failed to retrieve years from the database.' });
+  }
+}
+
+exports.test = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const visitor = await Visitor.findById("661e46bd3a73fc62776bb25a");
+
+    if (visitor.visitor_details.email) {
+      return res.send('empty email is true');
+    }
+
+    return res.status(200).json({ visitor });
+  } catch (error) {
+    return res.status(500).json(error);
   }
 }
