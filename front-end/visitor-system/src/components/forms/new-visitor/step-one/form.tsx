@@ -31,6 +31,7 @@ import type { DatePickerProps } from "antd";
 
 // Utils
 import { formatDateObjToString } from "../../../../utils";
+import { SelectOption } from "../../../../utils/interfaces";
 import AxiosInstance from "../../../../lib/axios";
 
 // Assets
@@ -54,11 +55,6 @@ interface FormProps {
 
 	setVisitorNo: Dispatch<SetStateAction<number>>;
 	setVisitors: Dispatch<SetStateAction<VisitorDataType[]>>;
-}
-
-interface SelectOption {
-	value: string;
-	label: string;
 }
 
 dayjs.extend(weekday);
@@ -231,7 +227,9 @@ function StepOneForm({
 			}));
 			setWhoList(convertedData);
 		} catch (error) {
-			console.error("Error fetching employees:", error);
+			if (error) {
+				console.error("Error fetching employees:", error)
+			}
 		}
 	};
 
@@ -247,7 +245,9 @@ function StepOneForm({
 			}));
 			setWhatList(convertedData);
 		} catch (error) {
-			console.error("Error fetching reasons:", error);
+			if (error) {
+				console.error("Error fetching reasons:", error);
+			}
 		}
 	};
 
@@ -263,7 +263,9 @@ function StepOneForm({
 			}));
 			return convertedData;
 		} catch (error) {
-			console.error("Error fetching buildings:", error);
+			if (error) {
+				console.error("Error fetching buildings:", error);
+			}
 		}
 	};
 
@@ -279,7 +281,9 @@ function StepOneForm({
 			}));
 			return convertedData;
 		} catch (error) {
-			console.error("Error fetching offices:", error);
+			if (error) {
+				console.error("Error fetching offices:", error);
+			}
 		}
 	};
 

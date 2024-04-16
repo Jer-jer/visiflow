@@ -36,5 +36,6 @@ export enum UserActionLogType {
 	LogIn = "log_in",
 	Logout = "log_out",
 	GenerateBadge = "generate_badge",
-	AddAnnouncement="add_announce"
+	AddAnnouncement = "add_announce",
+	UpdateAnnouncement = "update_announce",
 }

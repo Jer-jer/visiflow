@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,7 +33,7 @@ import { LeftOutlined, LoadingOutlined } from "@ant-design/icons";
 
 // Libraries
 import AxiosInstance from "../../../lib/axios";
-import { GuardVisitorDataType } from "../../../utils/interfaces";
+import { GuardVisitorDataType, SelectOption } from "../../../utils/interfaces";
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -41,38 +41,38 @@ dayjs.extend(customParseFormat);
 
 type WalkInFormTypeZod = z.infer<typeof WalkInFormZod>;
 
-const whatOptions = [
-	{ label: "Meeting", value: "Meeting" },
-	{ label: "Interview", value: "Interview" },
-	{ label: "School Activity", value: "School Activity" },
-	{ label: "Intramurals", value: "Intramurals" },
-	{ label: "Investigate", value: "Investigate" },
-	{ label: "Relatives", value: "Relatives" },
-	{ label: "Inquiries", value: "Inquiries" },
-	{ label: "Others", value: "Others" },
-];
+// const whatOptions = [
+// 	{ label: "Meeting", value: "Meeting" },
+// 	{ label: "Interview", value: "Interview" },
+// 	{ label: "School Activity", value: "School Activity" },
+// 	{ label: "Intramurals", value: "Intramurals" },
+// 	{ label: "Investigate", value: "Investigate" },
+// 	{ label: "Relatives", value: "Relatives" },
+// 	{ label: "Inquiries", value: "Inquiries" },
+// 	{ label: "Others", value: "Others" },
+// ];
 
-const whoOptions = [
-	{ label: "Janusz", value: "Janusz" },
-	{ label: "Omamalin", value: "Omamalin" },
-	{ label: "Todd", value: "Todd" },
-	{ label: "Machacon", value: "Machacon" },
-	{ label: "Neil", value: "Neil" },
-	{ label: "Collado", value: "Collado" },
-	{ label: "Allan", value: "Allan" },
-	{ label: "Bargamento", value: "Bargamento" },
-	{ label: "Atty. Flores", value: "Atty. Flores" },
-];
+// const whoOptions = [
+// 	{ label: "Janusz", value: "Janusz" },
+// 	{ label: "Omamalin", value: "Omamalin" },
+// 	{ label: "Todd", value: "Todd" },
+// 	{ label: "Machacon", value: "Machacon" },
+// 	{ label: "Neil", value: "Neil" },
+// 	{ label: "Collado", value: "Collado" },
+// 	{ label: "Allan", value: "Allan" },
+// 	{ label: "Bargamento", value: "Bargamento" },
+// 	{ label: "Atty. Flores", value: "Atty. Flores" },
+// ];
 
-const whereOptions = [
-	{ label: "Guard House", value: "Guard House" },
-	{ label: "HR", value: "HR" },
-	{ label: "Lobby", value: "Lobby" },
-	{ label: "Office 1", value: "Office 1" },
-	{ label: "Office 2", value: "Office 2" },
-	{ label: "Department 1", value: "Department 1" },
-	{ label: "Department 2", value: "Department 2" },
-];
+// const whereOptions = [
+// 	{ label: "Guard House", value: "Guard House" },
+// 	{ label: "HR", value: "HR" },
+// 	{ label: "Lobby", value: "Lobby" },
+// 	{ label: "Office 1", value: "Office 1" },
+// 	{ label: "Office 2", value: "Office 2" },
+// 	{ label: "Department 1", value: "Department 1" },
+// 	{ label: "Department 2", value: "Department 2" },
+// ];
 
 // eslint-disable-next-line no-restricted-globals
 const parsed = queryString.parse(location.search);
@@ -92,6 +92,96 @@ export default function VisitorFormLayout() {
 	const [alertOpen, setAlertOpen] = useState(false);
 	const [alertMsg, setAlertMsg] = useState("");
 	const [visitorsFound, setVisitorsFound] = useState(false);
+
+	const [whoList, setWhoList] = useState<SelectOption[]>([]);
+	const [whatList, setWhatList] = useState<SelectOption[]>([]);
+	const [whereList, setWhereList] = useState<SelectOption[]>([]);
+
+	useEffect(() => {
+		fetchAndSetEmployees();
+		fetchAndSetReasons();
+		getWhere();
+	}, []);
+
+	const fetchAndSetEmployees = async () => {
+		try {
+			const response = await AxiosInstance.get("/employees/");
+			const data = response.data.employees;
+
+			const convertedData: SelectOption[] = data.map((employee: any) => ({
+				value: employee.name,
+				label: employee.name,
+			}));
+			setWhoList(convertedData);
+		} catch (error) {
+			console.error("Error fetching employees:", error);
+		}
+	};
+
+	const fetchAndSetReasons = async () => {
+		try {
+			const response = await AxiosInstance.get("/reasons/");
+			const data = response.data.reasons;
+
+			//getting only the data we want
+			const convertedData: SelectOption[] = data.map((purpose: any) => ({
+				value: purpose.reason,
+				label: purpose.reason,
+			}));
+			setWhatList(convertedData);
+		} catch (error) {
+			console.error("Error fetching reasons:", error);
+		}
+	};
+
+	const fetchAndSetBuildings = async () => {
+		try {
+			const response = await AxiosInstance.get("/buildings/");
+			const data = response.data.buildings;
+
+			//getting only the data we want
+			const convertedData: SelectOption[] = data.map((building: any) => ({
+				value: building.name,
+				label: building.name,
+			}));
+			return convertedData;
+		} catch (error) {
+			console.error("Error fetching buildings:", error);
+		}
+	};
+
+	const fetchAndSetOffices = async () => {
+		try {
+			const response = await AxiosInstance.get("/offices/");
+			const data = response.data.office;
+
+			//getting only the data we want
+			const convertedData: SelectOption[] = data.map((office: any) => ({
+				value: `${office.name} - ${office.build}, Floor ${office.floor}, ${office.roomNo}`,
+				label: `${office.name} - ${office.build}, Floor ${office.floor}, ${office.roomNo}`,
+			}));
+			return convertedData;
+		} catch (error) {
+			console.error("Error fetching buildings:", error);
+		}
+	};
+
+	const getWhere = async () => {
+		let buildingsPromise = fetchAndSetBuildings();
+		let officesPromise = fetchAndSetOffices();
+
+		let buildings = await buildingsPromise;
+		let offices = await officesPromise;
+
+		console.log("buildings", buildings);
+		console.log("offices", offices);
+
+		if (buildings !== undefined && offices !== undefined) {
+			let combinedArray = [...buildings, ...offices];
+			console.log("combinedArray", combinedArray);
+			setWhereList(combinedArray);
+		}
+	};
 
 	//? State used for fetching search visitors
 	const [visitors, setVisitors] = useState<GuardVisitorDataType[]>([
@@ -127,6 +217,7 @@ export default function VisitorFormLayout() {
 			visitor_type: VisitorType.WalkIn,
 		},
 	]);
+
 	const [recurringVisitor, setRecurringVisitor] =
 		useState<GuardVisitorDataType>();
 
@@ -165,12 +256,12 @@ export default function VisitorFormLayout() {
 	//? If form is error
 	const [error, setError] = useState(false);
 
-	const onSearch: SearchProps["onSearch"] = (value, _e, info) => {
+	const onSearch: SearchProps["onSearch"] = async (value, _e, info) => {
 		setLoading(true);
 		if (value) {
 			setError(false);
-			AxiosInstance.post("/visitor/find-recurring", {
-				last_name: value[0].toUpperCase() + value.slice(1),
+			await AxiosInstance.post("/visitor/find-recurring", {
+				visitor: value[0].toUpperCase() + value.slice(1),
 			})
 				.then((res) => {
 					if (res.status === 200) {
@@ -284,16 +375,22 @@ export default function VisitorFormLayout() {
 		updateInput(new Date(dateString as string), "expected_time_out");
 	};
 
-	const saveAction = (zodData: WalkInFormInterfaceZod) => {
+	const saveAction = async (zodData: WalkInFormInterfaceZod) => {
 		setLoading(true);
-		AxiosInstance.post("/visitor/new?auth=true", {
+		await AxiosInstance.post("/visitor/new?auth=true", {
 			visitors: [
 				{
 					visitor_details: {
 						name: {
-							first_name: zodData.first_name,
-							middle_name: zodData.middle_name,
-							last_name: zodData.last_name,
+							first_name:
+								zodData.first_name[0].toUpperCase() +
+								zodData.first_name.slice(1),
+							middle_name: zodData.middle_name
+								? zodData.middle_name[0].toUpperCase() +
+									zodData.middle_name.slice(1)
+								: "",
+							last_name:
+								zodData.last_name[0].toUpperCase() + zodData.last_name.slice(1),
 						},
 						address: {
 							house: zodData.house,
@@ -326,8 +423,8 @@ export default function VisitorFormLayout() {
 			],
 			// Add QR variable here
 		})
-			.then((res) => {
-				AxiosInstance.post("/badge/newBadge", {
+			.then(async (res) => {
+				await AxiosInstance.post("/badge/newBadge", {
 					visitor_id: res.data.visitors[0]._id,
 					qr_id: qr_id,
 				})
@@ -339,35 +436,25 @@ export default function VisitorFormLayout() {
 						setIsSuccessOpen(true);
 					})
 					.catch((err) => {
-						setLoading(false);
-						setStatus(false);
-						setAlertOpen(true);
-						if (err && err.reponse) {
-							const errorMessage =
-								err.response.data.error ||
-								"Something went wrong processing the badge";
+						if (err && err.response) {
+							setLoading(false);
+							setStatus(false);
+							setAlertOpen(true);
+							const errorMessage = err.response.data.error;
 
 							setAlertMsg(errorMessage);
 						}
-						const errorMessage = "Something went wrong processing the badge";
-
-						setAlertMsg(errorMessage);
 					});
 			})
 			.catch((err) => {
-				setLoading(false);
-				setStatus(false);
-				setAlertOpen(!alertOpen);
-
 				if (err && err.response) {
-					const errorMessage =
-						err.response.data.error ||
-						"Something went wrong processing the visitor";
+					setLoading(false);
+					setStatus(false);
+					setAlertOpen(true);
+					const errorMessage = err.response.data.error;
+
 					setAlertMsg(errorMessage);
 				}
-
-				const errorMessage = "Something went wrong processing the visitor";
-				setAlertMsg(errorMessage);
 			});
 	};
 
@@ -424,9 +511,9 @@ export default function VisitorFormLayout() {
 							status={status}
 							alertMsg={alertMsg}
 							errors={errors}
-							whatOptions={whatOptions}
-							whoOptions={whoOptions}
-							whereOptions={whereOptions}
+							whatOptions={whatList}
+							whoOptions={whoList}
+							whereOptions={whereList}
 							register={register}
 							setAlertOpen={setAlertOpen}
 							onSubmit={onSubmit}
@@ -479,9 +566,9 @@ export default function VisitorFormLayout() {
 									alertOpen={alertOpen}
 									status={status}
 									alertMsg={alertMsg}
-									whatOptions={whatOptions}
-									whoOptions={whoOptions}
-									whereOptions={whereOptions}
+									whatOptions={whatList}
+									whoOptions={whoList}
+									whereOptions={whereList}
 									qr_id={parseInt(qr_id as string)}
 									setAlertOpen={setAlertOpen}
 									handleSuccessOk={handleSuccessOk}

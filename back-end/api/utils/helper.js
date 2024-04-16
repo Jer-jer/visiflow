@@ -5,6 +5,7 @@ const ObjectId = mongoose.Types.ObjectId;
 // Imports
 const QRCode = require("qrcode");
 const nodemailer = require("nodemailer");
+const fs = require("fs").promises;
 
 // Models
 const Badge = require("../models/badge");
@@ -48,7 +49,7 @@ const transporter = nodemailer.createTransport({
 // Generate QR code function, found in badge controller
 // use in walk-in visitor
 async function generateVisitorQRCode(badgeId) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const filename = `api/resource/badge/badge${badgeId}.png`;
     const uri = `${local_ip}/badge/checkBadge?qr_id=${badgeId}`;
 
@@ -56,7 +57,7 @@ async function generateVisitorQRCode(badgeId) {
       filename,
       uri,
       { errorCorrectionLevel: "H" },
-      function (error) {
+      async function (error) {
         if (error) {
           console.error(
             `Error generating QR code for badge ${badgeId}: ${error.message}`
@@ -64,7 +65,15 @@ async function generateVisitorQRCode(badgeId) {
           reject(error);
         } else {
           console.log(`QR code saved for badge ${badgeId}`);
-          resolve();
+          try {
+            const imageData = await fs.readFile(filename);
+            resolve(filename);
+          } catch (readError) {
+            console.error(
+              `Error reading QR code image for badge ${badgeId}: ${readError.message}`
+            );
+            reject(readError);
+          }
         }
       }
     );
@@ -221,10 +230,12 @@ async function updateLog(badgeId, _id, type, user_id, res) {
     }
   } else {
     if (type === "pre-reg") {
-      if(badge.expected_time_in > Date.now()) {
-        return res.status(400).json({ error: `Visitor expected time in is on ${badge.expected_time_in}`});
+      if (badge.expected_time_in > Date.now()) {
+        return res.status(400).json({
+          error: `Visitor expected time in is on ${badge.expected_time_in}`,
+        });
       }
-      
+
       await VisitorLogs.create({
         badge_id: badge._id,
         check_in_time: new Date(),
@@ -397,14 +408,14 @@ async function createNotification(visitor, type, io) {
     visitor_type: visitorType,
   };
 
-  await Notification.create({
+  const newNotif = await Notification.create({
     _id: new ObjectId(),
     type: type,
     recipient: visitor.visitor_details?._id || visitor[0]._id,
     content: notificationContent,
   });
 
-  io.emit("newNotification", notificationContent);
+  io.emit("newNotification", newNotif);
 
   console.log(`${type} notification pushed`);
 }
@@ -434,12 +445,12 @@ async function createSystemLog(id, type, status) {
 }
 
 // Visitor Duplicate Validation
-async function validateDuplicate(visitors, res) {  
+async function validateDuplicate(visitors, res) {
   const validateDuplicate = visitors.map(async (visitor) => {
     try {
       // Check if visitor has an existing record
       const visitorDB = await Visitor.findOne({
-        "visitor_details.email": visitor.visitor_details.email,
+        "visitor_details.email": visitor.visitor_details.email, 
       });
 
       // Check if email is used by another visitor

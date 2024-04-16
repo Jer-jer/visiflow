@@ -33,10 +33,7 @@ export const formatDateObjToString2 = (dateObj: Date) => {
 
 export const formatDateToISO = (dateObj: Date) => {
 	//? Convert date object to date string
-	console.log("DATE OBJ", dateObj);
 	const DateObject = DateTime.fromJSDate(dateObj);
-
-	console.log("ACTIONS LOGS", DateObject);
 
 	const formattedDateTime = DateObject.toISO();
 
@@ -95,6 +92,8 @@ export const actionType = (type: UserActionLogType) => {
 			return "Generate Badge";
 		case "add_announce":
 			return "Added Announcement";
+		case "update_announce":
+			return "Updated Announcement";
 		default:
 			return "Unknown";
 	}

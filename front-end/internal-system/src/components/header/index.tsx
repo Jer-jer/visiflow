@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import useSound from "use-sound";
 import Notifications from "react-notifications-menu";
 import { jwtDecode } from "jwt-decode";
+import { saveAs } from "file-saver";
 
 //Components
 import { Modal, Tooltip, InputNumber } from "antd";
@@ -37,6 +38,7 @@ import { socket } from "./../../lib/socket";
 import { Account } from "../../assets/svg";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import NotificationSound from "../../assets/notification.wav";
+import { LoadingOutlined } from "@ant-design/icons";
 
 //Styles
 import "./styles.scss";
@@ -51,10 +53,13 @@ const error = (message: string) => {
 
 export default function Header() {
 	const desktopMedia = window.matchMedia("(min-width: 1024px)");
+
 	//? Socket Connection
 	const [isConnected, setIsConnected] = useState(socket.connected);
 	const [isAdmin, setIsAdmin] = useState(false);
 	const [noOfBadges, setNoOfBadges] = useState(0);
+
+	const [loading, setLoading] = useState(false);
 
 	//Modal States
 	const [isGenModalOpen, setIsGenModalOpen] = useState(false);
@@ -79,15 +84,34 @@ export default function Header() {
 		setSuccess(false);
 	};
 
-	const handleGenOk = () => {
-		AxiosInstance.post("/badge/generateBadge", { qty: noOfBadges })
-			.then((res) => {
+	const handleGenOk = async () => {
+		setLoading(true);
+		await AxiosInstance.post(
+			"/badge/generateBadge",
+			{ qty: noOfBadges },
+			{
+				responseType: "blob", // Important
+			},
+		)
+			.then(async (res) => {
+				const data = await res.data;
+				const zipBlob = new Blob([data], { type: "application/zip" });
+
+				if (zipBlob.size > 0) {
+					saveAs(zipBlob, `Visitor Badges-${noOfBadges}.zip`);
+				} else {
+					throw new Error("No data to download");
+				}
+
+				setLoading(false);
 				setSuccess(true);
 				setIsGenModalOpen(false);
 			})
-			.then((err) => {
-				console.error("Something went wrong");
-				setIsGenModalOpen(false);
+			.catch((err) => {
+				if (err && err.response) {
+					const message = err.response.data.error;
+					error(message);
+				}
 			});
 	};
 
@@ -95,8 +119,8 @@ export default function Header() {
 		setIsGenModalOpen(false);
 	};
 
-	const initialNotifications = () => {
-		AxiosInstance.get("/notification")
+	const initialNotifications = async () => {
+		await AxiosInstance.get("/notification")
 			.then((res) => {
 				const unreadNotifications = res.data.notifications.filter(
 					(notif: NotificationProps) => !notif.is_read,
@@ -122,10 +146,10 @@ export default function Header() {
 				dispatch(fetchNotifs(notifications));
 			})
 			.catch((err) => {
-				error(
-					err?.response?.data?.error ||
-						"Something went wrong with displaying notifications. Please refresh the page",
-				);
+				if (err && err.response) {
+					const message = err.response.data.error;
+					error(message);
+				}
 			});
 	};
 
@@ -177,7 +201,7 @@ export default function Header() {
 					is_read: value.is_read,
 				}),
 			);
-			play();
+			play(); // Call play() on every new notification
 		}
 
 		initialNotifications();
@@ -193,17 +217,17 @@ export default function Header() {
 			socket.off("newVisitor", onNewVisitor);
 			socket.off("newNotification", onNewNotification);
 		};
-	}, []);
+	}, [play]);
 
 	const logout = () => {
 		window.location.reload();
 		localStorage.clear();
 	};
 
-	const readNotification = (notif: NotificationStoreProps) => {
+	const readNotification = async (notif: NotificationStoreProps) => {
 		//? Check if the notification is already read
 		if (notif.is_read) return;
-		AxiosInstance.put("/notification/update", {
+		await AxiosInstance.put("/notification/update", {
 			_id: notif._id,
 			is_read: true,
 		});
@@ -230,6 +254,9 @@ export default function Header() {
 
 	return (
 		<div className="navbar bg-base-100">
+			{loading && (
+				<LoadingOutlined className="absolute left-[48%] top-[40%] z-[1000] text-[160px] text-primary-500" />
+			)}
 			<div className="flex-1">
 				{desktopMedia.matches ? (
 					<a
@@ -275,7 +302,6 @@ export default function Header() {
 							<InputNumber
 								className="badge-counter"
 								min={0}
-								max={40}
 								defaultValue={noOfBadges}
 								onChange={onChangeBadges}
 							/>

@@ -17,6 +17,7 @@ import { ExclamationCircleFilled, LeftOutlined } from "@ant-design/icons";
 //Styles
 import "./styles.scss";
 import AxiosInstace from "../../../../lib/axios";
+import { jwtDecode } from "jwt-decode";
 
 interface PageDetailsProps {
 	record?: {_id: string, title: string, message: string, prio: number};
@@ -70,16 +71,17 @@ export default function PageDetails({
 		setDisabledInputs(!disabledInputs);
 	};
 
-	const saveAction = async() => {
-		//This needs to be customized to whatever the DB returns
-
+	const saveAction = async() => {	
+		const token = localStorage.getItem("token");
+		const decodedtoken = (jwtDecode (token as string));
 		// saving new record
 		if(savedRecord=== undefined) {
 			try {
 				const response = await AxiosInstace.post('/announcements/new', { 
 					title: title,
 					message: body,
-					prio: prio
+					prio: prio,
+					userID: decodedtoken.sub
 				}); 
 				setSavedRecord(response.data.event);
 			} catch (error) {
@@ -92,7 +94,8 @@ export default function PageDetails({
 					_id: record === undefined ? savedRecord._id : record._id,
 					title: title === "" ? record?.title : title,
 					message: body === "" ? record?.message : body,
-					prio: prio === 999 ? record?.prio : prio
+					prio: prio === 999 ? record?.prio : prio,
+					userID: decodedtoken.sub
 				}); 
 			} catch (error) {
 			console.error('Error in updating announcement:', error);

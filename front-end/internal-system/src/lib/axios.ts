@@ -7,7 +7,7 @@ const token = localStorage.getItem("token");
 const AxiosInstance = axios.create({
 	baseURL: "https://visiflow-api.onrender.com",
 	headers: {
-		Authorization: `Bearer ${token!}`,
+		Authorization: `Bearer ${token}`,
 	},
 });
 
@@ -20,17 +20,20 @@ AxiosInstance.interceptors.response.use(
 	async (error) => {
 		const originalRequest = error.config;
 
+		const logout = () => {
+			window.location.reload();
+			localStorage.clear();
+		};
+
 		const errorModal = (message: string) => {
 			Modal.error({
 				title: `Error`,
 				content: message,
 				className: "error-modal",
+				onOk: () => {
+					logout();
+				},
 			});
-		};
-
-		const logout = () => {
-			window.location.reload();
-			localStorage.clear();
 		};
 
 		if (error.response.status === 401 && !originalRequest._retry) {
@@ -58,12 +61,10 @@ AxiosInstance.interceptors.response.use(
 				} catch (refreshError) {
 					console.error("Refresh token failed:", refreshError);
 					errorModal("Refresh token failed, logging you out.");
-					logout();
 				}
 			} else {
 				console.error("No refresh token found");
 				errorModal("No refresh token found, logging you out.");
-				logout();
 			}
 		}
 

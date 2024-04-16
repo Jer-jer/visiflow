@@ -162,11 +162,11 @@ function NotificationsLayout() {
 				setLoading(false);
 			})
 			.catch((err) => {
-				setLoading(false);
-				error(
-					err?.response?.data?.error ||
-						"Something went wrong with displaying the notifications list.",
-				);
+				if (err && err.response) {
+					const message = err.response.data.error;
+					setLoading(false);
+					error(message);
+				}
 			});
 	}, []);
 
