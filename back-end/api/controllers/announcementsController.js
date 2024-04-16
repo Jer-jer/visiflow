@@ -1,5 +1,3 @@
-const express = require("express"); //for import of express package
-const bodyParser = require("body-parser");
 const Announcements = require("../models/announcements");
 const { createSystemLog } = require("../utils/helper");
 const {
