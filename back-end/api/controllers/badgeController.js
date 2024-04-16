@@ -9,6 +9,7 @@ const {
 } = require("../utils/helper");
 const archiver = require('archiver');
 const fs = require('fs');
+const tar = require('tar');
 
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -56,7 +57,7 @@ exports.generateBadge = async (req, res) => {
     res.attachment(zipFilename);
     archive.pipe(res);
     
-    output.on('close', function() { 
+    output.on('close', function() {
       return res.status(200).json({ message: `Generated ${qty} badges`, filename: zipFilename });
     });
     
@@ -72,8 +73,6 @@ exports.generateBadge = async (req, res) => {
     qrCodes.forEach((qrCode, index) => {
       archive.append(fs.createReadStream(qrCode), { name: `badge_${index}.png` });
     });
-
-    await createSystemLog(user_id, log_type, "success");
 
     archive.finalize();
   } catch (error) {

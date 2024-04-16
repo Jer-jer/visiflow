@@ -29,6 +29,7 @@ const officesRouter = require('./api/routes/officesRouter');
 const employeesRouter = require('./api/routes/employeesRouter');
 const reasonRouter = require('./api/routes/reasonRouter');
 const statisticsRouter = require('./api/routes/statisticsRouter');
+const ocrRouter = require('./api/routes/ocrRouter');
 const { timeInReminder, timeOutReminder } = require("./api/utils/helper");
 
 // Create Express app
@@ -66,6 +67,7 @@ app.use('/offices', officesRouter);
 app.use('/employees', employeesRouter);
 app.use('/reasons', reasonRouter);
 app.use('/stats', statisticsRouter);
+app.use('/scan', ocrRouter);
 
 // Socket.io events
 // io.on("connection", (socket) => {
