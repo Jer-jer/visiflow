@@ -7,7 +7,7 @@ const Visitor = require('../models/visitor');
 const Badge = require('../models/badge');
 
 // Constants
-const local_ip = "localhost";
+const local_ip = "https://visiflow-api.onrender.com";
 
 // Nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -127,7 +127,7 @@ async function generatePreRegBadge(visitor) {
 
     await badge.save();
 
-    const uri = `http://${local_ip}:5000/badge/checkBadge?visitor_id=${visitor._id}`;
+    const uri = `${local_ip}/badge/checkBadge?visitor_id=${visitor._id}`;
     const filename = `api/resource/badge/badge${badge._id}.png`;
     await generateQRCode(uri, filename, badge._id);
 

@@ -71,7 +71,7 @@ export default function Scanner({ onQRstatus }: any) {
 	}
 
 	const desiredUrlPatterns = [
-		"http://localhost:3000/visitor-form/?qr_id=",
+		"https://gullas-visiflow-internal.onrender.com/visitor-form/?qr_id=",
 		"https://visiflow-api.onrender.com/badge/checkBadge?visitor_id=",
 		"https://visiflow-api.onrender.com/badge/checkBadge?qr_id=",
 		// Add more desired URL patterns here if needed

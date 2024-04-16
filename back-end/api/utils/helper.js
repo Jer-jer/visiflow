@@ -20,7 +20,7 @@ const { Storage } = require("@google-cloud/storage");
 const bucketName = "visiflow";
 
 // const local_ip = "192.168.1.4"; 
-const local_ip = "localhost";
+const local_ip = "https://visiflow-api.onrender.com";
 
 // Lazy-loaded storage
 let storage;
@@ -50,7 +50,7 @@ const transporter = nodemailer.createTransport({
 async function generateVisitorQRCode(badgeId) {
   return new Promise((resolve, reject) => {
     const filename = `api/resource/badge/badge${badgeId}.png`;
-    const uri = `http://${local_ip}:5000/badge/checkBadge?qr_id=${badgeId}`;
+    const uri = `${local_ip}/badge/checkBadge?qr_id=${badgeId}`;
 
     QRCode.toFile(
       filename,
@@ -133,7 +133,7 @@ async function generateBadge(visitor) {
 
   await badge.save();
 
-  const uri = `http://${local_ip}:5000/badge/checkBadge?visitor_id=${visitor._id}`;
+  const uri = `${local_ip}/badge/checkBadge?visitor_id=${visitor._id}`;
   const filename = `api/resource/badge/badge${badge._id}.png`;
   await generateQRCode(uri, filename, badge._id);
 
