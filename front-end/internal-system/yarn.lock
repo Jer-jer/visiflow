@@ -2592,6 +2592,9 @@
     "@types/react" "*"
 
 <<<<<<< HEAD
+"@types/react@*", "@types/react@^18.0.0":
+=======
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 >>>>>>> master
@@ -2602,6 +2605,7 @@
 <<<<<<< HEAD
 =======
 "@types/react@*", "@types/react@^18.0.0", "@types/react@^18.2.25":
+>>>>>>> master
   version "18.2.74"
   resolved "https://registry.npmjs.org/@types/react/-/react-18.2.74.tgz"
   integrity sha512-9AEqNZZyBx8OdZpxzQlaFEVCSFUM2YXJH46yPOiOpm078k6ZLOCcuAzGum/zK8YBwY+dbahVNbHrbgrAwIRlqw==
@@ -3031,7 +3035,7 @@ ajv@6.10.0:
 <<<<<<< HEAD
   integrity sha512-nffhOpkymDECQyR0mnsUtoCE8RlX38G0rYP+wgLWFyZuUyuuojSSvi/+euOiQBIn63whYwYVIIH1TvE3tu4OEg==
   dependencies:
-    fast-deep-equal "^3.1.1"
+    fast-deep-equal "^2.0.1"
     fast-json-stable-stringify "^2.0.0"
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
@@ -3042,11 +3046,11 @@ ajv@^6.12.2, ajv@^6.12.4, ajv@^6.12.5:
   integrity sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g==
   dependencies:
     fast-deep-equal "^3.1.1"
-    json-schema-traverse "^1.0.0"
-    require-from-string "^2.0.2"
+    fast-json-stable-stringify "^2.0.0"
+    json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-ajv@^8.6.0, ajv@>=8:
+ajv@^8.0.0, ajv@^8.6.0, ajv@^8.9.0:
   version "8.12.0"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-8.12.0.tgz#d1a0527323e22f53562c567c00991577dfbe19d1"
   integrity sha512-sRu1kpcO9yLtYxBKvqfTeh9KzZEwO3STyX1HT+4CaDzC6HpTGYhIhPIzj9XuKU7KYDwnaeh5hcOwjy1QuJzBPA==
@@ -3056,6 +3060,8 @@ ajv@^8.6.0, ajv@>=8:
     require-from-string "^2.0.2"
     uri-js "^4.2.2"
 
+<<<<<<< HEAD
+=======
 ajv@6.10.0:
   version "6.10.0"
   resolved "https://registry.npmjs.org/ajv/-/ajv-6.10.0.tgz"
@@ -3088,6 +3094,7 @@ ajv@^8.0.0, ajv@^8.6.0, ajv@^8.9.0:
     require-from-string "^2.0.2"
     uri-js "^4.2.2"
 
+>>>>>>> master
 amqplib@0.5.2:
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/amqplib/-/amqplib-0.5.2.tgz#d2d7313c7ffaa4d10bcf1e6252de4591b6cc7b63"
@@ -4081,7 +4088,7 @@ comparejs@1.0.0:
   resolved "https://registry.yarnpkg.com/comparejs/-/comparejs-1.0.0.tgz#1f61a4c2c19c5aed08983952e88bd1fe8924e3df"
   integrity sha512-Ue/Zd9aOucHzHXwaCe4yeHR7jypp7TKrIBZ5yls35nPNiVXlW14npmNVKM1ZaLlQTKZ6/4ewA//gYKHHIwCpOw==
 
-compressible@~2.0.14, compressible@~2.0.16:
+compressible@~2.0.16:
   version "2.0.18"
   resolved "https://registry.yarnpkg.com/compressible/-/compressible-2.0.18.tgz#af53cca6b070d4c3c0750fbd77286a6d7cc46fba"
   integrity sha512-AF3r7P5dWxL8MxyITRMlORQNaOA2IkAFaTr4k7BUumjPtRpGDTZpl0Pb1XCO6JeDCBdp126Cgs9sMxqSjgYyRg==
@@ -4095,6 +4102,9 @@ compression@1.7.3:
   dependencies:
     accepts "~1.3.5"
     bytes "3.0.0"
+<<<<<<< HEAD
+    compressible "~2.0.14"
+=======
 <<<<<<< HEAD
     compressible "~2.0.16"
     debug "2.6.9"
@@ -4125,11 +4135,28 @@ compression@^1.7.4:
     accepts "~1.3.5"
     bytes "3.0.0"
     compressible "~2.0.16"
+>>>>>>> master
+    debug "2.6.9"
+    on-headers "~1.0.1"
+    safe-buffer "5.1.2"
+    vary "~1.1.2"
+
+<<<<<<< HEAD
+compression@^1.7.4:
+  version "1.7.4"
+  resolved "https://registry.npmjs.org/compression/-/compression-1.7.4.tgz"
+  integrity sha512-jaSIDzP9pZVS4ZfQ+TzvtiWhdpFhE2RDHz8QJkpX9SIpLq88VueF5jJw6t+6CUQcAoA6t+x89MLrWAqpfDE8iQ==
+  dependencies:
+    accepts "~1.3.5"
+    bytes "3.0.0"
+    compressible "~2.0.16"
     debug "2.6.9"
     on-headers "~1.0.2"
     safe-buffer "5.1.2"
     vary "~1.1.2"
 
+=======
+>>>>>>> master
 compute-scroll-into-view@^3.0.2:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/compute-scroll-into-view/-/compute-scroll-into-view-3.1.0.tgz#753f11d972596558d8fe7c6bcbc8497690ab4c87"
@@ -5673,11 +5700,14 @@ express@^4.17.3:
     utils-merge "1.0.1"
     vary "~1.1.2"
 
+<<<<<<< HEAD
+=======
 fast-deep-equal@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-2.0.1.tgz#7b05218ddf9667bf7f370bf7fdb2cb15fdd0aa49"
   integrity sha512-bCK/2Z4zLidyB4ReuIsvALH6w31YfAQDmXMqMx6FyfHqvBxtjC0eRumeSu4Bs3XtXwpyIywtSTrVT99BxY1f9w==
 
+>>>>>>> master
 fast-deep-equal@^3.1.1, fast-deep-equal@^3.1.3:
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz#3a7d56b559d6cbc3eb512325244e619a65c6c525"
@@ -9839,6 +9869,9 @@ react-dev-utils@^12.0.1:
     text-table "^0.2.0"
 
 <<<<<<< HEAD
+react-dom@18.2.0, react-dom@^18.2.0:
+=======
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 >>>>>>> master
@@ -9856,6 +9889,7 @@ react-dom@*, "react-dom@^15.0.0 || ^16.0.0", "react-dom@^16 || ^17 || ^18", "rea
 >>>>>>> master
 =======
 >>>>>>> master
+>>>>>>> master
   version "18.2.0"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.2.0.tgz#22aaf38708db2674ed9ada224ca4aa708d821e3d"
   integrity sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==
@@ -9869,6 +9903,9 @@ react-error-overlay@^6.0.11:
   integrity sha512-/6UZ2qgEyH2aqzYZgQPxEnz33NJ2gNsnHA2o5+o4wW9bLM/JYQitNP9xPhsXwC08hMMovfGe/8retsdDsczPRg==
 
 <<<<<<< HEAD
+react-hook-form@^7.49.0:
+=======
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 >>>>>>> master
@@ -9879,6 +9916,7 @@ react-hook-form@^7.49.0:
 <<<<<<< HEAD
 =======
 react-hook-form@^7.0.0, react-hook-form@^7.49.0:
+>>>>>>> master
   version "7.51.2"
   resolved "https://registry.npmjs.org/react-hook-form/-/react-hook-form-7.51.2.tgz"
   integrity sha512-y++lwaWjtzDt/XNnyGDQy6goHskFualmDlf+jzEZvjvz6KWDf7EboL7pUvRCzPTJd0EOPpdekYaQLEvvG6m6HA==
@@ -9911,6 +9949,9 @@ react-notifications-menu@^1.0.6:
     yarn "^1.21.1"
 
 <<<<<<< HEAD
+react-redux@^9.0.1:
+=======
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 >>>>>>> master
@@ -9921,6 +9962,7 @@ react-redux@^9.0.1:
 <<<<<<< HEAD
 =======
 "react-redux@^7.2.1 || ^8.1.3 || ^9.0.0", react-redux@^9.0.1:
+>>>>>>> master
   version "9.1.0"
   resolved "https://registry.npmjs.org/react-redux/-/react-redux-9.1.0.tgz"
   integrity sha512-6qoDzIO+gbrza8h3hjMA9aq4nwVFCKFtY2iLxCtVT38Swyy2C/dJCGBXHeHLtx6qlg/8qzc2MrhOeduf5K32wQ==
@@ -10437,6 +10479,9 @@ sass-loader@^12.3.0:
     neo-async "^2.6.2"
 
 <<<<<<< HEAD
+sass@^1.68.0:
+=======
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 >>>>>>> master
@@ -10447,6 +10492,7 @@ sass@^1.68.0:
 <<<<<<< HEAD
 =======
 sass@^1.3.0, sass@^1.68.0:
+>>>>>>> master
   version "1.74.1"
   resolved "https://registry.npmjs.org/sass/-/sass-1.74.1.tgz"
   integrity sha512-w0Z9p/rWZWelb88ISOLyvqTWGmtmu2QJICqDBGyNnfG4OUnPX9BBjjYIXUpXCMOOg5MQWNpqzt876la1fsTvUA==
@@ -11556,6 +11602,9 @@ typedarray-to-buffer@^3.1.5:
     is-typedarray "^1.0.0"
 
 <<<<<<< HEAD
+typescript@^5.2.2:
+=======
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 >>>>>>> master
@@ -11571,6 +11620,7 @@ ua-parser-js@^1.0.33:
 <<<<<<< HEAD
 =======
 "typescript@^3.2.1 || ^4", typescript@^5.2.2, "typescript@>= 2.7", "typescript@>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta":
+>>>>>>> master
   version "5.4.4"
   resolved "https://registry.npmjs.org/typescript/-/typescript-5.4.4.tgz"
   integrity sha512-dGE2Vv8cpVvw28v8HCPqyb08EzbBURxDpuhJvTrusShUfGnhHBafDsLdS1EhhxyL6BJQE+2cT3dDPAv+MQ6oLw==
