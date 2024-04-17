@@ -101,7 +101,6 @@ exports.addVisitor = async (req, res, next) => {
     }
 
     const duplicateErrors = await validateDuplicate(visitors, res);
-
     if (duplicateErrors.length > 0) {
       return res.status(409).json({ error: duplicateErrors[0] });
     }
