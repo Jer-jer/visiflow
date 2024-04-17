@@ -157,18 +157,25 @@ exports.mostVisited = async (req, res) => {
   }
 }
 
-// exports.graph = async (req, res) => {
-//   const { month, year } = req.body;
+exports.graph = async (req, res) => {
+  const { month, year } = req.body;
 
-//   try {
+  const _start_date = new Date(year ? year : new Date().getFullYear(), month ? month - 1 : new Date().getMonth(), 1);
+  const _end_date = new Date(_start_date.getFullYear(), _start_date.getMonth() + 1, 0);
 
+  try {
 
+    const visitors = await getVisitorList(_start_date, _end_date);
 
+    if (visitors === null) {
+      return res.status(400).json({ error: "No visitors available in the specified date range" });
+    }
 
-//   } catch (error) {
-//     return res.status(500).json({ error: 'Failed to retrieve visitors from the database.' });
-//   }
-// }
+    return res.json({ visitors });
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to retrieve visitors from the database.' });
+  }
+}
 
 exports.getYears = async (req, res) => {
   try {
@@ -282,21 +289,5 @@ exports.getWeeks = async (req, res) => {
 
   } catch (error) {
     return res.status(500).json({ error: 'Failed to retrieve years from the database.' });
-  }
-}
-
-exports.test = async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    const visitor = await Visitor.findById("661e46bd3a73fc62776bb25a");
-
-    if (visitor.visitor_details.email) {
-      return res.send('empty email is true');
-    }
-
-    return res.status(200).json({ visitor });
-  } catch (error) {
-    return res.status(500).json(error);
   }
 }
