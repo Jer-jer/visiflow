@@ -199,9 +199,9 @@ function RecurringVisitor({
 		updateInput(new Date(dateString as string), "expected_time_out");
 	};
 
-	const saveAction = (zodData: WalkInFormInterfaceZod) => {
+	const saveAction = async (zodData: WalkInFormInterfaceZod) => {
 		setLoading(true);
-		AxiosInstance.post("/new-recurring-walk-in", {
+		await AxiosInstance.post("/new-recurring-walk-in", {
 			_id: visitor._id,
 			visitor_details: {
 				name: {
@@ -232,8 +232,8 @@ function RecurringVisitor({
 			status: VisitorStatus.Approved,
 			visitor_type: VisitorType.WalkIn,
 		})
-			.then((res) => {
-				AxiosInstance.post("/badge/newBadge", {
+			.then(async (res) => {
+				await AxiosInstance.post("/badge/newBadge", {
 					visitor_id: res.data.visitor._id,
 					qr_id: qr_id,
 				})
@@ -242,36 +242,25 @@ function RecurringVisitor({
 						setIsSuccessOpen(true);
 					})
 					.catch((err) => {
-						setLoading(false);
-						setStatus(false);
-						setAlertOpen(true);
-						if (err && err.reponse) {
-							const errorMessage =
-								err.response.data.error ||
-								"Something went wrong processing the badge";
+						if (err & err.response) {
+							setLoading(false);
+							setStatus(false);
+							setAlertOpen(true);
+							const errorMessage = err.response.data.error;
 
 							setAlertMsg(errorMessage);
 						}
-						const errorMessage = "Something went wrong processing the badge";
-
-						setAlertMsg(errorMessage);
 					});
 			})
 			.catch((err) => {
-				setLoading(false);
-				setStatus(false);
-				setAlertOpen(true);
-				if (err && err.reponse) {
-					const errorMessage =
-						err.response.data.error ||
-						err.response.data.errors ||
-						"Something went wrong processing the visitor";
+				if (err & err.response) {
+					setLoading(false);
+					setStatus(false);
+					setAlertOpen(true);
+					const errorMessage = err.response.data.error;
 
 					setAlertMsg(errorMessage);
 				}
-				const errorMessage = "Something went wrong processing the visitor";
-
-				setAlertMsg(errorMessage);
 			});
 	};
 

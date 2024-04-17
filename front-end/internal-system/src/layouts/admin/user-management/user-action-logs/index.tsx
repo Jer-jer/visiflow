@@ -9,15 +9,14 @@ import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 
 //Interfaces
-import { UserActionLogsDetails } from "../../../../utils/interfaces";
 import type { AppDispatch, RootState } from "../../../../store";
 import type { Dayjs } from "dayjs";
 
 //Reducer
-import { fetchUserLogs, addUserLog } from "../../../../states/logs/user";
+import { fetchUserLogs } from "../../../../states/logs/user";
 
 //Components
-import { Button, Tooltip } from "antd";
+import { Tooltip } from "antd";
 import StandardModal from "../../../../components/modal";
 import ActionLogsTable from "../../../../components/table/action-logs-list";
 import DateTimePicker from "../../../../components/datetime-picker";
@@ -67,7 +66,6 @@ export default function UserActionLogs({
 		AxiosInstance.post("/system-logs/find-user-logs", {
 			user_id: userId,
 		}).then((res) => {
-			// console.log(res.data.systemLogs);
 			dispatch(fetchUserLogs(res.data.systemLogs));
 		});
 

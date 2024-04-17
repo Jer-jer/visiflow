@@ -257,11 +257,34 @@ export default function VisitorFormLayout() {
 	//? If form is error
 	const [error, setError] = useState(false);
 
-	const onSearch: SearchProps["onSearch"] = (value, _e, info) => {
+	const onSearch: SearchProps["onSearch"] = async (value, _e, info) => {
 		setLoading(true);
 		if (value) {
 			const isEmail = /^\S+@\S+\.\S+$/;
 			setError(false);
+			await AxiosInstance.post("/visitor/find-recurring", {
+				visitor: value[0].toUpperCase() + value.slice(1),
+			}).then((res) => {
+				if (res.status === 200) {
+					const respVisitors: GuardVisitorDataType[] = res.data.visitors.map(
+						(visitor: GuardVisitorDataType) => ({
+							key: visitor._id,
+							_id: visitor._id,
+							visitor_details: visitor.visitor_details,
+							plate_num: visitor.plate_num,
+							purpose: {
+								what: [],
+								when: new Date(),
+								where: [],
+								who: [],
+							},
+							expected_time_out: new Date(),
+							status: VisitorStatus.Approved,
+							visitor_type: VisitorType.WalkIn,
+						}),
+					);
+				}
+			});
 
 			if (isEmail.test(value)) {
 				errorModal("Email not accepted");
@@ -383,16 +406,22 @@ export default function VisitorFormLayout() {
 		updateInput(new Date(dateString as string), "expected_time_out");
 	};
 
-	const saveAction = (zodData: WalkInFormInterfaceZod) => {
+	const saveAction = async (zodData: WalkInFormInterfaceZod) => {
 		setLoading(true);
-		AxiosInstance.post("/visitor/new?auth=true", {
+		await AxiosInstance.post("/visitor/new?auth=true", {
 			visitors: [
 				{
 					visitor_details: {
 						name: {
-							first_name: zodData.first_name,
-							middle_name: zodData.middle_name,
-							last_name: zodData.last_name,
+							first_name:
+								zodData.first_name[0].toUpperCase() +
+								zodData.first_name.slice(1),
+							middle_name: zodData.middle_name
+								? zodData.middle_name[0].toUpperCase() +
+									zodData.middle_name.slice(1)
+								: "",
+							last_name:
+								zodData.last_name[0].toUpperCase() + zodData.last_name.slice(1),
 						},
 						address: {
 							house: zodData.house,
@@ -425,8 +454,8 @@ export default function VisitorFormLayout() {
 			],
 			// Add QR variable here
 		})
-			.then((res) => {
-				AxiosInstance.post("/badge/newBadge", {
+			.then(async (res) => {
+				await AxiosInstance.post("/badge/newBadge", {
 					visitor_id: res.data.visitors[0]._id,
 					qr_id: qr_id,
 				})
@@ -438,22 +467,25 @@ export default function VisitorFormLayout() {
 						setIsSuccessOpen(true);
 					})
 					.catch((err) => {
-						setLoading(false);
-						setStatus(false);
-						setAlertOpen(true);
-						//const errorMessage = "Something went wrong processing the badge";
+						if (err && err.response) {
+							setLoading(false);
+							setStatus(false);
+							setAlertOpen(true);
+							const errorMessage = err.response.data.error;
 
-						const errorMessage = err.response.data.error;
-						setAlertMsg(errorMessage);
+							setAlertMsg(errorMessage);
+						}
 					});
 			})
 			.catch((err) => {
-				setLoading(false);
-				setStatus(false);
-				setAlertOpen(!alertOpen);
+				if (err && err.response) {
+					setLoading(false);
+					setStatus(false);
+					setAlertOpen(true);
+					const errorMessage = err.response.data.error;
 
-				const errorMessage = err.response.data.error;
-				setAlertMsg(errorMessage);
+					setAlertMsg(errorMessage);
+				}
 			});
 	};
 

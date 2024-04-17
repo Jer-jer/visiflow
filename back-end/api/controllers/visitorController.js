@@ -244,8 +244,7 @@ exports.findRecurring = async (req, res) => {
       }
     } else if (!isEmail) {
       const visitorDB = await Visitor.find({
-        "visitor_details.name.last_name":
-          visitor[0].toUpperCase() + visitor.slice(1),
+        "visitor_details.name.last_name": visitor,
       });
 
       if (visitorDB) {
@@ -255,6 +254,8 @@ exports.findRecurring = async (req, res) => {
           plate_num: visitor.plate_num,
           id_picture: visitor.id_picture,
         }));
+
+        console.log("visitorDB", visitor);
 
         return res.status(200).json({
           success: "Visitor/s found",
