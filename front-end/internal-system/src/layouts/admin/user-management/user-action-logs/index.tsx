@@ -9,15 +9,14 @@ import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 
 //Interfaces
-import { UserActionLogsDetails } from "../../../../utils/interfaces";
 import type { AppDispatch, RootState } from "../../../../store";
 import type { Dayjs } from "dayjs";
 
 //Reducer
-import { fetchUserLogs, addUserLog } from "../../../../states/logs/user";
+import { fetchUserLogs } from "../../../../states/logs/user";
 
 //Components
-import { Button, Tooltip } from "antd";
+import { Tooltip } from "antd";
 import StandardModal from "../../../../components/modal";
 import ActionLogsTable from "../../../../components/table/action-logs-list";
 import DateTimePicker from "../../../../components/datetime-picker";
@@ -67,7 +66,6 @@ export default function UserActionLogs({
 		AxiosInstance.post("/system-logs/find-user-logs", {
 			user_id: userId,
 		}).then((res) => {
-			// console.log(res.data.systemLogs);
 			dispatch(fetchUserLogs(res.data.systemLogs));
 		});
 
@@ -76,12 +74,14 @@ export default function UserActionLogs({
 
 	const userLogsHeader = [
 		{ label: "Action", key: "action" },
+		{ label: "Status", key: "status" },
 		{ label: "Date", key: "logDate" },
 	];
 
 	const userLogsData = userLogs.map((logs) => {
 		return {
 			action: actionType(logs.type),
+			status: logs.status,
 			logDate: formatDateObjToString(logs.created_at),
 		};
 	});
@@ -102,7 +102,7 @@ export default function UserActionLogs({
 				<Tooltip placement="top" title="Export Logs" arrow={false}>
 					<CSVLink
 						filename={`${lastName.toUpperCase()}_Logs.csv`}
-						data={[userLogsData]}
+						data={userLogsData}
 						headers={userLogsHeader}
 					>
 						<ExcelDownload />

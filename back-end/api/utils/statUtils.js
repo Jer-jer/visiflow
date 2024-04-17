@@ -72,7 +72,7 @@ async function getVisitors(startDate, endDate) {
     const idArray = await getVisitorList(date_01, date_02);
 
     if (idArray === null) {
-      const errMsg = "No visitor in that date range.";
+      const errMsg = "No logs in that date range.";
       errors.push(errMsg);
       return { errors };
     }

@@ -116,11 +116,13 @@ export default function Home() {
 				}),
 			);
 			const sortedAnnouncements = [...convertedData].sort(
-				(a, b) => a.priority - b.priority,
+				(a, b) => b.priority - a.priority,
 			);
 			setAnnouncement(sortedAnnouncements);
 		} catch (error) {
-			console.error("Error fetching announcements:", error);
+			if (error) {
+				console.error("Error fetching announcements:", error);
+			}
 		}
 	};
 

@@ -268,9 +268,9 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 		dispatch(removeLogs());
 
 		AxiosInstance.post(`/badge/findBadge`, { visitor_id: record._id })
-			.then((res) => {
+			.then(async (res) => {
 				const badge = res.data.badge;
-				AxiosInstance.post("/visitor/logs/find-visitor-logs", {
+				await AxiosInstance.post("/visitor/logs/find-visitor-logs", {
 					badge_id: badge._id,
 				})
 					.then((res) => {
@@ -285,14 +285,19 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 								}),
 							),
 						);
-						// dispatch(fetchLogs(logs));
 					})
 					.catch((err) => {
-						warning(err?.response?.data?.error || "Visitor has no logs.");
+						if (err && err.response) {
+							const message = err.response.data.error;
+							warning(message);
+						}
 					});
 			})
 			.catch((err) => {
-				error(err?.response?.data?.error || "Something went wrong.");
+				if (err && err.response) {
+					const message = err.response.data.error;
+					error(message);
+				}
 			});
 	}, []);
 
@@ -444,9 +449,9 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 		}
 	};
 
-	const updateStatus = () => {
+	const updateStatus = async () => {
 		setLoading(true);
-		AxiosInstance.put("/visitor/update-status", {
+		await AxiosInstance.put("/visitor/update-status", {
 			_id: record._id,
 			status: visitorStatusUpdate,
 			email: record.visitor_details.email,
@@ -472,20 +477,23 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 				setNotifyVisitorOpen(false);
 			})
 			.catch((err) => {
-				setLoading(false);
-				setStatus(false);
-				setAlertOpen(true);
-				setAlertMsg(err?.response?.data?.error || "Something went wrong.");
+				if (err && err.response.data.error) {
+					const message = err.response.data.error;
+					setLoading(false);
+					setStatus(false);
+					setAlertOpen(true);
+					setAlertMsg(message);
+				}
 			});
 	};
 
-	const sendPOIEmail = () => {
+	const sendPOIEmail = async () => {
 		setLoading(true);
 		const emailToSend: string[] = emailRecipient.map(
 			(email: any) => email.email,
 		);
 
-		AxiosInstance.post("employees/notifyPOI", {
+		await AxiosInstance.post("employees/notifyPOI", {
 			recipients: emailToSend,
 			subject,
 			message,
@@ -498,28 +506,33 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 				setNotifyPOIOpen(false);
 			})
 			.catch((err) => {
-				setLoading(false);
-				setStatus(false);
-				setAlertOpen(true);
-				setAlertMsg(err?.response?.data?.error || "Something went wrong.");
+				if (err && err.response) {
+					const message = err.response.data.error;
+					setLoading(false);
+					setStatus(false);
+					setAlertOpen(true);
+					setAlertMsg(message);
+				}
 			});
 	};
 
-	const saveAction = (
+	const saveAction = async (
 		zodData?: VisitorDetailsInterfaceZod,
 		visitorStatus?: VisitorStatus,
 	) => {
-		AxiosInstance.put("/visitor/update", {
+		await AxiosInstance.put("/visitor/update", {
 			_id: record._id,
 			first_name: zodData
-				? zodData.first_name
-				: record.visitor_details.name.first_name,
+				? zodData.first_name[0].toUpperCase() + zodData.first_name.slice(1)
+				: record.visitor_details.name.first_name[0].toUpperCase() +
+					record.visitor_details.name.first_name.slice(1),
 			middle_name: zodData
 				? zodData.middle_name
 				: record.visitor_details.name.middle_name,
 			last_name: zodData
-				? zodData.last_name
-				: record.visitor_details.name.last_name,
+				? zodData.last_name[0].toUpperCase() + zodData.last_name.slice(1)
+				: record.visitor_details.name.last_name[0].toUpperCase() +
+					record.visitor_details.name.last_name.slice(1),
 			phone: zodData ? zodData.phone : record.visitor_details.phone,
 			email: zodData ? zodData.email : record.visitor_details.email,
 			house_no: zodData ? zodData.house : record.visitor_details.address.house,
@@ -568,9 +581,12 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 				);
 			})
 			.catch((err) => {
-				setStatus(false);
-				setAlertOpen(true);
-				setAlertMsg(err?.response?.data?.error || "Something went wrong.");
+				if (err && err.response) {
+					const message = err.response.data.error;
+					setStatus(false);
+					setAlertOpen(true);
+					setAlertMsg(message);
+				}
 			});
 	};
 
@@ -604,8 +620,11 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 						dispatch(deleteVisitor(_id));
 					})
 					.catch((err) => {
-						setAlertOpen(!alertOpen);
-						setAlertMsg(err?.response?.data?.error || "Something went wrong.");
+						if (err && err.response) {
+							const message = err.response.data.error;
+							setAlertOpen(!alertOpen);
+							setAlertMsg(message);
+						}
 					});
 			},
 			onCancel() {

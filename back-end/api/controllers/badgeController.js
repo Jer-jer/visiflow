@@ -1,15 +1,14 @@
 const Badge = require("../models/badge");
-const VisitorLogs = require('../models/visitorLogs');
-const Visitor = require('../models/visitor');
-const mongoose = require('mongoose');
+const VisitorLogs = require("../models/visitorLogs");
+const Visitor = require("../models/visitor");
+const mongoose = require("mongoose");
 const {
   generateVisitorQRCode,
   updateLog,
   createSystemLog,
 } = require("../utils/helper");
-const archiver = require('archiver');
-const fs = require('fs');
-const tar = require('tar');
+const archiver = require("archiver");
+const fs = require("fs");
 
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -37,44 +36,54 @@ exports.findBadge = async (req, res) => {
 
 exports.generateBadge = async (req, res) => {
   const { qty } = req.body;
+  const user_id = req.user._id;
+  const log_type = "generate_badge";
 
   //check if qty > 0
-  if(qty <= 0) {
-    return res.status(400).json({ error: 'Must have at least 1 badge to generate.' });
+  if (qty <= 0) {
+    return res
+      .status(400)
+      .json({ error: "Must have at least 1 badge to generate." });
   }
 
   try {
-    const user_id = req.user._id;
-    const log_type = "generate_badge";
-    const archive = archiver('zip', {
-      zlib: { level: 9 } // compression level
+    // const clientIP = req.ip;
+    const archive = archiver("zip", {
+      zlib: { level: 9 }, // compression level
     });
 
     // create a file to stream archive data to.
     const zipFilename = "badges.zip";
     const output = fs.createWriteStream(zipFilename);
-    
+
     res.attachment(zipFilename);
     archive.pipe(res);
-    
-    output.on('close', function() {
-      return res.status(200).json({ message: `Generated ${qty} badges`, filename: zipFilename });
+
+    output.on("close", function () {
+      return res
+        .status(200)
+        .json({ message: `Generated ${qty} badges`, filename: zipFilename });
     });
-    
-    output.on('error', function(error) {
+
+    output.on("error", function (error) {
       console.error(`Error archiving QR codes: ${error.message}`);
       return res.status(500).json({ error: error.message });
     });
-  
-    const promises = Array.from({ length: qty }, () => generateVisitorQRCode(new ObjectId()));
+
+    const promises = Array.from({ length: qty }, () =>
+      generateVisitorQRCode(new ObjectId())
+    );
 
     const qrCodes = await Promise.all(promises);
 
     qrCodes.forEach((qrCode, index) => {
-      archive.append(fs.createReadStream(qrCode), { name: `badge_${index}.png` });
+      archive.append(fs.createReadStream(qrCode), {
+        name: `badge_${index}.png`,
+      });
     });
 
     archive.finalize();
+    await createSystemLog(user_id, log_type, "success");
   } catch (error) {
     console.error(error);
     await createSystemLog(user_id, log_type, "failed");
@@ -91,7 +100,7 @@ exports.newBadge = async (req, res) => {
     const visitorDB = await Visitor.findById(visitor_id);
 
     if (!visitorDB) {
-      return res.status(400).json({ error: 'Visitor not found in database.' });
+      return res.status(400).json({ error: "Visitor not found in database." });
     }
 
     const badge = await Badge.create({
@@ -111,7 +120,7 @@ exports.newBadge = async (req, res) => {
     await createSystemLog(user_id, log_type, "success");
     return res.sendStatus(200);
   } catch (error) {
-    console.error(error);    
+    console.error(error);
     return res.sendStatus(500);
   }
 };

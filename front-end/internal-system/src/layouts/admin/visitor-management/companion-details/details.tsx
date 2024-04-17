@@ -164,8 +164,8 @@ export default function CompanionDetails({
 		clearErrors();
 	};
 
-	const saveAction = (zodData: CompanionDetailsInterfaceZod) => {
-		AxiosInstance.put("/visitor/update", {
+	const saveAction = async (zodData: CompanionDetailsInterfaceZod) => {
+		await AxiosInstance.put("/visitor/update", {
 			_id: id,
 			first_name: zodData
 				? zodData.first_name
@@ -198,12 +198,13 @@ export default function CompanionDetails({
 				setDisabledInputs(!disabledInputs);
 			})
 			.catch((err) => {
-				setStatus(false);
-				setAlertOpen(true);
-				setAlertMsg(
-					err?.response?.data?.error ||
-						"Something went wrong.",
-				);
+				if (err && err.response) {
+					const message = err.response.data.error;
+
+					setStatus(false);
+					setAlertOpen(true);
+					setAlertMsg(message);
+				}
 			});
 	};
 
@@ -211,8 +212,8 @@ export default function CompanionDetails({
 		saveAction(data);
 	});
 
-	const deleteCompanionDB = () => {
-		AxiosInstance.put("/visitor/update", {
+	const deleteCompanionDB = async () => {
+		await AxiosInstance.put("/visitor/update", {
 			_id: mainVisitorId,
 			first_name: data[mainVisitorIndex].visitor_details.name.first_name,
 			middle_name: data[mainVisitorIndex].visitor_details.name.middle_name,
@@ -226,7 +227,7 @@ export default function CompanionDetails({
 			province: data[mainVisitorIndex].visitor_details.address.province,
 			country: data[mainVisitorIndex].visitor_details.address.country,
 			companions: data[mainVisitorIndex].companions!.filter(
-				(item) => item !== id,
+				(item: any) => item !== id,
 			),
 			plate_num: data[mainVisitorIndex].plate_num,
 			status: data[mainVisitorIndex].status,
@@ -236,12 +237,12 @@ export default function CompanionDetails({
 				setOpen(false);
 			})
 			.catch((err) => {
-				setStatus(false);
-				setAlertOpen(true);
-				setAlertMsg(
-					err?.response?.data?.error ||
-						"Something went wrong.",
-				);
+				if (err && err.response) {
+					const message = err.response.data.error;
+					setStatus(false);
+					setAlertOpen(true);
+					setAlertMsg(message);
+				}
 			});
 	};
 

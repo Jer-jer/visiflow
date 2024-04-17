@@ -18,16 +18,17 @@ interface StatisticsSummaryContentProps {
 	bigNumber: string;
 	bigNumberStatus: string;
 	secondaryStatsProps: SecondaryStatsProps[];
+	withDateFilter?: boolean;
+	onChange?: (dates: any, dateStrings: string[]) => void;
 }
-
-//TODO: Integrate Statistics with existing data
-//TODO: Add Statistics per week
 
 export default function StatisticsSummaryContent({
 	title,
 	bigNumber,
 	bigNumberStatus,
 	secondaryStatsProps,
+	withDateFilter,
+	onChange,
 }: StatisticsSummaryContentProps) {
 	return (
 		<div className="flex flex-col items-center">
@@ -36,13 +37,21 @@ export default function StatisticsSummaryContent({
 			>
 				{bigNumber}
 			</span>
-			<span className="line-normal mb-[10px] mt-[40px] text-[14px] font-medium tracking-[0.77px] text-[#858585]">
+			<span
+				className={`line-normal ${withDateFilter ? "mb-[10px]" : "mb-[40px]"} mt-[40px] text-[14px] font-medium tracking-[0.77px] text-[#858585]`}
+			>
 				{title.toUpperCase()}
 			</span>
-			{/* Optional */}
-			<div className="flex justify-center">
-				<DateTimePicker globalStyling="mb-[40px] w-4/5" size="middle" />
-			</div>
+			{withDateFilter && (
+				<div className="flex justify-center">
+					<DateTimePicker
+						globalStyling="mb-[40px] w-full"
+						size="middle"
+						onRangeChange={onChange}
+					/>
+				</div>
+			)}
+
 			{secondaryStatsProps.map((item, index) => (
 				<SecondaryStats
 					key={index}

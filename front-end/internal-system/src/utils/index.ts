@@ -33,10 +33,7 @@ export const formatDateObjToString2 = (dateObj: Date) => {
 
 export const formatDateToISO = (dateObj: Date) => {
 	//? Convert date object to date string
-	console.log("DATE OBJ", dateObj);
 	const DateObject = DateTime.fromJSDate(dateObj);
-
-	console.log("ACTIONS LOGS", DateObject);
 
 	const formattedDateTime = DateObject.toISO();
 
@@ -126,4 +123,17 @@ export const notificationMessage = (
 			break;
 	}
 	return message;
+};
+
+export const capitilizeFirstLetter = (str: string) => {
+	return str[0].toUpperCase() + str.slice(1);
+};
+
+export const capitalizeEachWord = (str: string) => {
+	return str
+		.split(" ")
+		.map((word: string) => {
+			return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+		})
+		.join(" ");
 };
