@@ -86,32 +86,20 @@ export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
 
 	street: z.string().optional(),
 
-	brgy: z
-		.string({
-			required_error: "Barangay is required.",
-			invalid_type_error: "Barangay must not have a number.",
-		})
-		.regex(/^[a-zA-Z]+/, {
-			message: "Must not contain any numerals.",
-		}),
+	brgy: z.string({
+		required_error: "Barangay is required.",
+		invalid_type_error: "Barangay must not have a number.",
+	}),
 
-	city: z
-		.string({
-			required_error: "City is required.",
-			invalid_type_error: "City must not have a number.",
-		})
-		.regex(/^[a-zA-Z]+/, {
-			message: "Must not contain any numerals.",
-		}),
+	city: z.string({
+		required_error: "City is required.",
+		invalid_type_error: "City must not have a number.",
+	}),
 
-	province: z
-		.string({
-			required_error: "Province is required.",
-			invalid_type_error: "Province must not have a number.",
-		})
-		.regex(/^[a-zA-Z]+/, {
-			message: "Must not contain any numerals.",
-		}),
+	province: z.string({
+		required_error: "Province is required.",
+		invalid_type_error: "Province must not have a number.",
+	}),
 
 	country: z
 		.string({
@@ -218,30 +206,18 @@ export const VisitorDetailZod: ZodType<VisitorDetailsInterfaceZod> = z.object({
 
 	house: z.string().optional(),
 	street: z.string().optional(),
-	brgy: z
-		.string({
-			required_error: "Barangay is required.",
-			invalid_type_error: "Barangay must not have a number.",
-		})
-		.regex(/^[a-zA-Z]+/, {
-			message: "Must not contain any numerals.",
-		}),
-	city: z
-		.string({
-			required_error: "City is required.",
-			invalid_type_error: "City must not have a number.",
-		})
-		.regex(/^[a-zA-Z]+/, {
-			message: "Must not contain any numerals.",
-		}),
-	province: z
-		.string({
-			required_error: "Province is required.",
-			invalid_type_error: "Province must not have a number.",
-		})
-		.regex(/^[a-zA-Z]+/, {
-			message: "Must not contain any numerals.",
-		}),
+	brgy: z.string({
+		required_error: "Barangay is required.",
+		invalid_type_error: "Barangay must not have a number.",
+	}),
+	city: z.string({
+		required_error: "City is required.",
+		invalid_type_error: "City must not have a number.",
+	}),
+	province: z.string({
+		required_error: "Province is required.",
+		invalid_type_error: "Province must not have a number.",
+	}),
 	country: z
 		.string({
 			required_error: "Country is required.",
@@ -345,25 +321,16 @@ export const CompanionDetailZod: ZodType<CompanionDetailsInterfaceZod> =
 			.string({
 				required_error: "Barangay is required.",
 				invalid_type_error: "Barangay must not have a number.",
-			})
-			.regex(/^[a-zA-Z]+/, {
-				message: "Must not contain any numerals.",
 			}),
 		city: z
 			.string({
 				required_error: "City is required.",
 				invalid_type_error: "City must not have a number.",
-			})
-			.regex(/^[a-zA-Z]+/, {
-				message: "Must not contain any numerals.",
 			}),
 		province: z
 			.string({
 				required_error: "Province is required.",
 				invalid_type_error: "Province must not have a number.",
-			})
-			.regex(/^[a-zA-Z]+/, {
-				message: "Must not contain any numerals.",
 			}),
 		country: z
 			.string({

@@ -3,19 +3,30 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
+import { isMobile } from "react-device-detect";
 
 //Interfaces
 import { type UseFormRegister, type FieldErrors } from "react-hook-form";
 import { WalkInFormInterfaceZod } from "../../../utils/zodSchemas";
 
 //Components
-import { Button, Form, Modal, Image, Input, Select, DatePicker, Spin } from "antd";
+import {
+	Button,
+	Form,
+	Modal,
+	Image,
+	Input,
+	Select,
+	DatePicker,
+	Spin,
+} from "antd";
 import Alert from "../../alert";
-import Webcam, { WebcamProps } from "react-webcam";
+import Webcam from "react-webcam";
 
 //Styles
 import "./styles.scss";
 import AxiosInstance from "../../../lib/axios";
+import axios from "axios";
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -53,16 +64,25 @@ interface NewWalkInProps {
 	onChange: (date: dayjs.Dayjs, dateString: string | string[]) => void;
 }
 
-const videoConstraints = {
+const selfieMode = {
 	width: 1280,
 	height: 720,
-	facingMode: "user"
-  };
+	facingMode: "user",
+};
 
-  const capitalizeEachWord  = (str: string) => {
-    return str.split(' ').map((word: string) => {
-        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-    }).join(' ');
+const outMode = {
+	width: 1280,
+	height: 720,
+	facingMode: { exact: "environment" },
+};
+
+const capitalizeEachWord = (str: string) => {
+	return str
+		.split(" ")
+		.map((word: string) => {
+			return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+		})
+		.join(" ");
 };
 
 function NewWalkIn({
@@ -93,134 +113,188 @@ function NewWalkIn({
 	const [province, setProvince] = useState<string>("");
 	const [country, setCountry] = useState<string>("");
 
-	const [imageUrl, setImageUrl] = useState<string | undefined>('https://cdn-icons-png.flaticon.com/512/6080/6080012.png');
+	const [plateNO, setPlateNO] = useState<string>("");
+
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const webcamRef = useRef<Webcam>(null);
 	const [cameraActive, setCameraActive] = useState(true);
 	const [loading, setLoading] = useState(false);
-	
-	
+
+	const [imageUrlScan, setImageUrlScan] = useState<string | undefined>(
+		undefined,
+	);
+	const [imageUrlID, setImageUrlID] = useState<string | undefined>(
+		"https://cdn-icons-png.flaticon.com/512/6080/6080012.png",
+	);
+	const [imageUrlPlateNO, setImageUrlPlateNO] = useState<string | undefined>(
+		"https://cdn-icons-png.flaticon.com/512/6080/6080012.png",
+	);
+
+	const [scan, setScan] = useState<"ID" | "PlateNO" | "">("");
+
 	const capture = async () => {
-		
 		const imageSrc = webcamRef.current?.getScreenshot();
-		const base64String = (imageSrc as string)?.split(',')[1];
+		const base64String = (imageSrc as string)?.split(",")[1];
 		if (imageSrc) {
 			setLoading(true);
-			setImageUrl(imageSrc);
 			setCameraActive(false);
+			setImageUrlScan(imageSrc);
+			console.log(scan);
 			try {
-				const response: any = await AxiosInstance.post('/scan/', {image: base64String})
-				const data = response.data.inference.prediction;
+				if (scan === "ID") {
+					const response: any = await AxiosInstance.post("/scan/", {
+						image: base64String,
+					});
+					const data = response.data.inference.prediction;
 
-				let middleName = '';
+					let firstName = "";
+					let middleName = "";
+					let lastName = "";
+					let house = "";
+					let street = "";
+					let brgy = "";
+					let city = "";
+					let province = "";
+					let country = "";
 
-				if (data.surnames.length >= 2) {
-					middleName = capitalizeEachWord (data.surnames.pop().value);
-				} else if (data.givenNames.length >= 2) {
-					middleName = capitalizeEachWord (data.givenNames.pop().value);
+					if (data.surnames.length >= 2) {
+						middleName = data.surnames.pop().value;
+					} else if (data.givenNames.length >= 2) {
+						middleName = data.givenNames.pop().value;
+					}
+
+					firstName = data.givenNames
+						.map((nameObj: any) => nameObj.value)
+						.join(" ");
+					lastName = data.surnames
+						.map((nameObj: any) => nameObj.value)
+						.join(" ");
+
+					const parts = data.address.value
+						.split(",")
+						.map((part: any) => part.trim());
+
+					const variables = [
+						"house",
+						"street",
+						"brgy",
+						"city",
+						"province",
+						"country",
+					];
+
+					parts.forEach((part: any, index: number) => {
+						if (index < variables.length) {
+							eval(`${variables[index]} = part`);
+						}
+					});
+
+					setFirstNameZod(capitalizeEachWord(firstName));
+					setMiddleNameZod(capitalizeEachWord(middleName));
+					setLastNameZod(capitalizeEachWord(lastName));
+					setHouseZod(capitalizeEachWord(house));
+					setStreetZod(capitalizeEachWord(street));
+					setBrgyZod(capitalizeEachWord(brgy));
+					setCityZod(capitalizeEachWord(city));
+					setProvinceZod(capitalizeEachWord(province));
+					setCountryZod(capitalizeEachWord(country));
+					setImageUrlID(imageSrc);
+				} else if (scan === "PlateNO") {
+					let formData: any = new FormData();
+					formData.append("upload", imageSrc);
+					formData.append("regions", "ph"); // Change to your country
+
+					const response = await axios.post(
+						"https://api.platerecognizer.com/v1/plate-reader/",
+						formData,
+						{
+							headers: {
+								Authorization: "Token 7cb6cc054aaf57979580f75ac193ffc63f826307",
+							},
+						},
+					);
+					const data = response.data.results[0];
+
+					setPlateNoZod(data.plate.toUpperCase());
+					setImageUrlPlateNO(imageSrc);
 				}
 
-				const firstName = data.givenNames.map((nameObj: any) => capitalizeEachWord (nameObj.value)).join(' ');
-				const lastName = data.surnames.map((nameObj: any) => capitalizeEachWord (nameObj.value)).join(' ');
-
-
-				setFirstNameZod(firstName);
-				setMiddleNameZod(middleName);
-				setLastNameZod(lastName);
-				
-				const parts = data.address.value.split(',').map((part: any) => part.trim());
-
-				let house = "";
-				let street = "";
-				let brgy = "";
-				let city = "";
-				let province = "";
-				let country = "";
-
-				const variables = ['house', 'street', 'brgy', 'city', 'province', 'country'];
-
-				parts.forEach((part: any, index: number) => {
-					if (index < variables.length) {
-						eval(`${variables[index]} = part`);
-					}
-				});
-
-				console.log('help', house, street, brgy, city, province, country)
-
-				setHouseZod(capitalizeEachWord (house));
-				setStreetZod(capitalizeEachWord (street));
-				setBrgyZod(capitalizeEachWord (brgy));
-				setCityZod(capitalizeEachWord (city));
-				setProvinceZod(capitalizeEachWord (province));
-				setCountryZod(capitalizeEachWord (country));
-
 				handleOk();
-				
-			} catch(err) {
+			} catch (err) {
 				console.log(err);
 			}
 			setLoading(false);
 			setCameraActive(true);
 		}
-	
 	};
 
 	const setFirstNameZod = (value: any) => {
 		setFirstName(value);
 		updateInput(value, "first_name");
-	}
+	};
 
 	const setMiddleNameZod = (value: any) => {
 		setMiddleName(value);
 		updateInput(value, "middle_name");
-	}
+	};
 
 	const setLastNameZod = (value: any) => {
 		setLastName(value);
 		updateInput(value, "last_name");
-	}
+	};
 
 	const setHouseZod = (value: any) => {
 		setHouse(value);
 		updateInput(value, "house");
-	}
+	};
 
 	const setStreetZod = (value: any) => {
 		setStreet(value);
 		updateInput(value, "street");
-	}
+	};
 
 	const setBrgyZod = (value: any) => {
 		setBrgy(value);
 		updateInput(value, "brgy");
-	}
+	};
 
 	const setCityZod = (value: any) => {
 		setCity(value);
 		updateInput(value, "city");
-	}
+	};
 
 	const setProvinceZod = (value: any) => {
 		setProvince(value);
 		updateInput(value, "province");
-	}
+	};
 
 	const setCountryZod = (value: any) => {
 		setCountry(value);
 		updateInput(value, "country");
-	}
+	};
 
-	const showModal = () => {
+	const setPlateNoZod = (value: any) => {
+		setPlateNO(value);
+		updateInput(value, "plate_num");
+	};
+
+	const showModal = (module: "ID" | "PlateNO") => {
 		setIsModalOpen(true);
+		setScan(module);
+		setImageUrlScan(undefined);
 	};
 
 	const handleOk = () => {
 		setIsModalOpen(false);
+		setScan("");
+		setImageUrlScan(undefined);
 	};
 
 	const handleCancel = () => {
 		setIsModalOpen(false);
+		setScan("");
+		setImageUrlScan(undefined);
 	};
 
 	return (
@@ -257,65 +331,72 @@ function NewWalkIn({
 			<Form name="Visitor Details" onFinish={onSubmit} autoComplete="off">
 				<div className="mb-[35px] ml-2 mt-3 flex">
 					<div className="w-[380px] flex-auto md:w-[761px]">
-						<div className="mb-[35px] ml-[20px] mr-[25px] flex h-fit flex-col items-around justify-around gap-[30px] lg:flex-row lg:gap-[25px]">
-							<div className="flex flex-col items-center justify-center gap-[15px]">
-								<div className="relative h-[245px] w-[330px] md:h-[300px] md:w-[360px]">
-									<Image width="100%" height="100%" src={imageUrl}/>
+						<div className="items-around mb-[35px] ml-[20px] mr-[25px] flex h-fit flex-col justify-around gap-[30px] lg:flex-row lg:gap-[25px]">
+							<div className="flex flex-col items-center justify-center gap-[50px]">
+								<div className="align-center flex h-[245px] w-[330px] flex-col md:h-[300px] md:w-[360px]">
+									<Image width="100%" height="100%" src={imageUrlID} />
 									<Button
 										type="primary"
-										className="absolute ml-[-240px] mt-[200px] h-[40px] w-[155px] !rounded-[10px] !bg-primary-500 text-xs shadow-lg md:ml-[-260px] md:mt-[240px] md:h-[46px] md:w-[175px] md:text-lg"
-										onClick={showModal}
+										className="shadow-lgmd:h-[46px] h-[40px] !rounded-[10px] !bg-primary-500 text-xs md:text-lg"
+										onClick={() => showModal("ID")}
 									>
-										<b>SCAN ID</b>
+										<b>SCAN ID (OPTIONAL)</b>
 									</Button>
-										<Modal
-											title="Scan ID"
-											open={isModalOpen}
-											onCancel={handleCancel}
-											width={642}
-											centered
-											footer={[
-												<Button
-													onClick={handleCancel}
-													className="mt-[-50px] !rounded-[5px] !bg-secondary-500 text-xs shadow-lg"
-													type="primary"
-												>
-													Cancel
-												</Button>
-											]}
-										>
-											<Spin
-											tip="Scanning in progress..."
-											spinning={loading}
-											delay={500}
-											>
-												{cameraActive && 
-												<Webcam
-													audio={false}
-													height={720}
-													screenshotFormat="image/png"
-													width={1280}
-													videoConstraints={videoConstraints}
-													ref={webcamRef}
-												/>}
-												{!cameraActive && (
-													<img src={imageUrl} alt="Captured" />
-												)}
-												
-												<div className="flex justify-center">
-													<Button 
-														onClick={capture}
-														className="mt-[-50px] !rounded-[5px] !bg-primary-500 text-xs shadow-lg"
-														type="primary"
-													>
-														<b>Capture photo</b>
-													</Button>
-												</div>
-											</Spin>
-											
-										</Modal>
-									
 								</div>
+								<div className="align-center flex h-[245px] w-[330px] flex-col md:h-[300px] md:w-[360px]">
+									<Image width="100%" height="100%" src={imageUrlPlateNO} />
+									<Button
+										type="primary"
+										className="h-[40px] !rounded-[10px] !bg-primary-500 text-xs shadow-lg md:h-[46px] md:text-lg"
+										onClick={() => showModal("PlateNO")}
+									>
+										<b>SCAN PLATE NO. (OPTIONAL)</b>
+									</Button>
+								</div>
+								<Modal
+									title={`Scan ${scan}`}
+									open={isModalOpen}
+									onCancel={() => handleCancel()}
+									width={642}
+									centered
+									footer={[
+										<Button
+											onClick={() => handleCancel()}
+											className="!bg-secondary-500 mt-[-50px] !rounded-[5px] text-xs shadow-lg"
+											type="primary"
+										>
+											Cancel
+										</Button>,
+									]}
+								>
+									<Spin
+										tip="Scanning in progress..."
+										spinning={loading}
+										delay={500}
+									>
+										{cameraActive && (
+											<Webcam
+												audio={false}
+												height={720}
+												screenshotFormat="image/png"
+												width={1280}
+												videoConstraints={isMobile ? outMode : selfieMode}
+												ref={webcamRef}
+											/>
+										)}
+										{!cameraActive && <img src={imageUrlScan} alt="Captured" />}
+
+										<div className="flex justify-center">
+											<Button
+												onClick={capture}
+												className="mt-[-50px] !rounded-[5px] !bg-primary-500 text-xs shadow-lg"
+												type="primary"
+											>
+												<b>Capture photo</b>
+											</Button>
+										</div>
+									</Spin>
+								</Modal>
 							</div>
 
 							<div className="flex flex-col items-center justify-center gap-[20px]">
@@ -329,11 +410,9 @@ function NewWalkIn({
 													size="large"
 													{...register("first_name")}
 													value={firstName}
-													onChange={(e) =>
-														{
-															setFirstNameZod(e.target.value);
-														}
-													}
+													onChange={(e) => {
+														setFirstNameZod(e.target.value);
+													}}
 												/>
 											</div>
 											{errors?.first_name && (
@@ -351,11 +430,9 @@ function NewWalkIn({
 													size="large"
 													{...register("middle_name")}
 													value={middleName}
-													onChange={(e) =>
-														{
-															setMiddleNameZod(e.target.value);
-														}
-													}
+													onChange={(e) => {
+														setMiddleNameZod(e.target.value);
+													}}
 												/>
 											</div>
 											{errors?.middle_name && (
@@ -373,11 +450,9 @@ function NewWalkIn({
 													size="large"
 													{...register("last_name")}
 													value={lastName}
-													onChange={(e) =>
-														{
-															setLastNameZod(e.target.value);
-														}
-													}
+													onChange={(e) => {
+														setLastNameZod(e.target.value);
+													}}
 												/>
 											</div>
 											{errors?.last_name && (
@@ -428,9 +503,8 @@ function NewWalkIn({
 													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[16px] md:w-[230px]"
 													size="large"
 													{...register("plate_num")}
-													onChange={(e) =>
-														updateInput(e.target.value, "plate_num")
-													}
+													value={plateNO}
+													onChange={(e) => setPlateNO(e.target.value)}
 												/>
 											</div>
 											{errors?.plate_num && (

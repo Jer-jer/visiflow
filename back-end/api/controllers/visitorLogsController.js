@@ -36,9 +36,12 @@ exports.findVisitorLogs = async (req, res) => {
   const { badge_id } = req.body;
 
   try {
-    const visitorLogs = await VisitorLogs.find({ badge_id: badge_id });
+    const visitorLogs = await VisitorLogs.find({
+      badge_id: new ObjectId(badge_id),
+    });
 
-    if (!visitorLogs) return res.status(500).json({ error: "Visitor has no logs" });
+    if (!visitorLogs)
+      return res.status(500).json({ error: "Visitor has no logs" });
 
     return res.status(200).json({ visitorLogs });
   } catch (error) {

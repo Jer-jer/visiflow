@@ -105,84 +105,83 @@ export default function VisitorFormLayout() {
 
 	const fetchAndSetEmployees = async () => {
 		try {
-			const response = await AxiosInstance.get('/employees/')
-			const data = response.data.employees
-			
+			const response = await AxiosInstance.get("/employees/");
+			const data = response.data.employees;
+
 			const convertedData: SelectOption[] = data.map((employee: any) => ({
 				value: employee.name,
 				label: employee.name,
-			  }));
+			}));
 			setWhoList(convertedData);
-			
 		} catch (error) {
-			console.error('Error fetching employees:', error);
+			console.error("Error fetching employees:", error);
 		}
 	};
 
 	const fetchAndSetReasons = async () => {
 		try {
-			const response = await AxiosInstance.get('/reasons/')
-			const data = response.data.reasons
+			const response = await AxiosInstance.get("/reasons/");
+			const data = response.data.reasons;
 
 			//getting only the data we want
 			const convertedData: SelectOption[] = data.map((purpose: any) => ({
 				value: purpose.reason,
 				label: purpose.reason,
-			  }));
+			}));
 			setWhatList(convertedData);
-		  } catch (error) {
-			console.error('Error fetching reasons:', error);
-		  }
-	  };
+		} catch (error) {
+			console.error("Error fetching reasons:", error);
+		}
+	};
 
-	  const fetchAndSetBuildings = async () => {
+	const fetchAndSetBuildings = async () => {
 		try {
-			const response = await AxiosInstance.get('/buildings/')
-			const data = response.data.buildings
+			const response = await AxiosInstance.get("/buildings/");
+			const data = response.data.buildings;
 
 			//getting only the data we want
 			const convertedData: SelectOption[] = data.map((building: any) => ({
 				value: building.name,
 				label: building.name,
-			  }));
-			return convertedData
-		  } catch (error) {
-			console.error('Error fetching buildings:', error);
-		  }
-	  };
+			}));
+			return convertedData;
+		} catch (error) {
+			console.error("Error fetching buildings:", error);
+		}
+	};
 
-	  const fetchAndSetOffices = async () => {
+	const fetchAndSetOffices = async () => {
 		try {
-			const response = await AxiosInstance.get('/offices/')
-			const data = response.data.office
+			const response = await AxiosInstance.get("/offices/");
+			const data = response.data.office;
 
 			//getting only the data we want
 			const convertedData: SelectOption[] = data.map((office: any) => ({
 				value: `${office.name} - ${office.build}, Floor ${office.floor}, ${office.roomNo}`,
 				label: `${office.name} - ${office.build}, Floor ${office.floor}, ${office.roomNo}`,
-			  }));
-			return convertedData
-		  } catch (error) {
-			console.error('Error fetching buildings:', error);
-		  }
-	  }
+			}));
+			return convertedData;
+		} catch (error) {
+			console.error("Error fetching buildings:", error);
+		}
+	};
 
-	  const getWhere = async () => {
+	const getWhere = async () => {
 		let buildingsPromise = fetchAndSetBuildings();
 		let officesPromise = fetchAndSetOffices();
 
 		let buildings = await buildingsPromise;
 		let offices = await officesPromise;
 
-		console.log('buildings', buildings)
-		console.log('offices', offices)
+		console.log("buildings", buildings);
+		console.log("offices", offices);
 
 		if (buildings !== undefined && offices !== undefined) {
 			let combinedArray = [...buildings, ...offices];
-			console.log('combinedArray', combinedArray)
+			console.log("combinedArray", combinedArray);
 			setWhereList(combinedArray);
 		}
-	  }
+	};
 
 	//? State used for fetching search visitors
 	const [visitors, setVisitors] = useState<GuardVisitorDataType[]>([
@@ -218,7 +217,6 @@ export default function VisitorFormLayout() {
 			visitor_type: VisitorType.WalkIn,
 		},
 	]);
-
 
 	const [recurringVisitor, setRecurringVisitor] =
 		useState<GuardVisitorDataType>();
@@ -258,12 +256,12 @@ export default function VisitorFormLayout() {
 	//? If form is error
 	const [error, setError] = useState(false);
 
-	const onSearch: SearchProps["onSearch"] = (value, _e, info) => {
+	const onSearch: SearchProps["onSearch"] = async (value, _e, info) => {
 		setLoading(true);
 		if (value) {
 			setError(false);
-			AxiosInstance.post("/visitor/find-recurring", {
-				last_name: value[0].toUpperCase() + value.slice(1),
+			await AxiosInstance.post("/visitor/find-recurring", {
+				visitor: value[0].toUpperCase() + value.slice(1),
 			})
 				.then((res) => {
 					if (res.status === 200) {
@@ -377,16 +375,22 @@ export default function VisitorFormLayout() {
 		updateInput(new Date(dateString as string), "expected_time_out");
 	};
 
-	const saveAction = (zodData: WalkInFormInterfaceZod) => {
+	const saveAction = async (zodData: WalkInFormInterfaceZod) => {
 		setLoading(true);
-		AxiosInstance.post("/visitor/new?auth=true", {
+		await AxiosInstance.post("/visitor/new?auth=true", {
 			visitors: [
 				{
 					visitor_details: {
 						name: {
-							first_name: zodData.first_name,
-							middle_name: zodData.middle_name,
-							last_name: zodData.last_name,
+							first_name:
+								zodData.first_name[0].toUpperCase() +
+								zodData.first_name.slice(1),
+							middle_name: zodData.middle_name
+								? zodData.middle_name[0].toUpperCase() +
+									zodData.middle_name.slice(1)
+								: "",
+							last_name:
+								zodData.last_name[0].toUpperCase() + zodData.last_name.slice(1),
 						},
 						address: {
 							house: zodData.house,
@@ -419,8 +423,8 @@ export default function VisitorFormLayout() {
 			],
 			// Add QR variable here
 		})
-			.then((res) => {
-				AxiosInstance.post("/badge/newBadge", {
+			.then(async (res) => {
+				await AxiosInstance.post("/badge/newBadge", {
 					visitor_id: res.data.visitors[0]._id,
 					qr_id: qr_id,
 				})
@@ -432,35 +436,25 @@ export default function VisitorFormLayout() {
 						setIsSuccessOpen(true);
 					})
 					.catch((err) => {
-						setLoading(false);
-						setStatus(false);
-						setAlertOpen(true);
-						if (err && err.reponse) {
-							const errorMessage =
-								err.response.data.error ||
-								"Something went wrong processing the badge";
+						if (err && err.response) {
+							setLoading(false);
+							setStatus(false);
+							setAlertOpen(true);
+							const errorMessage = err.response.data.error;
 
 							setAlertMsg(errorMessage);
 						}
-						const errorMessage = "Something went wrong processing the badge";
-
-						setAlertMsg(errorMessage);
 					});
 			})
 			.catch((err) => {
-				setLoading(false);
-				setStatus(false);
-				setAlertOpen(!alertOpen);
-
 				if (err && err.response) {
-					const errorMessage =
-						err.response.data.error ||
-						"Something went wrong processing the visitor";
+					setLoading(false);
+					setStatus(false);
+					setAlertOpen(true);
+					const errorMessage = err.response.data.error;
+
 					setAlertMsg(errorMessage);
 				}
-
-				const errorMessage = "Something went wrong processing the visitor";
-				setAlertMsg(errorMessage);
 			});
 	};
 

@@ -80,9 +80,12 @@ export default function VisitorLogsTable({
 				formatDateToISO(new Date(a.check_in_time))!.localeCompare(
 					formatDateToISO(new Date(b.check_in_time))!,
 				),
-				render(value, record, index) {
-					return formatDateObjToString(record.check_in_time);
-				},
+			render(value, record, index) {
+				return record.check_in_time
+					? formatDateObjToString(record.check_in_time)
+					: "";
+			},
+			defaultSortOrder: "descend",
 		},
 		{
 			title: "Time Out",
@@ -92,9 +95,11 @@ export default function VisitorLogsTable({
 				formatDateToISO(new Date(a.check_out_time))!.localeCompare(
 					formatDateToISO(new Date(b.check_out_time))!,
 				),
-				render(value, record, index) {
-					return record.check_out_time ? formatDateObjToString(record.check_out_time) : "";
-				},
+			render(value, record, index) {
+				return record.check_out_time
+					? formatDateObjToString(record.check_out_time)
+					: "";
+			},
 		},
 	];
 

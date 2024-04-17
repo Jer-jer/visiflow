@@ -90,7 +90,7 @@ server.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 });
 
-// change to */5 * * * * * for testing every 5 mins
+// change to */n * * * * * for testing every n mins
 // 0 * * * * to every hour
 
 cron.schedule(
