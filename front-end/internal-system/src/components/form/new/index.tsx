@@ -29,7 +29,6 @@ import "./styles.scss";
 import AxiosInstance from "../../../lib/axios";
 import axios from "axios";
 
-
 dayjs.extend(weekday);
 dayjs.extend(localeData);
 dayjs.extend(customParseFormat);

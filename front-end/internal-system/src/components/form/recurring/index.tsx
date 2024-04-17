@@ -15,11 +15,19 @@ import {
 import type { DatePickerProps } from "antd";
 
 //Components
-import { Button, Form, Modal, Image, Input, Select, DatePicker, Spin } from "antd";
+import {
+	Button,
+	Form,
+	Modal,
+	Image,
+	Input,
+	Select,
+	DatePicker,
+	Spin,
+} from "antd";
 import Alert from "../../alert";
 import { capitalizeEachWord } from "../../../utils";
 import { isMobile } from "react-device-detect";
-
 
 //Styles
 import "./styles.scss";
@@ -28,6 +36,8 @@ import { VisitorStatus, VisitorType } from "../../../utils/enums";
 import AxiosInstance from "../../../lib/axios";
 import axios from "axios";
 import Webcam from "react-webcam";
+
+import { capitilizeFirstLetter } from "../../../utils";
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -393,13 +403,15 @@ function RecurringVisitor({
 
 	const saveAction = async (zodData: WalkInFormInterfaceZod) => {
 		setLoading(true);
-		await AxiosInstance.post("/new-recurring-walk-in", {
+		await AxiosInstance.post("/visitor/new-recurring-walk-in", {
 			_id: visitor._id,
 			visitor_details: {
 				name: {
-					first_name: zodData.first_name,
-					middle_name: zodData.middle_name,
-					last_name: zodData.last_name,
+					first_name: capitilizeFirstLetter(zodData.first_name),
+					middle_name: zodData.middle_name
+						? capitilizeFirstLetter(zodData.middle_name)
+						: "",
+					last_name: capitilizeFirstLetter(zodData.last_name),
 				},
 				address: {
 					house: zodData.house,
@@ -424,8 +436,8 @@ function RecurringVisitor({
 			status: VisitorStatus.Approved,
 			visitor_type: VisitorType.WalkIn,
 		})
-			.then(async (res) => {
-				await AxiosInstance.post("/badge/newBadge", {
+			.then((res) => {
+				AxiosInstance.post("/badge/newBadge", {
 					visitor_id: res.data.visitor._id,
 					qr_id: qr_id,
 				})
