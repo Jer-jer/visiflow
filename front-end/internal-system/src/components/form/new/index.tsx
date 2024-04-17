@@ -94,6 +94,26 @@ function NewWalkIn({
 	handlePurpose,
 	onChange,
 }: NewWalkInProps) {
+	const disabledDateTime = () => {
+		const currentHour = dayjs().hour();
+		const currentMinute = dayjs().minute();
+
+		return {
+			disabledHours: () => range(0, currentHour),
+			disabledMinutes: (selectedHour: number) => {
+				if (selectedHour === currentHour) {
+					return range(0, currentMinute);
+				}
+				return [];
+			},
+		};
+	};
+
+	// Helper function to generate range array
+	const range = (start: number, end: number) => {
+		return Array.from({ length: end - start }, (_, i) => start + i);
+	};
+
 	const [firstName, setFirstName] = useState<string>("");
 	const [middleName, setMiddleName] = useState<string>("");
 	const [lastName, setLastName] = useState<string>("");
@@ -303,7 +323,7 @@ function NewWalkIn({
 				<span>Sucessfully registered and timed-in visitor.</span>
 			</Modal>
 			<div
-				className={`transition-alert absolute z-[1] w-[380px] scale-y-0 ease-in-out ${
+				className={`transition-alert absolute z-[1] ml-[-38px] mt-[-92px] w-[380px] scale-y-0 ease-in-out ${
 					alertOpen && "scale-y-100"
 				}`}
 			>
@@ -320,6 +340,7 @@ function NewWalkIn({
 					setOpen={setAlertOpen}
 				/>
 			</div>
+
 			<Form name="Visitor Details" onFinish={onSubmit} autoComplete="off">
 				<div className="mb-[35px] ml-2 mt-3 flex">
 					<div className="w-[380px] flex-auto md:w-[761px]">
@@ -706,6 +727,10 @@ function NewWalkIn({
 															)}
 															format="YYYY-MM-DD hh:mm A"
 															onChange={onChange}
+															disabledDate={(current) => {
+																return current < dayjs().startOf("day");
+															}}
+															disabledTime={disabledDateTime}
 														/>
 													</div>
 													{errors?.expected_time_out && (

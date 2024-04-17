@@ -174,41 +174,12 @@ exports.graph = async (req, res) => {
 
   try {
 
-
     const visitors = await getVisitorList(_start_date, _end_date);
 
 
-    // const logs = await Logs.aggregate([
-    //   {
-    //     $match: {
-    //       check_in_time: {
-    //         $gte: _start_date,
-    //         $lte: _end_date
-    //       }
-    //     }
-    //   },
-    //   {
-    //     $group: {
-    //       _id: { $substr: ["$check_in_time", 5, 2] },
-    //       badge_id: { $addToSet: "$badge_id" }
-    //     }
-    //   },
-    //   {
-    //     $lookup: {
-    //       from: "badges",
-    //       localField: "badge_id",
-    //       foreignField: "_id",
-    //       as: "badge"
-    //     }
-    //   },
-    //   {
-    //     $project: {
-    //       _id: 1,
-    //       visitor_id: "$badge.visitor_id"
-    //     }
-    //   }
-    // ]);
-
+    if (visitors === null) {
+      return res.status(400).json({ error: "No visitors available in the specified date range" });
+    }
 
     const data = await Visitor.aggregate([
       {
@@ -248,15 +219,12 @@ exports.graph = async (req, res) => {
       }
     ]);
 
-
-    return res.json({ data });
-
-
-    if (visitors === null) {
-      return res.status(400).json({ error: "No visitors available in the specified date range" });
+    if (data.length > 0) {
+      return res.json({ data });
+    } else {
+      return res.status(400).json({ error: "Visitor does not exists in database" });
     }
 
-    return res.json({ visitors });
   } catch (error) {
     return res.status(500).json({ error: 'Failed to retrieve visitors from the database.' });
   }

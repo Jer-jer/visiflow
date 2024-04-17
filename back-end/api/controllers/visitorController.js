@@ -33,6 +33,24 @@ exports.getVisitors = async (req, res) => {
   }
 };
 
+//For Current Visitors by Janusz
+exports.getCurrentVisitors = async (req, res) => {
+  try {
+    const badges = await Badge.find({ is_active: true });
+
+    const activeVisitorIds = badges.map(badge => badge.visitor_id);
+
+    const activeVisitors = await Visitor.find({ _id: { $in: activeVisitorIds } });
+
+    res.status(200).json({ activeVisitors });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Failed to retrieve active visitors with badges from the database" });
+  }
+};
+
 exports.getCompanions = async (req, res) => {
   const { visitor_id } = req.body;
 
@@ -85,6 +103,14 @@ exports.addVisitor = async (req, res, next) => {
     const duplicateErrors = await validateDuplicate(visitors, res);
     if (duplicateErrors.length > 0) {
       return res.status(409).json({ error: duplicateErrors[0] });
+    }
+
+    if (
+      mainVisitor.id_picture.front &&
+      mainVisitor.id_picture.back &&
+      mainVisitor.id_picture.selfie 
+    ) {
+      
     }
 
     const [frontId, backId, selfieId] = await Promise.all([

@@ -236,6 +236,7 @@ export default function VisitorFormLayout() {
 		handleSubmit,
 		formState: { errors },
 		setValue,
+		clearErrors,
 	} = useForm<WalkInFormTypeZod>({
 		defaultValues: {
 			expected_time_out: new Date(),
@@ -259,40 +260,70 @@ export default function VisitorFormLayout() {
 	const onSearch: SearchProps["onSearch"] = async (value, _e, info) => {
 		setLoading(true);
 		if (value) {
+			const isEmail = /^\S+@\S+\.\S+$/;
 			setError(false);
 			await AxiosInstance.post("/visitor/find-recurring", {
 				visitor: value[0].toUpperCase() + value.slice(1),
-			})
-				.then((res) => {
-					if (res.status === 200) {
-						const respVisitors: GuardVisitorDataType[] = res.data.visitors.map(
-							(visitor: GuardVisitorDataType) => ({
-								key: visitor._id,
-								_id: visitor._id,
-								visitor_details: visitor.visitor_details,
-								plate_num: visitor.plate_num,
-								purpose: {
-									what: [],
-									when: new Date(),
-									where: [],
-									who: [],
-								},
-								expected_time_out: new Date(),
-								status: VisitorStatus.Approved,
-								visitor_type: VisitorType.WalkIn,
-							}),
-						);
+			}).then((res) => {
+				if (res.status === 200) {
+					const respVisitors: GuardVisitorDataType[] = res.data.visitors.map(
+						(visitor: GuardVisitorDataType) => ({
+							key: visitor._id,
+							_id: visitor._id,
+							visitor_details: visitor.visitor_details,
+							plate_num: visitor.plate_num,
+							purpose: {
+								what: [],
+								when: new Date(),
+								where: [],
+								who: [],
+							},
+							expected_time_out: new Date(),
+							status: VisitorStatus.Approved,
+							visitor_type: VisitorType.WalkIn,
+						}),
+					);
+				}
+			});
 
-						setVisitors(respVisitors);
-						setVisitorsFound(true);
-					}
-					setLoading(false);
+			if (isEmail.test(value)) {
+				errorModal("Email not accepted");
+				setVisitorsFound(false);
+				setLoading(false);
+			} else {
+				AxiosInstance.post("/visitor/find-recurring", {
+					visitor: value[0].toUpperCase() + value.slice(1),
 				})
-				.catch(() => {
-					errorModal("Visitor not found");
-					setVisitorsFound(false);
-					setLoading(false);
-				});
+					.then((res) => {
+						if (res.status === 200) {
+							const respVisitors: GuardVisitorDataType[] =
+								res.data.visitors.map((visitor: GuardVisitorDataType) => ({
+									key: visitor._id,
+									_id: visitor._id,
+									visitor_details: visitor.visitor_details,
+									plate_num: visitor.plate_num,
+									purpose: {
+										what: [],
+										when: new Date(),
+										where: [],
+										who: [],
+									},
+									expected_time_out: new Date(),
+									status: VisitorStatus.Approved,
+									visitor_type: VisitorType.WalkIn,
+								}));
+
+							setVisitors(respVisitors);
+							setVisitorsFound(true);
+						}
+						setLoading(false);
+					})
+					.catch(() => {
+						errorModal("Visitor not found");
+						setVisitorsFound(false);
+						setLoading(false);
+					});
+			}
 		} else {
 			setLoading(false);
 			setError(true);
@@ -460,6 +491,8 @@ export default function VisitorFormLayout() {
 
 	const onSubmit = handleSubmit((data) => {
 		saveAction(data);
+		//clearErrors();
+		// console.log(data);
 	});
 
 	if (qr_id === undefined) {
@@ -481,20 +514,27 @@ export default function VisitorFormLayout() {
 			<OuterContainer header="VISITOR FORM">
 				<InnerContainer>
 					{!isNew && !isRecurring && (
-						<div className="mb-[20px] flex h-full items-center justify-center gap-5">
+						<div className="mb-[60px] mt-[25px] flex h-full items-center justify-center gap-5">
 							<Button
 								type="primary"
-								className="w-[inherit] bg-primary-500"
+								className="h-[inherit] w-[inherit] bg-primary-500 md:text-lg"
 								onClick={(e) => isNewOrRecurring(true, false)}
 							>
 								New Visitor
 							</Button>
 							<Button
 								type="primary"
-								className="w-[inherit] bg-primary-500"
+								className="h-[inherit] w-[inherit] bg-primary-500 md:text-lg"
 								onClick={(e) => isNewOrRecurring(false, true)}
 							>
 								Recurring Visitor
+							</Button>
+							<Button
+								type="primary"
+								className="h-[inherit] w-[inherit] !bg-red-500 md:text-lg"
+								href="/"
+							>
+								CANCEL
 							</Button>
 						</div>
 					)}
@@ -569,7 +609,7 @@ export default function VisitorFormLayout() {
 									whatOptions={whatList}
 									whoOptions={whoList}
 									whereOptions={whereList}
-									qr_id={parseInt(qr_id as string)}
+									qr_id={qr_id?.toString()}
 									setAlertOpen={setAlertOpen}
 									handleSuccessOk={handleSuccessOk}
 									setLoading={setLoading}

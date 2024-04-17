@@ -41,6 +41,9 @@ export default function StepOne({
 }: StepOneProps) {
 	const [isTCOpen, setIsTCOpen] = useState(false);
 
+	// console.log(visitors.expected_time_out);
+	// console.log(formatDateObjToString(visitors.expected_time_out));
+
 	const {
 		register,
 		handleSubmit,
