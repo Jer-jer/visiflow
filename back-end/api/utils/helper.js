@@ -20,7 +20,7 @@ const { Storage } = require("@google-cloud/storage");
 
 const bucketName = "visiflow";
 
-// const local_ip = "192.168.1.4"; 
+// const local_ip = "192.168.1.4";
 const local_ip = "https://visiflow-api.onrender.com";
 
 // Lazy-loaded storage
@@ -50,7 +50,7 @@ const transporter = nodemailer.createTransport({
 // use in walk-in visitor
 async function generateVisitorQRCode(badgeId) {
   return new Promise(async (resolve, reject) => {
-    const filename = `api/resource/badge/badge${badgeId}.png`;
+    const filename = `badge${badgeId}.png`;
     const uri = `${local_ip}/badge/checkBadge?qr_id=${badgeId}`;
 
     QRCode.toFile(
@@ -450,7 +450,7 @@ async function validateDuplicate(visitors, res) {
     try {
       // Check if visitor has an existing record
       const visitorDB = await Visitor.findOne({
-        "visitor_details.email": visitor.visitor_details.email, 
+        "visitor_details.email": visitor.visitor_details.email,
       });
 
       // Check if email is used by another visitor
