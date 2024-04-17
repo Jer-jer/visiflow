@@ -86,7 +86,6 @@ export default function StepThree({
 			title: "Do you want to proceed?",
 			icon: <ExclamationCircleFilled />,
 			onOk() {
-				console.log("VIISSTOORRRRRRR", visitors);
 				if (
 					visitors
 						.slice(1)

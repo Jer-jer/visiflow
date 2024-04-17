@@ -104,7 +104,7 @@ function RecurringVisitor() {
 		if (value) {
 			setError(false);
 			await AxiosInstance.post("/visitor/find-recurring", {
-				visitor: value,
+				visitor: value[0].toUpperCase() + value.slice(1),
 			})
 				.then((res) => {
 					if (res.status === 200) {
