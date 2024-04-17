@@ -82,12 +82,9 @@ exports.addVisitor = async (req, res, next) => {
       return res.status(409).json({ error: err[0] });
     }
 
-    if (visitors.isArray()) {
-      const duplicateErrors = await validateDuplicate(visitors, res);
-
-      if (duplicateErrors.length > 0) {
-        return res.status(409).json({ error: duplicateErrors[0] });
-      }
+    const duplicateErrors = await validateDuplicate(visitors, res);
+    if (duplicateErrors.length > 0) {
+      return res.status(409).json({ error: duplicateErrors[0] });
     }
 
     const [frontId, backId, selfieId] = await Promise.all([
