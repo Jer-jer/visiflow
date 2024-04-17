@@ -143,7 +143,7 @@ async function generateBadge(visitor) {
   await badge.save();
 
   const uri = `${local_ip}/badge/checkBadge?visitor_id=${visitor._id}`;
-  const filename = `api/resource/badge/badge${badge._id}.png`;
+  const filename = `${badge._id}.png`;
   await generateQRCode(uri, filename, badge._id);
 
   return badge;
