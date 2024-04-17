@@ -22,6 +22,7 @@ import {
 } from "antd";
 import Alert from "../../alert";
 import Webcam from "react-webcam";
+import { capitalizeEachWord } from "../../../utils";
 
 //Styles
 import "./styles.scss";
@@ -74,15 +75,6 @@ const outMode = {
 	width: 1280,
 	height: 720,
 	facingMode: { exact: "environment" },
-};
-
-const capitalizeEachWord = (str: string) => {
-	return str
-		.split(" ")
-		.map((word: string) => {
-			return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-		})
-		.join(" ");
 };
 
 function NewWalkIn({

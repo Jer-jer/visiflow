@@ -23,15 +23,13 @@ exports.totalVisitors = async (req, res) => {
     const pre_reg = visitors.find((v) => v._id === "Pre-Registered");
     const type = visitors[0]._id;
 
-    return res
-      .status(200)
-      .json({
-        walk_in: walk_in ? walk_in.count : 0,
-        pre_reg: pre_reg ? pre_reg.count : 0,
-        total: total,
-        percent: `${percent}%`,
-        type: type,
-      });
+    return res.status(200).json({
+      walk_in: walk_in ? walk_in.count : 0,
+      pre_reg: pre_reg ? pre_reg.count : 0,
+      total: total,
+      percent: `${percent}%`,
+      type: type,
+    });
   } catch (error) {
     return res
       .status(500)
