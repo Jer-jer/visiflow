@@ -31,7 +31,7 @@ const IdPhoto = new Schema({
 const VisitorDetails = new Schema({
   name: { type: Name, required: true },
   address: { type: Address, required: true },
-  email: { type: String, require: true },
+  email: { type: String },
   phone: { type: String, require: true },
 });
 
@@ -44,7 +44,7 @@ const Purpose = new Schema({
 
 const VisitorSchema = new Schema({
   _id: { type: ObjectId },
-  visitor_details: { type: VisitorDetails, required: true },
+  visitor_details: { type: VisitorDetails },
   companions: [{ type: String, default: [] }],
   plate_num: { type: String, sparse: true },
   purpose: { type: Purpose, required: true },
@@ -65,8 +65,6 @@ const VisitorSchema = new Schema({
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
 });
-
-VisitorSchema.index({ "visitor_details.email": 1, "visitor_details.phone": 1 });
 
 VisitorSchema.index({
   "visitor_details.name.first_name": 1,
