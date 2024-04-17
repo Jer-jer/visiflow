@@ -116,7 +116,7 @@ export default function Home() {
 				}),
 			);
 			const sortedAnnouncements = [...convertedData].sort(
-				(a, b) => a.priority - b.priority,
+				(a, b) => b.priority - a.priority,
 			);
 			setAnnouncement(sortedAnnouncements);
 		} catch (error) {

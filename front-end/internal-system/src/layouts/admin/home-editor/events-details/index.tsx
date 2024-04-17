@@ -19,6 +19,7 @@ import {
 	message,
 	Upload,
 	Image,
+    Select,
 } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import Input from "../../../../components/fields/input/input";
@@ -35,6 +36,7 @@ import {
 
 //Styles
 import "./styles.scss";
+import AxiosInstance from "../../../../lib/axios";
 
 dayjs.extend(customParseFormat);
 
@@ -81,6 +83,11 @@ const showDeleteConfirm = () => {
 	});
 };
 
+interface SelectOption {
+	label: string;
+	value: string;
+};
+
 //Main Function
 export default function EventsSchedDetails({
 	record,
@@ -95,6 +102,8 @@ export default function EventsSchedDetails({
 	const [endTime, setEndTime] = useState(record?.endTime === undefined ? new Date() : record?.endTime);
 	const [locationId, setLocationId] = useState(record?.locationID === undefined ? "" : record?.locationID);
 	const [description, setDescription] = useState(record?.description === undefined ? "" : record?.description);
+
+	const [whereList, setWhereList] = useState<SelectOption[]>([]);
 
 	//Image States
 	const [loading, setLoading] = useState(false);
@@ -191,6 +200,55 @@ export default function EventsSchedDetails({
 		}
 	};
 
+	const fetchAndSetBuildings = async () => {
+		try {
+			const response = await AxiosInstance.get("/buildings/");
+			const data = response.data.buildings;
+
+			//getting only the data we want
+			const convertedData: SelectOption[] = data.map((building: any) => ({
+				value: building.name,
+				label: building.name,
+			}));
+			return convertedData;
+		} catch (error) {
+			console.error("Error fetching buildings:", error);
+		}
+	};
+
+	const fetchAndSetOffices = async () => {
+		try {
+			const response = await AxiosInstance.get("/offices/");
+			const data = response.data.office;
+
+			//getting only the data we want
+			const convertedData: SelectOption[] = data.map((office: any) => ({
+				value: `${office.name} - ${office.build}, Floor ${office.floor}, ${office.roomNo}`,
+				label: `${office.name} - ${office.build}, Floor ${office.floor}, ${office.roomNo}`,
+			}));
+			return convertedData;
+		} catch (error) {
+			console.error("Error fetching buildings:", error);
+		}
+	};
+
+	const getWhere = async () => {
+		let buildingsPromise = fetchAndSetBuildings();
+		let officesPromise = fetchAndSetOffices();
+
+		let buildings = await buildingsPromise;
+		let offices = await officesPromise;
+		
+		if (buildings !== undefined && offices !== undefined) {
+			let combinedArray: SelectOption[] = [...buildings, ...offices];
+			setWhereList(combinedArray);
+		}
+	};
+
+	useEffect(() => {
+		getWhere();
+	})
+
 	return (
 		<div className="mr-[135px] flex flex-col gap-[35px] pt-[25px]">
 			<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
@@ -272,7 +330,7 @@ export default function EventsSchedDetails({
 							<Label spanStyling="text-black font-medium text-[16px]">
 								Location
 							</Label>
-							<Input
+							{/* <Input
 								inputType="text"
 								inputStyling="input w-full h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
 								placeHolder={record?.locationID}
@@ -280,7 +338,20 @@ export default function EventsSchedDetails({
 								setInput={setLocationId}
 								visitorMngmnt
 								disabled={disabledInputs}
-							/>
+							/> */}
+							<Select
+								className="w-[315px] md:w-[397px]"
+								size="large"
+								placement="bottomLeft"
+								allowClear
+								showSearch
+								placeholder="Where"
+								listHeight={150}
+								options={whereList}
+								onChange={(value) =>
+									setLocationId(value)
+								}
+							></Select>
 						</div>
 						<div className="flex w-full items-start gap-[30px]">
 							<Label spanStyling="text-black font-medium text-[16px]">
