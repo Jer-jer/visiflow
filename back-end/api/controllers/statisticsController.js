@@ -170,6 +170,7 @@ exports.graph = async (req, res) => {
 
   const _start_date = new Date(year ? year : new Date().getFullYear(), month ? month - 1 : 0);
   const _end_date = new Date(month ? _start_date.getFullYear() : _start_date.getFullYear() + 1, month ? month : 0);
+  _end_date.setDate(_end_date.getDate() - 1);
 
   try {
 
