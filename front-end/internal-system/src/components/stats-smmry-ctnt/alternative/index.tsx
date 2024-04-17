@@ -16,11 +16,13 @@ interface StatisticsDetailsAltProps {
 interface StatisticsSummaryContentAltProps {
 	title: string;
 	statisticsAltDetails: StatisticsDetailsAltProps[];
+	onChange?: (dates: any, dateStrings: string[]) => void;
 }
 
 export default function StatisticsSummaryContentAlt({
 	title,
 	statisticsAltDetails,
+	onChange,
 }: StatisticsSummaryContentAltProps) {
 	return (
 		<div className="flex w-full flex-col items-center justify-center">
@@ -28,7 +30,7 @@ export default function StatisticsSummaryContentAlt({
 				{title.toUpperCase()}
 			</span>
 			<div className="mb-[10px] mt-[10px] flex justify-center">
-				<DateTimePicker globalStyling="w-4/5" size="middle" />
+				<DateTimePicker globalStyling="w-4/5" size="middle" onRangeChange={onChange} />
 			</div>
 			{statisticsAltDetails.map((item, index) => (
 				<AlternativeDetails

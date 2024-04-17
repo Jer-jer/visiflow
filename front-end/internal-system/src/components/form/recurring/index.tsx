@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction, useRef, useState } from "react";
 import z from "zod";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -15,14 +15,19 @@ import {
 import type { DatePickerProps } from "antd";
 
 //Components
-import { Button, Form, Modal, Image, Input, Select, DatePicker } from "antd";
+import { Button, Form, Modal, Image, Input, Select, DatePicker, Spin } from "antd";
 import Alert from "../../alert";
+import { capitalizeEachWord } from "../../../utils";
+import { isMobile } from "react-device-detect";
+
 
 //Styles
 import "./styles.scss";
 import { GuardVisitorDataType } from "../../../utils/interfaces";
 import { VisitorStatus, VisitorType } from "../../../utils/enums";
 import AxiosInstance from "../../../lib/axios";
+import axios from "axios";
+import Webcam from "react-webcam";
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -57,6 +62,18 @@ interface RecurringProps {
 	setAlertMsg: Dispatch<SetStateAction<string>>;
 }
 
+const selfieMode = {
+	width: 1280,
+	height: 720,
+	facingMode: "user",
+};
+
+const outMode = {
+	width: 1280,
+	height: 720,
+	facingMode: { exact: "environment" },
+};
+
 function RecurringVisitor({
 	visitor,
 	isSuccessOpen,
@@ -74,6 +91,201 @@ function RecurringVisitor({
 	setStatus,
 	setAlertMsg,
 }: RecurringProps) {
+	const [firstName, setFirstName] = useState<string>("");
+	const [middleName, setMiddleName] = useState<string>("");
+	const [lastName, setLastName] = useState<string>("");
+
+	const [house, setHouse] = useState<string>("");
+	const [street, setStreet] = useState<string>("");
+	const [brgy, setBrgy] = useState<string>("");
+	const [city, setCity] = useState<string>("");
+	const [province, setProvince] = useState<string>("");
+	const [country, setCountry] = useState<string>("");
+
+	const [plateNO, setPlateNO] = useState<string>("");
+
+	const [isModalOpen, setIsModalOpen] = useState(false);
+
+	const webcamRef = useRef<Webcam>(null);
+	const [cameraActive, setCameraActive] = useState(true);
+	const [loadingModal, setLoadingModal] = useState(false);
+
+	const [imageUrlScan, setImageUrlScan] = useState<string | undefined>(
+		undefined,
+	);
+	const [imageUrlID, setImageUrlID] = useState<string | undefined>(
+		"https://cdn-icons-png.flaticon.com/512/6080/6080012.png",
+	);
+	const [imageUrlPlateNO, setImageUrlPlateNO] = useState<string | undefined>(
+		"https://cdn-icons-png.flaticon.com/512/6080/6080012.png",
+	);
+
+	const [scan, setScan] = useState<"ID" | "PlateNO" | "">("");
+
+	const capture = async () => {
+		const imageSrc = webcamRef.current?.getScreenshot();
+		const base64String = (imageSrc as string)?.split(",")[1];
+		if (imageSrc) {
+			setLoadingModal(true);
+			setCameraActive(false);
+			setImageUrlScan(imageSrc);
+			console.log(scan);
+			try {
+				if (scan === "ID") {
+					const response: any = await AxiosInstance.post("/scan/", {
+						image: base64String,
+					});
+					const data = response.data.inference.prediction;
+
+					let firstName = "";
+					let middleName = "";
+					let lastName = "";
+					let house = "";
+					let street = "";
+					let brgy = "";
+					let city = "";
+					let province = "";
+					let country = "";
+
+					if (data.surnames.length >= 2) {
+						middleName = data.surnames.pop().value;
+					} else if (data.givenNames.length >= 2) {
+						middleName = data.givenNames.pop().value;
+					}
+
+					firstName = data.givenNames
+						.map((nameObj: any) => nameObj.value)
+						.join(" ");
+					lastName = data.surnames
+						.map((nameObj: any) => nameObj.value)
+						.join(" ");
+
+					const parts = data.address.value
+						.split(",")
+						.map((part: any) => part.trim());
+
+					const variables = [
+						"house",
+						"street",
+						"brgy",
+						"city",
+						"province",
+						"country",
+					];
+
+					parts.forEach((part: any, index: number) => {
+						if (index < variables.length) {
+							eval(`${variables[index]} = part`);
+						}
+					});
+
+					setFirstNameZod(capitalizeEachWord(firstName));
+					setMiddleNameZod(capitalizeEachWord(middleName));
+					setLastNameZod(capitalizeEachWord(lastName));
+					setHouseZod(capitalizeEachWord(house));
+					setStreetZod(capitalizeEachWord(street));
+					setBrgyZod(capitalizeEachWord(brgy));
+					setCityZod(capitalizeEachWord(city));
+					setProvinceZod(capitalizeEachWord(province));
+					setCountryZod(capitalizeEachWord(country));
+					setImageUrlID(imageSrc);
+				} else if (scan === "PlateNO") {
+					let formData: any = new FormData();
+					formData.append("upload", imageSrc);
+					formData.append("regions", "ph"); // Change to your country
+
+					const response = await axios.post(
+						"https://api.platerecognizer.com/v1/plate-reader/",
+						formData,
+						{
+							headers: {
+								Authorization: "Token 7cb6cc054aaf57979580f75ac193ffc63f826307",
+							},
+						},
+					);
+					const data = response.data.results[0];
+
+					setPlateNoZod(data.plate.toUpperCase());
+					setImageUrlPlateNO(imageSrc);
+				}
+
+				handleOk();
+			} catch (err) {
+				console.log(err);
+			}
+			setLoadingModal(false);
+			setCameraActive(true);
+		}
+	};
+
+	const setFirstNameZod = (value: any) => {
+		setFirstName(value);
+		updateInput(value, "first_name");
+	};
+
+	const setMiddleNameZod = (value: any) => {
+		setMiddleName(value);
+		updateInput(value, "middle_name");
+	};
+
+	const setLastNameZod = (value: any) => {
+		setLastName(value);
+		updateInput(value, "last_name");
+	};
+
+	const setHouseZod = (value: any) => {
+		setHouse(value);
+		updateInput(value, "house");
+	};
+
+	const setStreetZod = (value: any) => {
+		setStreet(value);
+		updateInput(value, "street");
+	};
+
+	const setBrgyZod = (value: any) => {
+		setBrgy(value);
+		updateInput(value, "brgy");
+	};
+
+	const setCityZod = (value: any) => {
+		setCity(value);
+		updateInput(value, "city");
+	};
+
+	const setProvinceZod = (value: any) => {
+		setProvince(value);
+		updateInput(value, "province");
+	};
+
+	const setCountryZod = (value: any) => {
+		setCountry(value);
+		updateInput(value, "country");
+	};
+
+	const setPlateNoZod = (value: any) => {
+		setPlateNO(value);
+		updateInput(value, "plate_num");
+	};
+
+	const showModal = (module: "ID" | "PlateNO") => {
+		setIsModalOpen(true);
+		setScan(module);
+		setImageUrlScan(undefined);
+	};
+
+	const handleOk = () => {
+		setIsModalOpen(false);
+		setScan("");
+		setImageUrlScan(undefined);
+	};
+
+	const handleCancel = () => {
+		setIsModalOpen(false);
+		setScan("");
+		setImageUrlScan(undefined);
+	};
+
 	const {
 		register,
 		handleSubmit,
@@ -179,9 +391,9 @@ function RecurringVisitor({
 		updateInput(new Date(dateString as string), "expected_time_out");
 	};
 
-	const saveAction = (zodData: WalkInFormInterfaceZod) => {
+	const saveAction = async (zodData: WalkInFormInterfaceZod) => {
 		setLoading(true);
-		AxiosInstance.post("/new-recurring-walk-in", {
+		await AxiosInstance.post("/new-recurring-walk-in", {
 			_id: visitor._id,
 			visitor_details: {
 				name: {
@@ -212,8 +424,8 @@ function RecurringVisitor({
 			status: VisitorStatus.Approved,
 			visitor_type: VisitorType.WalkIn,
 		})
-			.then((res) => {
-				AxiosInstance.post("/badge/newBadge", {
+			.then(async (res) => {
+				await AxiosInstance.post("/badge/newBadge", {
 					visitor_id: res.data.visitor._id,
 					qr_id: qr_id,
 				})
@@ -222,36 +434,25 @@ function RecurringVisitor({
 						setIsSuccessOpen(true);
 					})
 					.catch((err) => {
-						setLoading(false);
-						setStatus(false);
-						setAlertOpen(true);
-						if (err && err.reponse) {
-							const errorMessage =
-								err.response.data.error ||
-								"Something went wrong processing the badge";
+						if (err & err.response) {
+							setLoading(false);
+							setStatus(false);
+							setAlertOpen(true);
+							const errorMessage = err.response.data.error;
 
 							setAlertMsg(errorMessage);
 						}
-						const errorMessage = "Something went wrong processing the badge";
-
-						setAlertMsg(errorMessage);
 					});
 			})
 			.catch((err) => {
-				setLoading(false);
-				setStatus(false);
-				setAlertOpen(true);
-				if (err && err.reponse) {
-					const errorMessage =
-						err.response.data.error ||
-						err.response.data.errors ||
-						"Something went wrong processing the visitor";
+				if (err & err.response) {
+					setLoading(false);
+					setStatus(false);
+					setAlertOpen(true);
+					const errorMessage = err.response.data.error;
 
 					setAlertMsg(errorMessage);
 				}
-				const errorMessage = "Something went wrong processing the visitor";
-
-				setAlertMsg(errorMessage);
 			});
 	};
 
@@ -295,26 +496,70 @@ function RecurringVisitor({
 					<div className="w-[380px] flex-auto md:w-[761px]">
 						<div className="mb-[35px] ml-[20px] mr-[25px] flex h-fit flex-col items-center justify-center gap-[30px] lg:flex-row lg:gap-[25px]">
 							<div className="flex flex-col items-center justify-center gap-[15px]">
-								<div className="relative h-[245px] w-[330px] md:h-[300px] md:w-[360px]">
-									<Image width="100%" height="100%" />
+								<div className="align-center flex h-[245px] w-[330px] flex-col md:h-[300px] md:w-[360px]">
+									<Image width="100%" height="100%" src={imageUrlID} />
 									<Button
 										type="primary"
-										className="absolute ml-[-240px] mt-[200px] h-[40px] w-[155px] !rounded-[10px] !bg-primary-500 text-xs shadow-lg md:ml-[-260px] md:mt-[240px] md:h-[46px] md:w-[175px] md:text-lg"
+										className="shadow-lgmd:h-[46px] h-[40px] !rounded-[10px] !bg-primary-500 text-xs md:text-lg"
+										onClick={() => showModal("ID")}
 									>
-										<b>SCAN ID</b>
+										<b>SCAN ID (OPTIONAL)</b>
 									</Button>
 								</div>
-								<div className="relative h-[245px] w-[330px] md:h-[300px] md:w-[360px]">
-									<Image width="100%" height="100%" />
+								<div className="align-center flex h-[245px] w-[330px] flex-col md:h-[300px] md:w-[360px]">
+									<Image width="100%" height="100%" src={imageUrlPlateNO} />
 									<Button
 										type="primary"
-										className="absolute ml-[-240px] mt-[200px] h-[40px] w-[155px] !rounded-[10px] !bg-primary-500 text-xs shadow-lg md:ml-[-260px] md:mt-[240px] md:h-[46px] md:w-[175px] md:text-sm"
+										className="h-[40px] !rounded-[10px] !bg-primary-500 text-xs shadow-lg md:h-[46px] md:text-lg"
+										onClick={() => showModal("PlateNO")}
 									>
-										<b>
-											SCAN PLATE NUMBER <br /> (OPTIONAL)
-										</b>
+										<b>SCAN PLATE NO. (OPTIONAL)</b>
 									</Button>
 								</div>
+								<Modal
+									title={`Scan ${scan}`}
+									open={isModalOpen}
+									onCancel={() => handleCancel()}
+									width={642}
+									centered
+									footer={[
+										<Button
+											onClick={() => handleCancel()}
+											className="!bg-secondary-500 mt-[-50px] !rounded-[5px] text-xs shadow-lg"
+											type="primary"
+										>
+											Cancel
+										</Button>,
+									]}
+								>
+									<Spin
+										tip="Scanning in progress..."
+										spinning={loadingModal}
+										delay={500}
+									>
+										{cameraActive && (
+											<Webcam
+												audio={false}
+												height={720}
+												screenshotFormat="image/png"
+												width={1280}
+												videoConstraints={isMobile ? outMode : selfieMode}
+												ref={webcamRef}
+											/>
+										)}
+										{!cameraActive && <img src={imageUrlScan} alt="Captured" />}
+
+										<div className="flex justify-center">
+											<Button
+												onClick={capture}
+												className="mt-[-50px] !rounded-[5px] !bg-primary-500 text-xs shadow-lg"
+												type="primary"
+											>
+												<b>Capture photo</b>
+											</Button>
+										</div>
+									</Spin>
+								</Modal>
 							</div>
 
 							<div className="flex flex-col items-center justify-center gap-[20px]">
@@ -328,9 +573,10 @@ function RecurringVisitor({
 													size="large"
 													defaultValue={visitor.visitor_details.name.first_name}
 													{...register("first_name")}
-													onChange={(e) =>
-														updateInput(e.target.value, "first_name")
-													}
+													value={firstName}
+													onChange={(e) => {
+														setFirstNameZod(e.target.value);
+													}}
 												/>
 											</div>
 											{errors?.first_name && (
@@ -350,9 +596,10 @@ function RecurringVisitor({
 														visitor.visitor_details.name.middle_name
 													}
 													{...register("middle_name")}
-													onChange={(e) =>
-														updateInput(e.target.value, "middle_name")
-													}
+													value={middleName}
+													onChange={(e) => {
+														setMiddleNameZod(e.target.value);
+													}}
 												/>
 											</div>
 											{errors?.middle_name && (
@@ -370,9 +617,10 @@ function RecurringVisitor({
 													size="large"
 													defaultValue={visitor.visitor_details.name.last_name}
 													{...register("last_name")}
-													onChange={(e) =>
-														updateInput(e.target.value, "last_name")
-													}
+													value={lastName}
+													onChange={(e) => {
+														setLastNameZod(e.target.value);
+													}}
 												/>
 											</div>
 											{errors?.last_name && (
@@ -426,9 +674,8 @@ function RecurringVisitor({
 													size="large"
 													defaultValue={visitor.plate_num ?? ""}
 													{...register("plate_num")}
-													onChange={(e) =>
-														updateInput(e.target.value, "plate_num")
-													}
+													value={plateNO}
+													onChange={(e) => setPlateNO(e.target.value)}
 												/>
 											</div>
 											{errors?.plate_num && (
@@ -448,7 +695,8 @@ function RecurringVisitor({
 													size="large"
 													defaultValue={visitor.visitor_details.address.house}
 													{...register("house")}
-													onChange={(e) => updateInput(e.target.value, "house")}
+													value={house}
+													onChange={(e) => setHouseZod(e.target.value)}
 												/>
 											</div>
 											{errors?.house && (
@@ -465,9 +713,8 @@ function RecurringVisitor({
 													size="large"
 													defaultValue={visitor.visitor_details.address.street}
 													{...register("street")}
-													onChange={(e) =>
-														updateInput(e.target.value, "street")
-													}
+													value={street}
+													onChange={(e) => setStreetZod(e.target.value)}
 												/>
 											</div>
 											{errors?.street && (
@@ -484,7 +731,8 @@ function RecurringVisitor({
 													size="large"
 													defaultValue={visitor.visitor_details.address.brgy}
 													{...register("brgy")}
-													onChange={(e) => updateInput(e.target.value, "brgy")}
+													value={brgy}
+													onChange={(e) => setBrgyZod(e.target.value)}
 												/>
 											</div>
 											{errors?.brgy && (
@@ -501,7 +749,8 @@ function RecurringVisitor({
 													size="large"
 													defaultValue={visitor.visitor_details.address.city}
 													{...register("city")}
-													onChange={(e) => updateInput(e.target.value, "city")}
+													value={city}
+													onChange={(e) => setCityZod(e.target.value)}
 												/>
 											</div>
 											{errors?.city && (
@@ -520,9 +769,8 @@ function RecurringVisitor({
 														visitor.visitor_details.address.province
 													}
 													{...register("province")}
-													onChange={(e) =>
-														updateInput(e.target.value, "province")
-													}
+													value={province}
+													onChange={(e) => setProvinceZod(e.target.value)}
 												/>
 											</div>
 											{errors?.province && (
@@ -539,9 +787,8 @@ function RecurringVisitor({
 													size="large"
 													defaultValue={visitor.visitor_details.address.country}
 													{...register("country")}
-													onChange={(e) =>
-														updateInput(e.target.value, "country")
-													}
+													value={country}
+													onChange={(e) => setCountryZod(e.target.value)}
 												/>
 											</div>
 											{errors?.country && (

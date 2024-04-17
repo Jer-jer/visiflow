@@ -81,7 +81,9 @@ export default function Events() {
 			setEvent(convertedData);
 			convertEvent(convertedData);
 		} catch (error) {
-			console.error("Error fetching events:", error);
+			if (error) {
+				console.error("Error fetching events:", error);
+			}
 		}
 	};
 
@@ -143,7 +145,9 @@ export default function Events() {
 			setEvent(convertedData);
 			convertEvent(convertedData);
 		} catch (error) {
-			console.error("Error fetching events:", error);
+			if (error) {
+				console.error("Error finding events:", error);
+			}
 		}
 	};
 

@@ -90,8 +90,11 @@ const showDeleteConfirm = (
 					_id,
 				},
 			}).catch((err) => {
-				setAlertMsg(err?.response?.data?.error || "Something went wrong.");
-				setAlertOpen(true);
+				if (err && err.response) {
+					const message = err.response.data.error;
+					setAlertMsg(message);
+					setAlertOpen(true);
+				}
 			});
 		},
 		onCancel() {
@@ -177,7 +180,7 @@ export default function UserDetails({
 		clearErrors();
 	};
 
-	const saveAction = (
+	const saveAction = async (
 		_id: string | undefined,
 		data: UserDetailsInterfaceZod,
 	) => {
@@ -187,7 +190,7 @@ export default function UserDetails({
 
 		setDisabledInputs(!disabledInputs);
 
-		AxiosInstance.put("/user/update", {
+		await AxiosInstance.put("/user/update", {
 			_id,
 			first_name: data.first_name,
 			middle_name: data.middle_name,
@@ -207,8 +210,11 @@ export default function UserDetails({
 				setDisabledInputs(!disabledInputs);
 			})
 			.catch((err) => {
-				setStatus(false);
-				setAlertMsg(err?.response?.data?.error || "Something went wrong.");
+				if (err && err.response) {
+					const message = err.response.data.error;
+					setStatus(false);
+					setAlertMsg(message);
+				}
 			});
 	};
 
