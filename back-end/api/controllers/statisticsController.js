@@ -168,8 +168,8 @@ exports.mostVisited = async (req, res) => {
 exports.graph = async (req, res) => {
   const { month, year } = req.body;
 
-  const _start_date = new Date(year ? year : new Date().getFullYear(), month ? month - 1 : new Date().getMonth(), 1);
-  const _end_date = new Date(_start_date.getFullYear(), _start_date.getMonth() + 1, 0);
+  const _start_date = new Date(year ? year : new Date().getFullYear(), month ? month - 1 : 0);
+  const _end_date = new Date(month ? _start_date.getFullYear() : _start_date.getFullYear() + 1, month ? month : 0);
 
   try {
 
