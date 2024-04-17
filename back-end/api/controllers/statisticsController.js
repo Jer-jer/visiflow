@@ -168,18 +168,63 @@ exports.mostVisited = async (req, res) => {
 exports.graph = async (req, res) => {
   const { month, year } = req.body;
 
-  const _start_date = new Date(year ? year : new Date().getFullYear(), month ? month - 1 : new Date().getMonth(), 1);
-  const _end_date = new Date(_start_date.getFullYear(), _start_date.getMonth() + 1, 0);
+  const _start_date = new Date(year ? year : new Date().getFullYear(), month ? month - 1 : 0);
+  const _end_date = new Date(month ? _start_date.getFullYear() : _start_date.getFullYear() + 1, month ? month : 0);
+  _end_date.setDate(_end_date.getDate() - 1);
 
   try {
 
     const visitors = await getVisitorList(_start_date, _end_date);
 
+
     if (visitors === null) {
       return res.status(400).json({ error: "No visitors available in the specified date range" });
     }
 
-    return res.json({ visitors });
+    const data = await Visitor.aggregate([
+      {
+        $match: {
+          _id: { $in: visitors },
+        }
+      },
+      {
+        $project: {
+          month: { $substr: ["$expected_time_in", 5, 2] },
+          visitor_type: 1
+        }
+      },
+      {
+        $group: {
+          _id: { month: "$month", visitor_type: "$visitor_type" },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $group: {
+          _id: "$_id.month",
+          visitor_types: {
+            $addToSet: {
+              visitor_type: "$_id.visitor_type",
+              count: "$count"
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          visitor_types: 1,
+          total_count: { $sum: "$visitor_types.count" }
+        }
+      }
+    ]);
+
+    if (data.length > 0) {
+      return res.json({ data });
+    } else {
+      return res.status(400).json({ error: "Visitor does not exists in database" });
+    }
+
   } catch (error) {
     return res.status(500).json({ error: 'Failed to retrieve visitors from the database.' });
   }

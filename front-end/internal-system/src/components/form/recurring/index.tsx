@@ -63,7 +63,7 @@ interface RecurringProps {
 		label: string;
 		value: string;
 	}[];
-	qr_id: number;
+	qr_id?: string;
 	setAlertOpen: Dispatch<SetStateAction<boolean>>;
 	handleSuccessOk: () => void;
 	setLoading: Dispatch<SetStateAction<boolean>>;
@@ -379,6 +379,26 @@ function RecurringVisitor({
 				setValue(property, value as string[]);
 				break;
 		}
+	};
+
+	const disabledDateTime = () => {
+		const currentHour = dayjs().hour();
+		const currentMinute = dayjs().minute();
+
+		return {
+			disabledHours: () => range(0, currentHour),
+			disabledMinutes: (selectedHour: number) => {
+				if (selectedHour === currentHour) {
+					return range(0, currentMinute);
+				}
+				return [];
+			},
+		};
+	};
+
+	// Helper function to generate range array
+	const range = (start: number, end: number) => {
+		return Array.from({ length: end - start }, (_, i) => start + i);
 	};
 
 	const handlePurpose = (purpose: string, value: string | string[]) => {
@@ -905,6 +925,10 @@ function RecurringVisitor({
 															)}
 															format="YYYY-MM-DD hh:mm A"
 															onChange={onChange}
+															disabledDate={(current) => {
+																return current < dayjs().startOf("day");
+															}}
+															disabledTime={disabledDateTime}
 														/>
 													</div>
 													{errors?.expected_time_out && (
