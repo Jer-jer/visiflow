@@ -450,7 +450,7 @@ async function validateDuplicate(visitors, res) {
     try {
       // Check if visitor has an existing record
       const visitorDB = await Visitor.findOne({
-        "visitor_details.email": visitor.visitor_details.email, 
+        "visitor_details.email": visitor.visitor_details.email,
       });
 
       // Check if email is used by another visitor
@@ -462,7 +462,7 @@ async function validateDuplicate(visitors, res) {
         const isDuplicate =
           visitor.visitor_details.name.first_name === first_name &&
           (visitor.visitor_details.name.middle_name || "") ===
-            (middle_name || "") &&
+          (middle_name || "") &&
           visitor.visitor_details.name.last_name === last_name;
 
         return isDuplicate

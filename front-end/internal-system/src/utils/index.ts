@@ -125,6 +125,10 @@ export const notificationMessage = (
 	return message;
 };
 
+export const capitilizeFirstLetter = (str: string) => {
+	return str[0].toUpperCase() + str.slice(1);
+};
+
 export const capitalizeEachWord = (str: string) => {
 	return str
 		.split(" ")

@@ -29,7 +29,7 @@ export interface WalkInFormInterfaceZod {
 	first_name: string;
 	middle_name?: string;
 	last_name: string;
-	email?: string;
+	email?: string | null;
 	phone: string;
 	house?: string;
 	street?: string;
@@ -71,7 +71,7 @@ export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
 			message: "Must not be empty or contain any numerals.",
 		}),
 
-	email: z.string().email({ message: "Invalid email address." }).optional(),
+	email: z.string().regex(/^(?:\S*@\S*\.\S*)?$/, {message: "Invalid Email"}).optional(),
 
 	phone: z.coerce
 		.string({
@@ -80,7 +80,13 @@ export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
 		})
 		.regex(/^[0-9\-+\b]*$/, {
 			message: "Mobile number must not include non-numerals.",
-		}),
+		})
+		.min(11, {
+    		message: "Mobile Number must be 11 digits long.",
+  		})
+		.max(11, {
+    		message: "Mobile Number must be 11 digits long.",
+  		}),
 
 	house: z.string().optional(),
 
