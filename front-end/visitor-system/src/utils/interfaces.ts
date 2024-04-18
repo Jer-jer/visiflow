@@ -46,6 +46,8 @@ export interface VisitorDetailsProps {
 	phone: string;
 	email: string;
 	address: AddressProps;
+	time_in: string;
+	time_out: string;
 }
 
 export interface PurposeProps {
@@ -88,6 +90,6 @@ export interface RecurringVisitorDataType {
 }
 
 export interface SelectOption {
-	value: string,
-	label: string
+	value: string;
+	label: string;
 }
