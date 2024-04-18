@@ -108,9 +108,9 @@ exports.addVisitor = async (req, res, next) => {
     if (
       mainVisitor.id_picture.front &&
       mainVisitor.id_picture.back &&
-      mainVisitor.id_picture.selfie 
+      mainVisitor.id_picture.selfie
     ) {
-      
+
     }
 
     const [frontId, backId, selfieId] = await Promise.all([
@@ -382,8 +382,6 @@ exports.newRecurringPRVisitor = async (req, res) => {
           return res.status(409).json({
             error: `${visitors[x].visitor_details.email} has already been used by another visitor`,
           });
-
-        console.log("visitorsss", visitors[x]);
 
         const updatedVisitor = await Visitor.findByIdAndUpdate(
           visitorDB._id,
