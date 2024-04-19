@@ -38,16 +38,21 @@ exports.getCurrentVisitors = async (req, res) => {
   try {
     const badges = await Badge.find({ is_active: true });
 
-    const activeVisitorIds = badges.map(badge => badge.visitor_id);
+    const activeVisitorIds = badges.map((badge) => badge.visitor_id);
 
-    const activeVisitors = await Visitor.find({ _id: { $in: activeVisitorIds } });
+    const activeVisitors = await Visitor.find({
+      _id: { $in: activeVisitorIds },
+    });
 
     res.status(200).json({ activeVisitors });
   } catch (error) {
     console.error(error);
     return res
       .status(500)
-      .json({ error: "Failed to retrieve active visitors with badges from the database" });
+      .json({
+        error:
+          "Failed to retrieve active visitors with badges from the database",
+      });
   }
 };
 
@@ -108,9 +113,8 @@ exports.addVisitor = async (req, res, next) => {
     if (
       mainVisitor.id_picture.front &&
       mainVisitor.id_picture.back &&
-      mainVisitor.id_picture.selfie 
+      mainVisitor.id_picture.selfie
     ) {
-      
     }
 
     const [frontId, backId, selfieId] = await Promise.all([

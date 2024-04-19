@@ -46,6 +46,17 @@ interface MostCommonReasonProps {
 	where: string;
 }
 
+interface MonthDeterminerProps {
+	value: string;
+	label: string;
+}
+
+interface WalkInVsRegisteredProps {
+	name: MonthDeterminerProps;
+	"Walk-in": number;
+	"Pre-registered": number;
+}
+
 const error = (message: string) => {
 	Modal.error({
 		title: `Error`,
@@ -54,12 +65,119 @@ const error = (message: string) => {
 	});
 };
 
+const monthDeterminer = (month: string) => {
+	switch (month) {
+		case "01": {
+			return { value: month, label: "January" };
+		}
+		case "02": {
+			return { value: month, label: "Febuary" };
+		}
+		case "03": {
+			return { value: month, label: "March" };
+		}
+		case "04": {
+			return { value: month, label: "April" };
+		}
+		case "05": {
+			return { value: month, label: "May" };
+		}
+		case "06": {
+			return { value: month, label: "June" };
+		}
+		case "07": {
+			return { value: month, label: "July" };
+		}
+		case "08": {
+			return { value: month, label: "August" };
+		}
+		case "09": {
+			return { value: month, label: "September" };
+		}
+		case "10": {
+			return { value: month, label: "October" };
+		}
+		case "11": {
+			return { value: month, label: "November" };
+		}
+		case "12": {
+			return { value: month, label: "December" };
+		}
+		default: {
+			return { value: "", label: "" };
+		}
+	}
+};
+
 export default function StatisticsLayout() {
 	const [month, setMonth] = useState(false);
 	const [year, setYear] = useState(false);
 
 	const [months, setMonths] = useState<[{ value: string; label: string }]>();
 	const [years, setYears] = useState<[{ value: string; label: string }]>();
+
+	const [data, setData] = useState<WalkInVsRegisteredProps[]>([
+		{
+			name: monthDeterminer("01"),
+			"Walk-in": 0,
+			"Pre-registered": 0,
+		},
+		{
+			name: monthDeterminer("02"),
+			"Walk-in": 0,
+			"Pre-registered": 0,
+		},
+		{
+			name: monthDeterminer("03"),
+			"Walk-in": 0,
+			"Pre-registered": 0,
+		},
+		{
+			name: monthDeterminer("04"),
+			"Walk-in": 0,
+			"Pre-registered": 0,
+		},
+		{
+			name: monthDeterminer("05"),
+			"Walk-in": 0,
+			"Pre-registered": 0,
+		},
+		{
+			name: monthDeterminer("06"),
+			"Walk-in": 0,
+			"Pre-registered": 0,
+		},
+		{
+			name: monthDeterminer("07"),
+			"Walk-in": 0,
+			"Pre-registered": 0,
+		},
+		{
+			name: monthDeterminer("08"),
+			"Walk-in": 0,
+			"Pre-registered": 0,
+		},
+		{
+			name: monthDeterminer("09"),
+			"Walk-in": 0,
+			"Pre-registered": 0,
+		},
+		{
+			name: monthDeterminer("10"),
+			"Walk-in": 0,
+			"Pre-registered": 0,
+		},
+		{
+			name: monthDeterminer("11"),
+			"Walk-in": 0,
+			"Pre-registered": 0,
+		},
+		{
+			name: monthDeterminer("12"),
+			"Walk-in": 0,
+			"Pre-registered": 0,
+		},
+	]);
 
 	const [mostCommonReason, setMostCommonReason] =
 		useState<MostCommonReasonProps>({
@@ -75,7 +193,21 @@ export default function StatisticsLayout() {
 
 	const dispatch = useDispatch<AppDispatch>();
 
-	useEffect(() => {
+	const fetchYears = async () => {
+		await AxiosInstance.get("/stats/getYears").then((res: any) => {
+			const months = res.data._months
+				.sort((a: string, b: string) => parseInt(a) - parseInt(b))
+				.map((month: string) => monthDeterminer(month));
+			const years = res.data._years
+				.sort((a: string, b: string) => parseInt(a) - parseInt(b))
+				.map((years: string) => ({ value: years, label: years }));
+
+			setMonths(months);
+			setYears(years);
+		});
+	};
+
+	const fetchTotal = async () => {
 		AxiosInstance.post("/stats")
 			.then((res: any) => {
 				let currentTotal =
@@ -123,10 +255,13 @@ export default function StatisticsLayout() {
 					error(message);
 				}
 			});
-	}, []);
+	};
 
-	useEffect(() => {
-		AxiosInstance.post("/stats/location")
+	const fetchLocations = async (startDate?: string, endDate?: string) => {
+		await AxiosInstance.post("/stats/location", {
+			startDate: startDate ? startDate : undefined,
+			endDate: endDate ? endDate : undefined,
+		})
 			.then((res: any) => {
 				setMostCommonReason({
 					what: res.data.what._id,
@@ -141,62 +276,78 @@ export default function StatisticsLayout() {
 					error(message);
 				}
 			});
-	}, []);
+	};
+
+	const fetchGraph = async (month?: string, year?: string) => {
+		await AxiosInstance.post("/stats/graph", {
+			month: month ? month : undefined,
+			year: year ? year : undefined,
+		})
+			.then((res: any) => {
+				if (res.data.data.length === 0) throw new Error("No data found");
+
+				const graphData: WalkInVsRegisteredProps[] = res.data.data.map(
+					(data: any) => {
+						if (data.visitor_types.length === 1) {
+							if (data.visitor_types[0].visitor_type === "Walk-In") {
+								return {
+									name: monthDeterminer(data._id),
+									"Walk-in": data.visitor_types[0].count,
+									"Pre-registered": 0,
+								};
+							}
+
+							return {
+								name: monthDeterminer(data._id),
+								"Walk-in": 0,
+								"Pre-registered": data.visitor_types[0].count,
+							};
+						} else if (data.visitor_types.length === 2) {
+							if (data.visitor_types[0].visitor_type === "Walk-In") {
+								return {
+									name: monthDeterminer(data._id),
+									"Walk-in": data.visitor_types[0].count,
+									"Pre-registered": data.visitor_types[1].count,
+								};
+							} else if (
+								data.visitor_types[0].visitor_type === "Pre-Registered"
+							) {
+								return {
+									name: monthDeterminer(data._id),
+									"Walk-in": data.visitor_types[1].count,
+									"Pre-registered": data.visitor_types[0].count,
+								};
+							}
+						}
+
+						return {
+							name: monthDeterminer(data._id).label,
+							"Walk-in": 0,
+							"Pre-registered": 0,
+						};
+					},
+				);
+
+				setData(
+					graphData.sort(
+						(a: WalkInVsRegisteredProps, b: WalkInVsRegisteredProps) =>
+							parseInt(a.name.value) - parseInt(b.name.value),
+					),
+				);
+			})
+			.catch((err) => {
+				if (err && err.response) {
+					const message = err.response.data.error;
+					error(message);
+				}
+			});
+	};
 
 	useEffect(() => {
-		AxiosInstance.get("/stats/getYears").then((res: any) => {
-			const months = res.data._months
-				.sort((a: string, b: string) => parseInt(a) - parseInt(b))
-				.map((month: string) => {
-					switch (month) {
-						case "01": {
-							return { value: month, label: "January" };
-						}
-						case "02": {
-							return { value: month, label: "Febuary" };
-						}
-						case "03": {
-							return { value: month, label: "March" };
-						}
-						case "04": {
-							return { value: month, label: "April" };
-						}
-						case "05": {
-							return { value: month, label: "May" };
-						}
-						case "06": {
-							return { value: month, label: "June" };
-						}
-						case "07": {
-							return { value: month, label: "July" };
-						}
-						case "08": {
-							return { value: month, label: "August" };
-						}
-						case "09": {
-							return { value: month, label: "September" };
-						}
-						case "10": {
-							return { value: month, label: "October" };
-						}
-						case "11": {
-							return { value: month, label: "November" };
-						}
-						case "12": {
-							return { value: month, label: "December" };
-						}
-						default: {
-							return { value: "", label: "" };
-						}
-					}
-				});
-			const years = res.data._years
-				.sort((a: string, b: string) => parseInt(a) - parseInt(b))
-				.map((years: string) => ({ value: years, label: years }));
-
-			setMonths(months);
-			setYears(years);
-		});
+		fetchYears();
+		fetchTotal();
+		fetchLocations();
+		fetchGraph();
 	}, []);
 
 	const onChangeMonth: CheckboxProps["onChange"] = (e) => {
@@ -295,69 +446,6 @@ export default function StatisticsLayout() {
 			});
 	};
 
-	const data = [
-		{
-			name: "January",
-			"Walk-in": 55,
-			"Pre-registered": 10,
-		},
-		{
-			name: "Febuary",
-			"Walk-in": 20,
-			"Pre-registered": 30,
-		},
-		{
-			name: "March",
-			"Walk-in": 0,
-			"Pre-registered": 5,
-		},
-		{
-			name: "April",
-			"Walk-in": 15,
-			"Pre-registered": 15,
-		},
-		{
-			name: "May",
-			"Walk-in": 6,
-			"Pre-registered": 2,
-		},
-		{
-			name: "June",
-			"Walk-in": 80,
-			"Pre-registered": 48,
-		},
-		{
-			name: "July",
-			"Walk-in": 20,
-			"Pre-registered": 60,
-		},
-		{
-			name: "August",
-			"Walk-in": 21,
-			"Pre-registered": 35,
-		},
-		{
-			name: "September",
-			"Walk-in": 42,
-			"Pre-registered": 5,
-		},
-		{
-			name: "October",
-			"Walk-in": 11,
-			"Pre-registered": 9,
-		},
-		{
-			name: "November",
-			"Walk-in": 22,
-			"Pre-registered": 21,
-		},
-		{
-			name: "December",
-			"Walk-in": 22,
-			"Pre-registered": 44,
-		},
-	];
-
 	return (
 		<div className="mb-[35px] ml-2 mt-3 flex flex-col gap-[35px]">
 			<div className="w-full">
@@ -391,7 +479,7 @@ export default function StatisticsLayout() {
 								secondaryStatsProps={[
 									{
 										label: "Percentage",
-										calculation: `${Math.round(calculatePercentage(visitorStatSummary.walkInCount, visitorStatSummary.total))}%`,
+										calculation: `${visitorStatSummary.walkInCount ? Math.round(calculatePercentage(visitorStatSummary.walkInCount, visitorStatSummary.total)) : 0}%`,
 									},
 								]}
 							/>
@@ -404,7 +492,7 @@ export default function StatisticsLayout() {
 								secondaryStatsProps={[
 									{
 										label: "Percentage",
-										calculation: `${Math.round(calculatePercentage(visitorStatSummary.preRegCount, visitorStatSummary.total))}%`,
+										calculation: `${visitorStatSummary.preRegCount ? Math.round(calculatePercentage(visitorStatSummary.preRegCount, visitorStatSummary.total)) : 0}%`,
 									},
 								]}
 							/>
@@ -450,7 +538,9 @@ export default function StatisticsLayout() {
 								},
 								{
 									label: "When",
-									input: formatDateString(mostCommonReason.when),
+									input: mostCommonReason.when
+										? formatDateString(mostCommonReason.when)
+										: "",
 								},
 								{
 									label: "Where",
@@ -479,7 +569,7 @@ export default function StatisticsLayout() {
 								}}
 							>
 								<CartesianGrid strokeDasharray="3 3" />
-								<XAxis dataKey="name" />
+								<XAxis dataKey="name.label" />
 								<YAxis />
 								<Tooltip />
 								<Legend />
@@ -507,18 +597,34 @@ export default function StatisticsLayout() {
 							Year
 						</Checkbox>
 						{month && (
-							<Select
-								options={months}
-								label="Month"
-								handleChange={handleChangeMonth}
-							/>
+							<>
+								{months && months.length > 1 ? (
+									<Select
+										options={months}
+										label="Month"
+										handleChange={handleChangeMonth}
+									/>
+								) : (
+									<span className="text-xl font-semibold text-primary-500">
+										{months ? months[0].label : "None"}
+									</span>
+								)}
+							</>
 						)}
 						{year && (
-							<Select
-								options={years}
-								label="Year"
-								handleChange={handleChangeYear}
-							/>
+							<>
+								{years && years.length > 1 ? (
+									<Select
+										options={years}
+										label="Year"
+										handleChange={handleChangeYear}
+									/>
+								) : (
+									<span className="text-xl font-semibold text-primary-500">
+										{years ? years[0].label : "None"}
+									</span>
+								)}
+							</>
 						)}
 
 						{/* Alternative TBD */}
