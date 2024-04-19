@@ -142,7 +142,7 @@ function LoggedIn({ children }: LoggedInProps) {
 									/>
 								)}
 							</NavLink>
-							<NavLink to="/preregistered-qr">
+							{/* <NavLink to="/preregistered-qr">
 								{({ isActive }) => (
 									<SidebarItem
 										icon={<PreregisterQR />}
@@ -150,7 +150,7 @@ function LoggedIn({ children }: LoggedInProps) {
 										active={isActive}
 									/>
 								)}
-							</NavLink>
+							</NavLink> */}
 							<NavLink to="/visitor-status">
 								{({ isActive }) => (
 									<SidebarItem
