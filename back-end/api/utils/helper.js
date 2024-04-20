@@ -223,10 +223,10 @@ async function updateLog(badgeId, _id, type, user_id, res) {
       );
 
       await createSystemLog(user_id, "time_out", "success");
-      return res.status(200).json({ message: "time-out" });
+      return res.status(200).json({ type: "time-out" });
     } catch (error) {
       await createSystemLog(user_id, "time_out", "failed");
-      return res.status(500).json({ Error: "time-outFailed" });
+      return res.status(500).json({ error: "Time-out Failed" });
     }
   } else {
     if (type === "pre-reg") {
@@ -247,11 +247,11 @@ async function updateLog(badgeId, _id, type, user_id, res) {
           { $set: { is_active: true } }
         );
         await createSystemLog(user_id, "time_in", "success");
-        return res.status(200).json({ message: "time-in" });
+        return res.status(200).json({ type: "time-in" });
       } catch (error) {
         console.error(error);
         await createSystemLog(user_id, "time_in", "failed");
-        return res.status(500).json({ Error: "time-inFailed" });
+        return res.status(500).json({ error: "Time-in Failed" });
       }
     }
   }

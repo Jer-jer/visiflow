@@ -25,6 +25,8 @@ interface CurrentVisitor {
 	status: string;
 }
 interface CurrentVisitorsTableProps {
+	search: string;
+	dateSearch: string[];
 	hideInOut: boolean;
 	setHideInOut: Dispatch<SetStateAction<boolean>>;
 }
@@ -32,8 +34,12 @@ interface CurrentVisitorsTableProps {
 export default function CurrentVisitorsTable({
 	hideInOut,
 	setHideInOut,
+	search,
+	dateSearch,
 }: CurrentVisitorsTableProps) {
 	const [data, setData] = useState<CurrentVisitor[]>([]);
+	const startDate = new Date(dateSearch[0]);
+	const endDate = new Date(dateSearch[1]);
 
 	useEffect(() => {
 		// Fetch visitors from backend
@@ -130,7 +136,18 @@ export default function CurrentVisitorsTable({
 
 			<Table
 				columns={columns}
-				dataSource={data}
+				dataSource={data
+					.filter((visitor) => {
+						return search.toLowerCase() === ""
+							? visitor
+							: visitor.fullName.toLowerCase().includes(search.toLowerCase());
+					})
+					.filter((visitor) => {
+						return dateSearch.length === 0
+							? visitor
+							: new Date(visitor.expected_time_in) >= startDate &&
+									new Date(visitor.expected_time_out) <= endDate;
+					})}
 				pagination={{ pageSize: 10 }}
 			/>
 		</>

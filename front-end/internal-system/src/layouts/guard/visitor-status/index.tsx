@@ -44,25 +44,15 @@ export default function VisitorStatusLayout() {
 									prefix={<Search />}
 									onChange={(e) => setSearch(e.target.value)}
 								/>
-								<Tooltip
-									placement="top"
-									title={
-										hideInOut
-											? "Filter Time In and Out"
-											: "Filter Expected Time In and Out"
-									}
-									arrow={false}
-								>
-									<>
-										<DateTimePicker
-											size="large"
-											onRangeChange={onRangeChange}
-										/>
-									</>
-								</Tooltip>
+
+								{!hideInOut && (
+									<DateTimePicker size="large" onRangeChange={onRangeChange} />
+								)}
 							</div>
 						</div>
 						<CurrentVisitorsTable
+							search={search}
+							dateSearch={dateSearch}
 							hideInOut={hideInOut}
 							setHideInOut={setHideInOut}
 						/>
