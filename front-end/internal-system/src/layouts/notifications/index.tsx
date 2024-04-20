@@ -101,7 +101,7 @@ const columns: TableProps<NotificationProps>["columns"] = [
 			if (type === NotificationType.Confirmation) color = "#0db284";
 			else if (type === NotificationType.Declined) color = "#FD4A4A";
 			else if (type === NotificationType.TimeIn) color = "#E88B23";
-			else if (type === NotificationType.TimeOut) color = "#ffce0a";
+			else if (type === NotificationType.TimeOut) color = "#FD4A4A";
 			else if (type === NotificationType.Pending) color = "#E88B23";
 			return (
 				<Tag color={color} key={type}>

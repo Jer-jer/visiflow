@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { DateTime } from "luxon";
 
 // Interfaces
 import { VisitorStatus } from "../../../utils/enums";
+import type { DatePickerProps } from "antd";
 
 //Components
 import { Modal } from "antd";
@@ -10,8 +12,6 @@ import OuterContainer from "../../../components/container";
 import InnerContainer from "../../../components/container/inner-container";
 import StatisticsSummaryContent from "../../../components/stats-smmry-ctnt";
 import PendingAppointments from "../../../components/pending-appointments";
-
-//Assets
 
 //Styles
 import "../../../utils/variables.scss";
@@ -92,6 +92,50 @@ export default function DashboardLayout() {
 		return (part / total) * 100;
 	};
 
+	const formatDateStringToISO = (date: string) => {
+		let dt = DateTime.fromFormat(date, "yyyy-MM-dd hh:mm a");
+
+		let dtUTC = dt.setZone("utc");
+
+		return dtUTC.toString();
+	};
+
+	const onChange: DatePickerProps["onChange"] = async (date, dateString) => {
+		const startDate = dateString[0]
+			? formatDateStringToISO(dateString[0])
+			: undefined;
+		const endDate = dateString[1]
+			? formatDateStringToISO(dateString[1])
+			: undefined;
+
+		await AxiosInstance.post("/stats", {
+			startDate,
+			endDate,
+		})
+			.then((res: any) => {
+				dispatch(
+					fetchStats({
+						total: res.data.total,
+						preRegCount: res.data.pre_reg,
+						walkInCount: res.data.walk_in,
+						majorityType: res.data.type,
+						majorityTypePercent: res.data.percent,
+						rise: res.data.total >= visitorStatSummary.total ? true : false,
+						walkInRise:
+							res.data.walk_in >= visitorStatSummary.walkInCount ? true : false,
+						preRegRise:
+							res.data.pre_reg >= visitorStatSummary.preRegCount ? true : false,
+					}),
+				);
+			})
+			.catch((err) => {
+				if (err && err.response) {
+					const message = err.response.data.error;
+					error(message);
+				}
+			});
+	};
+
 	return (
 		<div className="mb-[35px] ml-2 mt-3 flex">
 			<div className="w-[761px] flex-auto">
@@ -105,6 +149,7 @@ export default function DashboardLayout() {
 							bigNumber={visitorStatSummary.total.toString()}
 							bigNumberStatus={`${visitorStatSummary.rise ? "text-primary-500" : "text-[#FD4A4A]"}`}
 							withDateFilter={true}
+							onChange={onChange}
 							secondaryStatsProps={[
 								{
 									label: "Type",

@@ -116,7 +116,7 @@ function LoggedIn({ children }: LoggedInProps) {
 								{({ isActive }) => (
 									<SidebarItem
 										icon={<Edit />}
-										text="Visitor Home Editor"
+										text="Visitor System Editor"
 										active={isActive}
 									/>
 								)}
