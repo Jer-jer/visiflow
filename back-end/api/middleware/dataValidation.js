@@ -1,9 +1,9 @@
 const { body, validationResult, handleValidationErrors } = require('express-validator');
 
 const validateUser = [
-    body('name.first_name').isString().withMessage('Invalid First name').notEmpty().withMessage('First name is required'),
-    body('name.middle_name').isString().withMessage('Invalid Middle name').optional(),
-    body('name.last_name').isString().withMessage('Invalid Last name').notEmpty().withMessage('Last name is required'),
+    body('first_name').isString().withMessage('Invalid First name').notEmpty().withMessage('First name is required'),
+    body('middle_name').isString().withMessage('Invalid Middle name').optional(),
+    body('last_name').isString().withMessage('Invalid Last name').notEmpty().withMessage('Last name is required'),
     body('username').optional().notEmpty().isString().withMessage('Username is required'),
     body('email').isEmail().withMessage('Must be a valid email'),
     body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),

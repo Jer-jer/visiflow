@@ -199,19 +199,6 @@ export default function StatisticsLayout() {
 		});
 	}, []);
 
-	useEffect(() => {
-		AxiosInstance.post("/stats/getPerYear", { year: "2024" })
-			.then((res: any) => {
-				console.log(res.data);
-			})
-			.catch((err) => {
-				if (err && err.response) {
-					const message = err.response.data.error;
-					error(message);
-				}
-			});
-	}, []);
-
 	const onChangeMonth: CheckboxProps["onChange"] = (e) => {
 		setMonth(e.target.checked);
 	};

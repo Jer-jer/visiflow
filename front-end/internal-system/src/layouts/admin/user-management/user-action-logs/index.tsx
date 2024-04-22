@@ -74,12 +74,14 @@ export default function UserActionLogs({
 
 	const userLogsHeader = [
 		{ label: "Action", key: "action" },
+		{ label: "Status", key: "status" },
 		{ label: "Date", key: "logDate" },
 	];
 
 	const userLogsData = userLogs.map((logs) => {
 		return {
 			action: actionType(logs.type),
+			status: logs.status,
 			logDate: formatDateObjToString(logs.created_at),
 		};
 	});
@@ -100,7 +102,7 @@ export default function UserActionLogs({
 				<Tooltip placement="top" title="Export Logs" arrow={false}>
 					<CSVLink
 						filename={`${lastName.toUpperCase()}_Logs.csv`}
-						data={[userLogsData]}
+						data={userLogsData}
 						headers={userLogsHeader}
 					>
 						<ExcelDownload />
