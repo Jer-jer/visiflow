@@ -4,7 +4,6 @@ import React from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { useEffect, useState } from "react";
 import { qr_id } from "../../layouts/guard/visitor-form";
-//import { statusPart } from "../../layouts/guard/qr-scanner";
 import AxiosInstance from "../../lib/axios";
 
 //Styles
@@ -42,19 +41,11 @@ export default function Scanner({ onQRstatus }: any) {
 	}, []);
 
 	function success(result: any) {
-		console.log(result);
 		if (isValidUrl(result)) {
 			if (qr_id !== undefined) {
 				onQRstatus("Visitor Form is Ongoing");
-			} else if (result === "time-out") {
-				onQRstatus("Successfully Timed-Out");
-			} else if (result === "time-in") {
-				onQRstatus("Successfully Timed-In");
 			} else {
-				if (scanner) {
-					scanner.clear();
-				}
-				setScanResult(result.message);
+				setScanResult(result);
 
 				// Retrieve JWT token from local storage
 				// const token = localStorage.getItem("token");
@@ -90,8 +81,13 @@ export default function Scanner({ onQRstatus }: any) {
 					.catch((err) => {
 						if (err && err.response) {
 							console.log(err.response);
+							onQRstatus(err.response);
 						}
 					});
+
+				if (scanner) {
+					scanner.clear();
+				}
 			}
 		} else {
 			onQRstatus("Invalid QR");

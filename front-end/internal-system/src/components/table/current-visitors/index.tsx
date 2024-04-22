@@ -52,7 +52,7 @@ export default function CurrentVisitorsTable({
 					phone: visitor.visitor_details.phone,
 					expected_time_in: visitor.expected_time_in,
 					expected_time_out: visitor.expected_time_out,
-					status: dayjs(visitor.exceeded_time_out).isBefore(dayjs())
+					status: visitor.exceeded_time_out.isBefore(Date.now())
 						? "active"
 						: "exceeded_time_out",
 				}));
