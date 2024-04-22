@@ -555,8 +555,12 @@ async function validateDuplicate(visitors, res) {
   const validateDuplicate = visitors.map(async (visitor) => {
     try {
       // Check if visitor has an existing record
+      
       const visitorDB = await Visitor.findOne({
-        "visitor_details.email": visitor.visitor_details.email,
+        $and: [
+          { "visitor_details.email": { $exists: true, $ne: undefined } },
+          { "visitor_details.email": visitor.visitor_details.email }
+        ]
       });
 
       // Check if email is used by another visitor

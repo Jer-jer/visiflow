@@ -127,10 +127,8 @@ exports.newBadge = async (req, res) => {
 };
 
 exports.checkBadge = async (req, res) => {
-
-
   const { qr_id } = req.query;
-
+  
   try {
     const badge = await Badge.findOne({ qr_id: qr_id })
 
@@ -146,9 +144,6 @@ exports.checkBadge = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ error: "Failed to retrieve badge" });
   }
-
-
-
 };
 
 // Old check badge
