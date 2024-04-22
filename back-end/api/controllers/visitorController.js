@@ -387,6 +387,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
             purpose: visitors[x].purpose,
             expected_time_in: visitors[x].expected_time_in,
             expected_time_out: visitors[x].expected_time_out,
+            status: "In-Progress"
           },
           { new: true }
         );
@@ -397,8 +398,8 @@ exports.newRecurringPRVisitor = async (req, res) => {
           });
         }
 
-        createNotification(updatedVisitor, "pending", io);
         io.emit("newVisitor", updatedVisitor);
+        createNotification(updatedVisitor, "pending", io);
       } else {
         //? NEW COMPANION
         await Promise.all(

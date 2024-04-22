@@ -244,7 +244,7 @@ async function updateLog(_id, qr_id, user_id, res) {
             { $set: { qr_id: null, is_active: false, is_valid: false } }
           );
           await createSystemLog(user_id, "time_out", "success");
-          return res.redirect(`http://localhost:3000`);
+          return res.status(200).json("successfully timed-out");
         } catch (error) {
           await createSystemLog(user_id, "time_out", "failed");
           return res.status(500).json({ error: "Failed to time out the visitor." });
@@ -280,7 +280,7 @@ async function updateLog(_id, qr_id, user_id, res) {
         );
 
         await createSystemLog(user_id, "time_in", "success");
-        return res.redirect(`http://localhost:3000`);
+        return res.status(200).json("successfully timed-in");
       } catch (error) {
         await createSystemLog(user_id, "time_in", "failed");
         return res.status(500).json({ error: "Failed to time in the visitor." });
