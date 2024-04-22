@@ -383,14 +383,13 @@ exports.newRecurringPRVisitor = async (req, res) => {
             error: `${visitors[x].visitor_details.email} has already been used by another visitor`,
           });
 
-        console.log("visitorsss", visitors[x]);
-
         const updatedVisitor = await Visitor.findByIdAndUpdate(
           visitorDB._id,
           {
             purpose: visitors[x].purpose,
             expected_time_in: visitors[x].expected_time_in,
             expected_time_out: visitors[x].expected_time_out,
+            status: "In Progress",
           },
           { new: true }
         );
@@ -446,7 +445,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
             selfie: "",
           },
           visitor_type: visitors[x].visitor_type,
-          status: visitors[x].status,
+          status: "In Progress",
         });
 
         io.emit("newVisitor", newVisitor);
@@ -505,6 +504,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
         expected_time_in: visitors[0].expected_time_in,
         expected_time_out: visitors[0].expected_time_out,
         companions: companions,
+        status: "In Progress"
       },
       { new: true }
     );
