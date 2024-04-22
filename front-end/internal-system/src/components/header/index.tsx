@@ -108,9 +108,11 @@ export default function Header() {
 				setIsGenModalOpen(false);
 			})
 			.catch((err) => {
+				setLoading(false);
 				if (err && err.response) {
-					const message = err.response.data.error;
-					error(message);
+					if (noOfBadges <= 0)
+						error("You must have at least 1 badge to generate.");
+					else error("Failed to generate badges. Please try again.");
 				}
 			});
 	};
