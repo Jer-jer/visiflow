@@ -19,7 +19,9 @@ exports.getBadges = async (req, res) => {
     res.status(200).json({ badges });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Failed to retrieve badges from the database" });
+    return res
+      .status(500)
+      .json({ error: "Failed to retrieve badges from the database" });
   }
 };
 
@@ -43,7 +45,7 @@ exports.generateBadge = async (req, res) => {
   //check if qty > 0
   if (qty <= 0) {
     return res
-      .status(400)
+      .status(500)
       .json({ error: "Must have at least 1 badge to generate." });
   }
 
