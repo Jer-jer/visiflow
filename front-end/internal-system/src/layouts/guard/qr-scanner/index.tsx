@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 //Components
 import OuterContainer from "../../../components/container";
 import InnerContainer from "../../../components/container/inner-container";
 import Scanner from "../../../components/scanner";
 import Alert from "../../../components/alert";
-import queryString from "query-string";
 
 //Styles
 import "../../../utils/variables.scss";
