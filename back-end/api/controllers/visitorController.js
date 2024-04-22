@@ -254,8 +254,6 @@ exports.findRecurring = async (req, res) => {
           id_picture: visitor.id_picture,
         }));
 
-        console.log("visitorDB", visitor);
-
         return res.status(200).json({
           success: "Visitor/s found",
           visitors: visitors,
