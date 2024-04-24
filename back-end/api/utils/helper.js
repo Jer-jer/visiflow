@@ -230,7 +230,11 @@ async function updateLog(badgeId, _id, type, user_id, res) {
     }
   } else {
     if (type === "pre-reg") {
-      if (badge.expected_time_in > Date.now()) {
+
+      const time_in_day = new Date(badge.expected_time_in);
+      time_in_day.setHours(0, 0, 0 ,0);
+
+      if (time_in_day > Date.now()) {
         return res.status(400).json({
           error: `Visitor expected time in is on ${badge.expected_time_in}`,
         });
