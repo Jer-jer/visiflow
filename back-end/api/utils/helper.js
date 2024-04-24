@@ -261,10 +261,10 @@ async function updateLog(_id, qr_id, user_id, res) {
         return res.status(400).json({ error: "The QR is invalid." });
       }
 
+      // Check if the visitor timed-in too early
       const time_in_day = new Date(badge.expected_time_in);
       time_in_day.setHours(0, 0, 0 ,0);
-      console.log(time_in_day);
-      // Check if the visitor timed-in too early
+    
       if (time_in_day > Date.now()) {
         return res.status(400).json({ error: `Visitor is expected to time in on ${badge.expected_time_in}` });
       }

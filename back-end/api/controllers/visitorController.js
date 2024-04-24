@@ -219,6 +219,60 @@ exports.findVisitor = async (req, res) => {
   }
 };
 
+//? This controller is used by the visitor system and guard system for looking recurring visitors
+exports.findRecurring = async (req, res) => {
+  const { visitor, email, last_name } = req.body;
+
+  try {
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    const isEmail = emailRegex.test(visitor);
+
+    if (isEmail) {
+      const visitorDB = await Visitor.findOne({
+        "visitor_details.email": visitor,
+      });
+
+      if (visitorDB) {
+        return res.status(200).json({
+          success: "Visitor found",
+          visitor_id: visitorDB._id,
+          id_picture: visitorDB.id_picture,
+          name: visitorDB.visitor_details.name,
+        });
+      } else {
+        return res.status(404).json({ error: "Visitor not found" });
+      }
+    } else if (!isEmail) {
+      const visitorDB = await Visitor.find({
+        "visitor_details.name.last_name": visitor,
+      });
+
+      if (visitorDB) {
+        const visitors = visitorDB.map((visitor) => ({
+          _id: visitor._id,
+          visitor_details: visitor.visitor_details,
+          plate_num: visitor.plate_num,
+          id_picture: visitor.id_picture,
+        }));
+
+        return res.status(200).json({
+          success: "Visitor/s found",
+          visitors: visitors,
+        });
+      } else {
+        return res.status(404).json({ error: "Visitor not found" });
+      }
+    } else {
+      return res.status(400).json({ error: "Information entered is invalid" });
+    }
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong with your request" });
+  }
+};
+
 exports.updateVisitor = async (req, res) => {
   const {
     _id,
@@ -387,7 +441,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
             purpose: visitors[x].purpose,
             expected_time_in: visitors[x].expected_time_in,
             expected_time_out: visitors[x].expected_time_out,
-            status: "In-Progress"
+            status: "In Progress",
           },
           { new: true }
         );
@@ -443,7 +497,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
             selfie: "",
           },
           visitor_type: visitors[x].visitor_type,
-          status: visitors[x].status,
+          status: "In Progress",
         });
 
         io.emit("newVisitor", newVisitor);
@@ -502,6 +556,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
         expected_time_in: visitors[0].expected_time_in,
         expected_time_out: visitors[0].expected_time_out,
         companions: companions,
+        status: "In Progress"
       },
       { new: true }
     );
