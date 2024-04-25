@@ -9,6 +9,7 @@ const {
 } = require("../utils/helper");
 const archiver = require("archiver");
 const fs = require("fs");
+const { type } = require("os");
 
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -128,8 +129,31 @@ exports.newBadge = async (req, res) => {
 };
 
 exports.checkBadge = async (req, res) => {
-  const { qr_id, visitor_id } = req.query;
+  const { qr_id } = req.query;
+  
+  try {
+    const badge = await Badge.findOne({ qr_id: qr_id })
 
+    if (!badge) {
+      const visitor = await Visitor.findById({ _id: qr_id });
+      if (visitor) {
+        return res.status(400).json({ error: "Visitor QR is invalid." });
+      }
+      return res.redirect(`http://localhost:3000/visitor-form/?qr_id=${qr_id}`);
+    }
+
+    updateLog(badge._id, qr_id, req.user.sub, res);
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to retrieve badge" });
+  }
+};
+
+// Old check badge
+/*
+exports.checkBadge = async (req, res) => {
+
+  const { qr_id, visitor_id } = req.query;
+ 
   let badge;
   let type;
 
@@ -139,6 +163,7 @@ exports.checkBadge = async (req, res) => {
 
   if (qr_id !== undefined) {
     badge = await Badge.findOne({ qr_id: qr_id });
+
     if (!badge) {
       return res.redirect(`http://localhost:3000/visitor-form/?qr_id=${qr_id}`);
     }
@@ -157,4 +182,6 @@ exports.checkBadge = async (req, res) => {
 
   const _id = visitor_id !== undefined ? visitor_id : qr_id;
   updateLog(badge._id, _id, type, req.user.sub, res);
-};
+}
+
+*/

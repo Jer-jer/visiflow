@@ -130,10 +130,11 @@ async function generateQRAndEmail(visitor, message) {
   }
 }
 
+// Test badge generation
 async function generateBadge(visitor) {
   const badge = new Badge({
     visitor_id: visitor._id,
-    qr_id: null,
+    qr_id: visitor._id,
     expected_time_in: visitor.expected_time_in,
     expected_time_out: visitor.expected_time_out,
     is_active: false,
@@ -142,12 +143,32 @@ async function generateBadge(visitor) {
 
   await badge.save();
 
-  const uri = `http://${local_ip}:5000/badge/checkBadge?visitor_id=${visitor._id}`;
+  const uri = `http://${local_ip}:5000/badge/checkBadge?qr_id=${visitor._id}`;
   const filename = `api/resource/badge/badge${badge._id}.png`;
   await generateQRCode(uri, filename, badge._id);
 
   return badge;
 }
+
+// Old badge generation
+// async function generateBadge(visitor) {
+//   const badge = new Badge({
+//     visitor_id: visitor._id,
+//     qr_id: null,
+//     expected_time_in: visitor.expected_time_in,
+//     expected_time_out: visitor.expected_time_out,
+//     is_active: false,
+//     is_valid: true,
+//   });
+
+//   await badge.save();
+
+//   const uri = `http://${local_ip}:5000/badge/checkBadge?visitor_id=${visitor._id}`;
+//   const filename = `api/resource/badge/badge${badge._id}.png`;
+//   await generateQRCode(uri, filename, badge._id);
+
+//   return badge;
+// }
 
 async function sendBadgeEmail(badge, visitor, message) {
   const email =
@@ -206,60 +227,144 @@ async function sendEmail(mailOptions) {
   });
 }
 
-//will need to add qr_id to parameter
-async function updateLog(badgeId, _id, type, user_id, res) {
-  const badge = await Badge.findById(badgeId);
+async function updateLog(_id, qr_id, user_id, res) {
+  try {
+    const badge = await Badge.findById({ _id: _id });
+    if (badge) {
+      if (badge.is_active) {
+        try {
+          // Add check out timestamp to visitor logs
+          await VisitorLogs.updateOne(
+            { badge_id: badge._id },
+            { $set: { check_out_time: new Date() } }
+          );
 
-  if (badge.is_active) {
-    try {
-      await VisitorLogs.updateOne(
-        { badge_id: badge._id },
-        { $set: { check_out_time: new Date() } }
-      );
+          await Badge.updateOne(
+            { _id: badge._id },
+            { $set: { qr_id: null, is_active: false, is_valid: false } }
+          );
+          await createSystemLog(user_id, "time_out", "success");
+          return res.status(200).json("successfully timed-out");
+        } catch (error) {
+          await createSystemLog(user_id, "time_out", "failed");
+          return res.status(500).json({ error: "Failed to time out the visitor." });
+        }
+      }
+      // Time-in section
 
-      await Badge.updateOne(
-        { _id: badge._id },
-        { $set: { qr_id: null, is_active: false, is_valid: false } }
-      );
-
-      await createSystemLog(user_id, "time_out", "success");
-      return res.status(200).json({ message: "time-out" });
-    } catch (error) {
-      await createSystemLog(user_id, "time_out", "failed");
-      return res.status(500).json({ Error: "time-outFailed" });
-    }
-  } else {
-    if (type === "pre-reg") {
-
-      const time_in_day = new Date(badge.expected_time_in);
-      time_in_day.setHours(0, 0, 0 ,0);
-
-      if (time_in_day > Date.now()) {
-        return res.status(400).json({
-          error: `Visitor expected time in is on ${badge.expected_time_in}`,
-        });
+      // Check if QR has expired
+      if (badge.expected_time_out < Date.now() || badge.is_valid === false) {
+        await Badge.updateOne(
+          { _id: badge._id },
+          { $set: { qr_id: null, is_active: false, is_valid: false } }
+        );
+        return res.status(400).json({ error: "The QR is invalid." });
       }
 
+      // Check if the visitor timed-in too early
+      const time_in_day = new Date(badge.expected_time_in);
+      time_in_day.setHours(0, 0, 0 ,0);
+    
+      if (time_in_day > Date.now()) {
+        return res.status(400).json({ error: `Visitor is expected to time in on ${badge.expected_time_in}` });
+      }
+      
+      // If QR and time-in is valid
       await VisitorLogs.create({
         badge_id: badge._id,
         check_in_time: new Date(),
       });
+
 
       try {
         await Badge.updateOne(
           { _id: badge._id },
           { $set: { is_active: true } }
         );
+
         await createSystemLog(user_id, "time_in", "success");
-        return res.status(200).json({ message: "time-in" });
+        return res.status(200).json("successfully timed-in");
       } catch (error) {
-        console.error(error);
         await createSystemLog(user_id, "time_in", "failed");
-        return res.status(500).json({ Error: "time-inFailed" });
+        return res.status(500).json({ error: "Failed to time in the visitor." });
       }
     }
+    return res.status(500).json({ error: "No badge found." });
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to update visitor badge" });
   }
 }
+
+//will need to add qr_id to parameter
+// async function updateLog(badgeId, _id, type, user_id, res) {
+//   const badge = await Badge.findById(badgeId);
+
+//   if (badge.is_active) {
+//     try {
+//       await VisitorLogs.updateOne(
+//         { badge_id: badge._id },
+//         { $set: { check_out_time: new Date() } }
+//       );
+
+//       await Badge.updateOne(
+//         { _id: badge._id },
+//         { $set: { qr_id: null, is_active: false, is_valid: false } }
+//       );
+
+//       await createSystemLog(user_id, "time_out", "success");
+//       return res.status(200).json({ message: "time-out" });
+//     } catch (error) {
+//       await createSystemLog(user_id, "time_out", "failed");
+//       return res.status(500).json({ Error: "time-outFailed" });
+//     }
+//   } else {
+//     if (type === "pre-reg") {
+
+//       // check if QR has expired
+//       if (badge.expected_time_out < Date.now()) {
+//         await Badge.updateOne(
+//           { _id: badge._id },
+//           { $set: { is_active: false, is_valid: false } }
+//         );
+//         return res.status(400).json({
+//           error: `Visitor expected QR is invalid`,
+//         });
+//       }
+
+//       // Check if QR is still valid
+//       if (badge.is_valid == false) {
+//         return res.status(400).json({
+//           error: `Visitor QR is invalid`,
+//         });
+//       }
+
+//       if (badge.expected_time_in > Date.now()) {
+//         return res.status(400).json({
+//           error: `Visitor expected time in is on ${badge.expected_time_in}`,
+//         });
+//       }
+
+//       await VisitorLogs.create({
+//         badge_id: badge._id,
+//         check_in_time: new Date(),
+//       });
+
+//       try {
+//         await Badge.updateOne(
+//           { _id: badge._id },
+//           { $set: { is_active: true } }
+//         );
+
+//         await createSystemLog(user_id, "time_in", "success");
+//         return res.status(200).json({ message: "time-in" });
+//       } catch (error) {
+//         console.error(error);
+//         await createSystemLog(user_id, "time_in", "failed");
+//         return res.status(500).json({ Error: "time-inFailed" });
+//       }
+//     }
+//   }
+// }
 
 //Image Upload Section
 
@@ -453,8 +558,12 @@ async function validateDuplicate(visitors, res) {
   const validateDuplicate = visitors.map(async (visitor) => {
     try {
       // Check if visitor has an existing record
+      
       const visitorDB = await Visitor.findOne({
-        "visitor_details.email": visitor.visitor_details.email,
+        $and: [
+          { "visitor_details.email": { $exists: true, $ne: undefined } },
+          { "visitor_details.email": visitor.visitor_details.email }
+        ]
       });
 
       // Check if email is used by another visitor
