@@ -262,32 +262,9 @@ export default function VisitorFormLayout() {
 		if (value) {
 			const isEmail = /^\S+@\S+\.\S+$/;
 			setError(false);
-			await AxiosInstance.post("/visitor/find-recurring", {
-				visitor: value[0].toUpperCase() + value.slice(1),
-			}).then((res) => {
-				if (res.status === 200) {
-					const respVisitors: GuardVisitorDataType[] = res.data.visitors.map(
-						(visitor: GuardVisitorDataType) => ({
-							key: visitor._id,
-							_id: visitor._id,
-							visitor_details: visitor.visitor_details,
-							plate_num: visitor.plate_num,
-							purpose: {
-								what: [],
-								when: new Date(),
-								where: [],
-								who: [],
-							},
-							expected_time_out: new Date(),
-							status: VisitorStatus.Approved,
-							visitor_type: VisitorType.WalkIn,
-						}),
-					);
-				}
-			});
 
 			if (isEmail.test(value)) {
-				errorModal("Email not accepted");
+				errorModal("You must only enter the last name of the visitor.");
 				setVisitorsFound(false);
 				setLoading(false);
 			} else {

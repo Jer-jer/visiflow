@@ -16,6 +16,7 @@ const {
 const { Buffer } = require("node:buffer");
 const Notification = require("../models/notification");
 const Badge = require("../models/badge");
+const VisitorLogs = require("../models/visitorLogs");
 const mongoose = require("mongoose");
 
 const ObjectId = mongoose.Types.ObjectId;
@@ -47,12 +48,9 @@ exports.getCurrentVisitors = async (req, res) => {
     res.status(200).json({ activeVisitors });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({
-        error:
-          "Failed to retrieve active visitors with badges from the database",
-      });
+    return res.status(500).json({
+      error: "Failed to retrieve active visitors with badges from the database",
+    });
   }
 };
 
@@ -87,6 +85,7 @@ exports.addVisitor = async (req, res, next) => {
   const { visitors } = req.body;
   const io = req.io;
 
+  // Returns Bad Request to client if no visitors provided.
   if (!visitors || visitors.length === 0) {
     return res.status(400).json({ error: "No visitors provided" });
   }
@@ -96,7 +95,7 @@ exports.addVisitor = async (req, res, next) => {
     let companions = [];
     let mainVisitorId;
 
-    // Bulk data validation
+    // Validates all visitors at the same time.
     await Promise.all(validateVisitor.map((validation) => validation.run(req)));
 
     const errors = validationResult(req);
@@ -105,6 +104,7 @@ exports.addVisitor = async (req, res, next) => {
       return res.status(409).json({ error: err[0] });
     }
 
+    // Finds duplicate visitors
     const duplicateErrors = await validateDuplicate(visitors, res);
     if (duplicateErrors.length > 0) {
       return res.status(409).json({ error: duplicateErrors[0] });
@@ -134,7 +134,6 @@ exports.addVisitor = async (req, res, next) => {
     ]);
 
     const newVisitorsData = visitors.map((visitor, index) => {
-      // Visitor creation
       const {
         visitor_details,
         plate_num,
@@ -183,9 +182,9 @@ exports.addVisitor = async (req, res, next) => {
       }
 
       newVisitors.forEach(async (visitor) => {
-        io.emit("newVisitor", visitor);
         if (visitor.visitor_type === "Pre-Registered") {
-          createNotification(visitor, "pending", io);
+          io.emit("newVisitor", visitor);
+          await createNotification(visitor, "pending", io);
         } else {
           await createSystemLog(req.user._id, "add_visitor", "success");
         }
@@ -258,8 +257,6 @@ exports.findRecurring = async (req, res) => {
           id_picture: visitor.id_picture,
         }));
 
-        console.log("visitorDB", visitor);
-
         return res.status(200).json({
           success: "Visitor/s found",
           visitors: visitors,
@@ -298,7 +295,6 @@ exports.updateVisitor = async (req, res) => {
     expected_time_out,
     visitor_type,
     companions,
-    // id_picture,
   } = req.body;
 
   const user_id = req.user._id;
@@ -328,7 +324,6 @@ exports.updateVisitor = async (req, res) => {
       expected_time_out: expected_time_out,
       visitor_type: visitor_type,
       companions: companions,
-      // id_picture: id_picture,
     };
 
     const filteredUpdateFields = Object.fromEntries(
@@ -345,6 +340,18 @@ exports.updateVisitor = async (req, res) => {
       { new: true }
     );
 
+    var badge = await Badge.findOne({
+      visitor_id: new ObjectId(_id),
+      expected_time_in: visitorDB.expected_time_in,
+      expected_time_out: visitorDB.expected_time_out,
+    });
+
+    if (badge) {
+      badge.expected_time_in = expected_time_in;
+      badge.expected_time_out = expected_time_out;
+      badge = await badge.save();
+    }
+
     await createSystemLog(user_id, log_type, "success");
     res.status(201).json({ visitor: updatedVisitor });
   } catch (error) {
@@ -354,7 +361,62 @@ exports.updateVisitor = async (req, res) => {
   }
 };
 
-//? Used by the visitor system for updating recurring visitors in pre-registration
+// This controller is used by the visitor system and guard system for looking recurring visitors
+exports.findRecurring = async (req, res) => {
+  const { visitor } = req.body;
+
+  try {
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    const isEmail = emailRegex.test(visitor);
+
+    if (isEmail) {
+      let email = visitor.toLowerCase();
+      const visitorDB = await Visitor.findOne({
+        "visitor_details.email": email,
+      });
+
+      if (visitorDB) {
+        return res.status(200).json({
+          success: "Visitor found",
+          visitor_id: visitorDB._id,
+          id_picture: visitorDB.id_picture,
+          name: visitorDB.visitor_details.name,
+        });
+      } else {
+        return res.status(404).json({ error: "Visitor not found" });
+      }
+    } else if (!isEmail) {
+      const visitorDB = await Visitor.find({
+        "visitor_details.name.last_name": visitor,
+      });
+
+      if (visitorDB) {
+        const visitors = visitorDB.map((visitor) => ({
+          _id: visitor._id,
+          visitor_details: visitor.visitor_details,
+          plate_num: visitor.plate_num,
+          id_picture: visitor.id_picture,
+        }));
+
+        return res.status(200).json({
+          success: "Visitor/s found",
+          visitors: visitors,
+        });
+      } else {
+        return res.status(404).json({ error: "Visitor not found" });
+      }
+    } else {
+      return res.status(400).json({ error: "Information entered is invalid" });
+    }
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong with your request" });
+  }
+};
+
+// Used by the visitor system for updating recurring visitors in pre-registration
 exports.newRecurringPRVisitor = async (req, res) => {
   const { visitors } = req.body;
 
@@ -387,14 +449,13 @@ exports.newRecurringPRVisitor = async (req, res) => {
             error: `${visitors[x].visitor_details.email} has already been used by another visitor`,
           });
 
-        console.log("visitorsss", visitors[x]);
-
         const updatedVisitor = await Visitor.findByIdAndUpdate(
           visitorDB._id,
           {
             purpose: visitors[x].purpose,
             expected_time_in: visitors[x].expected_time_in,
             expected_time_out: visitors[x].expected_time_out,
+            status: "In Progress",
           },
           { new: true }
         );
@@ -405,8 +466,8 @@ exports.newRecurringPRVisitor = async (req, res) => {
           });
         }
 
-        createNotification(updatedVisitor, "pending", io);
         io.emit("newVisitor", updatedVisitor);
+        createNotification(updatedVisitor, "pending", io);
       } else {
         //? NEW COMPANION
         await Promise.all(
@@ -450,7 +511,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
             selfie: "",
           },
           visitor_type: visitors[x].visitor_type,
-          status: visitors[x].status,
+          status: "In Progress",
         });
 
         io.emit("newVisitor", newVisitor);
@@ -509,6 +570,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
         expected_time_in: visitors[0].expected_time_in,
         expected_time_out: visitors[0].expected_time_out,
         companions: companions,
+        status: "In Progress",
       },
       { new: true }
     );
@@ -561,7 +623,7 @@ exports.newRecurringWalkInVisitor = async (req, res) => {
 
     if (!updatedVisitor) {
       return res.status(500).json({
-        error: `Failed to register ${visitors[0].visitor_details.name.last_name}. Please try again.`,
+        error: `Failed to register ${updatedVisitor.visitor_details.name.last_name}. Please try again.`,
       });
     }
 
@@ -582,8 +644,15 @@ exports.deleteVisitor = async (req, res) => {
 
   try {
     const visitorDB = await Visitor.findByIdAndDelete(_id);
+    const badge = await Badge.findOne({ visitor_id: new ObjectId(_id) });
+    const deleteLogs = await VisitorLogs.deleteMany({
+      badge_id: new Object(badge._id),
+    });
+    const deleteBadge = await Badge.deleteMany({
+      visitor_id: new ObjectId(_id),
+    });
 
-    if (visitorDB) {
+    if (visitorDB && deleteLogs && deleteBadge) {
       await createSystemLog(user_id, log_type, "success");
       return res.status(204).send();
     } else {
@@ -600,7 +669,6 @@ exports.deleteVisitor = async (req, res) => {
 exports.updateStatus = async (req, res) => {
   const { _id, status, message, email, companions } = req.body;
   const io = req.io;
-
   const user_id = req.user._id;
 
   try {
@@ -608,6 +676,10 @@ exports.updateStatus = async (req, res) => {
 
     if (!visitorDB) {
       return res.status(404).json({ error: "Visitor not found" });
+    }
+
+    if (visitorDB.status === status) {
+      return res.status(200).json(`Visitor status already set to ${status}`);
     }
 
     if (Array.isArray(companions) && companions.length > 0) {
@@ -624,38 +696,13 @@ exports.updateStatus = async (req, res) => {
     }
 
     visitorDB.status = status;
-
     await visitorDB.save();
 
     if (status === "Approved") {
       try {
-        let result = generateVisitorQRAndEmail(visitorDB._id, message);
-
-        //TODO Causes to throw error to the FE
-        // if (!(await result).success) {
-        //   return res.status(500).json({ Error: (await result).message });
-        // }
-
-        // Appointment Confirmation
-        const approvalNotif = await Notification.create({
-          _id: new ObjectId(),
-          type: "confirmation",
-          recipient: visitorDB.visitor_details._id,
-          content: {
-            visitor_name: `${visitorDB.visitor_details.name.last_name}, ${visitorDB.visitor_details.name.first_name} ${visitorDB.visitor_details.name.middle_name}`,
-            host_name: visitorDB.purpose.who.join(", "),
-            date: visitorDB.purpose.when,
-            time_in: visitorDB.expected_time_in,
-            time_out: visitorDB.expected_time_out,
-            location: visitorDB.purpose.where.join(", "),
-            purpose: visitorDB.purpose.what.join(", "),
-            visitor_type: visitorDB.visitor_type,
-          },
-        });
-
+        generateVisitorQRAndEmail(visitorDB._id, message);
+        await createNotification(visitorDB, "confirmation", io);
         await createSystemLog(user_id, "approve_status", "success");
-
-        io.emit("newNotification", approvalNotif);
 
         res.status(200).json({ message: `Visitor is now ${status}` });
       } catch (error) {
@@ -665,14 +712,15 @@ exports.updateStatus = async (req, res) => {
       }
     } else if (status === "Declined") {
       try {
+        // Check for an existing badge and invalidate the badge.
         const badge = await Badge.findOne({
-          visitor_id: new ObjectId(visitorDB._id),
+          qr_id: visitorDB._id,
         });
 
         if (badge) {
-          await Badge.updateMany(
-            { visitor_id: new ObjectId(visitorDB._id) },
-            { is_valid: false }
+          await Badge.updateOne(
+            { _id: badge._id },
+            { $set: { qr_id: null, is_active: false, is_valid: false } }
           );
         }
 
@@ -698,25 +746,8 @@ exports.updateStatus = async (req, res) => {
           });
         }
 
-        const declinedNotif = await Notification.create({
-          _id: new ObjectId(),
-          type: "declined",
-          recipient: visitorDB.visitor_details._id,
-          content: {
-            visitor_name: `${visitorDB.visitor_details.name.last_name}, ${visitorDB.visitor_details.name.first_name} ${visitorDB.visitor_details.name.middle_name}`,
-            host_name: visitorDB.purpose.who.join(", "),
-            date: visitorDB.purpose.when,
-            time_in: visitorDB.expected_time_in,
-            time_out: visitorDB.expected_time_out,
-            location: visitorDB.purpose.where.join(", "),
-            purpose: visitorDB.purpose.what.join(", "),
-            visitor_type: visitorDB.visitor_type,
-          },
-        });
-
+        await createNotification(visitorDB, "declined", io);
         await createSystemLog(user_id, "decline_status", "success");
-
-        io.emit("newNotification", declinedNotif);
 
         res.status(200).json({ message: `Visitor is now ${status}` });
       } catch (error) {
