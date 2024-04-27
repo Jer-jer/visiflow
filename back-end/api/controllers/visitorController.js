@@ -4,7 +4,7 @@ const {
   validationResult,
 } = require("../middleware/dataValidation");
 const {
-  generateVisitorQRAndEmail,
+  // generateVisitorQRAndEmail,
   uploadFileToGCS,
   sendEmail,
   createSystemLog,
@@ -12,9 +12,12 @@ const {
   generateFileName,
   createImageBuffer,
   validateDuplicate,
+  updateVisitor
 } = require("../utils/helper");
+
+const { generateVisitorQRAndEmail } = require('../utils/qrCodeUtils');
+
 const { Buffer } = require("node:buffer");
-const Notification = require("../models/notification");
 const Badge = require("../models/badge");
 const mongoose = require("mongoose");
 
@@ -649,7 +652,7 @@ exports.updateStatus = async (req, res) => {
   const { _id, status, message, email, companions } = req.body;
   const io = req.io;
   const user_id = req.user._id;
-
+  
   try {
     const visitorDB = await Visitor.findById(_id);
 
@@ -661,48 +664,39 @@ exports.updateStatus = async (req, res) => {
       return res.status(200).json(`Visitor status already set to ${status}` );
     }
 
-    if (Array.isArray(companions) && companions.length > 0) {
-      companions.forEach(async (companion) => {
-        const companionDB = await Visitor.findById(companion);
-        if (!companionDB) {
-          return res.status(404).json({ error: "Companion not found" });
-        }
-
-        companionDB.status = status;
-
-        await companionDB.save();
-      });
-    }
-
-    visitorDB.status = status;
-    await visitorDB.save();
+    const badge = await Badge.findOne({
+      qr_id: visitorDB._id,
+    });
 
     if (status === "Approved") {
-      try {
-        generateVisitorQRAndEmail(visitorDB._id, message);
-        await createNotification(visitorDB, "confirmation", io);
-        await createSystemLog(user_id, "approve_status", "success");
+      if (badge) {
+        return res.status(409).json({ error: "Visitor already has an existing badge." });
+      } else {
+        try {
+          generateVisitorQRAndEmail(visitorDB._id, message);
+          await createNotification(visitorDB, "confirmation", io);
+          await createSystemLog(user_id, "approve_status", "success");
+          await updateVisitor(_id, companions, status);
 
-        res.status(200).json({ message: `Visitor is now ${status}` });
-      } catch (error) {
-        console.error(error);
-        await createSystemLog(user_id, "approve_status", "failed");
-        return res.status(500).json({ Error: "Failed to send email" });
+          res.status(200).json({ message: `Visitor is now ${status}` });
+        } catch (error) {
+          await createSystemLog(user_id, "approve_status", "failed");
+          return res.status(500).json({ error: "Failed to generate QR and send email." });
+        }
       }
     } else if (status === "Declined") {
       try {
-        // Check for an existing badge and invalidate the badge.
-        const badge = await Badge.findOne({
-          qr_id: visitorDB._id,
-        });
-
         if (badge) {
-          await Badge.updateOne(
-            { _id: badge._id },
-            { $set: { qr_id: null, is_active: false, is_valid: false } }
-          );
+          if (badge.is_active) {
+            return res.status(409).json({ error: "Visitor is currently inside the campus." });
+          } else {
+            await Badge.updateOne(
+              { _id: badge._id },
+              { $set: { qr_id: null, is_active: false, is_valid: false } }
+            );
+          }
         }
-
+        
         sendEmail({
           from: process.env.MAILER,
           to: email,
@@ -727,18 +721,32 @@ exports.updateStatus = async (req, res) => {
 
         await createNotification(visitorDB, "declined", io);
         await createSystemLog(user_id, "decline_status", "success");
+        await updateVisitor(_id, companions, status);
 
         res.status(200).json({ message: `Visitor is now ${status}` });
       } catch (error) {
-        console.error(error);
+
         await createSystemLog(user_id, "decline_status", "failed");
-        return res.status(500).json({ Error: "Failed to send email" });
+        return res.status(500).json({ error: "Failed to generate QR and send email." });
       }
     } else if (status === "In Progress") {
+      if (badge) {
+        if (badge.is_active) {
+          return res.status(409).json({ error: "Vistor is currently inside the campus." });
+        } else {
+          await Badge.updateOne(
+            { _id: badge._id },
+            { $set: { qr_id: null, is_active: false, is_valid: false } }
+          );
+        }
+      }
+
+      await updateVisitor(_id, companions, status);
+
       res.status(200).json({ message: `Visitor status has been changed` });
     }
+
   } catch (error) {
-    console.error(error);
     return res.status(500).json({ error: "Failed to update visitor status" });
   }
 };
