@@ -1,4 +1,5 @@
 const Reasons = require("../models/reasons");
+const { createSystemLog } = require("../utils/helper");
 const {
   validateReasons,
   validationResult,
@@ -24,7 +25,7 @@ exports.getAllReasons = async (req, res) => {
 
 //Create new announcements
 exports.createNewReasons = async (req, res) => {
-  const { reason } = req.body;
+  const { reason, userID } = req.body;
 
   await Promise.all(validateReasons.map((validation) => validation.run(req)));
 
@@ -42,6 +43,8 @@ exports.createNewReasons = async (req, res) => {
     const newReason = await Reasons.create({
       reason,
     });
+
+    await createSystemLog(userID, "add_reason", "success");
 
     res.status(201).json({ reason: newReason });
   } catch (error) {
@@ -67,7 +70,7 @@ exports.getReasonsByTitle = async (req, res) => {
 
 exports.updateReasons = async (req, res) => {
   try {
-    const { _id, reason } = req.body;
+    const { _id, reason, userID } = req.body;
 
     const existingReason = await Reasons.findOne({ reason });
     if (existingReason) {
@@ -81,7 +84,7 @@ exports.updateReasons = async (req, res) => {
     }
 
     const updateFields = {
-      reason: reason !== undefined ? title : reason.title,
+      reason: reason !== undefined ? reason : reasons.reason,
     };
 
     const filteredUpdateFields = Object.fromEntries(
@@ -98,7 +101,10 @@ exports.updateReasons = async (req, res) => {
       { new: true }
     );
 
+    await createSystemLog(userID, "update_reason", "success");
+
     return res.status(201).json({ reasons: updatedReasons });
+
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
   }
@@ -106,9 +112,11 @@ exports.updateReasons = async (req, res) => {
 
 exports.deleteReasons = async (req, res) => {
   try {
-    const { _id } = req.body;
+    const { _id, userID } = req.body;
 
     const deletedData = await Reasons.findByIdAndDelete(_id);
+
+    await createSystemLog(userID, "delete_reason", "success");
 
     if (deletedData) {
       return res.status(201).json({ message: "Data deleted successfully" });

@@ -36,6 +36,18 @@ exports.findBadge = async (req, res) => {
   }
 };
 
+exports.findAllBadges = async (req, res) => {
+  const { visitor_id } = req.body;
+
+  try {
+    const badges = await Badge.find({ visitor_id });
+
+    res.status(200).json({ badges });
+  } catch (error) {
+    return res.status(500).json({ error: "No badge assigned to this visitor" });
+  }
+};
+
 exports.generateBadge = async (req, res) => {
   const { qty } = req.body;
   const user_id = req.user._id;

@@ -119,10 +119,12 @@ exports.updateAnnouncements = async (req, res) => {
 
 exports.deleteAnnouncements = async (req, res) => {
   try {
-    const { _id } = req.body;
+    const { _id, userID } = req.body;
 
     const deletedData = await Announcements.findByIdAndDelete(_id);
 
+    await createSystemLog(userID, "delete_announce", "success");
+    
     if (deletedData) {
       return res.status(201).json({ message: "Data deleted successfully" });
     } else {
