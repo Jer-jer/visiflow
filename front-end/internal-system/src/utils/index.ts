@@ -40,6 +40,16 @@ export const formatDateToISO = (dateObj: Date) => {
 	return formattedDateTime;
 };
 
+export const formatDateStringToUTC = (dateString: string) => {
+	// Parse the date string into a DateTime object
+	let dt = DateTime.fromFormat(dateString, "yyyy-MM-dd hh:mm:ss a");
+
+	// Convert the DateTime object to UTC
+	let dtUTC = dt.toUTC();
+
+	return dtUTC;
+};
+
 export const notificationType = (type: NotificationType) => {
 	let message: string = "";
 	switch (type) {
