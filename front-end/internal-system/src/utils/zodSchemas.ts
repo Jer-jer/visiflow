@@ -82,10 +82,7 @@ export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
 			message: "Mobile number must not include non-numerals.",
 		})
 		.min(11, {
-    		message: "Mobile Number must be 11 digits long.",
-  		})
-		.max(11, {
-    		message: "Mobile Number must be 11 digits long.",
+    		message: "Mobile Number must be at least 11 digits.",
   		}),
 
 	house: z.string().optional(),
