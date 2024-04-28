@@ -38,4 +38,22 @@ export enum UserActionLogType {
 	GenerateBadge = "generate_badge",
 	AddAnnouncement = "add_announce",
 	UpdateAnnouncement = "update_announce",
+	DeleteAnnouncement = "delete_announce",
+	AddOffice="add_office",
+	UpdateOffice = "update_office",
+	DeleteOffice = "delete_office",
+	AddEvent = "add_event",
+	UpdateEvent = "update_event",
+	DeleteEvent = "delete_event",
+	AddEmployee = "add_employee",
+	UpdateEmployee = "update_employee",
+	DeleteEmployee = "delete_employee",
+	AddReason = "add_reason",
+	UpdateReason = "update_reason",
+	DeleteReason = "delete_reason",
+	AddBuilding = "add_building",
+	UpdateBuilding = "update_building",
+	DeleteBuilding = "delete_building",
+
+
 }

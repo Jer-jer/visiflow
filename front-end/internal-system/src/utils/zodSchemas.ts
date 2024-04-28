@@ -450,3 +450,155 @@ export const EmployeeDetailsZod: ZodType<EmployeesZod> = z.object({
 		.min(1, { message: "Please enter a phone number." })
 		.regex(/([0-9\-+\b])\w+/, { message: "Only numeric values allowed."}),
 });
+
+export interface ReasonZod {
+	reason: string,
+}
+
+export const ReasonDetailsZod: ZodType<ReasonZod> = z.object({
+	reason: z
+		.string({
+			required_error: "Reason is required.",
+		})
+		.min(2, { message: "Please enter a valid reason." })
+});
+
+export interface BuildingZod {
+	name: string,
+}
+
+export const BuildingDetailsZod: ZodType<BuildingZod> = z.object({
+	name: z
+		.string({
+			required_error: "Name is required.",
+		})
+		.min(2, { message: "Please enter a valid name." 
+		}),
+});
+
+export interface AnnouncementZod {
+	title: string,
+	message: string,
+}
+
+export const AnnouncementDetailsZod: ZodType<AnnouncementZod> = z.object({
+	title: z
+		.string({
+			required_error: "Title is required.",
+		})
+		.min(2, { message: "Please enter a valid title." 
+		}),
+	message: z
+		.string({
+			required_error: "Message is required.",
+		})
+		.min(2, { message: "Please enter a valid message." 
+		}),
+});
+
+export interface OfficeZod {
+	name: string,
+	roomNo: string,
+	pic: string,
+	contact: string,
+	build: string,
+	floor: string,
+	openTime: Date,
+	closeTime: Date,
+	imageUrl: string,
+}
+
+export const OfficeDetailsZod: ZodType<OfficeZod> = z.object({
+	name: z
+		.string({
+			required_error: "Name is required.",
+		})
+		.min(2, { message: "Please enter a valid name." 
+		}),
+	roomNo: z
+		.string({
+			required_error: "Room No. is required.",
+		})
+		.min(2, { message: "Please enter a valid room no." 
+		}),
+	pic: z
+		.string({
+			required_error: "Personnel in Charge is required.",
+		}),
+	contact: z
+		.string({
+			required_error: "Contact is required.",
+		})
+		.min(2, { message: "Please enter a valid contact." 
+		}),
+	build: z
+		.string({
+			required_error: "Building is required.",
+		}),
+	floor: z
+		.string({
+			required_error: "Floor No. is required.",
+		}),
+	openTime: z
+		.date({
+			required_error: "Please select an open time",
+		}),
+	closeTime: z
+		.date({
+			required_error: "Please select a close time",
+		}),
+	imageUrl: z
+		.string({
+			required_error: "Image is required.",
+		}),
+});
+
+export interface EventZod {
+	name: string,
+	startDate: Date,
+	endDate: Date,
+	startTime: Date,
+	endTime: Date,
+	locationId: string,
+	description: string,
+	imageUrl: string,
+}
+
+export const EventDetailsZod: ZodType<EventZod> = z.object({
+	name: z
+		.string({
+			required_error: "Name is required.",
+		})
+		.min(2, { message: "Please enter a valid name." 
+		}),
+	startDate: z
+		.date({
+			required_error: "Please select a start date.",
+		}),
+	endDate: z
+		.date({
+			required_error: "Please select an end date.",
+		}),
+	startTime: z
+		.date({
+			required_error: "Please select a start time.",
+		}),
+	endTime: z
+		.date({
+			required_error: "Please select an end time.",
+		}),
+	locationId: z
+		.string({
+			required_error: "Location is required.",
+		}),
+	description: z
+		.string({
+			required_error: "Description is required.",
+		})
+		.min(2, { message: "Please enter a valid description." 
+		}),
+	imageUrl: z
+		.string({
+			required_error: "Image is required.",
+		}),
+});

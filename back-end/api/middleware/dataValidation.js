@@ -13,7 +13,7 @@ const validateUser = [
 
 const validateBldgLoc = [
     body('name').notEmpty().withMessage('Building Name is required').isString().withMessage("There seems to be a problem with the building name. Please make sure it doesn't contain special characters"),
-    body('roomNo').notEmpty().withMessage('Room Number is required').isString().withMessage("There seems to be a problem with the room number. Please make sure it doesn't contain special characters")
+    body('roomNo').notEmpty().withMessage('Room Number is required')
 ];
 
 const validateReasons = [
@@ -24,7 +24,7 @@ const validateOffices = [
     body('name').notEmpty().withMessage('Building Name is required').isString().withMessage("There seems to be a problem with the building name. Please make sure it doesn't contain special characters"),
     body('roomNo').notEmpty().withMessage('Room Number is required').isString().withMessage("There seems to be a problem with the room number. Please make sure it doesn't contain special characters"),
     body('pic').notEmpty().withMessage('Personnel in charge is required').isString().withMessage("There seems to be a problem with the personnel's name. Please make sure it doesn't contain special characters"),
-    body('contact').isLength({ min: 11 }).withMessage('Phone number must be at least 11 digits').notEmpty().withMessage('Contact Number is required').isString().withMessage("There seems to be a problem with your phone number. Please make sure it doesn't contain special characters except '+' or '-'")
+    body('contact').notEmpty().withMessage('Contact Number is required').isString().withMessage("There seems to be a problem with your phone number. Please make sure it doesn't contain special characters except '+' or '-'")
 ];
 
 const validateAnnouncements = [

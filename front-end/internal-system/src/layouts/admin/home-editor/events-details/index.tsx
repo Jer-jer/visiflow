@@ -20,6 +20,7 @@ import {
 	Upload,
 	Image,
     Select,
+	Form,
 } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import Input from "../../../../components/fields/input/input";
@@ -37,6 +38,11 @@ import {
 //Styles
 import "./styles.scss";
 import AxiosInstance from "../../../../lib/axios";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import {useForm} from "react-hook-form";
+import { EventDetailsZod, EventZod } from "../../../../utils/zodSchemas";
+import { jwtDecode } from "jwt-decode";
 
 dayjs.extend(customParseFormat);
 
@@ -66,26 +72,17 @@ const getBase64 = (img: RcFile, callback: (url: string) => void) => {
 	reader.readAsDataURL(img);
 };
 
-const showDeleteConfirm = () => {
-	confirm({
-		title: "Are you sure you want to delete this?",
-		className: "confirm-buttons",
-		icon: <ExclamationCircleFilled className="!text-error-500" />,
-		okText: "Yes",
-		okType: "danger",
-		cancelText: "No",
-		onOk() {
-			console.log("OK");
-		},
-		onCancel() {
-			console.log("Cancel");
-		},
-	});
-};
-
 interface SelectOption {
 	label: string;
 	value: string;
+};
+
+const error = (message: string) => {
+	Modal.error({
+		title: `Error`,
+		content: message,
+		className: "error-modal",
+	});
 };
 
 //Main Function
@@ -118,6 +115,18 @@ export default function EventsSchedDetails({
 
 	const { RangePicker } = DatePicker;
 
+	const token = localStorage.getItem("token");
+	const decodedtoken = (jwtDecode (token as string));
+
+	const {
+		register,
+		handleSubmit,
+		setValue,
+		formState: { errors },
+	} = useForm<EventZod>({
+		resolver: zodResolver(EventDetailsZod),
+	});
+
 
 	const editOrCancel = () => {
 		if (!disabledInputs) {
@@ -140,11 +149,12 @@ export default function EventsSchedDetails({
 					endTime: endTime,
 					locationID: locationId,
             		description: description,
-					eventImg: image
+					eventImg: image,
+					userID: decodedtoken.sub
 				}); 
 				setSavedRecord(response.data.event);
-			} catch (error) {
-			console.error('Error in adding event:', error);
+			} catch (err: any) {
+				error('Error in adding event: ' + err.response.data.error);
 			}
 		} else { // updating record
 			try {
@@ -159,9 +169,10 @@ export default function EventsSchedDetails({
 					description: description,
             		// userID: userID,
 					eventImg: image === null ? record?.eventImg : image,
+					userID: decodedtoken.sub
 				}); 
-			} catch (error) {
-			console.error('Error in updating event:', error);
+			} catch (err: any) {
+				error('Error in updating event: ' + err.response.data.error);
 			}
 		}
 
@@ -172,17 +183,59 @@ export default function EventsSchedDetails({
 		setDisabledInputs(!disabledInputs);
 	};
 
+	const showDeleteConfirm = () => {
+		confirm({
+			title: "Are you sure you want to delete this?",
+			className: "confirm-buttons",
+			icon: <ExclamationCircleFilled className="!text-error-500" />,
+			okText: "Yes",
+			okType: "danger",
+			cancelText: "No",
+			async onOk() {
+				try {
+					await AxiosInstace.delete('/events/delete', { data: { _id: record?._id, userID: decodedtoken.sub } });
+					fetch();
+					setOpenDetails(false);
+				  } catch (error) {
+					console.error('Error deleting events:', error);
+				  }
+			},
+			onCancel() {
+				console.log("Cancel");
+			},
+		});
+	};
+
+	const handleName = (value: any) => {
+		setName(value);
+		setValue('name', value);
+	}
+
+	const handleLocationId = (value: any) => {
+		setLocationId(value);
+		setValue('locationId', value);
+	}
+
+	const handleDescription = (value: any) => {
+		setDescription(value);
+		setValue('description', value);
+	}
+
 	const handleChangeRange = (date: any) => {
-		setStartTime(date[0]);
-		setEndTime(date[1]);
+		setStartTime(new Date(date[0]));
+		setValue('startTime', new Date(date[0]));
+		setEndTime(new Date(date[1]));
+		setValue('endTime', new Date(date[1]));
 	}
 
 	const handleChangeStartDate = (date: any) => {
 		setStartDate(date);
+		setValue('startDate', new Date(date));
 	}
 
 	const handleChangeEndDate = (date: any) => {
 		setEndDate(date);
+		setValue('endDate', new Date(date));
 	}
 
 	const handleImageUpload = (event: any) => {
@@ -192,7 +245,9 @@ export default function EventsSchedDetails({
 		reader.onloadend = () => {
 		const base64String = reader.result;
 		setImage(base64String);
-		setImageUrl(URL.createObjectURL(file));
+		const url = URL.createObjectURL(file);
+		setImageUrl(url);
+		setValue('imageUrl', url)
 		};
 	
 		if (file) {
@@ -245,194 +300,263 @@ export default function EventsSchedDetails({
 		}
 	};
 
+	const onSubmit = handleSubmit((data) => {
+		saveAction();
+	});
+
 	useEffect(() => {
 		getWhere();
-	})
+		handleName(name);
+		setValue('startDate', new Date(startDate));
+		setValue('endDate', new Date(endDate));
+		setValue('startTime', new Date(startTime));
+		setValue('endTime', new Date(endTime));
+		handleLocationId(locationId);
+		handleDescription(description);
+		setValue('imageUrl', imageUrl);
+	}, [])
 
 	return (
-		<div className="mr-[135px] flex flex-col gap-[35px] pt-[25px]">
-			<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
-				<div className="flex justify-start">
-					<div className="mr-[106px] flex w-[73%] flex-col gap-[20px]">
-						<div className="flex gap-[30px]">
-							<div className="flex w-full gap-[32px]">
-								<Label spanStyling="text-black font-medium text-[16px]">
-									Event Name
-								</Label>
-								<Input
-									inputType="text"
-									inputStyling="input w-full h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-									placeHolder={record?.name}
-									input={name}
-									setInput={setName}
-									visitorMngmnt
-									disabled={disabledInputs}
-								/>
-							</div>
-						</div>
-						<div className="flex gap-[30px]">
-							<div className="flex w-full gap-[36px]">
-								<Label spanStyling="text-black font-medium text-[16px]">
-									Start Date
-								</Label>
-								<DatePicker
-									className={`vm-placeholder w-[68%] border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500 focus:!border-primary-500 ${
-										disabledInputs && "picker-disabled"
-									}`}
-									size="middle"
-									value={dayjs(startDate)}
-									onChange={handleChangeStartDate}
-									format="MMMM DD, YYYY"
-									disabled={disabledInputs}
-								/>
-							</div>
-							<div className="flex w-full gap-[36px]">
-								<Label spanStyling="text-black font-medium text-[16px]">
-									End Date
-								</Label>
-								<DatePicker
-									className={`vm-placeholder w-[68%] border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500 focus:!border-primary-500 ${
-										disabledInputs && "picker-disabled"
-									}`}
-									size="middle"
-									value={dayjs(endDate)}
-									onChange={handleChangeEndDate}
-									format="MMMM DD, YYYY"
-									disabled={disabledInputs}
-								/>
-							</div>
-						</div>
-						<div className="flex w-full gap-[75px]">
-							<Label spanStyling="text-black font-medium text-[16px]">
-								Time
-							</Label>
-							<RangePicker
-								className={`vm-placeholder w-full border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500 focus:!border-primary-500 ${
-									disabledInputs && "picker-disabled"
-								}`}
-								size="middle"
-								picker="time"
-								value={[
-									dayjs(startTime),
-									dayjs(endTime),
-								]}
-								onChange={handleChangeRange}
-								placeholder={["From", "To"]}
-								changeOnBlur={false}
-								format="hh:mm A"
-								style={{
-									borderColor: "#0db284",
-								}}
-								disabled={disabledInputs}
-							/>
-						</div>
-						<div className="flex w-full gap-[50px]">
-							<Label spanStyling="text-black font-medium text-[16px]">
-								Location
-							</Label>
-							{/* <Input
-								inputType="text"
-								inputStyling="input w-full h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-								placeHolder={record?.locationID}
-								input={locationId}
-								setInput={setLocationId}
-								visitorMngmnt
-								disabled={disabledInputs}
-							/> */}
-							<Select
-								className="w-[315px] md:w-[397px]"
-								size="large"
-								placement="bottomLeft"
-								allowClear
-								showSearch
-								placeholder="Where"
-								listHeight={150}
-								options={whereList}
-								onChange={(value) =>
-									setLocationId(value)
-								}
-							></Select>
-						</div>
-						<div className="flex w-full items-start gap-[30px]">
-							<Label spanStyling="text-black font-medium text-[16px]">
-								Description
-							</Label>
-							<TextArea
-								className="custom-textarea input h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-								placeholder={record?.description}
-								value={description}
-								onChange={(e) => setDescription(e.target.value)}
-								rows={8}
-								disabled={disabledInputs}
-							/>
-						</div>
-					</div>
-					<div>
-						{disabledInputs ? (
-							<Image
-								width={200}
-								src={imageUrl}
-							/>
-						) : (
-							<div>
-								<input type="file" accept="image/*" onChange={handleImageUpload} />
-								{image && (
-									<div>
-									<h2>Uploaded Image:</h2>
-									<Image
-										width={280}
-										src={image.toString()}
+		<Form name="OfficeDetails" onFinish={onSubmit} autoComplete="off">
+			<div className="mr-[135px] flex flex-col gap-[35px] pt-[25px]">
+				<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
+					<div className="flex justify-start">
+						<div className="mr-[106px] flex w-[73%] flex-col gap-[20px]">
+							<div className="flex gap-[30px]">
+								<div className="flex w-full gap-[32px]">
+									<Label spanStyling="text-black font-medium text-[16px]">
+										Event Name
+									</Label>
+									<div className="flex w-full flex-col">
+									<Input
+										inputType="text"
+										inputStyling="input w-full h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
+										placeHolder={record?.name}
+										input={name}
+										setInput={handleName}
+										visitorMngmnt
+										disabled={disabledInputs}
 									/>
+									{/* zod */}
+									{errors?.name && (
+										<p className="mt-1 text-sm text-red-500">
+											{errors.name?.message}
+										</p>
+									)}
 									</div>
+								</div>
+							</div>
+							<div className="flex gap-[30px]">
+								<div className="flex w-full gap-[50px]">
+									<Label spanStyling="text-black font-medium text-[16px]">
+										Start Date
+									</Label>
+									<div className="flex w-full flex-col">
+									<DatePicker
+										className={`vm-placeholder w-full border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500 focus:!border-primary-500 ${
+											disabledInputs && "picker-disabled"
+										}`}
+										size="middle"
+										value={dayjs(startDate)}
+										onChange={handleChangeStartDate}
+										format="MMMM DD, YYYY"
+										disabled={disabledInputs}
+									/>
+									{/* zod */}
+									{errors?.startDate && (
+										<p className="mt-1 text-sm text-red-500">
+											{errors.startDate?.message}
+										</p>
+									)}
+									</div>
+								</div>
+								<div className="flex w-full gap-[50px]">
+									<Label spanStyling="text-black font-medium text-[16px]">
+										End Date
+									</Label>
+									<div className="flex w-full flex-col">
+									<DatePicker
+										className={`vm-placeholder w-full border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500 focus:!border-primary-500 ${
+											disabledInputs && "picker-disabled"
+										}`}
+										size="middle"
+										value={dayjs(endDate)}
+										onChange={handleChangeEndDate}
+										format="MMMM DD, YYYY"
+										disabled={disabledInputs}
+									/>
+									{/* zod */}
+									{errors?.endDate && (
+										<p className="mt-1 text-sm text-red-500">
+											{errors.endDate?.message}
+										</p>
+									)}
+									</div>
+								</div>
+							</div>
+							<div className="flex w-full gap-[75px]">
+								<Label spanStyling="text-black font-medium text-[16px]">
+									Time
+								</Label>
+								<div className="flex w-full flex-col">
+								<RangePicker
+									className={`vm-placeholder w-full border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500 focus:!border-primary-500 ${
+										disabledInputs && "picker-disabled"
+									}`}
+									size="middle"
+									picker="time"
+									value={[
+										dayjs(startTime),
+										dayjs(endTime),
+									]}
+									onChange={handleChangeRange}
+									placeholder={["From", "To"]}
+									changeOnBlur={false}
+									format="hh:mm A"
+									style={{
+										borderColor: "#0db284",
+									}}
+									disabled={disabledInputs}
+								/>
+								{/* zod */}
+								{errors?.startTime && (
+									<p className="mt-1 text-sm text-red-500">
+										{errors.endDate?.message}
+									</p>
+								)}
+								{errors?.endTime && (
+									<p className="mt-1 text-sm text-red-500">
+										{errors.endTime?.message}
+									</p>
+								)}
+								</div>
+							</div>
+							<div>
+								<div className="flex w-full gap-[50px]">
+									<Label spanStyling="text-black font-medium text-[16px]">
+										Location
+									</Label>
+									<div className="flex w-full flex-col">
+									<Select
+										className="w-[315px] md:w-[397px]"
+										size="large"
+										placement="bottomLeft"
+										allowClear
+										showSearch
+										placeholder="Where"
+										listHeight={150}
+										options={whereList}
+										onChange={(value) =>
+											handleLocationId(value)
+										}
+										value={locationId}
+										disabled={disabledInputs}
+									/>
+									{/* zod */}
+									{errors?.locationId && (
+										<p className="mt-1 text-sm text-red-500">
+											{errors.locationId?.message}
+										</p>
+									)}
+									</div>
+								</div>
+							</div>
+							<div className="flex w-full items-start gap-[30px]">
+								<Label spanStyling="text-black font-medium text-[16px]">
+									Description
+								</Label>
+								<div className="flex w-full flex-col">
+								<TextArea
+									className="custom-textarea input h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
+									placeholder={record?.description}
+									value={description}
+									onChange={(e) => handleDescription(e.target.value)}
+									rows={8}
+									disabled={disabledInputs}
+								/>
+								{errors?.description && (
+									<p className="mt-1 text-sm text-red-500">
+										{errors.description?.message}
+									</p>
+								)}
+								</div>
+							</div>
+						</div>
+						<div>
+							<div className="flex w-full flex-col">
+							{disabledInputs ? (
+								<Image
+									width={200}
+									src={imageUrl}
+								/>
+							) : (
+								<div>
+									<input type="file" accept="image/*" onChange={handleImageUpload} />
+									{image && (
+										<div>
+										<h2>Uploaded Image:</h2>
+										<Image
+											width={280}
+											src={image.toString()}
+										/>
+										</div>
+									)}
+								</div>
+							)}
+							{errors?.imageUrl && (
+									<p className="mt-1 text-sm text-red-500">
+										{errors.imageUrl?.message}
+									</p>
 								)}
 							</div>
+						</div>
+					</div>
+					{/* <div className="divider" /> */}
+					<div className="flex justify-end gap-[15px]">
+						{!disabledInputs ? (
+							<>
+								{record && 
+								<Button
+									onClick={showDeleteConfirm}
+									type="primary"
+									size="large"
+									className="search-button !bg-error-500 !rounded-[18px]"
+								>
+									Delete
+								</Button>}
+								<Button
+									htmlType="submit"
+									type="primary"
+									size="large"
+									className="search-button !rounded-[18px] !bg-primary-500"
+								>
+									Save
+								</Button>
+							</>
+						) : (
+							<Button
+								type="link"
+								size="large"
+								className="mr-auto text-primary-500 hover:!text-primary-300"
+								onClick={() => setOpenDetails(false)}
+							>
+								<div className="flex items-center justify-center gap-[5px]">
+									<LeftOutlined />
+									<span>Back</span>
+								</div>
+							</Button>
 						)}
+						<Button
+							onClick={editOrCancel}
+							type="primary"
+							size="large"
+							className="search-button !rounded-[18px] !bg-primary-500"
+						>
+							{disabledInputs ? "Edit" : "Cancel"}
+						</Button>
 					</div>
 				</div>
-				{/* <div className="divider" /> */}
-				<div className="flex justify-end gap-[15px]">
-					{!disabledInputs ? (
-						<>
-							<Button
-								onClick={showDeleteConfirm}
-								type="primary"
-								size="large"
-								className="search-button !bg-error-500 !rounded-[18px]"
-							>
-								Delete
-							</Button>
-							<Button
-								onClick={saveAction}
-								type="primary"
-								size="large"
-								className="search-button !rounded-[18px] !bg-primary-500"
-							>
-								Save
-							</Button>
-						</>
-					) : (
-						<Button
-							type="link"
-							size="large"
-							className="mr-auto text-primary-500 hover:!text-primary-300"
-							onClick={() => setOpenDetails(false)}
-						>
-							<div className="flex items-center justify-center gap-[5px]">
-								<LeftOutlined />
-								<span>Back</span>
-							</div>
-						</Button>
-					)}
-					<Button
-						onClick={editOrCancel}
-						type="primary"
-						size="large"
-						className="search-button !rounded-[18px] !bg-primary-500"
-					>
-						{disabledInputs ? "Edit" : "Cancel"}
-					</Button>
-				</div>
 			</div>
-		</div>
+		</Form>
 	);
 }

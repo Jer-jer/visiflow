@@ -9,7 +9,7 @@ import type { UploadChangeParam } from "antd/es/upload";
 //Layouts
 
 //Components
-import { Button, Dropdown, Modal, DatePicker, message, Image, MenuProps, Select, InputNumber } from "antd";
+import { Button, Dropdown, Modal, DatePicker, message, Image, MenuProps, Select, InputNumber, Form } from "antd";
 import Input from "../../../../components/fields/input/input";
 import Label from "../../../../components/fields/input/label";
 import AxiosInstace from "../../../../lib/axios";
@@ -21,6 +21,11 @@ import { ExclamationCircleFilled, LeftOutlined} from "@ant-design/icons";
 import "./styles.scss";
 import { ArrowDown } from "../../../../assets/svg";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import {useForm} from "react-hook-form";
+import { OfficeDetailsZod, OfficeZod } from "../../../../utils/zodSchemas";
+import { jwtDecode } from "jwt-decode";
+
 
 interface OfficeSchedDetailsProps {
 	record?: any;
@@ -30,20 +35,11 @@ interface OfficeSchedDetailsProps {
 
 const { confirm } = Modal;
 
-const showDeleteConfirm = () => {
-	confirm({
-		title: "Are you sure you want to delete this?",
-		className: "confirm-buttons",
-		icon: <ExclamationCircleFilled className="!text-error-500" />,
-		okText: "Yes",
-		okType: "danger",
-		cancelText: "No",
-		onOk() {
-			console.log("OK");
-		},
-		onCancel() {
-			console.log("Cancel");
-		},
+const error = (message: string) => {
+	Modal.error({
+		title: `Error`,
+		content: message,
+		className: "error-modal",
 	});
 };
 
@@ -108,6 +104,18 @@ export default function OfficeSchedDetails({
 
 	const [disabledInputs, setDisabledInputs] = useState<boolean>(true);
 
+	const token = localStorage.getItem("token");
+	const decodedtoken = (jwtDecode (token as string));
+
+	const {
+		register,
+		handleSubmit,
+		setValue,
+		formState: { errors },
+	} = useForm<OfficeZod>({
+		resolver: zodResolver(OfficeDetailsZod),
+	});
+
 	const editOrCancel = () => {
 		// if (!disabledInputs) {
 		// 	setName("");
@@ -138,10 +146,11 @@ export default function OfficeSchedDetails({
 					closetime: closetime,
 					openday: openday,
 					officeImg: image,
+					userID: decodedtoken.sub
 				}); 
 				setSavedRecord(response.data.office);
-			} catch (error) {
-			console.error('Error in adding office:', error);
+			} catch (err: any) {
+				error('Error in adding office: ' + err.response.data.error);
 			}
 		} else { // updating record
 			try {
@@ -158,9 +167,10 @@ export default function OfficeSchedDetails({
 					closetime: closetime,
 					openday: openday,
 					officeImg: image === null ? record?.officeImg : image,
+					userID: decodedtoken.sub
 				}); 
-			} catch (error) {
-			console.error('Error in updating office:', error);
+			} catch (err: any) {
+				error('Error in updating office: ' + err.response.data.error);
 			}
 		}
 
@@ -171,6 +181,29 @@ export default function OfficeSchedDetails({
 		setDisabledInputs(!disabledInputs);
 	};
 
+	const showDeleteConfirm = () => {
+		confirm({
+			title: "Are you sure you want to delete this?",
+			className: "confirm-buttons",
+			icon: <ExclamationCircleFilled className="!text-error-500" />,
+			okText: "Yes",
+			okType: "danger",
+			cancelText: "No",
+			async onOk() {
+				try {
+					await AxiosInstace.delete('/offices/delete', { data: { _id: record?._id, userID: decodedtoken.sub } });
+					fetch();
+					setOpenDetails(false);
+				  } catch (error) {
+					console.error('Error deleting offices:', error);
+				  }
+			},
+			onCancel() {
+				console.log("Cancel");
+			},
+		});
+	};
+
 	const handleCheckboxChange = (index: number) => {
 		const updatedSelectedDays = [...openday];
 		updatedSelectedDays[index] = !updatedSelectedDays[index];
@@ -178,8 +211,8 @@ export default function OfficeSchedDetails({
 	  };
 
 	const handleChangeRange = (date: any) => {
-		setOpentime(date[0]);
-		setClosetime(date[1]);
+		handleOpenTime(date[0]);
+		handleCloseTime(date[1]);
 	}
 
 	const { RangePicker } = DatePicker;
@@ -194,7 +227,9 @@ export default function OfficeSchedDetails({
 		reader.onloadend = () => {
 		const base64String = reader.result;
 		setImage(base64String);
-		setImageUrl(URL.createObjectURL(file));
+		const url = URL.createObjectURL(file)
+		setImageUrl(url);
+		setValue('imageUrl', url);
 		};
 	
 		if (file) {
@@ -230,13 +265,13 @@ export default function OfficeSchedDetails({
 	}
 
 	const onChangeSelectedPic = (selectedOption: any) => {
-		setPic(selectedOption);
+		handlePic(selectedOption);
 		assignEmail(selectedOption);
 	
 	}
 
 	const onChangeSelectedBuilding = (selectedOption: any) => {
-		setBuild(selectedOption);
+		handleBuild(selectedOption);
 		assignFloorMax(selectedOption);
 	}
 
@@ -264,51 +299,130 @@ export default function OfficeSchedDetails({
 	{
 		return (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 	}
+
+	const onSubmit = handleSubmit((data) => {
+		saveAction();
+	});
+
+	const handleName = (value: any) => {
+		setName(value);
+		setValue('name', value);
+	}
+
+	const handleRoomNo = (value: any) => {
+		setRoomNo(value);
+		setValue('roomNo', value);
+	}
+
+	const handlePic = (value: any) => {
+		setPic(value);
+		setValue('pic', value);
+	}
+
+	const handleContact = (value: any) => {
+		setContact(value);
+		setValue('contact', value);
+	}
+
+	// const handleEmail = (value: any) => {
+	// 	setEmail(value);
+	// 	setValue('email', value);
+	// }
+
+	const handleBuild = (value: any) => {
+		setBuild(value);
+		setValue('build', value);
+	}
+
+	const handleFloor = (value: any) => {
+		setFloor(value);
+		setValue('floor', value);
+	}
+
+	const handleOpenTime = (value: any) => {
+		setOpentime(value);
+		setValue('openTime', new Date(value));
+	}
+
+	const handleCloseTime = (value: any) => {
+		setClosetime(value);
+		setValue('closeTime', new Date(value));
+	}
+
+	useEffect(() => {
+		handleName(name);
+		handleRoomNo(roomNo);
+		handlePic(pic);
+		handleContact(contact);
+		handleBuild(build);
+		handleFloor(floor);
+		handleOpenTime(opentime);
+		handleCloseTime(closetime);
+		setValue('imageUrl', imageUrl)
+	}, []);
   		
 
 	return (
+		<Form name="OfficeDetails" onFinish={onSubmit} autoComplete="off">
 		<div className="mr-[135px] flex flex-col gap-[35px] pt-[25px]">
 			<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
 				<div className="flex justify-between">
 					<div className="flex w-[80%] flex-col gap-[20px]">
-						<div className="flex gap-[80px]">
-							<div className="flex w-full justify-between">
-								<Label spanStyling="text-black font-medium text-[16px]">
+						<div className="flex w-full gap-[80px]">
+							<div className="flex w-full">
+								<Label spanStyling="w-32 text-black font-medium text-[16px]">
 									Office Name
 								</Label>
+								<div className="flex w-full flex-col">
 								<Input
 									inputType="text"
-									inputStyling="input w-[57%] h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
+									inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
 									placeHolder={record?.name}
 									input={name}
-									setInput={setName}
+									setInput={handleName}
 									visitorMngmnt
 									disabled={disabledInputs}
 								/>
+								{/* zod */}
+								{errors?.name && (
+									<p className="mt-1 text-sm text-red-500">
+										{errors.name?.message}
+									</p>
+								)}
+								</div>
 							</div>
-							<div className="flex w-full justify-between">
-								<Label spanStyling="text-black font-medium text-[16px]">
+							<div className="flex w-full">
+								<Label spanStyling="w-32 text-black font-medium text-[16px]">
 									Room No.
 								</Label>
+								<div className="flex w-full flex-col">
 								<Input
 									inputType="text"
-									inputStyling="input w-[57%] h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
+									inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
 									placeHolder={record?.roomNo}
 									input={roomNo}
-									setInput={setRoomNo}
+									setInput={handleRoomNo}
 									visitorMngmnt
 									disabled={disabledInputs}
 								/>
+								{/* zod */}
+								{errors?.roomNo && (
+									<p className="mt-1 text-sm text-red-500">
+										{errors.roomNo?.message}
+									</p>
+								)}
+								</div>
 							</div>
 						</div>
-						<div className="flex gap-[80px]">
-							<div className="flex w-full justify-between">
-								<Label spanStyling="text-black font-medium text-[16px]">
+						<div className="flex w-full gap-[80px]">
+							<div className="flex w-full">
+								<Label spanStyling="w-32 text-black font-medium text-[16px]">
 									Personnel in Charge
 								</Label>
+								<div className="flex w-full flex-col">
 								<Select
 									showSearch
-									className="input w-[57%] h-[38px] rounded-[5px] p-0"
+									className="input h-[38px] rounded-[5px] p-0"
 									onChange={onChangeSelectedPic}
 									defaultValue={pic}
 									optionFilterProp="children"
@@ -319,14 +433,22 @@ export default function OfficeSchedDetails({
 									})) : []}
 									disabled={disabledInputs}
 								/>
+								{/* zod */}
+								{errors?.pic && (
+									<p className="mt-1 text-sm text-red-500">
+										{errors.pic?.message}
+									</p>
+								)}
+								</div>
 							</div>
-							<div className="flex w-full justify-between">
-								<Label spanStyling="text-black font-medium text-[16px]">
+							<div className="flex w-full">
+								<Label spanStyling="w-32 text-black font-medium text-[16px]">
 									Building Name
 								</Label>
+								<div className="flex w-full flex-col">
 								<Select
 									showSearch
-									className="input w-[57%] h-[38px] rounded-[5px] p-0"
+									className="input h-[38px] rounded-[5px] p-0"
 									onChange={onChangeSelectedBuilding}
 									defaultValue={build}
 									optionFilterProp="children"
@@ -337,31 +459,47 @@ export default function OfficeSchedDetails({
 									})) : []}
 									disabled={disabledInputs}
 								/>
+								{/* zod */}
+								{errors?.build && (
+									<p className="mt-1 text-sm text-red-500">
+										{errors.build?.message}
+									</p>
+								)}
+								</div>
 							</div>
 						</div>
 						<div className="flex gap-[80px]">
-							<div className="flex w-full justify-between">
-								<Label spanStyling="text-black font-medium text-[16px]">
+							<div className="flex w-full">
+								<Label spanStyling="w-32 text-black font-medium text-[16px]">
 									Email
 								</Label>
+								<div className="flex w-full flex-col">
 								<Input
 									inputType="text"
-									inputStyling="w-[57%] h-[38px] rounded-[5px] border-cyan-800"
+									inputStyling="h-[38px] rounded-[5px] border-cyan-800"
 									placeHolder={record?.email}
 									input={email}
 									setInput={setEmail}
 									visitorMngmnt
 									disabled={true}
 								/>
+								{/* zod */}
+								{/* {errors?.email && (
+									<p className="mt-1 text-sm text-red-500">
+										{errors.email?.message}
+									</p>
+								)} */}
+								</div>
 							</div>
-							<div className="flex w-full justify-between">
-								<Label spanStyling="text-black font-medium text-[16px]">
+							<div className="flex w-full">
+								<Label spanStyling="w-32 text-black font-medium text-[16px]">
 									Floor No.
 								</Label>
+								<div className="flex w-full flex-col">
 								<Select
 									showSearch
-									className="input w-[57%] h-[38px] rounded-[5px] p-0"
-									onChange={setFloor}
+									className="input h-[38px] rounded-[5px] p-0"
+									onChange={handleFloor}
 									defaultValue={floor}
 									optionFilterProp="children"
 									filterOption={filterOption}
@@ -371,30 +509,46 @@ export default function OfficeSchedDetails({
 									})) : []}
 									disabled={disabledInputs}
 								/>
+								{/* zod */}
+								{errors?.floor && (
+									<p className="mt-1 text-sm text-red-500">
+										{errors.floor?.message}
+									</p>
+								)}
+								</div>
 							</div>
 						</div>
 						<div className="flex gap-[80px]">
-							<div className="flex w-full justify-between">
-								<Label spanStyling="text-black font-medium text-[16px]">
+							<div className="flex w-full">
+								<Label spanStyling="w-32 text-black font-medium text-[16px]">
 									Contact
 								</Label>
+								<div className="flex w-full flex-col">
 								<Input
 									inputType="text"
-									inputStyling="input w-[57%] h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
+									inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
 									placeHolder={record?.contact}
 									input={contact}
-									setInput={setContact}
+									setInput={handleContact}
 									visitorMngmnt
 									disabled={disabledInputs}
 								/>
+								{/* zod */}
+								{errors?.contact && (
+									<p className="mt-1 text-sm text-red-500">
+										{errors.contact?.message}
+									</p>
+								)}
+								</div>
 							</div>
 							<div className="flex w-full justify-between">
 							</div>
 						</div>
-						<div className="flex w-full gap-[75px]">
-							<Label spanStyling="text-black font-medium text-[16px]">
+						<div className="flex w-full">
+							<Label spanStyling="w-32 text-black font-medium text-[16px]">
 								Time
 							</Label>
+							<div className="flex w-full flex-col">
 							<RangePicker
 								className={`vm-placeholder w-full border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500 focus:!border-primary-500 ${
 									disabledInputs && "picker-disabled"
@@ -414,9 +568,21 @@ export default function OfficeSchedDetails({
 								}}
 								disabled={disabledInputs}
 							/>
+							{/* zod */}
+							{errors?.openTime && (
+								<p className="mt-1 text-sm text-red-500">
+									{errors.openTime?.message}
+								</p>
+							)}
+							{errors?.closeTime && (
+								<p className="mt-1 text-sm text-red-500">
+									{errors.closeTime?.message}
+								</p>
+							)}
+							</div>
 						</div>
-						<div className="flex w-full gap-[75px]">
-						<Label spanStyling="text-black font-medium text-[16px]">
+						<div className="flex w-full">
+						<Label spanStyling="w-32 text-black font-medium text-[16px]">
 							Available Days
 						</Label>
 						<div className="flex gap-2">
@@ -435,6 +601,7 @@ export default function OfficeSchedDetails({
 						</div>
 					</div>
 					<div>
+						<div className="flex w-full flex-col">
 						{disabledInputs ? (
 								<Image
 									width={200}
@@ -454,12 +621,19 @@ export default function OfficeSchedDetails({
 								)}
 							</div>
 						)}
+						{errors?.imageUrl && (
+							<p className="mt-1 text-sm text-red-500">
+								{errors.imageUrl?.message}
+							</p>
+						)}
+						</div>
 					</div>
 				</div>
 				{/* <div className="divider" /> */}
 				<div className="flex justify-end gap-[15px]">
 					{!disabledInputs ? (
 						<>
+							{record && 
 							<Button
 								onClick={showDeleteConfirm}
 								type="primary"
@@ -467,9 +641,9 @@ export default function OfficeSchedDetails({
 								className="search-button !bg-error-500 !rounded-[18px]"
 							>
 								Delete
-							</Button>
+							</Button>}
 							<Button
-								onClick={saveAction}
+								htmlType="submit"
 								type="primary"
 								size="large"
 								className="search-button !rounded-[18px] !bg-primary-500"
@@ -501,5 +675,6 @@ export default function OfficeSchedDetails({
 				</div>
 			</div>
 		</div>
+		</Form>
 	);
 }
