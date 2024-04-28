@@ -14,7 +14,7 @@ import "./styles.scss";
 
 export default function TodayEvents({ events }: EventsPropsAggregate) {
 	return (
-		<div className="grid grid-cols-2 gap-4">
+		<div className="flex flex-col gap-4 lg:flex-row">
 			{events.map((event, key) => (
 				<EventCard
 					key={key}
@@ -28,7 +28,11 @@ export default function TodayEvents({ events }: EventsPropsAggregate) {
 					}}
 					desc={event.desc}
 				>
-					<img className="w-full h-64 object-cover" alt="example" src={event.img} />
+					<img
+						className="h-64 w-full object-cover"
+						alt="example"
+						src={event.img}
+					/>
 				</EventCard>
 			))}
 		</div>

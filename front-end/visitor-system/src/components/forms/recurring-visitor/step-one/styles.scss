@@ -97,6 +97,12 @@ $placeholder: (
     }
 }
 
+@media (max-width: 350px) {
+    .ant-picker-datetime-panel-container {
+        margin-left: 10px !important;
+    }
+}
+
 @media (max-width: 767px) {
     .ant-picker-dropdown {
         left: 20px !important;
