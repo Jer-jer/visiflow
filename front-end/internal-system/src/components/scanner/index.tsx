@@ -45,7 +45,10 @@ export default function Scanner({ onQRstatus }: any) {
 			if (qr_id !== undefined) {
 				onQRstatus("Visitor Form is Ongoing");
 			} else {
-				setScanResult(result);
+				//setScanResult(result);
+				// if (scanner) {
+				// 	scanner.clear();
+				// }
 
 				// Retrieve JWT token from local storage
 				// const token = localStorage.getItem("token");
@@ -65,14 +68,17 @@ export default function Scanner({ onQRstatus }: any) {
 							}
 							case "time-out": {
 								onQRstatus("Successfully Timed-Out");
+								window.location.href = "/qr-scanner";
 								break;
 							}
 							case "time-in": {
 								onQRstatus("Successfully Timed-In");
+								window.location.href = "/qr-scanner";
 								break;
 							}
 							default: {
 								onQRstatus("Something went wrong");
+								window.location.href = "/qr-scanner";
 								break;
 							}
 						}
@@ -82,15 +88,13 @@ export default function Scanner({ onQRstatus }: any) {
 						if (err && err.response) {
 							console.log(err.response);
 							onQRstatus(err.response);
+							window.location.href = "/qr-scanner";
 						}
 					});
-
-				if (scanner) {
-					scanner.clear();
-				}
 			}
 		} else {
 			onQRstatus("Invalid QR");
+			window.location.href = "/qr-scanner";
 		}
 	}
 

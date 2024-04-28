@@ -27,13 +27,9 @@ interface CurrentVisitor {
 interface CurrentVisitorsTableProps {
 	search: string;
 	dateSearch: string[];
-	hideInOut: boolean;
-	setHideInOut: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function CurrentVisitorsTable({
-	hideInOut,
-	setHideInOut,
 	search,
 	dateSearch,
 }: CurrentVisitorsTableProps) {
@@ -52,9 +48,10 @@ export default function CurrentVisitorsTable({
 					phone: visitor.visitor_details.phone,
 					expected_time_in: visitor.expected_time_in,
 					expected_time_out: visitor.expected_time_out,
-					status: visitor.exceeded_time_out.isBefore(Date.now())
-						? "active"
-						: "exceeded_time_out",
+					status:
+						Date.now() <= new Date(visitor.expected_time_out).getTime()
+							? "active"
+							: "exceeded",
 				}));
 				setData(mappedData);
 				//console.log(mappedData);
@@ -86,7 +83,6 @@ export default function CurrentVisitorsTable({
 			render: (_, { expected_time_in }) => {
 				return formatDateObjToString(expected_time_in);
 			},
-			hidden: hideInOut,
 		},
 		{
 			title: "Expected Time-out",
@@ -99,7 +95,6 @@ export default function CurrentVisitorsTable({
 			render: (_, { expected_time_out }) => {
 				return formatDateObjToString(expected_time_out);
 			},
-			hidden: hideInOut,
 		},
 		{
 			title: "Status",
@@ -111,29 +106,29 @@ export default function CurrentVisitorsTable({
 				},
 				{
 					text: "Exceeded Time-out",
-					value: "exceeded_time_out",
+					value: "exceeded",
 				},
 			],
 			render: (_, { status }) => {
 				let color;
 				if (status === "active") color = "#0db284";
-				else if (status === "exceeded_time_out") color = "#FD4A4A";
+				else if (status === "exceeded") color = "#FD4A4A";
 				return (
-					<Tag color={color} key={status}>
+					<Tag
+						className="text-auto text-[10px] md:text-[16px]"
+						color={color}
+						key={status}
+					>
 						{status.toUpperCase()}
 					</Tag>
 				);
 			},
-			onFilter: (value: any, record) => record.role.indexOf(value) === 0,
+			onFilter: (value: any, record) => record.status.indexOf(value) === 0,
 		},
 	];
 
 	return (
 		<>
-			<Checkbox onChange={() => setHideInOut(!hideInOut)}>
-				Display Expected Time In and Out
-			</Checkbox>
-
 			<Table
 				columns={columns}
 				dataSource={data
