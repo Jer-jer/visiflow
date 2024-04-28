@@ -171,7 +171,7 @@ export default function DashboardLayout() {
 								secondaryStatsProps={[
 									{
 										label: "Percentage",
-										calculation: `${Math.round(calculatePercentage(visitorStatSummary.walkInCount, visitorStatSummary.total))}%`,
+										calculation: `${visitorStatSummary.walkInCount ? Math.round(calculatePercentage(visitorStatSummary.walkInCount, visitorStatSummary.total)) : 0}%`,
 									},
 								]}
 							/>
@@ -184,7 +184,7 @@ export default function DashboardLayout() {
 								secondaryStatsProps={[
 									{
 										label: "Percentage",
-										calculation: `${Math.round(calculatePercentage(visitorStatSummary.preRegCount, visitorStatSummary.total))}%`,
+										calculation: `${visitorStatSummary.preRegCount ? Math.round(calculatePercentage(visitorStatSummary.preRegCount, visitorStatSummary.total)) : 0}%`,
 									},
 								]}
 							/>

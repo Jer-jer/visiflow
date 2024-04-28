@@ -19,6 +19,7 @@ const { generateVisitorQRAndEmail } = require('../utils/qrCodeUtils');
 
 const { Buffer } = require("node:buffer");
 const Badge = require("../models/badge");
+const VisitorLogs = require("../models/visitorLogs");
 const mongoose = require("mongoose");
 
 const ObjectId = mongoose.Types.ObjectId;
@@ -41,16 +42,18 @@ exports.getCurrentVisitors = async (req, res) => {
   try {
     const badges = await Badge.find({ is_active: true });
 
-    const activeVisitorIds = badges.map(badge => badge.visitor_id);
+    const activeVisitorIds = badges.map((badge) => badge.visitor_id);
 
-    const activeVisitors = await Visitor.find({ _id: { $in: activeVisitorIds } });
+    const activeVisitors = await Visitor.find({
+      _id: { $in: activeVisitorIds },
+    });
 
     res.status(200).json({ activeVisitors });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({ error: "Failed to retrieve active visitors with badges from the database" });
+    return res.status(500).json({
+      error: "Failed to retrieve active visitors with badges from the database",
+    });
   }
 };
 
@@ -115,7 +118,6 @@ exports.addVisitor = async (req, res, next) => {
       mainVisitor.id_picture.back &&
       mainVisitor.id_picture.selfie
     ) {
-
     }
 
     const [frontId, backId, selfieId] = await Promise.all([
@@ -295,7 +297,7 @@ exports.updateVisitor = async (req, res) => {
     expected_time_in,
     expected_time_out,
     visitor_type,
-    companions
+    companions,
   } = req.body;
 
   const user_id = req.user._id;
@@ -341,6 +343,18 @@ exports.updateVisitor = async (req, res) => {
       { new: true }
     );
 
+    var badge = await Badge.findOne({
+      visitor_id: new ObjectId(_id),
+      expected_time_in: visitorDB.expected_time_in,
+      expected_time_out: visitorDB.expected_time_out,
+    });
+
+    if (badge) {
+      badge.expected_time_in = expected_time_in;
+      badge.expected_time_out = expected_time_out;
+      badge = await badge.save();
+    }
+
     await createSystemLog(user_id, log_type, "success");
     res.status(201).json({ visitor: updatedVisitor });
   } catch (error) {
@@ -363,7 +377,7 @@ exports.findRecurring = async (req, res) => {
       const visitorDB = await Visitor.findOne({
         "visitor_details.email": email,
       });
-      
+
       if (visitorDB) {
         return res.status(200).json({
           success: "Visitor found",
@@ -559,7 +573,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
         expected_time_in: visitors[0].expected_time_in,
         expected_time_out: visitors[0].expected_time_out,
         companions: companions,
-        status: "In Progress"
+        status: "In Progress",
       },
       { new: true }
     );
@@ -633,8 +647,15 @@ exports.deleteVisitor = async (req, res) => {
 
   try {
     const visitorDB = await Visitor.findByIdAndDelete(_id);
+    const badge = await Badge.findOne({ visitor_id: new ObjectId(_id) });
+    const deleteLogs = await VisitorLogs.deleteMany({
+      badge_id: new Object(badge._id),
+    });
+    const deleteBadge = await Badge.deleteMany({
+      visitor_id: new ObjectId(_id),
+    });
 
-    if (visitorDB) {
+    if (visitorDB && deleteLogs && deleteBadge) {
       await createSystemLog(user_id, log_type, "success");
       return res.status(204).send();
     } else {
@@ -661,7 +682,7 @@ exports.updateStatus = async (req, res) => {
     }
 
     if (visitorDB.status === status) {
-      return res.status(200).json(`Visitor status already set to ${status}` );
+      return res.status(200).json(`Visitor status already set to ${status}`);
     }
 
     const badge = await Badge.findOne({
