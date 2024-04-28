@@ -3,10 +3,13 @@ const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
 const mongoose = require("mongoose");
 const {
-  generateVisitorQRCode,
   updateLog,
   createSystemLog,
 } = require("../utils/helper");
+const {
+  generateQRCode
+} = require('../utils/qrCodeUtils');
+
 const archiver = require("archiver");
 const fs = require("fs");
 
@@ -72,8 +75,15 @@ exports.generateBadge = async (req, res) => {
       return res.status(500).json({ error: error.message });
     });
 
-    const promises = Array.from({ length: qty }, () =>
-      generateVisitorQRCode(new ObjectId())
+    const objectIds = Array.from({ length: qty }, () => {
+      const objectId = new ObjectId();
+      const uri = `http://localhost:5000/badge/checkBadge?qr_id=${objectId}`;
+      const filename = `api/resource/badge/badge${objectId}.png`;
+      return { objectId, filename, uri };
+    });
+
+    const promises = objectIds.map(({ objectId, filename, uri }) => 
+      generateQRCode(uri, filename, objectId)
     );
 
     const qrCodes = await Promise.all(promises);
@@ -128,8 +138,31 @@ exports.newBadge = async (req, res) => {
 };
 
 exports.checkBadge = async (req, res) => {
-  const { qr_id, visitor_id } = req.query;
+  const { qr_id } = req.query;
+  
+  try {
+    const badge = await Badge.findOne({ qr_id: qr_id })
 
+    if (!badge) {
+      const visitor = await Visitor.findById({ _id: qr_id });
+      if (visitor) {
+        return res.status(400).json({ error: "Visitor QR is invalid." });
+      }
+      return res.redirect(`http://localhost:3000/visitor-form/?qr_id=${qr_id}`);
+    }
+
+    updateLog(badge._id, qr_id, req.user.sub, res);
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to retrieve badge" });
+  }
+};
+
+// Old check badge
+/*
+exports.checkBadge = async (req, res) => {
+
+  const { qr_id, visitor_id } = req.query;
+ 
   let badge;
   let type;
 
@@ -139,6 +172,7 @@ exports.checkBadge = async (req, res) => {
 
   if (qr_id !== undefined) {
     badge = await Badge.findOne({ qr_id: qr_id });
+
     if (!badge) {
       // return res.redirect(`http://localhost:3000/visitor-form/?qr_id=${qr_id}`);
       return res.status(200).json({ type: "new-recurring", url: `http://localhost:3000/visitor-form/?qr_id=${qr_id}` })
@@ -158,4 +192,6 @@ exports.checkBadge = async (req, res) => {
 
   const _id = visitor_id !== undefined ? visitor_id : qr_id;
   updateLog(badge._id, _id, type, req.user.sub, res);
-};
+}
+
+*/
