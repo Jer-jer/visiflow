@@ -28,6 +28,7 @@ router.use(passport.authenticate("jwt", { session: false }));
 
 router.get("/", badgeController.getBadges);
 router.post("/findBadge", badgeController.findBadge);
+router.post("/findAllBadges", badgeController.findAllBadges);
 router.post("/generateBadge", badgeController.generateBadge);
 router.post("/newBadge", badgeController.newBadge);
 

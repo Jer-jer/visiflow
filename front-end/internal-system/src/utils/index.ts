@@ -104,6 +104,36 @@ export const actionType = (type: UserActionLogType) => {
 			return "Added Announcement";
 		case "update_announce":
 			return "Updated Announcement";
+		case "delete_announce":
+			return "Deleted Announcement";
+		case "add_office":
+				return "Added Office";
+		case "update_office":
+				return "Updated Office";
+		case "add_event":
+					return "Added Event";
+		case "update_event":
+					return "Updated Event";
+		case "delete_event":
+					return "Deleted Event";
+		case "add_employee":
+					return "Added Employee";
+		case "update_employee":
+					return "Updated Employee";
+		case "delete_employee":
+					return "Deleted Employee";
+		case "add_reason":
+					return "Added Reason";
+		case "update_reason":
+					return "Updated Reason";
+		case "delete_reason":
+					return "Deleted Reason";
+		case "add_building":
+					return "Added Building";
+		case "update_building":
+					return "Updated Building";
+		case "delete_building":
+					return "Deleted Building";
 		default:
 			return "Unknown";
 	}

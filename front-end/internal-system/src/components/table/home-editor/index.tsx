@@ -21,6 +21,7 @@ import "./styles.scss";
 import { AsyncThunkAction, createAsyncThunk } from "@reduxjs/toolkit";
 import AxiosInstace from "../../../lib/axios";
 import { AsyncThunkConfig } from "@reduxjs/toolkit/dist/createAsyncThunk";
+import { jwtDecode } from "jwt-decode";
 
 //fetch all announcements
 // export const fetchAnnouncements = createAsyncThunk(
@@ -41,16 +42,16 @@ export default function HomeList() {
 	//stated variable for useEffect
 	const [data, setData] = useState<any>([]);
 	const [announcements, setAnnouncements] = useState<HomeEditor[]>([]);
-	// const [users, setUsers] = useState<HomeEditor[]>([]);
 	const [searchValue, setSearchValue] = useState("");
 
-	// useEffect(() => {
-	// 	  fetchAndSetAnnouncements();
-	//   }, []);
-	  useEffect(() => {
-		if(searchValue == "") {
-			fetchAndSetAnnouncements();
-		}
+	const token = localStorage.getItem("token");
+	const decodedtoken = (jwtDecode (token as string));
+
+
+	useEffect(() => {
+	if(searchValue == "") {
+		fetchAndSetAnnouncements();
+	}
 	}, [searchValue])
 //For getting announcements from back-end
 	  //async is used for keyword await
@@ -84,7 +85,7 @@ export default function HomeList() {
 			cancelText: "No",
 			async onOk() {
 				try {
-					await AxiosInstace.delete('/announcements/delete', { data: { _id: data._id } }); 
+					await AxiosInstace.delete('/announcements/delete', { data: { _id: data._id, userID: decodedtoken.sub } }); 
 					fetchAndSetAnnouncements();
 				  } catch (error) {
 					console.error('Error deleting announcement:', error);
