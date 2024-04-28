@@ -52,7 +52,7 @@ $green-gradien-hover-active: linear-gradient(180deg, #3DC19D 100%, #3DC19D 100%)
 
 }
 
-@media screen and (max-width: 640px) {
+@media screen and (max-width: 768px) {
     .main-nav {
         .logo {
             padding-top: 8px;
@@ -81,10 +81,6 @@ $green-gradien-hover-active: linear-gradient(180deg, #3DC19D 100%, #3DC19D 100%)
             gap: 10px;
             padding-left: 25px;
             padding-bottom: 15px;
-        }
-
-        .nav-links-expanded {
-            top: 4.5rem
         }
     }
 
