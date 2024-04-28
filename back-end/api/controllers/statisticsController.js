@@ -1,5 +1,4 @@
 const Visitor = require("../models/visitor");
-const Badge = require("../models/badge");
 const Logs = require("../models/visitorLogs");
 
 const { getVisitors, getVisitorList } = require("../utils/statUtils");

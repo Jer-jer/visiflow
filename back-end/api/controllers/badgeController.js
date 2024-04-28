@@ -3,13 +3,15 @@ const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
 const mongoose = require("mongoose");
 const {
-  generateVisitorQRCode,
   updateLog,
   createSystemLog,
 } = require("../utils/helper");
+const {
+  generateQRCode
+} = require('../utils/qrCodeUtils');
+
 const archiver = require("archiver");
 const fs = require("fs");
-const { type } = require("os");
 
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -73,8 +75,15 @@ exports.generateBadge = async (req, res) => {
       return res.status(500).json({ error: error.message });
     });
 
-    const promises = Array.from({ length: qty }, () =>
-      generateVisitorQRCode(new ObjectId())
+    const objectIds = Array.from({ length: qty }, () => {
+      const objectId = new ObjectId();
+      const uri = `http://localhost:5000/badge/checkBadge?qr_id=${objectId}`;
+      const filename = `api/resource/badge/badge${objectId}.png`;
+      return { objectId, filename, uri };
+    });
+
+    const promises = objectIds.map(({ objectId, filename, uri }) => 
+      generateQRCode(uri, filename, objectId)
     );
 
     const qrCodes = await Promise.all(promises);
