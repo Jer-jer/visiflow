@@ -59,6 +59,9 @@ export default function Scanner({ onQRstatus }: any) {
 				// window.location.href = redirectUrl;
 				AxiosInstance.get(result)
 					.then((res) => {
+						if (scanner) {
+							scanner.clear();
+						}
 						const resType = res.data.type;
 
 						switch (resType) {
@@ -85,16 +88,15 @@ export default function Scanner({ onQRstatus }: any) {
 						console.log(res.data);
 					})
 					.catch((err) => {
-						if (err && err.response) {
-							console.log(err.response);
-							onQRstatus(err.response);
-							window.location.href = "/qr-scanner";
-						}
+						// if (err && err.response) {
+						// 	console.log(err.res.data.error);
+						// 	onQRstatus(err.res.data.error);
+						// 	window.location.href = "/qr-scanner";
+						// }
 					});
 			}
 		} else {
 			onQRstatus("Invalid QR");
-			window.location.href = "/qr-scanner";
 		}
 	}
 

@@ -148,7 +148,7 @@ exports.checkBadge = async (req, res) => {
       if (visitor) {
         return res.status(400).json({ error: "Visitor QR is invalid." });
       }
-      return res.redirect(`http://localhost:3000/visitor-form/?qr_id=${qr_id}`);
+      return res.status(200).json({ type: "new-recurring", url: `http://localhost:3000/visitor-form/?qr_id=${qr_id}` });
     }
 
     updateLog(badge._id, qr_id, req.user.sub, res);

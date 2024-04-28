@@ -54,7 +54,7 @@ const validateVisitor = [
     body('visitors.*.visitor_details.address.city').isString().withMessage("There seems to be a problem with your city. Please make sure it doesn't contain special characters").notEmpty().withMessage('City is required'),
     body('visitors.*.visitor_details.address.province').isString().withMessage("There seems to be a problem with your province. Please make sure it doesn't contain special characters").notEmpty().withMessage('Province is required'),
     body('visitors.*.visitor_details.address.country').isString().withMessage("There seems to be a problem with your country. Please make sure it doesn't contain special characters").notEmpty().withMessage('Country is required'),
-    body('visitors.*.visitor_details.email').isEmail().withMessage('Must be a valid email').optional(),
+    body('visitors.*.visitor_details.email').isEmail().optional().withMessage('Must be a valid email'),
     body('visitors.*.visitor_details.phone').isString().withMessage("There seems to be a problem with your phone number. Please make sure it doesn't contain special characters except '+' or '-'").notEmpty().withMessage('Phone number is required'),
     body('visitors.*.companions').optional().isArray().withMessage('Companions must be an array'),
     body('visitors.*.visitor_type').isString().withMessage('Visitor type must be a string').isIn(['Pre-Registered', 'Walk-In']).withMessage('Invalid Visitor Type'),
