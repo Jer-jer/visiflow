@@ -4,6 +4,7 @@ import React from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { useEffect, useState } from "react";
 import { qr_id } from "../../layouts/guard/visitor-form";
+import AxiosInstance from "../../lib/axios";
 
 //Styles
 import "./styles.scss";
@@ -39,27 +40,60 @@ export default function Scanner({ onQRstatus }: any) {
 		};
 	}, []);
 
-	function success(result: string) {
+	function success(result: any) {
 		if (isValidUrl(result)) {
 			if (qr_id !== undefined) {
 				onQRstatus("Visitor Form is Ongoing");
-			} else if (result === "time-out" || result === "time-in") {
-				onQRstatus("Successfully Timed-In/Out");
-			} else if (result === "time-outFailed" || result === "time-inFailed") {
-				onQRstatus("Time-In/Out Failed");
 			} else {
-				if (scanner) {
-					scanner.clear();
-				}
-				setScanResult(result);
+				//setScanResult(result);
+				// if (scanner) {
+				// 	scanner.clear();
+				// }
 
 				// Retrieve JWT token from local storage
-				const token = localStorage.getItem("token");
+				// const token = localStorage.getItem("token");
 
 				// Append JWT token as a query parameter to the scanned URL
-				const redirectUrl = `${result}&token=${token}`;
+				// const redirectUrl = `${result}&token=${token}`;
 				// Redirect to the scanned link
-				window.location.href = redirectUrl;
+				// window.location.href = redirectUrl;
+				AxiosInstance.get(result)
+					.then((res) => {
+						if (scanner) {
+							scanner.clear();
+						}
+						const resType = res.data.type;
+
+						switch (resType) {
+							case "new-recurring": {
+								window.location.href = res.data.url;
+								break;
+							}
+							case "time-out": {
+								onQRstatus("Successfully Timed-Out");
+								window.location.href = "/qr-scanner";
+								break;
+							}
+							case "time-in": {
+								onQRstatus("Successfully Timed-In");
+								window.location.href = "/qr-scanner";
+								break;
+							}
+							default: {
+								onQRstatus("Something went wrong");
+								window.location.href = "/qr-scanner";
+								break;
+							}
+						}
+						console.log(res.data);
+					})
+					.catch((err) => {
+						// if (err && err.response) {
+						// 	console.log(err.res.data.error);
+						// 	onQRstatus(err.res.data.error);
+						// 	window.location.href = "/qr-scanner";
+						// }
+					});
 			}
 		} else {
 			onQRstatus("Invalid QR");

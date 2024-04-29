@@ -1,8 +1,8 @@
 /* Built using Ant Design */
-import React, { Dispatch, SetStateAction } from "react";
+import React, { useState, useEffect } from "react";
 
 //Components
-import { Checkbox, Table, Tag } from "antd";
+import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 //Interfaces
@@ -13,48 +13,52 @@ import { formatDateObjToString, formatDateToISO } from "../../../utils";
 //Styles
 import "../../../utils/variables.scss";
 import "./styles.scss";
+import AxiosInstance from "../../../lib/axios";
 
+interface CurrentVisitor {
+	key: string;
+	fullName: string;
+	phone: string;
+	expected_time_in: string;
+	expected_time_out: string;
+	status: string;
+}
 interface CurrentVisitorsTableProps {
-	hideInOut: boolean;
-	setHideInOut: Dispatch<SetStateAction<boolean>>;
+	search: string;
+	dateSearch: string[];
 }
 
 export default function CurrentVisitorsTable({
-	hideInOut,
-	setHideInOut,
+	search,
+	dateSearch,
 }: CurrentVisitorsTableProps) {
-	const data = [
-		{
-			key: "1",
-			fullName: "Janusz Nricke Lim Omamalin",
-			location: ["Human Resources Department", "Ground Floor", "Main Building"],
-			expected_time_in: "2024-02-03T06:00:00.000Z",
-			expected_time_out: "2024-02-03T06:00:00.000Z",
-			time_in: "2024-02-03T06:00:00.000Z",
-			time_out: "2024-02-03T06:00:00.000Z",
-			status: "active",
-		},
-		{
-			key: "2",
-			fullName: "Allan Jericho Bargamento",
-			location: ["Human Resources Department", "Ground Floor", "Main Building"],
-			expected_time_in: "2024-02-03T06:00:00.000Z",
-			expected_time_out: "2024-02-03T06:00:00.000Z",
-			time_in: "2024-02-03T06:00:00.000Z",
-			time_out: "2024-02-03T06:00:00.000Z",
-			status: "active",
-		},
-		{
-			key: "3",
-			fullName: "Neil Collado",
-			location: ["Human Resources Department", "Ground Floor", "Main Building"],
-			expected_time_in: "2024-02-03T06:00:00.000Z",
-			expected_time_out: "2024-02-03T06:00:00.000Z",
-			time_in: "2024-02-03T06:00:00.000Z",
-			time_out: "2024-02-03T06:00:00.000Z",
-			status: "exceeded_time_out",
-		},
-	];
+	const [data, setData] = useState<CurrentVisitor[]>([]);
+	const startDate = new Date(dateSearch[0]);
+	const endDate = new Date(dateSearch[1]);
+
+	useEffect(() => {
+		// Fetch visitors from backend
+		AxiosInstance.get("/visitor/get-current-visitors")
+			.then((res) => {
+				console.log(res.data.activeVisitors);
+				const mappedData = res.data.activeVisitors.map((visitor: any) => ({
+					key: visitor._id,
+					fullName: `${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name} ${visitor.visitor_details.name.last_name}`,
+					phone: visitor.visitor_details.phone,
+					expected_time_in: visitor.expected_time_in,
+					expected_time_out: visitor.expected_time_out,
+					status:
+						Date.now() <= new Date(visitor.expected_time_out).getTime()
+							? "active"
+							: "exceeded",
+				}));
+				setData(mappedData);
+				//console.log(mappedData);
+			})
+			.catch((error) => {
+				console.error("Failed to fetch visitors:", error);
+			});
+	}, []);
 
 	const columns: ColumnsType = [
 		{
@@ -63,12 +67,9 @@ export default function CurrentVisitorsTable({
 			key: "fullName",
 		},
 		{
-			title: "Location",
-			dataIndex: "location",
-			key: "location",
-			render: (value, record) => {
-				return value.map((loc: string) => `${loc}, `);
-			},
+			title: "Mobile #",
+			dataIndex: "phone",
+			key: "phone",
 		},
 		{
 			title: "Expected Time-in",
@@ -81,7 +82,6 @@ export default function CurrentVisitorsTable({
 			render: (_, { expected_time_in }) => {
 				return formatDateObjToString(expected_time_in);
 			},
-			hidden: hideInOut,
 		},
 		{
 			title: "Expected Time-out",
@@ -94,32 +94,6 @@ export default function CurrentVisitorsTable({
 			render: (_, { expected_time_out }) => {
 				return formatDateObjToString(expected_time_out);
 			},
-			hidden: hideInOut,
-		},
-		{
-			title: "Time-in",
-			dataIndex: "time_in",
-			key: "time_in",
-			sorter: (a, b) =>
-				formatDateToISO(new Date(a.time_in))!.localeCompare(
-					formatDateToISO(new Date(b.time_in))!,
-				),
-			render: (_, { time_in }) => {
-				return formatDateObjToString(time_in);
-			},
-			defaultSortOrder: "descend",
-		},
-		{
-			title: "Time-out",
-			dataIndex: "time_out",
-			key: "time_out",
-			sorter: (a, b) =>
-				formatDateToISO(new Date(a.time_out))!.localeCompare(
-					formatDateToISO(new Date(b.time_out))!,
-				),
-			render: (_, { time_out }) => {
-				return formatDateObjToString(time_out);
-			},
 		},
 		{
 			title: "Status",
@@ -131,32 +105,43 @@ export default function CurrentVisitorsTable({
 				},
 				{
 					text: "Exceeded Time-out",
-					value: "exceeded_time_out",
+					value: "exceeded",
 				},
 			],
 			render: (_, { status }) => {
 				let color;
 				if (status === "active") color = "#0db284";
-				else if (status === "exceeded_time_out") color = "#FD4A4A";
+				else if (status === "exceeded") color = "#FD4A4A";
 				return (
-					<Tag color={color} key={status}>
+					<Tag
+						className="text-auto text-[10px] md:text-[16px]"
+						color={color}
+						key={status}
+					>
 						{status.toUpperCase()}
 					</Tag>
 				);
 			},
-			onFilter: (value: any, record) => record.role.indexOf(value) === 0,
+			onFilter: (value: any, record) => record.status.indexOf(value) === 0,
 		},
 	];
 
 	return (
 		<>
-			<Checkbox onChange={() => setHideInOut(!hideInOut)}>
-				Display Expected Time In and Out
-			</Checkbox>
-
 			<Table
 				columns={columns}
-				dataSource={data}
+				dataSource={data
+					.filter((visitor) => {
+						return search.toLowerCase() === ""
+							? visitor
+							: visitor.fullName.toLowerCase().includes(search.toLowerCase());
+					})
+					.filter((visitor) => {
+						return dateSearch.length === 0
+							? visitor
+							: new Date(visitor.expected_time_in) >= startDate &&
+									new Date(visitor.expected_time_out) <= endDate;
+					})}
 				pagination={{ pageSize: 10 }}
 			/>
 		</>

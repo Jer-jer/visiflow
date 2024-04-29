@@ -48,7 +48,7 @@ export default function EventCard({ header, desc, children }: EventCardProps) {
 	return (
 		<Card
 			hoverable
-			className="hover:cursor-default w-[700px]"
+			className="event-card hover:cursor-default lg:w-[700px]"
 			cover={children}
 		>
 			<Meta

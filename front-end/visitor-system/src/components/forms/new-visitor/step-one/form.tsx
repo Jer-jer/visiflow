@@ -228,7 +228,7 @@ function StepOneForm({
 			setWhoList(convertedData);
 		} catch (error) {
 			if (error) {
-				console.error("Error fetching employees:", error)
+				console.error("Error fetching employees:", error);
 			}
 		}
 	};
@@ -487,7 +487,7 @@ function StepOneForm({
 						></Checkbox>
 					</Form.Item>
 
-					<span className="text-[16px] font-[400] text-[#000000]">
+					<span className="w-full text-[16px] font-[400] text-[#000000]">
 						I have agreed to the{" "}
 						<Button
 							type="link"

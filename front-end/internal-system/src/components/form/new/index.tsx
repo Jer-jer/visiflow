@@ -94,6 +94,26 @@ function NewWalkIn({
 	handlePurpose,
 	onChange,
 }: NewWalkInProps) {
+	const disabledDateTime = () => {
+		const currentHour = dayjs().hour();
+		const currentMinute = dayjs().minute();
+
+		return {
+			disabledHours: () => range(0, currentHour),
+			disabledMinutes: (selectedHour: number) => {
+				if (selectedHour === currentHour) {
+					return range(0, currentMinute);
+				}
+				return [];
+			},
+		};
+	};
+
+	// Helper function to generate range array
+	const range = (start: number, end: number) => {
+		return Array.from({ length: end - start }, (_, i) => start + i);
+	};
+
 	const [firstName, setFirstName] = useState<string>("");
 	const [middleName, setMiddleName] = useState<string>("");
 	const [lastName, setLastName] = useState<string>("");
@@ -303,7 +323,7 @@ function NewWalkIn({
 				<span>Sucessfully registered and timed-in visitor.</span>
 			</Modal>
 			<div
-				className={`transition-alert absolute z-[1] w-[380px] scale-y-0 ease-in-out ${
+				className={`transition-alert absolute z-[1] ml-[-38px] mt-[-92px] w-[380px] scale-y-0 ease-in-out ${
 					alertOpen && "scale-y-100"
 				}`}
 			>
@@ -320,12 +340,13 @@ function NewWalkIn({
 					setOpen={setAlertOpen}
 				/>
 			</div>
+
 			<Form name="Visitor Details" onFinish={onSubmit} autoComplete="off">
-				<div className="mb-[35px] ml-2 mt-3 flex">
+				<div className="mb-[35px] ml-2 mt-[-30px] flex lg:mt-3">
 					<div className="w-[380px] flex-auto md:w-[761px]">
-						<div className="items-around mb-[35px] ml-[20px] mr-[25px] flex h-fit flex-col justify-around gap-[30px] lg:flex-row lg:gap-[25px]">
-							<div className="flex flex-col items-center justify-center gap-[50px]">
-								<div className="align-center flex h-[245px] w-[330px] flex-col md:h-[300px] md:w-[360px]">
+						<div className="mb-[35px] ml-[5px] mr-[25px] flex h-fit flex-col items-center justify-center gap-[50px] md:ml-[20px] lg:flex-row lg:gap-[40px]">
+							<div className="flex flex-col items-center justify-center gap-[40px] lg:mt-[-55px]">
+								<div className="align-center flex h-[200px] w-[300px] flex-col md:h-[240px] md:w-[320px]">
 									<Image width="100%" height="100%" src={imageUrlID} />
 									<Button
 										type="primary"
@@ -335,7 +356,7 @@ function NewWalkIn({
 										<b>SCAN ID (OPTIONAL)</b>
 									</Button>
 								</div>
-								<div className="align-center flex h-[245px] w-[330px] flex-col md:h-[300px] md:w-[360px]">
+								<div className="align-center flex h-[200px] w-[300px] flex-col md:h-[240px] md:w-[320px]">
 									<Image width="100%" height="100%" src={imageUrlPlateNO} />
 									<Button
 										type="primary"
@@ -706,6 +727,10 @@ function NewWalkIn({
 															)}
 															format="YYYY-MM-DD hh:mm A"
 															onChange={onChange}
+															disabledDate={(current) => {
+																return current < dayjs().startOf("day");
+															}}
+															disabledTime={disabledDateTime}
 														/>
 													</div>
 													{errors?.expected_time_out && (

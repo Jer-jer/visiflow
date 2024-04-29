@@ -76,31 +76,61 @@ export default function Offices() {
 		contact,
 	}: OfficesProps) => {
 		return (
-			<div className="grid grid-cols-3 gap-4 text-[#0C0D0D]">
-				<span className="text-[15px] font-[400]">Operating Hours:</span>
-				<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">
-					{op}
-				</p>
-				<span className="text-[15px] font-[400]">Days Available:</span>
-				<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">
-					{dayOp}
-				</p>
-				<span className="text-[15px] font-[400]">Personnel in Charge:</span>
-				<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">
-					{pic}
-				</p>
-				<span className="text-[15px] font-[400]">Email:</span>
-				<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">
-					{email}
-				</p>
-				<span className="text-[15px] font-[400]">Location:</span>
-				<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">
-					{location}
-				</p>
-				<span className="text-[15px] font-[400]">Contact:</span>
-				<p className="col-span-2 rounded-[5px] bg-white p-[4px] px-[8px]">
-					{contact}
-				</p>
+			<div className="flex flex-col gap-4 text-[#0C0D0D]">
+				<div className="flex flex-col lg:flex-row lg:items-center lg:gap-4">
+					<span className="text-center text-[13.8px] font-[400] lg:w-[50%] lg:text-left lg:text-[15px]">
+						Operating Hours:
+					</span>
+					<p className="rounded-[5px] bg-white p-[4px] px-[8px] text-center text-[12px] lg:w-[50%] lg:text-left lg:text-[14px]">
+						{op}
+					</p>
+				</div>
+
+				<div className="flex flex-col lg:flex-row lg:items-center lg:gap-4">
+					<span className="text-center text-[13.8px] font-[400] lg:w-[50%] lg:text-left lg:text-[15px]">
+						Days Available:
+					</span>
+					<p className="rounded-[5px] bg-white p-[4px] px-[8px] text-center text-[12px] lg:w-[50%] lg:text-left lg:text-[14px]">
+						{dayOp}
+					</p>
+				</div>
+
+				<div className="flex flex-col lg:flex-row lg:items-center lg:gap-4">
+					<span className="text-center text-[13.8px] font-[400] lg:w-[50%] lg:text-left lg:text-[15px]">
+						Personnel in Charge:
+					</span>
+					<p className="rounded-[5px] bg-white p-[4px] px-[8px] text-center text-[12px] lg:w-[50%] lg:text-left lg:text-[14px]">
+						{pic}
+					</p>
+				</div>
+
+				<div className="flex flex-col lg:flex-row lg:items-center lg:gap-4">
+					<span className="text-center text-[13.8px] font-[400] lg:w-[50%] lg:text-left lg:text-[15px]">
+						Email:
+					</span>
+					<p className="rounded-[5px] bg-white p-[4px] px-[8px] text-center text-[12px] lg:w-[50%] lg:text-left lg:text-[14px]">
+						{email}
+					</p>
+				</div>
+
+				<div className="flex flex-col lg:flex-row lg:items-center lg:gap-4">
+					<span className="text-center text-[13.8px] font-[400] lg:w-[50%] lg:text-left lg:text-[15px]">
+						Location:
+					</span>
+					<p className="rounded-[5px] bg-white p-[4px] px-[8px] text-center text-[12px] lg:w-[50%] lg:text-left lg:text-[14px]">
+						{location}
+					</p>
+				</div>
+
+				<div className="flex flex-col lg:flex-row lg:items-center lg:gap-4">
+					<span className="text-center text-[13.8px] font-[400] lg:w-[50%] lg:text-left lg:text-[15px]">
+						Contact:
+					</span>
+					<p className="rounded-[5px] bg-white p-[4px] px-[8px] text-center text-[12px] lg:w-[50%] lg:text-left lg:text-[14px]">
+						{contact}
+					</p>
+				</div>
+
 				{/* <div
 					className={`w-fit rounded-[5px]  ${
 						availability ? "bg-primary-500" : "bg-error"

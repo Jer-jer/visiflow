@@ -1,9 +1,9 @@
 const { body, validationResult, handleValidationErrors } = require('express-validator');
 
 const validateUser = [
-    body('name.first_name').isString().withMessage('Invalid First name').notEmpty().withMessage('First name is required'),
-    body('name.middle_name').isString().withMessage('Invalid Middle name').optional(),
-    body('name.last_name').isString().withMessage('Invalid Last name').notEmpty().withMessage('Last name is required'),
+    body('first_name').isString().withMessage('Invalid First name').notEmpty().withMessage('First name is required'),
+    body('middle_name').isString().withMessage('Invalid Middle name').optional(),
+    body('last_name').isString().withMessage('Invalid Last name').notEmpty().withMessage('Last name is required'),
     body('username').optional().notEmpty().isString().withMessage('Username is required'),
     body('email').isEmail().withMessage('Must be a valid email'),
     body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
@@ -13,7 +13,7 @@ const validateUser = [
 
 const validateBldgLoc = [
     body('name').notEmpty().withMessage('Building Name is required').isString().withMessage("There seems to be a problem with the building name. Please make sure it doesn't contain special characters"),
-    body('roomNo').notEmpty().withMessage('Room Number is required').isString().withMessage("There seems to be a problem with the room number. Please make sure it doesn't contain special characters")
+    body('roomNo').notEmpty().withMessage('Room Number is required')
 ];
 
 const validateReasons = [
@@ -24,7 +24,7 @@ const validateOffices = [
     body('name').notEmpty().withMessage('Building Name is required').isString().withMessage("There seems to be a problem with the building name. Please make sure it doesn't contain special characters"),
     body('roomNo').notEmpty().withMessage('Room Number is required').isString().withMessage("There seems to be a problem with the room number. Please make sure it doesn't contain special characters"),
     body('pic').notEmpty().withMessage('Personnel in charge is required').isString().withMessage("There seems to be a problem with the personnel's name. Please make sure it doesn't contain special characters"),
-    body('contact').isLength({ min: 11 }).withMessage('Phone number must be at least 11 digits').notEmpty().withMessage('Contact Number is required').isString().withMessage("There seems to be a problem with your phone number. Please make sure it doesn't contain special characters except '+' or '-'")
+    body('contact').notEmpty().withMessage('Contact Number is required').isString().withMessage("There seems to be a problem with your phone number. Please make sure it doesn't contain special characters except '+' or '-'")
 ];
 
 const validateAnnouncements = [
@@ -54,7 +54,7 @@ const validateVisitor = [
     body('visitors.*.visitor_details.address.city').isString().withMessage("There seems to be a problem with your city. Please make sure it doesn't contain special characters").notEmpty().withMessage('City is required'),
     body('visitors.*.visitor_details.address.province').isString().withMessage("There seems to be a problem with your province. Please make sure it doesn't contain special characters").notEmpty().withMessage('Province is required'),
     body('visitors.*.visitor_details.address.country').isString().withMessage("There seems to be a problem with your country. Please make sure it doesn't contain special characters").notEmpty().withMessage('Country is required'),
-    body('visitors.*.visitor_details.email').isEmail().withMessage('Must be a valid email').optional(),
+    body('visitors.*.visitor_details.email').isEmail().optional().withMessage('Must be a valid email'),
     body('visitors.*.visitor_details.phone').isString().withMessage("There seems to be a problem with your phone number. Please make sure it doesn't contain special characters except '+' or '-'").notEmpty().withMessage('Phone number is required'),
     body('visitors.*.companions').optional().isArray().withMessage('Companions must be an array'),
     body('visitors.*.visitor_type').isString().withMessage('Visitor type must be a string').isIn(['Pre-Registered', 'Walk-In']).withMessage('Invalid Visitor Type'),

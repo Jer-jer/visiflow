@@ -1,13 +1,16 @@
-require('dotenv').config();
+require("dotenv").config();
 const QRCode = require("qrcode");
 const nodemailer = require("nodemailer");
 
 // Models
-const Visitor = require('../models/visitor');
-const Badge = require('../models/badge');
+const Visitor = require("../models/visitor");
+const Badge = require("../models/badge");
 
 // Constants
 const local_ip = "https://visiflow-api.onrender.com";
+
+// Imports
+const fs = require("fs").promises;
 
 // Nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -21,42 +24,8 @@ const transporter = nodemailer.createTransport({
 // QR Code Utils Section
 
 /**
- * Generates a QR code image and saves it to a file
- * @param {string} uri - The URI for the QR code. 
- * @param {string} filename - The filename for saving the QR code.
- * @param {string} badgeId - The ID of the badge associated with the QR code. 
- * @returns {Promise<void>} - A promise that resolves when the QR code is generated and saved successfully.
- * @throws {Error} - If an error occurs during QR code generation or saving.
- */
-async function generateQRCode(uri, filename, badgeId) {
-  try {
-    await new Promise((resolve, reject) => {
-      QRCode.toFile(
-        filename,
-        uri,
-        { errorCorrectionLevel: "H" },
-        function (error) {
-          if (error) {
-            console.error(
-              `Error generating QR code for badge ${badgeId}: ${error.message}`
-            );
-            reject(error);
-          } else {
-            console.log(`QR code saved for badge ${badgeId}`);
-            resolve();
-          }
-        }
-      );
-    });
-  } catch (error) {
-    console.error(`Error generating or saving QR code: ${error.message}`);
-    throw error;
-  }
-}
-
-/**
  * Generates QR codes and sends emails to the visitor and their companions.
- * @param {string} visitorId - The ID of the visitor. 
+ * @param {string} visitorId - The ID of the visitor.
  * @param {String} message - The message to be included in the email.
  * @returns {void}
  */
@@ -74,11 +43,12 @@ async function generateVisitorQRAndEmail(visitorId, message) {
     badges.push(visitorBadge);
 
     // Generate QR Codes for companions
-    if (visitor.companion_details.length > 0) {
+    if (visitor.companions.length > 0) {
       const companionBadges = await Promise.all(
-        visitor.companion_details.map((companion) =>
-          generateQRAndEmail(companion, message)
-        )
+        visitor.companions.map(async (companion) => {
+          const temp = await Visitor.findById(companion);
+          await generateQRAndEmail(temp, message);
+        })
       );
       if (companionBadges) {
         badges.push(...companionBadges);
@@ -86,7 +56,6 @@ async function generateVisitorQRAndEmail(visitorId, message) {
         throw new Error("Error generating companion badges");
       }
     }
-
   } catch (error) {
     console.error("Error generating QR code and sending email:", error);
   }
@@ -101,7 +70,7 @@ async function generateVisitorQRAndEmail(visitorId, message) {
  */
 async function generateQRAndEmail(visitor, message) {
   try {
-    const badge = await generatePreRegBadge(visitor);
+    const badge = await generateBadge(visitor);
     await sendBadgeEmail(badge, visitor, message);
     return { visitorId: visitor._id, badgeId: badge._id };
   } catch (error) {
@@ -112,23 +81,25 @@ async function generateQRAndEmail(visitor, message) {
 
 /**
  * Generates a pre-registered badge for a visitor.
- * @param {Object} visitor - The visitor object. 
+ * @param {Object} visitor - The visitor object.
  * @returns {Promise<Object>} - A promise that resolves with the generated badge object.
  * @throws {Error} - If an error occurs during badge creation, QR code generation, or saving.
  */
-async function generatePreRegBadge(visitor) {
+async function generateBadge(visitor) {
   try {
     const badge = new Badge({
       visitor_id: visitor._id,
-      qr_id: null,
+      qr_id: visitor._id,
+      expected_time_in: visitor.expected_time_in,
+      expected_time_out: visitor.expected_time_out,
       is_active: false,
       is_valid: true,
     });
 
     await badge.save();
 
-    const uri = `${local_ip}/badge/checkBadge?visitor_id=${visitor._id}`;
-    const filename = `api/resource/badge/badge${badge._id}.png`;
+    const filename = `badge${badge._id}.png`;
+    const uri = `https://${local_ip}/badge/checkBadge?qr_id=${visitor._id}`;
     await generateQRCode(uri, filename, badge._id);
 
     return badge;
@@ -137,9 +108,47 @@ async function generatePreRegBadge(visitor) {
     throw error;
   }
 }
+
+/**
+ * Generates a QR code image and saves it to a file
+ * @param {string} uri - The URI for the QR code.
+ * @param {string} filename - The filename for saving the QR code.
+ * @param {string} badgeId - The ID of the badge associated with the QR code.
+ * @returns {Promise<void>} - A promise that resolves when the QR code is generated and saved successfully.
+ * @throws {Error} - If an error occurs during QR code generation or saving.
+ */
+async function generateQRCode(uri, filename, badgeId) {
+  return new Promise(async (resolve, reject) => {
+    QRCode.toFile(
+      filename,
+      uri,
+      { errorCorrectionLevel: "H" },
+      async function (error) {
+        if (error) {
+          console.error(
+            `Error generating QR code for badge ${badgeId}: ${error.message}`
+          );
+          reject(error);
+        } else {
+          console.log(`QR code saved for badge ${badgeId}`);
+          try {
+            await fs.readFile(filename);
+            resolve(filename);
+          } catch (readError) {
+            console.error(
+              `Error reading QR code image for badge ${badgeId}: ${readError.message}`
+            );
+            reject(readError);
+          }
+        }
+      }
+    );
+  });
+}
+
 /**
  * Sends an email containing the QR code for the badge to the visitor.
- * @param {Object} badge - The badge object. 
+ * @param {Object} badge - The badge object.
  * @param {Object} visitor - The visitor object.
  * @param {string} message - The message to be included in the email.
  * @returns {Promise<void>} - A promise that resolves when the email is sent successfully.
@@ -187,7 +196,6 @@ async function sendEmail(mailOptions) {
           console.error("Error sending email:", error);
           reject(error);
         } else {
-          console.log("Email sent:", info.response);
           resolve();
         }
       });
@@ -198,10 +206,8 @@ async function sendEmail(mailOptions) {
   }
 }
 
-// End Section
-
 module.exports = {
-    generateQRCode,
-    generateVisitorQRAndEmail,
-    sendEmail
-}
+  generateQRCode,
+  generateVisitorQRAndEmail,
+  sendEmail,
+};

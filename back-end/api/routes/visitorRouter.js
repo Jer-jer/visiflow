@@ -14,6 +14,7 @@ const optionalAuth = (req, res, next) => {
 };
 
 router.get("/", passport.authenticate("jwt", { session: false }), VisitorController.getVisitors);
+router.get("/get-current-visitors", passport.authenticate("jwt", { session: false }), VisitorController.getCurrentVisitors);
 router.post("/get-companions", passport.authenticate("jwt", { session: false }), VisitorController.getCompanions);
 router.post("/find", passport.authenticate("jwt", { session: false }), VisitorController.findVisitor);
 router.put("/update", passport.authenticate("jwt", { session: false }), VisitorController.updateVisitor);

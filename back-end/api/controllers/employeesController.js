@@ -1,5 +1,6 @@
 require("dotenv").config();
 const Employees = require("../models/employees");
+const { createSystemLog } = require("../utils/helper");
 const { sendEmail } = require("../utils/helper");
 const {
   validateEmployees,
@@ -35,7 +36,7 @@ exports.getEmployeesByName = async (req, res) => {
 //Create new announcements
 exports.createNewEmployees = async (req, res) => {
   // Run validation middleware
-  const { name, email, contact } = req.body;
+  const { name, email, contact, userID } = req.body;
 
   await Promise.all(validateEmployees.map((validation) => validation.run(req)));
 
@@ -56,6 +57,8 @@ exports.createNewEmployees = async (req, res) => {
       contact,
     });
 
+    await createSystemLog(userID, "add_employee", "success");
+
     res.status(201).json({ employees: newEmployee });
   } catch (error) {
     console.error(error);
@@ -65,14 +68,19 @@ exports.createNewEmployees = async (req, res) => {
 
 exports.updateEmployees = async (req, res) => {
   try {
-    const { _id, name, email, contact } = req.body;
-
-    const existingEmployee = await Employees.findOne({ name, email });
-    if (existingEmployee) {
-      return res.status(400).json({ error: "Employee already exists" });
-    }
+    const { _id, name, email, contact, userID } = req.body;
 
     const employee = await Employees.findById(_id);
+
+    if(!(employee.name === name) && !(employee.email === email)) {
+      const existingEmployee = await Employees.findOne({ name, email });
+      if (existingEmployee) {
+        return res.status(400).json({ error: "Employee already exists" });
+      }
+    }
+    
+
+    
 
     if (!employee) {
       return res.status(404).json({ error: "Employee not found" });
@@ -98,7 +106,10 @@ exports.updateEmployees = async (req, res) => {
       { new: true }
     );
 
+    await createSystemLog(userID, "update_employee", "success");
+
     return res.status(201).json({ employees: updatedEmployees });
+
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
   }
@@ -106,9 +117,11 @@ exports.updateEmployees = async (req, res) => {
 
 exports.deleteEmployees = async (req, res) => {
   try {
-    const { _id } = req.body;
+    const { _id, userID } = req.body;
 
     const deletedData = await Employees.findByIdAndDelete(_id);
+
+    await createSystemLog(userID, "delete_employee", "success");
 
     if (deletedData) {
       return res.status(201).json({ message: "Data deleted successfully" });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 //Components
 import OuterContainer from "../../../components/container";
@@ -17,7 +17,10 @@ export default function QrScannerLayout() {
 
 	function handleQRstatus(message: string) {
 		setStatus(false);
-		if (message === "Successfully Timed-In/Out") {
+		if (
+			message === "Successfully Timed-Out" ||
+			message === "Successfully Timed-In"
+		) {
 			setStatus(true);
 		}
 		setAlertMsg(message);

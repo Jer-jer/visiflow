@@ -2,11 +2,9 @@ const Badge = require("../models/badge");
 const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
 const mongoose = require("mongoose");
-const {
-  generateVisitorQRCode,
-  updateLog,
-  createSystemLog,
-} = require("../utils/helper");
+const { updateLog, createSystemLog } = require("../utils/helper");
+const { generateQRCode } = require("../utils/qrCodeUtils");
+
 const archiver = require("archiver");
 const fs = require("fs");
 
@@ -18,7 +16,9 @@ exports.getBadges = async (req, res) => {
     res.status(200).json({ badges });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Failed to retrieve badges from the database" });
+    return res
+      .status(500)
+      .json({ error: "Failed to retrieve badges from the database" });
   }
 };
 
@@ -27,8 +27,20 @@ exports.findBadge = async (req, res) => {
 
   try {
     const badge = await Badge.findOne({ visitor_id });
-      
+
     res.status(200).json({ badge });
+  } catch (error) {
+    return res.status(500).json({ error: "No badge assigned to this visitor" });
+  }
+};
+
+exports.findAllBadges = async (req, res) => {
+  const { visitor_id } = req.body;
+
+  try {
+    const badges = await Badge.find({ visitor_id });
+
+    res.status(200).json({ badges });
   } catch (error) {
     return res.status(500).json({ error: "No badge assigned to this visitor" });
   }
@@ -42,7 +54,7 @@ exports.generateBadge = async (req, res) => {
   //check if qty > 0
   if (qty <= 0) {
     return res
-      .status(400)
+      .status(500)
       .json({ error: "Must have at least 1 badge to generate." });
   }
 
@@ -70,8 +82,15 @@ exports.generateBadge = async (req, res) => {
       return res.status(500).json({ error: error.message });
     });
 
-    const promises = Array.from({ length: qty }, () =>
-      generateVisitorQRCode(new ObjectId())
+    const objectIds = Array.from({ length: qty }, () => {
+      const objectId = new ObjectId();
+      const uri = `https://visiflow-api.onrender.com?qr_id=${objectId}`;
+      const filename = `badge${objectId}.png`;
+      return { objectId, filename, uri };
+    });
+
+    const promises = objectIds.map(({ objectId, filename, uri }) =>
+      generateQRCode(uri, filename, objectId)
     );
 
     const qrCodes = await Promise.all(promises);
@@ -126,8 +145,36 @@ exports.newBadge = async (req, res) => {
 };
 
 exports.checkBadge = async (req, res) => {
-  const { qr_id, visitor_id } = req.query;
+  const { qr_id } = req.query;
 
+  try {
+    const badge = await Badge.findOne({ qr_id: qr_id });
+
+    if (!badge) {
+      const visitor = await Visitor.findById({ _id: qr_id });
+      if (visitor) {
+        return res.status(400).json({ error: "Visitor QR is invalid." });
+      }
+      return res
+        .status(200)
+        .json({
+          type: "new-recurring",
+          url: `https://gullas-visiflow-internal.onrender.com/visitor-form/?qr_id=${qr_id}`,
+        });
+    }
+
+    updateLog(badge._id, qr_id, req.user.sub, res);
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to retrieve badge" });
+  }
+};
+
+// Old check badge
+/*
+exports.checkBadge = async (req, res) => {
+
+  const { qr_id, visitor_id } = req.query;
+ 
   let badge;
   let type;
 
@@ -137,7 +184,10 @@ exports.checkBadge = async (req, res) => {
 
   if (qr_id !== undefined) {
     badge = await Badge.findOne({ qr_id: qr_id });
+
     if (!badge) {
+      // return res.redirect(`http://localhost:3000/visitor-form/?qr_id=${qr_id}`);
+      return res.status(200).json({ type: "new-recurring", url: `http://localhost:3000/visitor-form/?qr_id=${qr_id}` })
       return res.redirect(
         `https://gullas-visiflow-internal.onrender.com/?qr_id=${qr_id}`
       );
@@ -148,13 +198,15 @@ exports.checkBadge = async (req, res) => {
   }
 
   if (!badge) {
-    return res.status(400).json({ message: `No visitor assigned to badge` });
+    return res.status(400).json({ error: `No visitor assigned to badge` });
   }
 
   if (!badge.is_valid) {
-    return res.status(400).json({ message: `Invalid visitor badge` });
+    return res.status(400).json({ error: `Invalid visitor badge` });
   }
 
   const _id = visitor_id !== undefined ? visitor_id : qr_id;
   updateLog(badge._id, _id, type, req.user.sub, res);
-};
+}
+
+*/

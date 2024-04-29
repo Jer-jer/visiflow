@@ -158,10 +158,10 @@ export default function UserManagementLayout() {
 
 	const createUser = async () => {
 		await AxiosInstance.post("/user/new", {
-			first_name: " ",
+			first_name: "user",
 			middle_name: "",
-			last_name: " ",
-			username: " ",
+			last_name: "user",
+			username: "user",
 			email: "mail@mail.com",
 			password: "admin1234",
 			phone: "09999999999",
