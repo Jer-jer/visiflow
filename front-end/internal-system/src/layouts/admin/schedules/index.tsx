@@ -1,18 +1,29 @@
 /* Components designed using Ant Design */
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-import { VisitorDataType } from "../../../utils/interfaceTest";
+import { VisitorDataType } from "../../../utils/interfaces";
 
 //Components
-import { Tabs, Button, Input } from "antd";
+import { Tabs, Button, Input, Tooltip, Checkbox } from "antd";
+import DateTimePicker from "../../../components/datetime-picker";
 import ScheduleListTable from "../../../components/table/schedule-list";
 import ScheduleDetails from "./schedule-details";
+
+// Store
+import { AppDispatch, RootState } from "../../../store";
+import type { Dayjs } from "dayjs";
+
+// Reducers
+import { fetchVisitors } from "../../../states/visitors";
+import { fetchBadges } from "../../../states/badges";
+import { addTab, removeTab } from "../../../states/badges/tab";
 
 //Styles
 import "./styles.scss";
 
 //Assets
 import { ExcelDownload, Search, TabClose } from "../../../assets/svg";
+import { useDispatch, useSelector } from "react-redux";
 
 type TargetKey = React.MouseEvent | React.KeyboardEvent | string | number;
 
@@ -26,48 +37,47 @@ interface TabItems {
 	visitorData?: VisitorDataType;
 }
 
+const options = [
+	{ label: 'Past', value: 'past' },
+	{ label: 'Current', value: 'current' },
+	{ label: 'Upcoming', value: 'upcoming' },
+  ];
+
 
 export default function ScheduleManagement() {
-	const [items, setItems] = useState<TabItems[]>([]);
+	const [search, setSearch] = useState<string>("");
 	const [activeKey, setActiveKey]: any = useState(1);
 	const newTabIndex = useRef(1);
+	const [hideInOut, setHideInOut] = useState<boolean>(true);
+	const [dateSearch, setDateSearch] = useState<string[]>([]);
+	const [checkedList, setCheckedList] = useState<string[]>([]);
 
-	const createSched = () => {
-		const newActiveKey = ++newTabIndex.current;
+	const tabs = useSelector((state: RootState) => state.badgesTab);
 
-		setItems([
-			...items,
-			{
-				key: newActiveKey,
-				visitorData: {
-					key: 0,
-					id: "",
-					visitorDetails: {
-						fullName: {
-							firstName: "",
-							middleName: "",
-							lastName: "",
-						},
-						mobile: "",
-						email: "",
-						houseNo: "",
-						city: "",
-						street: "",
-						province: "",
-						brgy: "",
-						country: "",
-						timeIn: "",
-						timeOut: "",
-						status: "",
-					},
-					companionNumber: 0,
-					visitorType: "",
-					personOfInterest: "",
-					purpose: "",
-					date: "",
-				},
-			},
-		]);
+	const dispatch = useDispatch<AppDispatch>();
+
+	useEffect(() => {
+		dispatch(fetchVisitors());
+		dispatch(fetchBadges());
+
+		
+	}, [tabs]);
+
+	const { dashboardBadge } = useSelector(
+		(state: RootState) => state.badges,
+	);
+
+	useEffect(() => {
+		if (dashboardBadge) {
+			add(dashboardBadge);
+		}
+	}, []);
+
+	const add = (record: VisitorDataType) => {
+		const newActiveKey = newTabIndex.current + 1;
+		newTabIndex.current++;
+
+		dispatch(addTab({ newActiveKey, visitor: record }));
 
 		setActiveKey(newActiveKey);
 	};
@@ -76,25 +86,13 @@ export default function ScheduleManagement() {
 		setActiveKey(newActiveKey);
 	};
 
-	const add = (record?: VisitorDataType) => {
-		const newActiveKey = ++newTabIndex.current;
-
-		setItems([
-			...items,
-			{
-				key: newActiveKey,
-				visitorData: record,
-			},
-		]);
-
-		setActiveKey(newActiveKey);
-	};
-
 	const remove = (targetKey: TargetKey) => {
-		const targetIndex = items.findIndex(
-			(pane) => pane.key.toString() === targetKey,
+		const targetIndex = tabs.findIndex(
+			(pane: any) => pane.key.toString() === targetKey,
 		);
-		const newPanes = items.filter((pane) => pane.key.toString() !== targetKey);
+		const newPanes = tabs.filter(
+			(pane: any) => pane.key.toString() !== targetKey,
+		);
 
 		if (newPanes.length && targetKey === activeKey.toString()) {
 			const newActiveKey =
@@ -105,7 +103,7 @@ export default function ScheduleManagement() {
 			setActiveKey(newActiveKey.key);
 		} else setActiveKey(1);
 
-		setItems(newPanes);
+		dispatch(removeTab(newPanes));
 	};
 
 	const onEdit = (
@@ -113,6 +111,14 @@ export default function ScheduleManagement() {
 		action: "add" | "remove",
 	) => {
 		if (action === "remove") remove(targetKey);
+	};
+
+	const onRangeChange = (dates: Dayjs[], dateStrings: string[]) => {
+		if (dates) {
+			setDateSearch([dateStrings[0], dateStrings[1]]);
+		} else {
+			setDateSearch([]);
+		}
 	};
 
 	return (
@@ -126,43 +132,59 @@ export default function ScheduleManagement() {
 				activeKey={activeKey.toString()}
 				onEdit={onEdit}
 			>
-				<Tabs.TabPane closable={false} tab="User List" key="1">
-					<div className="ml-[45px] mt-[30px] flex flex-col gap-[50px]">
+				<Tabs.TabPane closable={false} tab="Schedule List" key="1">
+					<div className="ml-[45px] mt-[30px] flex flex-col gap-[25px]">
 						<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
 							<Input
 								className="w-[366px]"
 								size="large"
 								placeholder="Search"
 								prefix={<Search />}
+								onChange={(e) => setSearch(e.target.value)}
 							/>
-							<Button type="primary" className="search-button !bg-primary-500">
-								Search
-							</Button>
-							<Button
-								type="primary"
-								onClick={createSched}
-								className="search-button !bg-primary-500"
+							<Tooltip
+							placement="top"
+							title={
+								hideInOut
+									? "Filter Date Created"
+									: "Filter Expected Time In and Out"
+							}
+							arrow={false}
 							>
-								Add Schedule
-							</Button>
+								<>
+									<DateTimePicker size="large" onRangeChange={onRangeChange} />
+								</>
+							</Tooltip>
 							<div className="ml-auto">
 								<ExcelDownload />
 							</div>
 						</div>
+						<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
+							<Checkbox.Group options={options} value={checkedList} onChange={setCheckedList}/>
+						</div>
 						<div className="mr-[50px]">
-							<ScheduleListTable addTab={add} />
+							<ScheduleListTable 
+								addTab={add} 
+								dateSearch={dateSearch}
+								hideInOut={hideInOut}
+								setHideInOut={setHideInOut}
+								search={search}
+								checkedList={checkedList}
+							/>
 						</div>
 					</div>
 				</Tabs.TabPane>
-				{items.map((items, key) => (
+				{tabs.map((tab, key) => (
 					<Tabs.TabPane
 						tab="Schedule Details"
-						key={items.key.toString()}
+						key={tab.key.toString()}
 						closeIcon={<TabClose />}
 					>
 						<ScheduleDetails
-							record={items.visitorData}
-							companionRecords={items.visitorData?.companionsDetails}
+							record={tab.visitorData}
+							activeKey={activeKey}
+							setActiveKey={setActiveKey}
+							newTabIndex={newTabIndex}
 						/>
 					</Tabs.TabPane>
 				))}

@@ -19,6 +19,7 @@ import { Search } from "../../../../assets/svg";
 //Styles
 import "../../../../utils/variables.scss";
 import "./styles.scss";
+import { jwtDecode } from "jwt-decode";
 
 const { confirm } = Modal;
 
@@ -46,6 +47,9 @@ export default function OfficeScheduleList() {
 	const [offices, setOffices] = useState<OfficeSchedule[]>([]);
 	const [searchValue, setSearchValue] = useState("");
 
+	const token = localStorage.getItem("token");
+	const decodedtoken = (jwtDecode (token as string));
+
 	useEffect(() => {
 		if(searchValue == "") {
 			fetchAndSetOffices();
@@ -56,7 +60,6 @@ export default function OfficeScheduleList() {
 		try {
 			const response = await AxiosInstace.get('/offices/')
 			const data = response.data.office
-			console.log(response)
 
 			//getting only the data we want
 			const convertedData: OfficeSchedule[] = data.map((office: any) => ({
@@ -83,7 +86,7 @@ export default function OfficeScheduleList() {
 			cancelText: "No",
 			async onOk() {
 				try {
-					await AxiosInstace.delete('/offices/delete', { data: { _id: data._id } }); 
+					await AxiosInstace.delete('/offices/delete', { data: { _id: data._id, userID: decodedtoken.sub } }); 
 					fetchAndSetOffices();
 				  } catch (error) {
 					console.error('Error deleting office:', error);
@@ -98,7 +101,6 @@ export default function OfficeScheduleList() {
 	const handleSearch = async() => {
 		try {
 			const response = await AxiosInstace.post('/offices/search', {query: searchValue})
-			console.log('hello',response);
 			const data = response.data.office;
 			const convertedData: OfficeSchedule[] = data.map((office: any) => ({
 				name: office.name, 
