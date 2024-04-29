@@ -10,21 +10,10 @@ import Alert from "../../../components/alert";
 import "../../../utils/variables.scss";
 import "./styles.scss";
 
-// eslint-disable-next-line no-restricted-globals
-// const parsed = queryString.parse(location.search);
-// export const statusPart = parsed.action;
-// console.log(statusPart);
-
 export default function QrScannerLayout() {
 	const [status, setStatus] = useState(false);
 	const [alertOpen, setAlertOpen] = useState(false);
 	const [alertMsg, setAlertMsg] = useState("");
-
-	// if (statusPart == "time-out") {
-	// 	setStatus(true);
-	// 	setAlertMsg("Successfully Timed-Out");
-	// 	setAlertOpen(true);
-	// }
 
 	function handleQRstatus(message: string) {
 		setStatus(false);

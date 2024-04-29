@@ -524,11 +524,11 @@ function RecurringVisitor({
 				/>
 			</div>
 			<Form name="Visitor Details" onFinish={onSubmit} autoComplete="off">
-				<div className="mb-[35px] ml-2 mt-3 flex">
+				<div className="mb-[35px] ml-2 mt-[-30px] flex lg:mt-3">
 					<div className="w-[380px] flex-auto md:w-[761px]">
-						<div className="mb-[35px] ml-[20px] mr-[25px] flex h-fit flex-col items-center justify-center gap-[30px] lg:flex-row lg:gap-[25px]">
-							<div className="flex flex-col items-center justify-center gap-[15px]">
-								<div className="align-center flex h-[245px] w-[330px] flex-col md:h-[300px] md:w-[360px]">
+						<div className="mb-[35px] ml-[5px] mr-[25px] flex h-fit flex-col items-center justify-center gap-[50px] md:ml-[20px] lg:flex-row lg:gap-[40px]">
+							<div className="flex flex-col items-center justify-center gap-[40px] lg:mt-[-55px]">
+								<div className="align-center flex h-[200px] w-[300px] flex-col md:h-[240px] md:w-[320px]">
 									<Image width="100%" height="100%" src={imageUrlID} />
 									<Button
 										type="primary"
@@ -538,7 +538,7 @@ function RecurringVisitor({
 										<b>SCAN ID (OPTIONAL)</b>
 									</Button>
 								</div>
-								<div className="align-center flex h-[245px] w-[330px] flex-col md:h-[300px] md:w-[360px]">
+								<div className="align-center flex h-[200px] w-[300px] flex-col md:h-[240px] md:w-[320px]">
 									<Image width="100%" height="100%" src={imageUrlPlateNO} />
 									<Button
 										type="primary"

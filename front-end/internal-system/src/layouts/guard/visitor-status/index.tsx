@@ -20,7 +20,7 @@ import "./styles.scss";
 export default function VisitorStatusLayout() {
 	const [search, setSearch] = useState<string>("");
 	const [dateSearch, setDateSearch] = useState<string[]>([]);
-	const [hideInOut, setHideInOut] = useState<boolean>(true);
+	//const [hideInOut, setHideInOut] = useState<boolean>(true);
 
 	const onRangeChange = (dates: Dayjs[], dateStrings: string[]) => {
 		if (dates) {
@@ -44,28 +44,11 @@ export default function VisitorStatusLayout() {
 									prefix={<Search />}
 									onChange={(e) => setSearch(e.target.value)}
 								/>
-								<Tooltip
-									placement="top"
-									title={
-										hideInOut
-											? "Filter Time In and Out"
-											: "Filter Expected Time In and Out"
-									}
-									arrow={false}
-								>
-									<>
-										<DateTimePicker
-											size="large"
-											onRangeChange={onRangeChange}
-										/>
-									</>
-								</Tooltip>
+
+								<DateTimePicker size="large" onRangeChange={onRangeChange} />
 							</div>
 						</div>
-						<CurrentVisitorsTable
-							hideInOut={hideInOut}
-							setHideInOut={setHideInOut}
-						/>
+						<CurrentVisitorsTable search={search} dateSearch={dateSearch} />
 					</InnerContainer>
 				</OuterContainer>
 			</div>
