@@ -63,7 +63,6 @@ function createImageBuffer(imageData) {
     "base64"
   );
 }
-
 //End of Image Upload Section
 
 
@@ -92,7 +91,6 @@ async function sendEmail(mailOptions) {
     });
   });
 }
-
 // End of Email Functions
 
 async function updateLog(_id, qr_id, user_id, res) {
@@ -112,10 +110,10 @@ async function updateLog(_id, qr_id, user_id, res) {
             { $set: { qr_id: null, is_active: false, is_valid: false } }
           );
           await createSystemLog(user_id, "time_out", "success");
-          return res.status(200).json({ type: "time-out" });
+          return res.status(200).json("successfully timed-out");
         } catch (error) {
           await createSystemLog(user_id, "time_out", "failed");
-          return res.status(500).json({ error: "Time-out Failed" });
+          return res.status(500).json({ error: "Failed to time out the visitor." });
         }
       }
       // Time-in section
@@ -152,10 +150,10 @@ async function updateLog(_id, qr_id, user_id, res) {
         );
 
         await createSystemLog(user_id, "time_in", "success");
-        return res.status(200).json({ type: "time-in" });
+        return res.status(200).json("successfully timed-in");
       } catch (error) {
         await createSystemLog(user_id, "time_in", "failed");
-        return res.status(500).json({ error: "Time-in Failed" });
+        return res.status(500).json({ error: "Failed to time in the visitor." });
       }
     }
     return res.status(500).json({ error: "No badge found." });
@@ -351,17 +349,29 @@ async function validateDuplicate(visitors, res) {
       // Check if visitor has an existing record
       
       const visitorDB = await Visitor.findOne({
-        $and: [
-          { "visitor_details.email": { $exists: true, $ne: undefined } },
-          { "visitor_details.email": visitor.visitor_details.email }
-        ]
+        $or: [
+          {
+            $and: [
+              { "visitor_details.email": { $exists: true, $ne: undefined } },
+              { "visitor_details.email": visitor.visitor_details.email },
+            ],
+          },
+          {
+            $and: [
+              { "visitor_details.phone": { $exists: true, $ne: undefined } },
+              { "visitor_details.phone": visitor.visitor_details.phone },
+            ],
+          },
+        ],
       });
+
+
 
       // Check if email is used by another visitor
       if (visitorDB) {
         const { first_name, middle_name, last_name } =
           visitorDB.visitor_details.name;
-        const { email } = visitor.visitor_details;
+        const { email, phone } = visitor.visitor_details;
 
         const isDuplicate =
           visitor.visitor_details.name.first_name === first_name &&
@@ -370,8 +380,8 @@ async function validateDuplicate(visitors, res) {
           visitor.visitor_details.name.last_name === last_name;
 
         return isDuplicate
-          ? `Visitor using ${email} already has an existing record`
-          : `${email} has already been used by another visitor`;
+          ? `Visitor using ${email} and/or ${phone} already has an existing record`
+          : `${email} and/or ${phone} has already been used by another visitor`;
       }
     } catch (error) {
       console.error("Error while validating duplicate:", error);
