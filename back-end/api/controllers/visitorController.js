@@ -224,59 +224,59 @@ exports.findVisitor = async (req, res) => {
   }
 };
 
-//? This controller is used by the visitor system and guard system for looking recurring visitors
-exports.findRecurring = async (req, res) => {
-  const { visitor, email, last_name } = req.body;
+//? OLD (DUPLICATE) This controller is used by the visitor system and guard system for looking recurring visitors
+// exports.findRecurring = async (req, res) => {
+//   const { visitor, email, last_name } = req.body;
 
-  try {
-    const emailRegex = /^\S+@\S+\.\S+$/;
-    const isEmail = emailRegex.test(visitor);
+//   try {
+//     const emailRegex = /^\S+@\S+\.\S+$/;
+//     const isEmail = emailRegex.test(visitor);
 
-    if (isEmail) {
-      const visitorDB = await Visitor.findOne({
-        "visitor_details.email": visitor,
-      });
+//     if (isEmail) {
+//       const visitorDB = await Visitor.findOne({
+//         "visitor_details.email": visitor,
+//       });
 
-      if (visitorDB) {
-        return res.status(200).json({
-          success: "Visitor found",
-          visitor_id: visitorDB._id,
-          id_picture: visitorDB.id_picture,
-          name: visitorDB.visitor_details.name,
-        });
-      } else {
-        return res.status(404).json({ error: "Visitor not found" });
-      }
-    } else if (!isEmail) {
-      const visitorDB = await Visitor.find({
-        "visitor_details.name.last_name": visitor,
-      });
+//       if (visitorDB) {
+//         return res.status(200).json({
+//           success: "Visitor found",
+//           visitor_id: visitorDB._id,
+//           id_picture: visitorDB.id_picture,
+//           name: visitorDB.visitor_details.name,
+//         });
+//       } else {
+//         return res.status(404).json({ error: "Visitor not found" });
+//       }
+//     } else if (!isEmail) {
+//       const visitorDB = await Visitor.find({
+//         "visitor_details.name.last_name": visitor,
+//       });
 
-      if (visitorDB) {
-        const visitors = visitorDB.map((visitor) => ({
-          _id: visitor._id,
-          visitor_details: visitor.visitor_details,
-          plate_num: visitor.plate_num,
-          id_picture: visitor.id_picture,
-        }));
+//       if (visitorDB) {
+//         const visitors = visitorDB.map((visitor) => ({
+//           _id: visitor._id,
+//           visitor_details: visitor.visitor_details,
+//           plate_num: visitor.plate_num,
+//           id_picture: visitor.id_picture,
+//         }));
 
-        return res.status(200).json({
-          success: "Visitor/s found",
-          visitors: visitors,
-        });
-      } else {
-        return res.status(404).json({ error: "Visitor not found" });
-      }
-    } else {
-      return res.status(400).json({ error: "Information entered is invalid" });
-    }
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ error: "Something went wrong with your request" });
-  }
-};
+//         return res.status(200).json({
+//           success: "Visitor/s found",
+//           visitors: visitors,
+//         });
+//       } else {
+//         return res.status(404).json({ error: "Visitor not found" });
+//       }
+//     } else {
+//       return res.status(400).json({ error: "Information entered is invalid" });
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     return res
+//       .status(500)
+//       .json({ error: "Something went wrong with your request" });
+//   }
+// };
 
 exports.updateVisitor = async (req, res) => {
   const {
@@ -427,6 +427,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
   let companions = [];
 
   try {
+    //? Loop is used to traverse companions
     for (let x = 1; x < visitors.length; x++) {
       const visitorDB = await Visitor.findOne({
         "visitor_details.email": visitors[x].visitor_details.email,
@@ -468,6 +469,8 @@ exports.newRecurringPRVisitor = async (req, res) => {
             error: `Failed to register ${visitors[x].visitor_details.name.last_name}. Please try again.`,
           });
         }
+
+        companions.push(visitorDB._id);
 
         io.emit("newVisitor", updatedVisitor);
         createNotification(updatedVisitor, "pending", io);
@@ -517,9 +520,9 @@ exports.newRecurringPRVisitor = async (req, res) => {
           status: "In Progress",
         });
 
-        io.emit("newVisitor", newVisitor);
-
         companions.push(newVisitor._id);
+
+        io.emit("newVisitor", newVisitor);
 
         createNotification(newVisitor, "pending", io);
       }
