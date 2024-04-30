@@ -350,17 +350,27 @@ async function validateDuplicate(visitors, res) {
       // Check if visitor has an existing record
       
       const visitorDB = await Visitor.findOne({
-        $and: [
-          { "visitor_details.email": { $exists: true, $ne: undefined } },
-          { "visitor_details.email": visitor.visitor_details.email }
-        ]
+        $or: [
+          {
+            $and: [
+              { "visitor_details.email": { $exists: true, $ne: undefined } },
+              { "visitor_details.email": visitor.visitor_details.email },
+            ],
+          },
+          {
+            $and: [
+              { "visitor_details.phone": { $exists: true, $ne: undefined } },
+              { "visitor_details.phone": visitor.visitor_details.phone },
+            ],
+          },
+        ],
       });
 
       // Check if email is used by another visitor
       if (visitorDB) {
         const { first_name, middle_name, last_name } =
           visitorDB.visitor_details.name;
-        const { email } = visitor.visitor_details;
+        const { email, phone } = visitor.visitor_details;
 
         const isDuplicate =
           visitor.visitor_details.name.first_name === first_name &&
@@ -369,8 +379,8 @@ async function validateDuplicate(visitors, res) {
           visitor.visitor_details.name.last_name === last_name;
 
         return isDuplicate
-          ? `Visitor using ${email} already has an existing record`
-          : `${email} has already been used by another visitor`;
+          ? `Visitor using ${email} and/or ${phone} already has an existing record`
+          : `${email} and/or ${phone} has already been used by another visitor`;
       }
     } catch (error) {
       console.error("Error while validating duplicate:", error);
