@@ -491,7 +491,7 @@ export default function VisitorFormLayout() {
 			<OuterContainer header="VISITOR FORM">
 				<InnerContainer>
 					{!isNew && !isRecurring && (
-						<div className="mb-[60px] mt-[25px] flex h-full items-center justify-center gap-5">
+						<div className="mb-[60px] mt-[25px] flex h-full items-center justify-center gap-[9px] md:gap-5">
 							<Button
 								type="primary"
 								className="h-[inherit] w-[inherit] bg-primary-500 md:text-lg"

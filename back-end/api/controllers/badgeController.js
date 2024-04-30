@@ -39,6 +39,18 @@ exports.findBadge = async (req, res) => {
   }
 };
 
+exports.findAllBadges = async (req, res) => {
+  const { visitor_id } = req.body;
+
+  try {
+    const badges = await Badge.find({ visitor_id });
+
+    res.status(200).json({ badges });
+  } catch (error) {
+    return res.status(500).json({ error: "No badge assigned to this visitor" });
+  }
+};
+
 exports.generateBadge = async (req, res) => {
   const { qty } = req.body;
   const user_id = req.user._id;
@@ -147,7 +159,7 @@ exports.checkBadge = async (req, res) => {
       if (visitor) {
         return res.status(400).json({ error: "Visitor QR is invalid." });
       }
-      return res.redirect(`http://localhost:3000/visitor-form/?qr_id=${qr_id}`);
+      return res.status(200).json({ type: "new-recurring", url: `http://localhost:3000/visitor-form/?qr_id=${qr_id}` });
     }
 
     updateLog(badge._id, qr_id, req.user.sub, res);
@@ -173,7 +185,8 @@ exports.checkBadge = async (req, res) => {
     badge = await Badge.findOne({ qr_id: qr_id });
 
     if (!badge) {
-      return res.redirect(`http://localhost:3000/visitor-form/?qr_id=${qr_id}`);
+      // return res.redirect(`http://localhost:3000/visitor-form/?qr_id=${qr_id}`);
+      return res.status(200).json({ type: "new-recurring", url: `http://localhost:3000/visitor-form/?qr_id=${qr_id}` })
     }
   } else {
     badge = await Badge.findOne({ visitor_id: visitor_id });
@@ -181,11 +194,11 @@ exports.checkBadge = async (req, res) => {
   }
 
   if (!badge) {
-    return res.status(400).json({ message: `No visitor assigned to badge` });
+    return res.status(400).json({ error: `No visitor assigned to badge` });
   }
 
   if (!badge.is_valid) {
-    return res.status(400).json({ message: `Invalid visitor badge` });
+    return res.status(400).json({ error: `Invalid visitor badge` });
   }
 
   const _id = visitor_id !== undefined ? visitor_id : qr_id;

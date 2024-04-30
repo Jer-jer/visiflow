@@ -9,7 +9,9 @@ import UserLogsReducer from "../states/logs/user";
 import VisitorTabsReducer from "../states/visitors/tab";
 import UserTabsReducer from "../states/users/tab";
 import NotificationsReducer from "../states/notifications";
-import VisitorStatisticsSummaryReducer from "../states/stats"
+import VisitorStatisticsSummaryReducer from "../states/stats";
+import BadgeReducer from "../states/badges";
+import BadgeTabReducer from "../states/badges/tab";
 
 export const store = configureStore({
 	reducer: {
@@ -22,6 +24,8 @@ export const store = configureStore({
 		userLogs: UserLogsReducer,
 		notifications: NotificationsReducer,
 		visitorStatSummary: VisitorStatisticsSummaryReducer,
+		badges: BadgeReducer,
+		badgesTab: BadgeTabReducer
 	},
 });
 

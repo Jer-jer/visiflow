@@ -1,4 +1,5 @@
 const Offices = require("../models/offices");
+const { createSystemLog } = require("../utils/helper");
 const {
   validateOffices,
   validationResult,
@@ -38,6 +39,7 @@ exports.addOffices = async (req, res) => {
       closetime,
       openday,
       officeImg,
+      userID
     } = req.body;
 
     //check if the office already exists
@@ -69,7 +71,8 @@ exports.addOffices = async (req, res) => {
       openday,
       officeImg: officepic,
     });
-
+    await createSystemLog(userID, "add_office", "success");
+    
     const createdOffice = await newOffice.save();
 
     res.status(201).json({ office: createdOffice });
@@ -95,6 +98,7 @@ exports.updateOffices = async (req, res) => {
       closetime,
       openday,
       officeImg,
+      userID
     } = req.body;
 
     // const existingOffice = await Offices.findOne({ name, roomNo });
@@ -149,6 +153,8 @@ exports.updateOffices = async (req, res) => {
       { new: true }
     );
 
+    await createSystemLog(userID, "update_office", "success");
+
     return res.status(201).json({ message: updatedOffices });
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
@@ -157,15 +163,18 @@ exports.updateOffices = async (req, res) => {
 
 exports.deleteOffices = async (req, res) => {
   try {
-    const { _id } = req.body;
+    const { _id, userID } = req.body;
 
     const deletedData = await Offices.findByIdAndDelete(_id);
+
+    await createSystemLog(userID, "delete_office", "success");
 
     if (deletedData) {
       return res.status(201).json({ message: "Data deleted successfully" });
     } else {
       return res.status(404).json({ error: "Office not found" });
     }
+
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
   }
