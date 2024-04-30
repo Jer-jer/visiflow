@@ -169,7 +169,7 @@ async function sendBadgeEmail(badge, visitor, message) {
       attachments: [
         {
           filename: `badge${badge._id}.png`,
-          path: `api/resource/badge/badge${badge._id}.png`,
+          path: `badge${badge._id}.png`,
         },
       ],
     };
