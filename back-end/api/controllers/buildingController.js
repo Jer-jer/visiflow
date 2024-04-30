@@ -1,4 +1,5 @@
 const BuildingLoc = require("../models/buildingLocation");
+const { createSystemLog } = require("../utils/helper");
 const {
   validateBldgLoc,
   validationResult,
@@ -17,7 +18,7 @@ exports.getBuildings = async (req, res) => {
 };
 
 exports.addBuilding = async (req, res) => {
-  const { name, roomNo } = req.body;
+  const { name, roomNo, userID } = req.body;
 
   await Promise.all(validateBldgLoc.map((validation) => validation.run(req)));
 
@@ -31,6 +32,8 @@ exports.addBuilding = async (req, res) => {
       name,
       roomNo,
     });
+
+    await createSystemLog(userID, "add_building", "success");
 
     res.status(201).json({ Building: newBuilding });
   } catch (error) {
@@ -81,7 +84,7 @@ exports.getBuildingsbyName = async (req, res) => {
 };
 
 exports.updateBuilding = async (req, res) => {
-  const { _id, name, roomNo } = req.body;
+  const { _id, name, roomNo, userID } = req.body;
 
   try {
     const buildingDB = await BuildingLoc.findById(_id);
@@ -107,6 +110,7 @@ exports.updateBuilding = async (req, res) => {
       filteredUpdateFields,
       { new: true }
     );
+    await createSystemLog(userID, "update_building", "success");
 
     return res.status(201).json({ updatedBuilding });
   } catch (error) {
@@ -116,10 +120,12 @@ exports.updateBuilding = async (req, res) => {
 };
 
 exports.deleteBuilding = async (req, res) => {
-  const { _id } = req.body;
+  const { _id, userID } = req.body;
 
   try {
     const buildingDB = await BuildingLoc.findByIdAndDelete(_id);
+
+    await createSystemLog(userID, "delete_building", "success");
 
     if (buildingDB) {
       return res.status(204).send();

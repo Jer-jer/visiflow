@@ -45,7 +45,6 @@ function DateTimePicker({
 }: DatePickerProps) {
 	const { RangePicker } = DatePicker;
 	const timeFormat = "hh:mm A";
-	console.log(defaultVal);
 
 	return (
 		<div className={`${globalStyling}`}>

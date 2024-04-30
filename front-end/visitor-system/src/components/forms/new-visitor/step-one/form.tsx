@@ -228,7 +228,7 @@ function StepOneForm({
 			setWhoList(convertedData);
 		} catch (error) {
 			if (error) {
-				console.error("Error fetching employees:", error)
+				console.error("Error fetching employees:", error);
 			}
 		}
 	};
@@ -487,7 +487,7 @@ function StepOneForm({
 						></Checkbox>
 					</Form.Item>
 
-					<span className="text-[16px] font-[400] text-[#000000]">
+					<span className="w-full text-[16px] font-[400] text-[#000000]">
 						I have agreed to the{" "}
 						<Button
 							type="link"
@@ -509,32 +509,68 @@ function StepOneForm({
 							onCancel={handleTCCancel}
 						>
 							<span className="text-justify font-[400] text-black">
-								Lorem ipsum dolor sit amet, consectetur adipiscing elit. In
-								vulputate, nibh ut pellentesque pharetra, ligula lectus gravida
-								ipsum, a bibendum quam lacus sit amet eros. Etiam nec elementum
-								nisl. Etiam mattis turpis. Sed interdum eleifend justo, eu
-								eleifend . em, non molestie dui. Nullam blandit Nam tincidunt
-								lacinia metus in suscipit. Nullam sed tempus urna. Maecenas nec
-								erat magna. Maecenas ac tortor bibendum metus condimentum mollis
-								at eu urna. Aliquam vitae malesuada enim. Donec scelerisque
-								egestas massa, ut vulputate tortor placerat sit amet. Integer
-								facilisis, nisl quis tincidunt rhoncus, orci massa pellentesque
-								erat, a porta nisi nisi sed nisl. In eu imperdiet ipsum.
-								Phasellus tempus, arcu et imperdiet ornare, tellus diam
-								fermentum risus, ut luctus velit eros ut lacus. Nulla posuere
-								tempus auctor. Nullam dignissim, mauris eget suscipit lobortis,
-								elit lectus blandit elit, id consectetur purus nunc in risus.
-								Nullam venenatis sem vel odio lobortis, ut eleifend orci
-								faucibus. Aliquam quis volutpat sem. Quisque dignissim eget ante
-								eu mollis. amet. Integer facilisis, nisl quis tincidunt rhoncus,
-								orci massa pellentesque erat, a porta nisi nisi sed nisl. In eu
-								imperdiet ipsum. Phasellus tempus, arcu et imperdiet ornare,
-								tellus diam fermentum risus, ut luctus velit eros ut lacus.
-								Nulla posuere tempus auctor. Nullam dignissim, mauris eget
-								suscipit lobortis, elit lectus blandit elit, id consectetur
-								purus nunc in risus. Nullam venenatis sem vel odio lobortis, ut
-								eleifend orci faucibus. Aliquam quis volutpat sem. Quisque
-								dignissim eget ante eu mollis.
+								<span className="font-bold">1. Acceptance of Terms</span>
+								<br />
+								By pre-registering in the Visiflow visitor management system,
+								you agree to comply with and be bound by these terms and
+								conditions.
+								<br />
+								<br />
+								<span className="font-bold">2. Description of Service</span>
+								<br />
+								Visiflow is a visitor management system provided by the
+								University of Visayas, Gullas College of Medicine. It allows
+								visitors to pre-register their visit to the campus.
+								<br />
+								<br />
+								<span className="font-bold">3. Personal Information</span>
+								<br />
+								By pre-registering, you agree to provide accurate and current
+								information about yourself as prompted by the Visiflow system.
+								<br />
+								<br />
+								<span className="font-bold">4. Privacy</span>
+								<br />
+								Your registration data and certain other information about you
+								are subject to our Privacy Policy.
+								<br />
+								<br />
+								<span className="font-bold">5. Conduct</span>
+								<br />
+								You agree to abide by all applicable local, state, national, and
+								international laws and regulations in your use of Visiflow.
+								<br />
+								<br />
+								<span className="font-bold">6. Modifications to Terms</span>
+								<br />
+								We reserve the right to modify these terms and conditions at any
+								time. Your continued use of Visiflow after such modifications
+								will constitute acknowledgment and agreement of the modified
+								terms.
+								<br />
+								<br />
+								<span className="font-bold">7. Termination</span>
+								<br />
+								We may terminate your records to Visiflow, without cause or
+								notice, which may result in the forfeiture and destruction of
+								all information associated with you.
+								<br />
+								<br />
+								<span className="font-bold">8. Governing Law</span>
+								<br />
+								These terms and conditions shall be governed by the laws of the
+								Philippines.
+								<br />
+								<br />
+								By clicking{" "}
+								<span className="italic">
+									"I have agreed to the terms and conditions"{" "}
+								</span>{" "}
+								during the pre-registration process, you acknowledge that you
+								have read, understood, and agree to be bound by these terms and
+								conditions.
+								<br />
+								<br />
 							</span>
 						</Modal>
 					</span>

@@ -1,8 +1,8 @@
 /* Built using Ant Design */
-import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
+import React, { useState, useEffect } from "react";
 
 //Components
-import { Checkbox, Table, Tag } from "antd";
+import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 //Interfaces
@@ -14,7 +14,6 @@ import { formatDateObjToString, formatDateToISO } from "../../../utils";
 import "../../../utils/variables.scss";
 import "./styles.scss";
 import AxiosInstance from "../../../lib/axios";
-import dayjs, { Dayjs } from "dayjs";
 
 interface CurrentVisitor {
 	key: string;
@@ -25,15 +24,17 @@ interface CurrentVisitor {
 	status: string;
 }
 interface CurrentVisitorsTableProps {
-	hideInOut: boolean;
-	setHideInOut: Dispatch<SetStateAction<boolean>>;
+	search: string;
+	dateSearch: string[];
 }
 
 export default function CurrentVisitorsTable({
-	hideInOut,
-	setHideInOut,
+	search,
+	dateSearch,
 }: CurrentVisitorsTableProps) {
 	const [data, setData] = useState<CurrentVisitor[]>([]);
+	const startDate = new Date(dateSearch[0]);
+	const endDate = new Date(dateSearch[1]);
 
 	useEffect(() => {
 		// Fetch visitors from backend
@@ -46,9 +47,10 @@ export default function CurrentVisitorsTable({
 					phone: visitor.visitor_details.phone,
 					expected_time_in: visitor.expected_time_in,
 					expected_time_out: visitor.expected_time_out,
-					status: dayjs(visitor.exceeded_time_out).isBefore(dayjs())
-						? "active"
-						: "exceeded_time_out",
+					status:
+						Date.now() <= new Date(visitor.expected_time_out).getTime()
+							? "active"
+							: "exceeded",
 				}));
 				setData(mappedData);
 				//console.log(mappedData);
@@ -80,7 +82,6 @@ export default function CurrentVisitorsTable({
 			render: (_, { expected_time_in }) => {
 				return formatDateObjToString(expected_time_in);
 			},
-			hidden: hideInOut,
 		},
 		{
 			title: "Expected Time-out",
@@ -93,7 +94,6 @@ export default function CurrentVisitorsTable({
 			render: (_, { expected_time_out }) => {
 				return formatDateObjToString(expected_time_out);
 			},
-			hidden: hideInOut,
 		},
 		{
 			title: "Status",
@@ -105,32 +105,43 @@ export default function CurrentVisitorsTable({
 				},
 				{
 					text: "Exceeded Time-out",
-					value: "exceeded_time_out",
+					value: "exceeded",
 				},
 			],
 			render: (_, { status }) => {
 				let color;
 				if (status === "active") color = "#0db284";
-				else if (status === "exceeded_time_out") color = "#FD4A4A";
+				else if (status === "exceeded") color = "#FD4A4A";
 				return (
-					<Tag color={color} key={status}>
+					<Tag
+						className="text-auto text-[10px] md:text-[16px]"
+						color={color}
+						key={status}
+					>
 						{status.toUpperCase()}
 					</Tag>
 				);
 			},
-			onFilter: (value: any, record) => record.role.indexOf(value) === 0,
+			onFilter: (value: any, record) => record.status.indexOf(value) === 0,
 		},
 	];
 
 	return (
 		<>
-			<Checkbox onChange={() => setHideInOut(!hideInOut)}>
-				Display Expected Time In and Out
-			</Checkbox>
-
 			<Table
 				columns={columns}
-				dataSource={data}
+				dataSource={data
+					.filter((visitor) => {
+						return search.toLowerCase() === ""
+							? visitor
+							: visitor.fullName.toLowerCase().includes(search.toLowerCase());
+					})
+					.filter((visitor) => {
+						return dateSearch.length === 0
+							? visitor
+							: new Date(visitor.expected_time_in) >= startDate &&
+									new Date(visitor.expected_time_out) <= endDate;
+					})}
 				pagination={{ pageSize: 10 }}
 			/>
 		</>

@@ -29,7 +29,10 @@ import type { Dayjs } from "dayjs";
 import type { DatePickerProps } from "antd";
 
 // Utils
-import { formatDateObjToString } from "../../../../utils";
+import {
+	formatDateObjToString,
+	formatDateStringToUTC,
+} from "../../../../utils";
 import { SelectOption } from "../../../../utils/interfaces";
 
 //Layouts
@@ -545,8 +548,12 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 			country: zodData
 				? zodData.country
 				: record.visitor_details.address.country,
-			expected_time_in: zodData ? zodData.check_in_out[0] : expected_in,
-			expected_time_out: zodData ? zodData.check_in_out[1] : expected_out,
+			expected_time_in: zodData
+				? new Date(zodData.check_in_out[0])
+				: new Date(expected_in),
+			expected_time_out: zodData
+				? new Date(zodData.check_in_out[1])
+				: new Date(expected_out),
 			plate_num: zodData ? zodData.plate_num : record.plate_num,
 			status: zodData
 				? zodData.status
@@ -604,6 +611,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 	const showDeleteConfirm = (_id: string) => {
 		confirm({
 			title: "Are you sure you want to delete this visitor?",
+			content: <span>This will also delete its logs.</span>,
 			className: "confirm-buttons",
 			icon: <ExclamationCircleFilled className="!text-error-500" />,
 			okText: "Yes",
