@@ -63,7 +63,6 @@ function createImageBuffer(imageData) {
     "base64"
   );
 }
-
 //End of Image Upload Section
 
 
@@ -92,7 +91,6 @@ async function sendEmail(mailOptions) {
     });
   });
 }
-
 // End of Email Functions
 
 async function updateLog(_id, qr_id, user_id, res) {
@@ -385,8 +383,6 @@ async function validateDuplicate(visitors, res) {
     return res.json({ error: "Error while validating duplicates:", error });
   }
 }
-
-
 
 module.exports = {
   updateLog,

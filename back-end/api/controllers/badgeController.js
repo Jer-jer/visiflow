@@ -142,7 +142,6 @@ exports.checkBadge = async (req, res) => {
   
   try {
     const badge = await Badge.findOne({ qr_id: qr_id })
-
     if (!badge) {
       const visitor = await Visitor.findById({ _id: qr_id });
       if (visitor) {
