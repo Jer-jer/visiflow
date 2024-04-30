@@ -62,7 +62,6 @@ export default function Scanner({ onQRstatus }: any) {
 						if (scanner) {
 							scanner.clear();
 						}
-
 						const resType = res.data.type;
 
 						switch (resType) {
@@ -90,10 +89,6 @@ export default function Scanner({ onQRstatus }: any) {
 							onQRstatus(err.response.data.error);
 						}
 					});
-
-				// setTimeout(() => {
-				// 	initializeScanner();
-				// }, 2000);
 			}
 		} else {
 			onQRstatus("Invalid QR");

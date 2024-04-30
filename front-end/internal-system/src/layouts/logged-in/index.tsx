@@ -27,7 +27,6 @@ import {
 	Users,
 	Edit,
 	QRScanner,
-	PreregisterQR,
 	Form,
 } from "../../assets/svg";
 
