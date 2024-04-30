@@ -21,6 +21,7 @@ import { Search } from "../../../../assets/svg";
 //Styles
 import "../../../../utils/variables.scss";
 import "./styles.scss";
+import { jwtDecode } from "jwt-decode";
 
 const { confirm } = Modal;
 
@@ -50,6 +51,9 @@ export default function EventsScheduleList() {
 	const [searchValue, setSearchValue] = useState("");
 	const [checkedList, setCheckedList] = useState<string[]>([]);
 
+	const token = localStorage.getItem("token");
+	const decodedtoken = (jwtDecode (token as string));
+
 	useEffect(() => {
 		if(searchValue == "") {
 			fetchAndSetEvents();
@@ -62,13 +66,19 @@ export default function EventsScheduleList() {
 			const data = response.data.event
 
 			//getting only the data we want
-			const convertedData: EventsSchedule[] = data.map((event: any) => ({
-				name: event.name,
-				startDate: new Date(event.startDate).toISOString().split('T')[0] ,
-				endDate: new Date(event.endDate).toISOString().split('T')[0],
-				startTime: event.startTime,
-				endTime: event.endTime,
-			  }));
+			const convertedData: EventsSchedule[] = data.map((event: any) => {
+				console.log('start ', new Date(event.startDate));
+				console.log('end ', new Date(event.endDate));
+
+				return {
+					name: event.name,
+					startDate: new Date(event.startDate).toLocaleDateString(),
+					endDate: new Date(event.endDate).toLocaleDateString(),
+					startTime: event.startTime,
+					endTime: event.endTime,
+				}
+				
+			  });
 			setData(data);
 			setEvents(convertedData);
 			setDisplayEvents(convertedData);
@@ -87,10 +97,10 @@ export default function EventsScheduleList() {
 			cancelText: "No",
 			async onOk() {
 				try {
-					await AxiosInstace.delete('/events/delete', { data: { _id: data._id } }); 
+					await AxiosInstace.delete('/events/delete', { data: { _id: data._id, userID: decodedtoken.sub } }); 
 					fetchAndSetEvents();
 				  } catch (error) {
-					console.error('Error deleting office:', error);
+					console.error('Error deleting event:', error);
 				  }
 			},
 			onCancel() {
@@ -105,8 +115,8 @@ export default function EventsScheduleList() {
 			const data = response.data.event;
 			const convertedData: EventsSchedule[] = data.map((event: any) => ({
 				name: event.name,
-				startDate: new Date(event.startDate).toISOString().split('T')[0] ,
-				endDate: new Date(event.endDate).toISOString().split('T')[0],
+				startDate: new Date(event.startDate).toLocaleDateString(),
+				endDate: new Date(event.endDate).toLocaleDateString(),
 				startTime: event.startTime,
 				endTime: event.endTime,
 			  }));

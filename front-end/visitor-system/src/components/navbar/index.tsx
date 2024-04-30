@@ -18,7 +18,6 @@ interface NavbarProps {
 export default function Navbar({ children }: NavbarProps) {
 	const [expand, setExpand] = useState(false);
 
-
 	return (
 		<div
 			className={`main-nav h-[inherit] items-center justify-around lg:ml-[200px] lg:flex lg:justify-between ${
@@ -42,11 +41,11 @@ export default function Navbar({ children }: NavbarProps) {
 			</div>
 			<div
 				className={`nav-links absolute left-0 flex w-full flex-col items-start gap-[10px] bg-white pb-[15px] pl-[40px] pt-[10px] shadow-lg transition-all duration-500 ease-in-out md:pt-[20px] lg:static lg:w-auto lg:flex-row lg:items-center lg:gap-[100px] lg:pb-0 lg:pl-0 lg:pt-0 lg:opacity-100 lg:shadow-transparent ${
-					expand ? "nav-links-expanded z-50 sm:top-20" : "-top-[490px]"
+					expand ? "nav-links-expanded z-50" : "-top-[490px]"
 				}`}
 			>
 				{children}
-				<GoogleTranslateComponent/>
+				<GoogleTranslateComponent />
 			</div>
 		</div>
 	);

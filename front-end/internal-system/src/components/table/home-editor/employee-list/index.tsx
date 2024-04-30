@@ -24,6 +24,7 @@ import { AsyncThunkAction, createAsyncThunk } from "@reduxjs/toolkit";
 import AxiosInstace from "../../../../lib/axios";
 import { AsyncThunkConfig } from "@reduxjs/toolkit/dist/createAsyncThunk";
 import ReasonDetails from "../../../../layouts/admin/home-editor/reason-details";
+import { jwtDecode } from "jwt-decode";
 
 //fetch all announcements
 // export const fetchAnnouncements = createAsyncThunk(
@@ -58,6 +59,9 @@ export default function EmployeeList() {
 
 	// const [users, setUsers] = useState<HomeEditor[]>([]);
 	const [searchValue, setSearchValue] = useState("");
+
+	const token = localStorage.getItem("token");
+	const decodedtoken = (jwtDecode (token as string));
 
 	  useEffect(() => {
 		const fetchData = async () => {
@@ -214,7 +218,7 @@ export default function EmployeeList() {
 			cancelText: "No",
 			async onOk() {
 				try {
-					await AxiosInstace.delete('/employees/delete', { data: { _id: data._id } }); 
+					await AxiosInstace.delete('/employees/delete', { data: { _id: data._id, userID: decodedtoken.sub } }); 
 					fetchAndSetEmployeesActive();
 				  } catch (error) {
 					console.error('Error deleting employees:', error);
@@ -236,7 +240,7 @@ export default function EmployeeList() {
 			cancelText: "No",
 			async onOk() {
 				try {
-					await AxiosInstace.delete('/reasons/delete', { data: { _id: data._id } }); 
+					await AxiosInstace.delete('/reasons/delete', { data: { _id: data._id, userID: decodedtoken.sub } }); 
 					fetchAndSetReasonsActive();
 				  } catch (error) {
 					console.error('Error deleting reasons:', error);
@@ -258,7 +262,7 @@ export default function EmployeeList() {
 			cancelText: "No",
 			async onOk() {
 				try {
-					await AxiosInstace.delete('/buildings/delete', { data: { _id: data._id } }); 
+					await AxiosInstace.delete('/buildings/delete', { data: { _id: data._id, userID: decodedtoken.sub } }); 
 					fetchAndSetBuildingsActive();
 				  } catch (error) {
 					console.error('Error deleting buildings:', error);
@@ -325,7 +329,7 @@ export default function EmployeeList() {
 
 	const edit = (record: any) => {
 		setPageDetail(record);
-		setOpenDetails(!openDetails);
+		setOpenDetails(true);
 	};
 
 	const addNew = () => {

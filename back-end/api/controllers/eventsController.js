@@ -1,4 +1,5 @@
 const Event = require("../models/events");
+const { createSystemLog } = require("../utils/helper");
 const {
   validateEvents,
   validationResult,
@@ -27,6 +28,7 @@ exports.addEvent = async (req, res) => {
     locationID,
     description,
     eventImg,
+    userID
   } = req.body;
 
   await Promise.all(validateEvents.map((validation) => validation.run(req)));
@@ -34,6 +36,14 @@ exports.addEvent = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ error: errors.array()[0].msg });
+  }
+  const existingEvents = await Event.findOne({ name, locationID});
+  if (existingEvents) {
+    return res.status(400).json({ error: "Event already exists" });
+  }
+
+  if(startDate > endDate) {
+    return res.status(400).json({ error: 'Start Date should be greater than End Date' });
   }
 
   try {
@@ -43,6 +53,8 @@ exports.addEvent = async (req, res) => {
         `${Date.now()}_${name.toUpperCase()}_event.jpg`
       ),
     ]);
+
+    await createSystemLog(userID, "add_event", "success");
 
     const newEvent = await Event.create({
       name,
@@ -90,12 +102,17 @@ exports.updateEvent = async (req, res) => {
     locationID,
     description,
     eventImg,
+    userID
   } = req.body;
 
   try {
     const eventDB = await Event.findById(_id);
     if (!eventDB) {
       return res.status(404).json({ error: "Event not found" });
+    }
+
+    if(startDate > endDate) {
+      return res.status(400).json({ error: 'Start Date should be greater than End Date' });
     }
 
     let img = eventImg;
@@ -137,6 +154,8 @@ exports.updateEvent = async (req, res) => {
       { new: true }
     );
 
+    await createSystemLog(userID, "update_event", "success");
+
     return res.status(201).json({ event: updatedEvent });
   } catch (error) {
     console.error(error);
@@ -161,10 +180,12 @@ exports.getEventsByName = async (req, res) => {
 };
 //Delete Events
 exports.deleteEvent = async (req, res) => {
-  const { _id } = req.body;
+  const { _id, userID } = req.body;
 
   try {
     const eventDB = await Event.findByIdAndDelete(_id);
+
+    await createSystemLog(userID, "delete_event", "success");
 
     if (eventDB) {
       return res.status(204).send();

@@ -1,4 +1,4 @@
-import React, { useState, Dispatch, SetStateAction } from "react";
+import React, { useState, Dispatch, SetStateAction, useEffect } from "react";
 
 //Interfaces
 import { HomeEditor } from "../../../../utils/interfaces";
@@ -11,8 +11,7 @@ import TextArea from "antd/es/input/TextArea";
 import Input from "../../../../components/fields/input/input";
 import Label from "../../../../components/fields/input/label";
 //zod for display error
-import z from "zod";
-import {useForm} from "react-hook-form";
+
 
 //Assets
 import { ExclamationCircleFilled, LeftOutlined } from "@ant-design/icons";
@@ -20,8 +19,12 @@ import { ExclamationCircleFilled, LeftOutlined } from "@ant-design/icons";
 //Styles
 import "./styles.scss";
 import AxiosInstace from "../../../../lib/axios";
-import { EmployeeDetailsZod, EmployeesZod } from "../../../../utils/zodSchemas";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import {useForm} from "react-hook-form";
+import { EmployeeDetailsZod, EmployeesZod } from "../../../../utils/zodSchemas";
+
+import { jwtDecode } from "jwt-decode";
 
 interface PageDetailsProps {
 	record?: any;
@@ -31,20 +34,11 @@ interface PageDetailsProps {
 
 const { confirm } = Modal;
 
-const showDeleteConfirm = () => {
-	confirm({
-		title: "Are you sure you want to delete this?",
-		className: "confirm-buttons",
-		icon: <ExclamationCircleFilled className="!text-error-500" />,
-		okText: "Yes",
-		okType: "danger",
-		cancelText: "No",
-		onOk() {
-			console.log("OK");
-		},
-		onCancel() {
-			console.log("Cancel");
-		},
+const error = (message: string) => {
+	Modal.error({
+		title: `Error`,
+		content: message,
+		className: "error-modal",
 	});
 };
 
@@ -67,6 +61,9 @@ export default function EmployeeDetails({
 		resolver: zodResolver(EmployeeDetailsZod),
 	});
 
+	const token = localStorage.getItem("token");
+	const decodedtoken = (jwtDecode (token as string));
+
 
 	//Alert State
 	const [alertOpen, setAlertOpen] = useState(false);
@@ -74,6 +71,12 @@ export default function EmployeeDetails({
 	//Modal States
 
 	const [disabledInputs, setDisabledInputs] = useState<boolean>(true);
+
+	useEffect(() => {
+		handleName(name);
+		handleContact(contact);
+		handleEmail(email);
+	}, [])
 
 	const editOrCancel = () => {
 		if (!disabledInputs) {
@@ -94,11 +97,12 @@ export default function EmployeeDetails({
 				const response = await AxiosInstace.post('/employees/new', { 
 					name: name,
 					email: email,
-					contact: contact
+					contact: contact,
+					userID: decodedtoken.sub
 				}); 
 				setSavedRecord(response.data.event);
-			} catch (error) {
-			console.error('Error in adding employee:', error);
+			} catch (err: any) {
+				error('Error in adding employee: ' + err.response.data.error);
 			}
 		} else { // updating record
 			try {
@@ -106,10 +110,11 @@ export default function EmployeeDetails({
 					_id: record === undefined ? savedRecord._id : record._id,
 					name: name === "" ? record?.name : name,
 					email: email === "" ? record?.email : email,
-					contact: contact === "" ? record?.contact : contact
+					contact: contact === "" ? record?.contact : contact,
+					userID: decodedtoken.sub
 				}); 
-			} catch (error) {
-			console.error('Error in updating employee:', error);
+			} catch (err: any) {
+				error('Error in updating employee: ' + err.response.data.error);
 			}
 		}
 
@@ -119,6 +124,30 @@ export default function EmployeeDetails({
 
 		setDisabledInputs(!disabledInputs);
 	};
+
+	const showDeleteConfirm = () => {
+		confirm({
+			title: "Are you sure you want to delete this?",
+			className: "confirm-buttons",
+			icon: <ExclamationCircleFilled className="!text-error-500" />,
+			okText: "Yes",
+			okType: "danger",
+			cancelText: "No",
+			async onOk() {
+				try {
+					await AxiosInstace.delete('/employees/delete', { data: { _id: record?._id, userID: decodedtoken.sub } });
+					fetch();
+					setOpenDetails(false);
+				  } catch (error) {
+					console.error('Error deleting employees:', error);
+				  }
+			},
+			onCancel() {
+				console.log("Cancel");
+			},
+		});
+	};
+
 	const onSubmit = handleSubmit((data) => {
 		saveAction();
 	});
@@ -233,14 +262,15 @@ export default function EmployeeDetails({
 				<div className="flex justify-end gap-[15px]">
 					{!disabledInputs ? (
 						<>
-							<Button
-								onClick={showDeleteConfirm}
-								type="primary"
-								size="large"
-								className="search-button !bg-error-500 !rounded-[18px]"
-							>
-								Delete
-							</Button>
+							{record && 
+								<Button
+									onClick={showDeleteConfirm}
+									type="primary"
+									size="large"
+									className="search-button !bg-error-500 !rounded-[18px]"
+								>
+									Delete
+								</Button>}
 							<Button
 								htmlType="submit"
 								type="primary"
