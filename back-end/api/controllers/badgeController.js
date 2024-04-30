@@ -84,7 +84,7 @@ exports.generateBadge = async (req, res) => {
 
     const objectIds = Array.from({ length: qty }, () => {
       const objectId = new ObjectId();
-      const uri = `https://visiflow-api.onrender.com?qr_id=${objectId}`;
+      const uri = `https://visiflow-api.onrender.com/badge/checkBadge?qr_id=${objectId}`;
       const filename = `badge${objectId}.png`;
       return { objectId, filename, uri };
     });
