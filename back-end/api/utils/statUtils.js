@@ -25,15 +25,10 @@ async function getVisitorList(date_01, date_02) {
         $unwind: "$badge"
       },
       {
-        $group: {
-          _id: null,
-          visitor_id: { $push: "$badge.visitor_id" }
-        }
-      },
-      {
         $project: {
           _id: 0,
-          visitor_id: 1
+          visitor_id: "$badge.visitor_id",
+          expected_time_in: "$badge.expected_time_in"
         }
       }
     ]);
@@ -42,9 +37,8 @@ async function getVisitorList(date_01, date_02) {
       return null;
     }
 
-    const idArray = logs.length > 0 ? logs[0].visitor_id : [];
+    return logs;
 
-    return idArray;
   } catch (error) {
     return error;
   }
@@ -69,18 +63,23 @@ async function getVisitors(startDate, endDate) {
   }
 
   try {
-    const idArray = await getVisitorList(date_01, date_02);
+    const visitors = await getVisitorList(date_01, date_02);
 
-    if (idArray === null) {
+    if (visitors === null) {
       const errMsg = "No logs in that date range.";
       errors.push(errMsg);
       return { errors };
     }
 
-    const visitors = await Visitor.aggregate([
+    const visitorDB = await Visitor.aggregate([
       {
         $match: {
-          _id: { $in: idArray }
+          $or: visitors.map(visitor => {
+            return {
+              _id: visitor.visitor_id,
+              expected_time_in: visitor.expected_time_in
+            }
+          })
         }
       },
       {
@@ -95,8 +94,8 @@ async function getVisitors(startDate, endDate) {
         }
       }
     ]);
-
-    return { visitors, errors };
+    
+    return { visitorDB, errors };
   } catch (error) {
     return error;
   }

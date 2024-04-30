@@ -7,20 +7,20 @@ exports.totalVisitors = async (req, res) => {
   const { startDate, endDate } = req.body;
 
   try {
-    const { visitors, errors } = await getVisitors(startDate, endDate);
+    const { visitorDB, errors } = await getVisitors(startDate, endDate);
 
     if (!(errors.length === 0)) {
       return res.status(400).json({ error: errors[0] });
     }
 
-    const total = visitors.reduce(
+    const total = visitorDB.reduce(
       (total, visitor) => (total += visitor.count),
       0
     );
-    const percent = Math.ceil((visitors[0].count / total) * 100);
-    const walk_in = visitors.find((v) => v._id === "Walk-In");
-    const pre_reg = visitors.find((v) => v._id === "Pre-Registered");
-    const type = visitors[0]._id;
+    const percent = Math.ceil((visitorDB[0].count / total) * 100);
+    const walk_in = visitorDB.find((v) => v._id === "Walk-In");
+    const pre_reg = visitorDB.find((v) => v._id === "Pre-Registered");
+    const type = visitorDB[0]._id;
 
     return res.status(200).json({
       walk_in: walk_in ? walk_in.count : 0,
@@ -52,8 +52,13 @@ exports.mostVisited = async (req, res) => {
     const where = await Visitor.aggregate([
       {
         $match: {
-          _id: { $in: visitors },
-        },
+          $or: visitors.map(visitor => {
+            return {
+              _id: visitor.visitor_id,
+              expected_time_in: visitor.expected_time_in
+            }
+          })
+        }
       },
       {
         $project: {
@@ -81,8 +86,13 @@ exports.mostVisited = async (req, res) => {
     const who = await Visitor.aggregate([
       {
         $match: {
-          _id: { $in: visitors },
-        },
+          $or: visitors.map(visitor => {
+            return {
+              _id: visitor.visitor_id,
+              expected_time_in: visitor.expected_time_in
+            }
+          })
+        }
       },
       {
         $project: {
@@ -109,8 +119,13 @@ exports.mostVisited = async (req, res) => {
     const what = await Visitor.aggregate([
       {
         $match: {
-          _id: { $in: visitors },
-        },
+          $or: visitors.map(visitor => {
+            return {
+              _id: visitor.visitor_id,
+              expected_time_in: visitor.expected_time_in
+            }
+          })
+        }
       },
       {
         $project: {
@@ -137,8 +152,13 @@ exports.mostVisited = async (req, res) => {
     const when = await Visitor.aggregate([
       {
         $match: {
-          _id: { $in: visitors },
-        },
+          $or: visitors.map(visitor => {
+            return {
+              _id: visitor.visitor_id,
+              expected_time_in: visitor.expected_time_in
+            }
+          })
+        }
       },
       {
         $group: {
@@ -175,7 +195,6 @@ exports.graph = async (req, res) => {
 
     const visitors = await getVisitorList(_start_date, _end_date);
 
-
     if (visitors === null) {
       return res.status(400).json({ error: "No visitors available in the specified date range" });
     }
@@ -183,7 +202,12 @@ exports.graph = async (req, res) => {
     const data = await Visitor.aggregate([
       {
         $match: {
-          _id: { $in: visitors },
+          $or: visitors.map(visitor => {
+            return {
+              _id: visitor.visitor_id,
+              expected_time_in: visitor.expected_time_in
+            }
+          })
         }
       },
       {

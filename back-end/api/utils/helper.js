@@ -354,6 +354,8 @@ async function validateDuplicate(visitors, res) {
         ]
       });
 
+
+
       // Check if email is used by another visitor
       if (visitorDB) {
         const { first_name, middle_name, last_name } =
