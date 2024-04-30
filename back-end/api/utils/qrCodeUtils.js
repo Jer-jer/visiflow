@@ -99,7 +99,7 @@ async function generateBadge(visitor) {
     await badge.save();
 
     const filename = `badge${badge._id}.png`;
-    const uri = `https://${local_ip}/badge/checkBadge?qr_id=${visitor._id}`;
+    const uri = `${local_ip}/badge/checkBadge?qr_id=${visitor._id}`;
     await generateQRCode(uri, filename, badge._id);
 
     return badge;
