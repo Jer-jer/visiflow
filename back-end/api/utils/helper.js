@@ -134,7 +134,8 @@ async function updateLog(_id, qr_id, user_id, res) {
       time_in_day.setHours(0, 0, 0 ,0);
     
       if (time_in_day > Date.now()) {
-        return res.status(400).json({ error: `Visitor is expected to time in on ${badge.expected_time_in}` });
+        const time_in_date = new Date(badge.expected_time_in);
+        return res.status(400).json({ error: `Visitor is expected to time in on ${time_in_date}` });
       }
       
       // If QR and time-in is valid

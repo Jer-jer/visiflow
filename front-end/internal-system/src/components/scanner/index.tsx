@@ -13,23 +13,23 @@ export default function Scanner({ onQRstatus }: any) {
 	const [scanResult, setScanResult] = useState<string | null>(null);
 	let scanner: Html5QrcodeScanner | null = null;
 
-	useEffect(() => {
-		const initializeScanner = () => {
-			scanner = new Html5QrcodeScanner(
-				"reader",
-				{
-					qrbox: {
-						width: 400,
-						height: 400,
-					},
-					fps: 5,
+	const initializeScanner = () => {
+		scanner = new Html5QrcodeScanner(
+			"reader",
+			{
+				qrbox: {
+					width: 400,
+					height: 400,
 				},
-				false,
-			);
+				fps: 5,
+			},
+			false,
+		);
 
-			scanner.render(success, error);
-		};
+		scanner.render(success, error);
+	};
 
+	useEffect(() => {
 		initializeScanner();
 
 		// Cleanup function to clear scanner when component unmounts
@@ -71,28 +71,23 @@ export default function Scanner({ onQRstatus }: any) {
 							}
 							case "time-out": {
 								onQRstatus("Successfully Timed-Out");
-								window.location.href = "/qr-scanner";
 								break;
 							}
 							case "time-in": {
 								onQRstatus("Successfully Timed-In");
-								window.location.href = "/qr-scanner";
 								break;
 							}
 							default: {
 								onQRstatus("Something went wrong");
-								window.location.href = "/qr-scanner";
 								break;
 							}
 						}
-						console.log(res.data);
+						initializeScanner();
 					})
 					.catch((err) => {
-						// if (err && err.response) {
-						// 	console.log(err.res.data.error);
-						// 	onQRstatus(err.res.data.error);
-						// 	window.location.href = "/qr-scanner";
-						// }
+						if (err && err.response) {
+							onQRstatus(err.response.data.error);
+						}
 					});
 			}
 		} else {
