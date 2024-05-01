@@ -122,7 +122,7 @@ async function updateLog(_id, qr_id, user_id, res) {
       if (badge.expected_time_out < Date.now() || badge.is_valid === false) {
         await Badge.updateOne(
           { _id: badge._id },
-          { $set: { qr_id: null, is_active: false, is_valid: false } }
+          { $set: { is_valid: false } }
         );
         return res.status(400).json({ error: "The QR is invalid." });
       }
