@@ -1,12 +1,14 @@
 require('dotenv').config();
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const { genSaltSync, hashSync, compareSync } = bcrypt;
+
 // Models
 const RefreshToken = require("../models/refreshToken");
 
+// Imports
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
-//Password Utils Section
+// Middleware
+const { genSaltSync, hashSync, compareSync } = bcrypt;
 
 /**
  * Hashes a password using bcrypt.
