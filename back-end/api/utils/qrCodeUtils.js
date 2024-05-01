@@ -1,16 +1,16 @@
-require("dotenv").config();
-const QRCode = require("qrcode");
-const nodemailer = require("nodemailer");
+require('dotenv').config();
 
 // Models
 const Visitor = require("../models/visitor");
 const Badge = require("../models/badge");
 
-// Constants
-const local_ip = "https://visiflow-api.onrender.com";
-
 // Imports
 const fs = require("fs").promises;
+const QRCode = require("qrcode");
+const nodemailer = require("nodemailer");
+
+// Constants
+const local_ip = "https://visiflow-api.onrender.com";
 
 // Nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -20,8 +20,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.MAILER_PASSWORD,
   },
 });
-
-// QR Code Utils Section
 
 /**
  * Generates QR codes and sends emails to the visitor and their companions.
