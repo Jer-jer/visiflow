@@ -110,6 +110,8 @@ export const actionType = (type: UserActionLogType) => {
 				return "Added Office";
 		case "update_office":
 				return "Updated Office";
+		case "delete_office":
+				return "Deleted Office";
 		case "add_event":
 					return "Added Event";
 		case "update_event":

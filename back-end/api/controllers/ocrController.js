@@ -5,7 +5,7 @@ exports.callMindeeApi = async (req, res) => {
   
 
     try {
-        const mindeeClient = new mindee.Client({ apiKey: "6892a263fd44d0dd789188f6edc890a1" });
+        const mindeeClient = new mindee.Client({ apiKey: "8a2763dd0144fae13ee868297f248d8d" });
 
         const inputSource = mindeeClient.docFromBase64(image, 'sample.jpeg');
 
