@@ -11,8 +11,6 @@ const local_ip = "https://visiflow-api.onrender.com";
 
 // Imports
 const fs = require("fs").promises;
-const QRCode = require("qrcode");
-const nodemailer = require("nodemailer");
 
 // Nodemailer transporter
 const transporter = nodemailer.createTransport({
