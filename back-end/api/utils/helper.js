@@ -65,7 +65,6 @@ function createImageBuffer(imageData) {
 }
 //End of Image Upload Section
 
-
 // Email functions
 
 // Nodemailer transporter
@@ -76,7 +75,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.MAILER_PASSWORD,
   },
 });
-
 
 async function sendEmail(mailOptions) {
   return new Promise((resolve, reject) => {
@@ -110,10 +108,12 @@ async function updateLog(_id, qr_id, user_id, res) {
             { $set: { qr_id: null, is_active: false, is_valid: false } }
           );
           await createSystemLog(user_id, "time_out", "success");
-          return res.status(200).json({type: "time-out"});
+          return res.status(200).json({ type: "time-out" });
         } catch (error) {
           await createSystemLog(user_id, "time_out", "failed");
-          return res.status(500).json({ error: "Failed to time out the visitor." });
+          return res
+            .status(500)
+            .json({ error: "Failed to time out the visitor." });
         }
       }
       // Time-in section
@@ -129,19 +129,36 @@ async function updateLog(_id, qr_id, user_id, res) {
 
       // Check if the visitor timed-in too early
       const time_in_day = new Date(badge.expected_time_in);
-      time_in_day.setHours(0, 0, 0 ,0);
-    
-      if (time_in_day > Date.now()) {
+      time_in_day.setHours(0, 0, 0, 0);
+
+      // Convert both dates to Philippine time
+      const time_in_day_ph = new Date(
+        time_in_day.toLocaleString("en-US", { timeZone: "Asia/Manila" })
+      );
+      const now_ph = new Date(
+        new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" })
+      );
+
+      if (time_in_day_ph > now_ph) {
         const time_in_date = new Date(badge.expected_time_in);
-        return res.status(400).json({ error: `Visitor is expected to time in on ${time_in_date}` });
+        return res
+          .status(400)
+          .json({ error: `Visitor is expected to time in on ${time_in_date}` });
       }
-      
+
+      // const time_in_day = new Date(badge.expected_time_in);
+      // time_in_day.setHours(0, 0, 0 ,0);
+
+      // if (time_in_day > Date.now()) {
+      //   const time_in_date = new Date(badge.expected_time_in);
+      //   return res.status(400).json({ error: `Visitor is expected to time in on ${time_in_date}` });
+      // }
+
       // If QR and time-in is valid
       await VisitorLogs.create({
         badge_id: badge._id,
         check_in_time: new Date(),
       });
-
 
       try {
         await Badge.updateOne(
@@ -150,10 +167,12 @@ async function updateLog(_id, qr_id, user_id, res) {
         );
 
         await createSystemLog(user_id, "time_in", "success");
-        return res.status(200).json({type: "time-in"});
+        return res.status(200).json({ type: "time-in" });
       } catch (error) {
         await createSystemLog(user_id, "time_in", "failed");
-        return res.status(500).json({ error: "Failed to time in the visitor." });
+        return res
+          .status(500)
+          .json({ error: "Failed to time in the visitor." });
       }
     }
     return res.status(500).json({ error: "No badge found." });
@@ -163,7 +182,6 @@ async function updateLog(_id, qr_id, user_id, res) {
 }
 
 async function updateVisitor(_id, companions, status) {
-
   const visitor = await Visitor.findById(_id);
 
   if (!visitor) {
@@ -212,10 +230,9 @@ async function timeOutReminder(io) {
         });
 
         if (badge) {
-
           const visitor = await Visitor.findOne({
             _id: badge.visitor_id,
-            expected_time_out: { $lte: currentTime - 15 * 60000},
+            expected_time_out: { $lte: currentTime - 15 * 60000 },
           });
 
           return visitor;
@@ -223,7 +240,9 @@ async function timeOutReminder(io) {
       })
     );
 
-    const validVisitors = visitors.filter((visitor) => visitor !== null && undefined);
+    const validVisitors = visitors.filter(
+      (visitor) => visitor !== null && undefined
+    );
 
     if (validVisitors.length > 0) {
       for (const visitor of validVisitors) {
@@ -231,7 +250,7 @@ async function timeOutReminder(io) {
         await Badge.updateOne(
           { qr_id: visitor._id },
           { $set: { qr_id: null, is_active: false, is_valid: false } }
-        )
+        );
       }
     }
   } catch (error) {
@@ -342,7 +361,7 @@ async function validateDuplicate(visitors, res) {
   const validateDuplicate = visitors.map(async (visitor) => {
     try {
       // Check if visitor has an existing record
-      
+
       const visitorDB = await Visitor.findOne({
         $or: [
           {
@@ -360,8 +379,6 @@ async function validateDuplicate(visitors, res) {
         ],
       });
 
-
-
       // Check if email is used by another visitor
       if (visitorDB) {
         const { first_name, middle_name, last_name } =
@@ -371,7 +388,7 @@ async function validateDuplicate(visitors, res) {
         const isDuplicate =
           visitor.visitor_details.name.first_name === first_name &&
           (visitor.visitor_details.name.middle_name || "") ===
-          (middle_name || "") &&
+            (middle_name || "") &&
           visitor.visitor_details.name.last_name === last_name;
 
         return isDuplicate
@@ -392,8 +409,6 @@ async function validateDuplicate(visitors, res) {
   }
 }
 
-
-
 module.exports = {
   updateLog,
   uploadFileToGCS,
@@ -405,5 +420,5 @@ module.exports = {
   generateFileName,
   createImageBuffer,
   validateDuplicate,
-  updateVisitor
+  updateVisitor,
 };
