@@ -88,6 +88,7 @@ async function generateBadge(visitor) {
     const badge = new Badge({
       visitor_id: visitor._id,
       qr_id: visitor._id,
+      purpose: visitor.purpose,
       expected_time_in: visitor.expected_time_in,
       expected_time_out: visitor.expected_time_out,
       is_active: false,

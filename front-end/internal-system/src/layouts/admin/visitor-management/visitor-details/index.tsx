@@ -494,7 +494,7 @@ Who: ${convertedData
 		await AxiosInstance.post("employees/notifyPOI", {
 			recipients: emailToSend,
 			subject,
-			poiMessage,
+			message: poiMessage,
 		})
 			.then((res) => {
 				setLoading(false);
