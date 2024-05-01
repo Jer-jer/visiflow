@@ -51,10 +51,10 @@ export default function OfficeScheduleList() {
 	const decodedtoken = (jwtDecode (token as string));
 
 	useEffect(() => {
-		if(searchValue == "") {
+		if(searchValue == "") { //if searchvalue is empty fetchandsetoffices will be called
 			fetchAndSetOffices();
 		}
-	}, [searchValue])
+	}, [searchValue ]) //if this changes useEffect will happen again
 
 	const fetchAndSetOffices = async () => {
 		try {
@@ -63,7 +63,7 @@ export default function OfficeScheduleList() {
 
 			//getting only the data we want
 			const convertedData: OfficeSchedule[] = data.map((office: any) => ({
-				name: office.name, 
+				name: office.name,  
 				roomNo: office.roomNo,
 				pic: office.pic,
 				contact: office.contact,
