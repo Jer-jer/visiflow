@@ -22,7 +22,7 @@ import { addTab, removeTab } from "../../../states/badges/tab";
 import "./styles.scss";
 
 //Assets
-import { ExcelDownload, Search, TabClose } from "../../../assets/svg";
+import { Search, TabClose } from "../../../assets/svg";
 import { useDispatch, useSelector } from "react-redux";
 
 type TargetKey = React.MouseEvent | React.KeyboardEvent | string | number;
@@ -38,11 +38,10 @@ interface TabItems {
 }
 
 const options = [
-	{ label: 'Past', value: 'past' },
-	{ label: 'Current', value: 'current' },
-	{ label: 'Upcoming', value: 'upcoming' },
-  ];
-
+	{ label: "Past", value: "past" },
+	{ label: "Current", value: "current" },
+	{ label: "Upcoming", value: "upcoming" },
+];
 
 export default function ScheduleManagement() {
 	const [search, setSearch] = useState<string>("");
@@ -59,13 +58,9 @@ export default function ScheduleManagement() {
 	useEffect(() => {
 		dispatch(fetchVisitors());
 		dispatch(fetchBadges());
-
-		
 	}, [tabs]);
 
-	const { dashboardBadge } = useSelector(
-		(state: RootState) => state.badges,
-	);
+	const { dashboardBadge } = useSelector((state: RootState) => state.badges);
 
 	useEffect(() => {
 		if (dashboardBadge) {
@@ -143,28 +138,29 @@ export default function ScheduleManagement() {
 								onChange={(e) => setSearch(e.target.value)}
 							/>
 							<Tooltip
-							placement="top"
-							title={
-								hideInOut
-									? "Filter Date Created"
-									: "Filter Expected Time In and Out"
-							}
-							arrow={false}
+								placement="top"
+								title={
+									hideInOut
+										? "Filter Date Created"
+										: "Filter Expected Time In and Out"
+								}
+								arrow={false}
 							>
 								<>
 									<DateTimePicker size="large" onRangeChange={onRangeChange} />
 								</>
 							</Tooltip>
-							<div className="ml-auto">
-								<ExcelDownload />
-							</div>
 						</div>
 						<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
-							<Checkbox.Group options={options} value={checkedList} onChange={setCheckedList}/>
+							<Checkbox.Group
+								options={options}
+								value={checkedList}
+								onChange={setCheckedList}
+							/>
 						</div>
 						<div className="mr-[50px]">
-							<ScheduleListTable 
-								addTab={add} 
+							<ScheduleListTable
+								addTab={add}
 								dateSearch={dateSearch}
 								hideInOut={hideInOut}
 								setHideInOut={setHideInOut}

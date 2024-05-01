@@ -1,8 +1,8 @@
 /* Built using Ant Design */
-import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
+import React, { useState, useEffect } from "react";
 
 //Components
-import { Checkbox, Table, Tag } from "antd";
+import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 //Interfaces
@@ -14,7 +14,6 @@ import { formatDateObjToString, formatDateToISO } from "../../../utils";
 import "../../../utils/variables.scss";
 import "./styles.scss";
 import AxiosInstance from "../../../lib/axios";
-import dayjs, { Dayjs } from "dayjs";
 
 interface CurrentVisitor {
 	key: string;
