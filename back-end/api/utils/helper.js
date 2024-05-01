@@ -128,26 +128,23 @@ async function updateLog(_id, qr_id, user_id, res) {
       }
 
       // Check if the visitor timed-in too early
-      const time_in_day = new Date(badge.expected_time_in);
-      time_in_day.setHours(0, 0, 0, 0);
+      const expectedTime = new Date(badge.expected_time_in);
+      const currentTime = new Date();
 
-      // Convert both dates to Philippine time
-      const time_in_day_ph = new Date(
-        time_in_day.toLocaleString("en-US", { timeZone: "Asia/Manila" })
-      );
-      const now_ph = new Date(
-        new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" })
-      );
+      // Calculate the allowed time window for check-in (e.g., 15 minutes)
+      const allowedWindow = expectedTime.getTime() - 1440 * 60 * 1000; // 24 hours or 1 day in milliseconds
 
-      if (time_in_day_ph > now_ph) {
-        const time_in_date = new Date(badge.expected_time_in);
+      // Check if current time is within the allowed window
+      if (currentTime.getTime() < allowedWindow) {
+        // Time is too early (more than allowed window before expected time)
         return res.status(400).json({
-          error: `Visitor is expected to time in on ${time_in_date.toLocaleString(
+          error: `It is still too early to time in! Expected time in: ${expectedTime.toLocaleString(
             "en-US",
             { timeZone: "Asia/Manila" }
           )}`,
         });
       }
+
       // const time_in_day = new Date(badge.expected_time_in);
       // time_in_day.setHours(0, 0, 0 ,0);
 
