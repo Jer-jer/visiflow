@@ -1,6 +1,4 @@
 require("dotenv").config();
-const QRCode = require("qrcode");
-const nodemailer = require("nodemailer");
 
 // Models
 const Visitor = require("../models/visitor");
