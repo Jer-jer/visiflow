@@ -211,31 +211,26 @@ async function timeOutReminder(io) {
         });
 
         if (badge) {
-          const [visitor, companion] = await Promise.all([
-            Visitor.findOne({
-              _id: badge.visitor_id,
-              expected_time_out: { $lte: currentTime - 15 * 60000 },
-            }),
-            Visitor.findOne({ "companion_details._id": badge.visitor_id }),
-          ]);
 
-          if (visitor) {
-            return visitor;
-          }
+          const visitor = await Visitor.findOne({
+            _id: badge.visitor_id,
+            expected_time_out: { $lte: currentTime - 15 * 60000},
+          });
 
-          if (companion) {
-            console.log(companion);
-            return companion.companion_details;
-          }
+          return visitor;
         }
       })
     );
 
-    const validVisitors = visitors.filter((visitor) => visitor !== undefined);
+    const validVisitors = visitors.filter((visitor) => visitor !== null && undefined);
 
     if (validVisitors.length > 0) {
       for (const visitor of validVisitors) {
         await createNotification(visitor, "time-out", io);
+        await Badge.updateOne(
+          { qr_id: visitor._id },
+          { $set: { qr_id: null, is_active: false, is_valid: false } }
+        )
       }
     }
   } catch (error) {
