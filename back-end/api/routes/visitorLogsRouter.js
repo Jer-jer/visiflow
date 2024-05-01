@@ -9,6 +9,8 @@ router.get("/", VisitorLogsController.getLogs);
 
 router.post("/find-visitor-logs", VisitorLogsController.findVisitorLogs);
 
+router.post("/find-all-visitor-logs", VisitorLogsController.findAllVisitorLogs);
+
 router.post("/find", VisitorLogsController.findLog);
 
 module.exports = router;

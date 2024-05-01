@@ -130,6 +130,7 @@ exports.newBadge = async (req, res) => {
     const badge = await Badge.create({
       visitor_id: visitor_id,
       qr_id: new ObjectId(qr_id),
+      purpose: visitorDB.purpose,
       expected_time_in: visitorDB.expected_time_in,
       expected_time_out: visitorDB.expected_time_out,
       is_active: true,

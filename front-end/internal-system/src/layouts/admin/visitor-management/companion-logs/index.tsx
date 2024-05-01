@@ -11,7 +11,7 @@ import localeData from "dayjs/plugin/localeData";
 //Interfaces
 import { RootState } from "../../../../store";
 import type { AppDispatch } from "../../../../store";
-import { VisitorLogDetails, PurposeProps } from "../../../../utils/interfaces";
+import { PurposeProps } from "../../../../utils/interfaces";
 import type { Dayjs } from "dayjs";
 
 //Layouts
@@ -86,44 +86,37 @@ export default function CompanionLogs({
 		}
 	};
 
+	const getLogs = async () => {
+		await AxiosInstance.post("/visitor/logs/find-all-visitor-logs", {
+			visitor_id: companionId,
+		})
+			.then((res) => {
+				const allLogs = res.data.visitorLogs;
+				for (let log of allLogs) {
+					log.logs.map((indvLog: any, indx: number) => {
+						return dispatch(
+							addLog({
+								key: (indx + 1).toString(),
+								purpose: log.purpose,
+								check_in_time: indvLog.check_in_time,
+								check_out_time: indvLog.check_out_time,
+							}),
+						);
+					});
+				}
+			})
+			.catch((err) => {
+				if (err && err.response) {
+					const message = err.response.data.error;
+					warning(message);
+				}
+			});
+	};
+
 	useEffect(() => {
 		if (companionId) {
 			dispatch(removeLogs());
-
-			AxiosInstance.post(`/badge/findBadge`, { visitor_id: companionId })
-				.then(async (res) => {
-					const badge = res.data.badge;
-					await AxiosInstance.post("/visitor/logs/find-visitor-logs", {
-						badge_id: badge._id,
-					})
-						.then((res) => {
-							const logs = res.data.visitorLogs;
-							logs.map((log: any, indx: number) =>
-								dispatch(
-									addLog({
-										key: (indx + 1).toString(),
-										purpose: purpose,
-										check_in_time: log.check_in_time,
-										check_out_time: log.check_out_time,
-									}),
-								),
-							);
-						})
-						.catch((err) => {
-							if (err && err.response) {
-								const message = err.response.data.error;
-
-								warning(message);
-							}
-						});
-				})
-				.catch((err) => {
-					if (err && err.response) {
-						const message = err.response.data.error;
-
-						error(message);
-					}
-				});
+			getLogs();
 		}
 	}, [companionId]);
 
