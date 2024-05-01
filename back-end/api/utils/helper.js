@@ -143,7 +143,12 @@ async function updateLog(_id, qr_id, user_id, res) {
         const time_in_date = new Date(badge.expected_time_in);
         return res
           .status(400)
-          .json({ error: `Visitor is expected to time in on ${time_in_date}` });
+          .json({
+            error: `Visitor is expected to time in on ${time_in_date.toLocaleString(
+              "en-US",
+              { timeZone: "Asia/Manila" }
+            )}`,
+          });
       }
 
       // const time_in_day = new Date(badge.expected_time_in);
