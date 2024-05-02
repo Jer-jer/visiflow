@@ -1,4 +1,4 @@
-require("dotenv").config();
+require('dotenv').config();
 
 // Models
 const Visitor = require("../models/visitor");
