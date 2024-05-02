@@ -33,11 +33,11 @@ async function getVisitorList(date_01, date_02) {
       }
     ]);
 
-    logs.map(log => console.log(log.visitor_id));
-
     if (logs.length === 0) {
       return null;
     }
+
+    console.log('reached here');
 
     return logs;
 
