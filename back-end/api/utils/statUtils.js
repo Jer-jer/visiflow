@@ -34,12 +34,9 @@ async function getVisitorList(date_01, date_02) {
     ]);
 
     if (logs.length === 0) {
-      console.log('will return null\n');
       return null;
     }
     
-    console.log(`has value: ${logs}`);
-
     return logs;
 
   } catch (error) {
@@ -75,10 +72,6 @@ async function getVisitors(startDate, endDate) {
       errors.push(errMsg);
       return { errors };
     }
-
-    console.log('\n\nVisitors exists\n\n');
-
-    visitors.map(log => console.log(log.visitor_id));
     
     const visitorDB = await Visitor.aggregate([
       {
