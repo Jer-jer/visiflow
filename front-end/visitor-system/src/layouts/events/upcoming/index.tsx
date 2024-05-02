@@ -14,7 +14,7 @@ import "./styles.scss";
 
 export default function UpcomingEvents({ events }: EventsPropsAggregate) {
 	return (
-		<div className="flex flex-col items-center justify-center gap-4 px-5 lg:px-0 lg:flex-row lg:flex-wrap">
+		<div className="flex flex-col justify-center gap-4 px-5 lg:px-0 lg:flex-row lg:flex-wrap">
 			{events.map((event, key) => (
 				<EventCard
 					key={key}
