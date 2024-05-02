@@ -37,8 +37,6 @@ async function getVisitorList(date_01, date_02) {
       return null;
     }
 
-    console.log('reached here');
-
     return logs;
 
   } catch (error) {
@@ -66,8 +64,10 @@ async function getVisitors(startDate, endDate) {
 
   try {
     const visitors = await getVisitorList(date_01, date_02);
+    console.log(`Result: ${visitors}`);
 
     if (visitors === null) {
+      console.log('No visitors');
       const errMsg = "No logs in that date range.";
       errors.push(errMsg);
       return { errors };
