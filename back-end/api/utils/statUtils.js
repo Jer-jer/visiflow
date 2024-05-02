@@ -45,18 +45,16 @@ async function getVisitorList(date_01, date_02) {
 
 async function getVisitors(startDate, endDate) {
   const today = new Date();
-  const startTime = today.toLocaleString('en-US', { timeZone: 'Asia/Manila' });
-  startTime.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
   const endOfDay = new Date();
-  const endTime = endOfDay.toLocaleString('en-US', { timeZone: 'Asia/Manila' });
-  endTime.setHours(23, 59, 59, 999);
+  endOfDay.setHours(23, 59, 59, 999);
 
-  console.log('Processing date\n');
+  console.log('Processing Date');
 
   const date_01 =
-    startDate != undefined && startDate ? new Date(startDate) : startTime;
+    startDate != undefined && startDate ? new Date(startDate) : today;
   const date_02 =
-    endDate != undefined && endDate ? new Date(endDate) : endTime;
+    endDate != undefined && endDate ? new Date(endDate) : endOfDay;
 
   console.log(`Default date: ${date_01} + ${date_02}`);
 
