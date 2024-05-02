@@ -96,7 +96,7 @@ async function getVisitors(startDate, endDate) {
         }
       }
     ]);
-    
+    console.log(visitorDB);
     return { visitorDB, errors };
   } catch (error) {
     return error;
