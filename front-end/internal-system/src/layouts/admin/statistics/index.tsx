@@ -35,6 +35,9 @@ import AxiosInstance from "../../../lib/axios";
 //Utils
 import { formatDateString } from "../../../utils";
 
+//Assets
+import { LoadingOutlined } from "@ant-design/icons";
+
 //Styles
 import "../../../utils/variables.scss";
 import "./styles.scss";
@@ -113,8 +116,25 @@ export default function StatisticsLayout() {
 	const [month, setMonth] = useState(false);
 	const [year, setYear] = useState(false);
 
+	const [selectedMonth, setSelectedMonth] = useState<string | undefined>(
+		undefined,
+	);
+	const [selectedYear, setSelectedYear] = useState<string | undefined>(
+		undefined,
+	);
+
 	const [months, setMonths] = useState<[{ value: string; label: string }]>();
 	const [years, setYears] = useState<[{ value: string; label: string }]>();
+
+	const [daysOfMonth, setDaysOfMonth] = useState<
+		{
+			day: string;
+			walkin: number;
+			preregistered: number;
+		}[]
+	>([]);
+
+	const [loading, setLoading] = useState(false);
 
 	const [data, setData] = useState<WalkInVsRegisteredProps[]>([
 		{
@@ -350,146 +370,96 @@ export default function StatisticsLayout() {
 		fetchGraph();
 	}, []);
 
-	const onChangeMonth: CheckboxProps["onChange"] = (e) => {
-		setMonth(e.target.checked);
+	const getDaysInMonth = async (month: string, year: string) => {
+		return new Array(31)
+			.fill("")
+			.map((v, i) => new Date(parseInt(year), parseInt(month) - 1, i + 1))
+			.filter((v) => v.getMonth() === parseInt(month) - 1)
+			.map((v) => ({
+				day: v.getDate().toString(),
+				walkin: 0,
+				preregistered: 0,
+			}));
 	};
 
-	const onChangeYear: CheckboxProps["onChange"] = (e) => {
+	const onChangeMonth: CheckboxProps["onChange"] = async (e) => {
+		setMonth(e.target.checked);
+
+		if (e.target.checked === false) {
+			setLoading(true);
+			await fetchGraph(undefined, selectedYear);
+			setLoading(false);
+		}
+	};
+
+	const onChangeYear: CheckboxProps["onChange"] = async (e) => {
 		setYear(e.target.checked);
+
+		if (e.target.checked === false) {
+			setLoading(true);
+			await fetchGraph(selectedMonth, undefined);
+			setLoading(false);
+		}
 	};
 
 	const handleChangeMonth = async (value: string) => {
 		console.log(`selected ${value}`);
+		setSelectedMonth(value);
 
-		await AxiosInstance.post("/stats/graph", {
-			month: value,
-			year: year ? year : undefined,
-		})
-			.then((res: any) => {
-				if (res.data.data.length === 0) throw new Error("No data found");
+		console.log(
+			getDaysInMonth(
+				value,
+				selectedYear !== undefined && selectedYear
+					? selectedYear
+					: new Date().getFullYear().toString(),
+			),
+		);
 
-				const graphData: WalkInVsRegisteredProps[] = res.data.data.map(
-					(data: any) => {
-						if (data.visitor_types.length === 1) {
-							if (data.visitor_types[0].visitor_type === "Walk-In") {
-								return {
-									name: monthDeterminer(data._id),
-									"Walk-in": data.visitor_types[0].count,
-									"Pre-registered": 0,
-								};
-							}
+		const allDays = await getDaysInMonth(
+			value,
+			selectedYear !== undefined && selectedYear
+				? selectedYear
+				: new Date().getFullYear().toString(),
+		);
 
-							return {
-								name: monthDeterminer(data._id),
-								"Walk-in": 0,
-								"Pre-registered": data.visitor_types[0].count,
-							};
-						} else if (data.visitor_types.length === 2) {
-							if (data.visitor_types[0].visitor_type === "Walk-In") {
-								return {
-									name: monthDeterminer(data._id),
-									"Walk-in": data.visitor_types[0].count,
-									"Pre-registered": data.visitor_types[1].count,
-								};
-							} else if (
-								data.visitor_types[0].visitor_type === "Pre-Registered"
-							) {
-								return {
-									name: monthDeterminer(data._id),
-									"Walk-in": data.visitor_types[1].count,
-									"Pre-registered": data.visitor_types[0].count,
-								};
-							}
-						}
+		await AxiosInstance.post("/stats/getDays", {
+			month: parseInt(value),
+		}).then((res: any) => {
+			const days = allDays.map((d: any) => {
+				const day = res.data.grouped.find((day: any) => {
+					return d.day.padStart(2, "0") === day.day;
+				});
 
-						return {
-							name: monthDeterminer(data._id).label,
-							"Walk-in": 0,
-							"Pre-registered": 0,
-						};
-					},
-				);
-
-				setData(
-					graphData.sort(
-						(a: WalkInVsRegisteredProps, b: WalkInVsRegisteredProps) =>
-							parseInt(a.name.value) - parseInt(b.name.value),
-					),
-				);
-			})
-			.catch((err) => {
-				if (err && err.response) {
-					const message = err.response.data.error;
-					error(message);
+				if (day) {
+					return {
+						day: day.day,
+						walkin: day.walkin,
+						preregistered: day.preregistered,
+					};
 				}
+
+				return {
+					day: d.day.padStart(2, "0"),
+					walkin: 0,
+					preregistered: 0,
+				};
 			});
+
+			setDaysOfMonth(days);
+		});
+
+		setLoading(true);
+		await fetchGraph(value);
+		setLoading(false);
 	};
 
 	const handleChangeYear = async (value: string) => {
 		console.log(`selected ${value}`);
+		setSelectedYear(value);
 
-		await AxiosInstance.post("/stats/graph", {
-			month: month ? month : undefined,
-			year: value,
-		})
-			.then((res: any) => {
-				if (res.data.data.length === 0) throw new Error("No data found");
-
-				const graphData: WalkInVsRegisteredProps[] = res.data.data.map(
-					(data: any) => {
-						if (data.visitor_types.length === 1) {
-							if (data.visitor_types[0].visitor_type === "Walk-In") {
-								return {
-									name: monthDeterminer(data._id),
-									"Walk-in": data.visitor_types[0].count,
-									"Pre-registered": 0,
-								};
-							}
-
-							return {
-								name: monthDeterminer(data._id),
-								"Walk-in": 0,
-								"Pre-registered": data.visitor_types[0].count,
-							};
-						} else if (data.visitor_types.length === 2) {
-							if (data.visitor_types[0].visitor_type === "Walk-In") {
-								return {
-									name: monthDeterminer(data._id),
-									"Walk-in": data.visitor_types[0].count,
-									"Pre-registered": data.visitor_types[1].count,
-								};
-							} else if (
-								data.visitor_types[0].visitor_type === "Pre-Registered"
-							) {
-								return {
-									name: monthDeterminer(data._id),
-									"Walk-in": data.visitor_types[1].count,
-									"Pre-registered": data.visitor_types[0].count,
-								};
-							}
-						}
-
-						return {
-							name: monthDeterminer(data._id).label,
-							"Walk-in": 0,
-							"Pre-registered": 0,
-						};
-					},
-				);
-
-				setData(
-					graphData.sort(
-						(a: WalkInVsRegisteredProps, b: WalkInVsRegisteredProps) =>
-							parseInt(a.name.value) - parseInt(b.name.value),
-					),
-				);
-			})
-			.catch((err) => {
-				if (err && err.response) {
-					const message = err.response.data.error;
-					error(message);
-				}
-			});
+		setLoading(true);
+		await fetchGraph(value);
+		setLoading(false);
 	};
 
 	const calculatePercentage = (part: number, total: number) => {
@@ -684,29 +654,59 @@ export default function StatisticsLayout() {
 					headerStyling="text-lg tracking-[1.47px]"
 				>
 					<div className="mb-[10px] w-[95%]">
-						<ResponsiveContainer aspect={2}>
-							<LineChart
-								data={data}
-								margin={{
-									top: 5,
-									right: 30,
-									left: 20,
-									bottom: 5,
-								}}
-							>
-								<CartesianGrid strokeDasharray="3 3" />
-								<XAxis dataKey="name.label" />
-								<YAxis />
-								<Tooltip />
-								<Legend />
-								<Line type="monotone" dataKey="Walk-in" stroke="#E88B23" />
-								<Line
-									type="monotone"
-									dataKey="Pre-registered"
-									stroke="#82ca9d"
-								/>
-							</LineChart>
-						</ResponsiveContainer>
+						{loading ? (
+							<div className="flex items-center justify-center">
+								<LoadingOutlined className="text-[128px] text-primary-500" />
+							</div>
+						) : (
+							<ResponsiveContainer aspect={2}>
+								{daysOfMonth && daysOfMonth.length > 0 ? (
+									<LineChart
+										data={daysOfMonth}
+										margin={{
+											top: 5,
+											right: 30,
+											left: 20,
+											bottom: 5,
+										}}
+									>
+										<CartesianGrid strokeDasharray="3 3" />
+										<XAxis dataKey="day" />
+										<YAxis />
+										<Tooltip />
+										<Legend />
+										<Line type="monotone" dataKey="walkin" stroke="#E88B23" />
+										<Line
+											type="monotone"
+											dataKey="preregistered"
+											stroke="#82ca9d"
+										/>
+									</LineChart>
+								) : (
+									<LineChart
+										data={data}
+										margin={{
+											top: 5,
+											right: 30,
+											left: 20,
+											bottom: 5,
+										}}
+									>
+										<CartesianGrid strokeDasharray="3 3" />
+										<XAxis dataKey="name.label" />
+										<YAxis />
+										<Tooltip />
+										<Legend />
+										<Line type="monotone" dataKey="Walk-in" stroke="#E88B23" />
+										<Line
+											type="monotone"
+											dataKey="Pre-registered"
+											stroke="#82ca9d"
+										/>
+									</LineChart>
+								)}
+							</ResponsiveContainer>
+						)}
 					</div>
 					<div className="mb-[15px] flex gap-[10px]">
 						<Checkbox
@@ -728,6 +728,7 @@ export default function StatisticsLayout() {
 									<Select
 										options={months}
 										label="Month"
+										placeholder="Select Month"
 										handleChange={handleChangeMonth}
 									/>
 								) : (
@@ -743,6 +744,7 @@ export default function StatisticsLayout() {
 									<Select
 										options={years}
 										label="Year"
+										placeholder="Select Year"
 										handleChange={handleChangeYear}
 									/>
 								) : (

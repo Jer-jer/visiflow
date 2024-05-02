@@ -5,14 +5,14 @@ import { Modal } from "antd";
 const token = localStorage.getItem("token");
 
 const AxiosInstance = axios.create({
-	baseURL: "https://visiflow-api.onrender.com",
+	baseURL: "http://localhost:5000",
 	headers: {
 		Authorization: `Bearer ${token}`,
 	},
 });
 
 export const AxiosLoginInstance = axios.create({
-	baseURL: "https://visiflow-api.onrender.com",
+	baseURL: "http://localhost:5000",
 });
 
 AxiosInstance.interceptors.response.use(
