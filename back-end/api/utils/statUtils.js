@@ -33,6 +33,8 @@ async function getVisitorList(date_01, date_02) {
       }
     ]);
 
+    console.log(`getVisitorList Function: ${logs}\n`);
+
     if (logs.length === 0) {
       return null;
     }
@@ -63,7 +65,11 @@ async function getVisitors(startDate, endDate) {
   }
 
   try {
+    console.log('Before getVisitorList\n');
+
     const visitors = await getVisitorList(date_01, date_02);
+
+    console.log(`After: ${visitors}\n`);
 
     if (visitors === null) {
       const errMsg = "No logs in that date range.";
