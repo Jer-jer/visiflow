@@ -122,7 +122,7 @@ async function updateLog(_id, qr_id, user_id, res) {
       if (badge.expected_time_out < Date.now() || badge.is_valid === false) {
         await Badge.updateOne(
           { _id: badge._id },
-          { $set: { qr_id: null, is_active: false, is_valid: false } }
+          { $set: { is_valid: false } }
         );
         return res.status(400).json({ error: "The QR is invalid." });
       }
@@ -229,31 +229,27 @@ async function timeOutReminder(io) {
         });
 
         if (badge) {
-          const [visitor, companion] = await Promise.all([
-            Visitor.findOne({
-              _id: badge.visitor_id,
-              expected_time_out: { $lte: currentTime - 15 * 60000 },
-            }),
-            Visitor.findOne({ "companion_details._id": badge.visitor_id }),
-          ]);
+          const visitor = await Visitor.findOne({
+            _id: badge.visitor_id,
+            expected_time_out: { $lte: currentTime - 15 * 60000 },
+          });
 
-          if (visitor) {
-            return visitor;
-          }
-
-          if (companion) {
-            console.log(companion);
-            return companion.companion_details;
-          }
+          return visitor;
         }
       })
     );
 
-    const validVisitors = visitors.filter((visitor) => visitor !== undefined);
+    const validVisitors = visitors.filter(
+      (visitor) => visitor !== null && undefined
+    );
 
     if (validVisitors.length > 0) {
       for (const visitor of validVisitors) {
         await createNotification(visitor, "time-out", io);
+        await Badge.updateOne(
+          { qr_id: visitor._id },
+          { $set: { qr_id: null, is_active: false, is_valid: false } }
+        );
       }
     }
   } catch (error) {

@@ -87,7 +87,6 @@ export default function StepThree({
 			content: <p>Please make sure you have put everything you need</p>,
 			icon: <ExclamationCircleFilled />,
 			onOk() {
-				console.log("VIISSTOORRRRRRR", visitors);
 				if (
 					visitors
 						.slice(1)

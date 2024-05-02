@@ -4,13 +4,13 @@ require("dotenv").config();
 const Visitor = require("../models/visitor");
 const Badge = require("../models/badge");
 
+// Constants
+const local_ip = "https://visiflow-api.onrender.com";
+
 // Imports
 const fs = require("fs").promises;
-const QRCode = require("qrcode");
 const nodemailer = require("nodemailer");
-
-// Constants
-const local_ip = "localhost";
+const QRCode = require("qrcode");
 
 // Nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -97,8 +97,8 @@ async function generateBadge(visitor) {
 
     await badge.save();
 
-    const filename = `api/resource/badge/badge${badge._id}.png`;
-    const uri = `http://${local_ip}:5000/badge/checkBadge?qr_id=${visitor._id}`;
+    const filename = `badge${badge._id}.png`;
+    const uri = `${local_ip}/badge/checkBadge?qr_id=${visitor._id}`;
     await generateQRCode(uri, filename, badge._id);
 
     return badge;
@@ -168,7 +168,7 @@ async function sendBadgeEmail(badge, visitor, message) {
       attachments: [
         {
           filename: `badge${badge._id}.png`,
-          path: `api/resource/badge/badge${badge._id}.png`,
+          path: `badge${badge._id}.png`,
         },
       ],
     };
