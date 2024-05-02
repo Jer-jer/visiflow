@@ -51,10 +51,14 @@ async function getVisitors(startDate, endDate) {
   const endTime = endOfDay.toLocaleString('en-US', { timeZone: 'Asia/Manila' });
   endTime.setHours(23, 59, 59, 999);
 
+  console.log('Processing date\n');
+
   const date_01 =
     startDate != undefined && startDate ? new Date(startDate) : startTime;
   const date_02 =
     endDate != undefined && endDate ? new Date(endDate) : endTime;
+
+  console.log(`Default date: ${date_01} + ${date_02}`);
 
   const errors = [];
 
@@ -65,7 +69,6 @@ async function getVisitors(startDate, endDate) {
   }
 
   try {
-    console.log(`Default date: ${date_01} + ${date_02}`);
     const visitors = await getVisitorList(date_01, date_02);
 
     if (visitors === null) {
