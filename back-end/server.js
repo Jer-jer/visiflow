@@ -39,8 +39,9 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: [
-      "https://gullas-visiflow.onrender.com",
-      "https://gullas-visiflow-internal.onrender.com",
+      // "https://gullas-visiflow.onrender.com",
+      // "https://gullas-visiflow-internal.onrender.com",
+      "*"
     ],
   },
 });
