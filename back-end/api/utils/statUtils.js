@@ -34,8 +34,11 @@ async function getVisitorList(date_01, date_02) {
     ]);
 
     if (logs.length === 0) {
+      console.log('will return null\n');
       return null;
     }
+    
+    console.log(`has value: ${logs}`);
 
     return logs;
 
