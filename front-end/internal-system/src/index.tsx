@@ -4,6 +4,7 @@ import reportWebVitals from "./reportWebVitals";
 import { ConfigProvider } from "antd";
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
+import { disableReactDevTools } from "@fvilers/disable-react-devtools";
 
 // Store
 import { store } from "./store";
@@ -15,6 +16,8 @@ import App from "./App";
 //Styles
 import "./utils/variables.scss";
 import "./index.scss";
+
+if (process.env.NODE_ENV === "production") disableReactDevTools();
 
 const root = ReactDOM.createRoot(
 	document.getElementById("root") as HTMLElement,

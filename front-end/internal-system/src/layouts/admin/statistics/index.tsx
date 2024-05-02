@@ -360,10 +360,136 @@ export default function StatisticsLayout() {
 
 	const handleChangeMonth = async (value: string) => {
 		console.log(`selected ${value}`);
+
+		await AxiosInstance.post("/stats/graph", {
+			month: value,
+			year: year ? year : undefined,
+		})
+			.then((res: any) => {
+				if (res.data.data.length === 0) throw new Error("No data found");
+
+				const graphData: WalkInVsRegisteredProps[] = res.data.data.map(
+					(data: any) => {
+						if (data.visitor_types.length === 1) {
+							if (data.visitor_types[0].visitor_type === "Walk-In") {
+								return {
+									name: monthDeterminer(data._id),
+									"Walk-in": data.visitor_types[0].count,
+									"Pre-registered": 0,
+								};
+							}
+
+							return {
+								name: monthDeterminer(data._id),
+								"Walk-in": 0,
+								"Pre-registered": data.visitor_types[0].count,
+							};
+						} else if (data.visitor_types.length === 2) {
+							if (data.visitor_types[0].visitor_type === "Walk-In") {
+								return {
+									name: monthDeterminer(data._id),
+									"Walk-in": data.visitor_types[0].count,
+									"Pre-registered": data.visitor_types[1].count,
+								};
+							} else if (
+								data.visitor_types[0].visitor_type === "Pre-Registered"
+							) {
+								return {
+									name: monthDeterminer(data._id),
+									"Walk-in": data.visitor_types[1].count,
+									"Pre-registered": data.visitor_types[0].count,
+								};
+							}
+						}
+
+						return {
+							name: monthDeterminer(data._id).label,
+							"Walk-in": 0,
+							"Pre-registered": 0,
+						};
+					},
+				);
+
+				setData(
+					graphData.sort(
+						(a: WalkInVsRegisteredProps, b: WalkInVsRegisteredProps) =>
+							parseInt(a.name.value) - parseInt(b.name.value),
+					),
+				);
+			})
+			.catch((err) => {
+				if (err && err.response) {
+					const message = err.response.data.error;
+					error(message);
+				}
+			});
 	};
 
-	const handleChangeYear = (value: string) => {
+	const handleChangeYear = async (value: string) => {
 		console.log(`selected ${value}`);
+
+		await AxiosInstance.post("/stats/graph", {
+			month: month ? month : undefined,
+			year: value,
+		})
+			.then((res: any) => {
+				if (res.data.data.length === 0) throw new Error("No data found");
+
+				const graphData: WalkInVsRegisteredProps[] = res.data.data.map(
+					(data: any) => {
+						if (data.visitor_types.length === 1) {
+							if (data.visitor_types[0].visitor_type === "Walk-In") {
+								return {
+									name: monthDeterminer(data._id),
+									"Walk-in": data.visitor_types[0].count,
+									"Pre-registered": 0,
+								};
+							}
+
+							return {
+								name: monthDeterminer(data._id),
+								"Walk-in": 0,
+								"Pre-registered": data.visitor_types[0].count,
+							};
+						} else if (data.visitor_types.length === 2) {
+							if (data.visitor_types[0].visitor_type === "Walk-In") {
+								return {
+									name: monthDeterminer(data._id),
+									"Walk-in": data.visitor_types[0].count,
+									"Pre-registered": data.visitor_types[1].count,
+								};
+							} else if (
+								data.visitor_types[0].visitor_type === "Pre-Registered"
+							) {
+								return {
+									name: monthDeterminer(data._id),
+									"Walk-in": data.visitor_types[1].count,
+									"Pre-registered": data.visitor_types[0].count,
+								};
+							}
+						}
+
+						return {
+							name: monthDeterminer(data._id).label,
+							"Walk-in": 0,
+							"Pre-registered": 0,
+						};
+					},
+				);
+
+				setData(
+					graphData.sort(
+						(a: WalkInVsRegisteredProps, b: WalkInVsRegisteredProps) =>
+							parseInt(a.name.value) - parseInt(b.name.value),
+					),
+				);
+			})
+			.catch((err) => {
+				if (err && err.response) {
+					const message = err.response.data.error;
+					error(message);
+				}
+			});
 	};
 
 	const calculatePercentage = (part: number, total: number) => {

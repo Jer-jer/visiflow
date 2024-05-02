@@ -14,7 +14,7 @@ import "./styles.scss";
 
 export default function TodayEvents({ events }: EventsPropsAggregate) {
 	return (
-		<div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:justify-center">
+		<div className="flex flex-col justify-center gap-4 px-5 lg:flex-row lg:flex-wrap lg:px-0">
 			{events.map((event, key) => (
 				<EventCard
 					key={key}
