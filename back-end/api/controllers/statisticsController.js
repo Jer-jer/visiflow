@@ -417,7 +417,14 @@ exports.getWeeks = async (req, res) => {
 
 exports.getDays = async (req, res) => {
   try {
+    const { month } = req.body;
+
     const date = new Date();
+    if ( month ) {
+      date.setMonth(month);
+    }
+
+    console.log(date);
 
     const total = await Logs.aggregate([
       {
