@@ -33,7 +33,7 @@ async function getVisitorList(date_01, date_02) {
       }
     ]);
 
-    console.log(`getVisitorList Function: ${logs}\n`);
+    logs.map(log => console.log(log.visitor_id));
 
     if (logs.length === 0) {
       return null;
@@ -65,11 +65,7 @@ async function getVisitors(startDate, endDate) {
   }
 
   try {
-    console.log('Before getVisitorList\n');
-
     const visitors = await getVisitorList(date_01, date_02);
-
-    console.log(`After: ${visitors}\n`);
 
     if (visitors === null) {
       const errMsg = "No logs in that date range.";
@@ -77,8 +73,6 @@ async function getVisitors(startDate, endDate) {
       return { errors };
     }
     
-    console.log(`List of visitors: ${visitors}`);
-
     const visitorDB = await Visitor.aggregate([
       {
         $match: {
@@ -103,7 +97,6 @@ async function getVisitors(startDate, endDate) {
       }
     ]);
 
-    console.log(`\nAggregated visitors: ${visitorDB}`);
     return { visitorDB, errors };
   } catch (error) {
     console.log(error);
