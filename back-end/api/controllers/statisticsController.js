@@ -122,13 +122,13 @@ exports.mostVisited = async (req, res) => {
     const what = await Visitor.aggregate([
       {
         $match: {
-          $or: visitors.map((visitor) => {
+          $or: visitors.map(visitor => {
             return {
               _id: visitor.visitor_id,
-              expected_time_in: visitor.expected_time_in,
-            };
-          }),
-        },
+              expected_time_in: visitor.expected_time_in
+            }
+          })
+        }
       },
       {
         $project: {

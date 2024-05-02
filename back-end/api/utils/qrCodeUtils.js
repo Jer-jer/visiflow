@@ -1,16 +1,16 @@
-require("dotenv").config();
+require('dotenv').config();
 
 // Models
 const Visitor = require("../models/visitor");
 const Badge = require("../models/badge");
 
-// Constants
-const local_ip = "https://visiflow-api.onrender.com";
-
 // Imports
 const fs = require("fs").promises;
-const nodemailer = require("nodemailer");
 const QRCode = require("qrcode");
+const nodemailer = require("nodemailer");
+
+// Constants
+const local_ip = "localhost";
 
 // Nodemailer transporter
 const transporter = nodemailer.createTransport({
