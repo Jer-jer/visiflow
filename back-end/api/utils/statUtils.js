@@ -72,6 +72,10 @@ async function getVisitors(startDate, endDate) {
       errors.push(errMsg);
       return { errors };
     }
+
+    console.log('\n\nVisitors exists\n\n');
+
+    visitors.map(log => console.log(log.visitor_id));
     
     const visitorDB = await Visitor.aggregate([
       {
