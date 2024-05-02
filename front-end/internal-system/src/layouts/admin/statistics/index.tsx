@@ -129,7 +129,8 @@ export default function StatisticsLayout() {
 	const [daysOfMonth, setDaysOfMonth] = useState<
 		{
 			day: string;
-			total: number;
+			walkin: number;
+			preregistered: number;
 		}[]
 	>([]);
 
@@ -369,12 +370,16 @@ export default function StatisticsLayout() {
 		fetchGraph();
 	}, []);
 
-	const getDaysInMonth = (month: string, year: string) => {
+	const getDaysInMonth = async (month: string, year: string) => {
 		return new Array(31)
 			.fill("")
 			.map((v, i) => new Date(parseInt(year), parseInt(month) - 1, i + 1))
 			.filter((v) => v.getMonth() === parseInt(month) - 1)
-			.map((v) => ({ day: v.getDate().toString(), total: 0 }));
+			.map((v) => ({
+				day: v.getDate().toString(),
+				walkin: 0,
+				preregistered: 0,
+			}));
 	};
 
 	const onChangeMonth: CheckboxProps["onChange"] = async (e) => {
@@ -401,7 +406,7 @@ export default function StatisticsLayout() {
 		console.log(`selected ${value}`);
 		setSelectedMonth(value);
 
-		setDaysOfMonth(
+		console.log(
 			getDaysInMonth(
 				value,
 				selectedYear !== undefined && selectedYear
@@ -409,6 +414,39 @@ export default function StatisticsLayout() {
 					: new Date().getFullYear().toString(),
 			),
 		);
+
+		const allDays = await getDaysInMonth(
+			value,
+			selectedYear !== undefined && selectedYear
+				? selectedYear
+				: new Date().getFullYear().toString(),
+		);
+
+		await AxiosInstance.post("/stats/getDays", {
+			month: parseInt(value),
+		}).then((res: any) => {
+			const days = allDays.map((d: any) => {
+				const day = res.data.grouped.find((day: any) => {
+					return d.day.padStart(2, "0") === day.day;
+				});
+
+				if (day) {
+					return {
+						day: day.day,
+						walkin: day.walkin,
+						preregistered: day.preregistered,
+					};
+				}
+
+				return {
+					day: d.day.padStart(2, "0"),
+					walkin: 0,
+					preregistered: 0,
+				};
+			});
+
+			setDaysOfMonth(days);
+		});
 
 		setLoading(true);
 		await fetchGraph(value);
@@ -503,8 +541,6 @@ export default function StatisticsLayout() {
 				}
 			});
 	};
-
-	console.log("MONTHS", daysOfMonth);
 
 	return (
 		<div className="mb-[35px] ml-2 mt-3 flex flex-col gap-[35px]">
@@ -639,10 +675,10 @@ export default function StatisticsLayout() {
 										<YAxis />
 										<Tooltip />
 										<Legend />
-										<Line type="monotone" dataKey="Walk-in" stroke="#E88B23" />
+										<Line type="monotone" dataKey="walkin" stroke="#E88B23" />
 										<Line
 											type="monotone"
-											dataKey="Pre-registered"
+											dataKey="preregistered"
 											stroke="#82ca9d"
 										/>
 									</LineChart>

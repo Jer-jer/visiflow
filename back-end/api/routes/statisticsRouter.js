@@ -9,12 +9,12 @@ router.post("/", StatsController.totalVisitors);
 
 router.post("/location", StatsController.mostVisited);
 
-router.post('/graph', StatsController.graph);
+router.post("/graph", StatsController.graph);
 
 router.get("/getYears", StatsController.getYears);
 
 router.get("/getWeeks", StatsController.getWeeks);
 
-router.get("/getDays", StatsController.getDays);
+router.post("/getDays", StatsController.getDays);
 
 module.exports = router;
