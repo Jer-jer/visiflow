@@ -62,6 +62,8 @@ async function getVisitors(startDate, endDate) {
     return { errors };
   }
 
+  console.log(date_01.toLocaleString(), date_02.toLocaleString());
+
   try {
     const visitors = await getVisitorList(date_01, date_02);
 
