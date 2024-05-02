@@ -46,8 +46,10 @@ async function getVisitorList(date_01, date_02) {
 async function getVisitors(startDate, endDate) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  today.setHours(today.getHours() - 8);
   const endOfDay = new Date();
   endOfDay.setHours(23, 59, 59, 999);
+  endOfDay.setHours(endOfDay.getHours() - 8);
 
   console.log('Processing Date\n');
   console.log(`Variable: ${startDate}, ${endDate}\n`)
