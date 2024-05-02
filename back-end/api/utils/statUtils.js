@@ -62,8 +62,6 @@ async function getVisitors(startDate, endDate) {
     return { errors };
   }
 
-  console.log(date_01.toLocaleString(), date_02.toLocaleString());
-
   try {
     const visitors = await getVisitorList(date_01, date_02);
 
@@ -72,6 +70,8 @@ async function getVisitors(startDate, endDate) {
       errors.push(errMsg);
       return { errors };
     }
+    
+    console.log(`List of visitors: ${visitors}`);
 
     const visitorDB = await Visitor.aggregate([
       {
@@ -96,9 +96,11 @@ async function getVisitors(startDate, endDate) {
         }
       }
     ]);
-    console.log(visitorDB);
+
+    console.log(`\nAggregated visitors: ${visitorDB}`);
     return { visitorDB, errors };
   } catch (error) {
+    console.log(error);
     return error;
   }
 }
