@@ -41,8 +41,10 @@ exports.mostVisited = async (req, res) => {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  today.setHours(today.getHours() - 8);
   const endOfDay = new Date();
   endOfDay.setHours(23, 59, 59, 999);
+  endOfDay.setHours(endOfDay.getHours() - 8);
 
   const date_01 =
     startDate != undefined && startDate ? new Date(startDate) : today;
