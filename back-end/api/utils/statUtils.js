@@ -49,7 +49,8 @@ async function getVisitors(startDate, endDate) {
   const endOfDay = new Date();
   endOfDay.setHours(23, 59, 59, 999);
 
-  console.log('Processing Date');
+  console.log('Processing Date\n');
+  console.log(`Variable: ${startDate}, ${endDate}\n`)
 
   const date_01 =
     startDate != undefined && startDate ? new Date(startDate) : today;
