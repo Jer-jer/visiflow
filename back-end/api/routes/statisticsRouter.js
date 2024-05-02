@@ -3,7 +3,7 @@ const router = express.Router();
 const StatsController = require("../controllers/statisticsController");
 const passport = require("passport");
 
-router.use(passport.authenticate("jwt", { session: false }));
+// router.use(passport.authenticate("jwt", { session: false }));
 
 router.post("/", StatsController.totalVisitors);
 
@@ -14,5 +14,7 @@ router.post('/graph', StatsController.graph);
 router.get("/getYears", StatsController.getYears);
 
 router.get("/getWeeks", StatsController.getWeeks);
+
+router.get("/getDays", StatsController.getDays);
 
 module.exports = router;

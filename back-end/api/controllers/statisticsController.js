@@ -414,3 +414,35 @@ exports.getWeeks = async (req, res) => {
       .json({ error: "Failed to retrieve years from the database." });
   }
 };
+
+exports.getDays = async (req, res) => {
+  try {
+    const date = new Date();
+
+    const total = await Logs.aggregate([
+      {
+        $project: {
+          _id: 0,
+          month: { $substr: ["$created_at", 5, 2] },  
+          days: { $substr: ["$created_at", 8, 2] }  
+        }
+      },
+      {
+        $group: {
+          _id: {
+            month: "$month",
+            day: "$days"
+          },
+          total: { $sum: 1}
+        }
+      }
+      
+    ]);
+
+    return res.json({ total });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: "Failed to retrieve years from the database." });
+  }
+};
