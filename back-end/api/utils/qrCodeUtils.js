@@ -1,8 +1,8 @@
 require('dotenv').config();
 
 // Models
-const Visitor = require('../models/visitor');
-const Badge = require('../models/badge');
+const Visitor = require("../models/visitor");
+const Badge = require("../models/badge");
 
 // Imports
 const fs = require("fs").promises;
@@ -23,7 +23,7 @@ const transporter = nodemailer.createTransport({
 
 /**
  * Generates QR codes and sends emails to the visitor and their companions.
- * @param {string} visitorId - The ID of the visitor. 
+ * @param {string} visitorId - The ID of the visitor.
  * @param {String} message - The message to be included in the email.
  * @returns {void}
  */
@@ -43,12 +43,10 @@ async function generateVisitorQRAndEmail(visitorId, message) {
     // Generate QR Codes for companions
     if (visitor.companions.length > 0) {
       const companionBadges = await Promise.all(
-        visitor.companions.map(async (companion) => 
-          {
-            const temp = await Visitor.findById(companion);
-            await generateQRAndEmail(temp, message)
-          }
-        )
+        visitor.companions.map(async (companion) => {
+          const temp = await Visitor.findById(companion);
+          await generateQRAndEmail(temp, message);
+        })
       );
       if (companionBadges) {
         badges.push(...companionBadges);
@@ -56,7 +54,6 @@ async function generateVisitorQRAndEmail(visitorId, message) {
         throw new Error("Error generating companion badges");
       }
     }
-
   } catch (error) {
     console.error("Error generating QR code and sending email:", error);
   }
@@ -82,7 +79,7 @@ async function generateQRAndEmail(visitor, message) {
 
 /**
  * Generates a pre-registered badge for a visitor.
- * @param {Object} visitor - The visitor object. 
+ * @param {Object} visitor - The visitor object.
  * @returns {Promise<Object>} - A promise that resolves with the generated badge object.
  * @throws {Error} - If an error occurs during badge creation, QR code generation, or saving.
  */
@@ -91,6 +88,7 @@ async function generateBadge(visitor) {
     const badge = new Badge({
       visitor_id: visitor._id,
       qr_id: visitor._id,
+      purpose: visitor.purpose,
       expected_time_in: visitor.expected_time_in,
       expected_time_out: visitor.expected_time_out,
       is_active: false,
@@ -99,8 +97,8 @@ async function generateBadge(visitor) {
 
     await badge.save();
 
-    const filename = `api/resource/badge/badge${badge._id}.png`;
-    const uri = `http://${local_ip}:5000/badge/checkBadge?qr_id=${visitor._id}`;
+    const filename = `badge${badge._id}.png`;
+    const uri = `${local_ip}/badge/checkBadge?qr_id=${visitor._id}`;
     await generateQRCode(uri, filename, badge._id);
 
     return badge;
@@ -112,9 +110,9 @@ async function generateBadge(visitor) {
 
 /**
  * Generates a QR code image and saves it to a file
- * @param {string} uri - The URI for the QR code. 
+ * @param {string} uri - The URI for the QR code.
  * @param {string} filename - The filename for saving the QR code.
- * @param {string} badgeId - The ID of the badge associated with the QR code. 
+ * @param {string} badgeId - The ID of the badge associated with the QR code.
  * @returns {Promise<void>} - A promise that resolves when the QR code is generated and saved successfully.
  * @throws {Error} - If an error occurs during QR code generation or saving.
  */
@@ -149,7 +147,7 @@ async function generateQRCode(uri, filename, badgeId) {
 
 /**
  * Sends an email containing the QR code for the badge to the visitor.
- * @param {Object} badge - The badge object. 
+ * @param {Object} badge - The badge object.
  * @param {Object} visitor - The visitor object.
  * @param {string} message - The message to be included in the email.
  * @returns {Promise<void>} - A promise that resolves when the email is sent successfully.
@@ -170,7 +168,7 @@ async function sendBadgeEmail(badge, visitor, message) {
       attachments: [
         {
           filename: `badge${badge._id}.png`,
-          path: `api/resource/badge/badge${badge._id}.png`,
+          path: `badge${badge._id}.png`,
         },
       ],
     };
@@ -208,7 +206,7 @@ async function sendEmail(mailOptions) {
 }
 
 module.exports = {
-    generateQRCode,
-    generateVisitorQRAndEmail,
-    sendEmail
-}
+  generateQRCode,
+  generateVisitorQRAndEmail,
+  sendEmail,
+};
