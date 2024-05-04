@@ -10,6 +10,8 @@ const fs = require("fs");
 
 const ObjectId = mongoose.Types.ObjectId;
 
+const local_ip = "http://localhost:5000/";
+
 exports.getBadges = async (req, res) => {
   try {
     const badges = await Badge.find();
@@ -84,7 +86,7 @@ exports.generateBadge = async (req, res) => {
 
     const objectIds = Array.from({ length: qty }, () => {
       const objectId = new ObjectId();
-      const uri = `https://visiflow-api.onrender.com/badge/checkBadge?qr_id=${objectId}`;
+      const uri = `${local_ip}/badge/checkBadge?qr_id=${objectId}`;
       const filename = `badge${objectId}.png`;
       return { objectId, filename, uri };
     });
@@ -159,7 +161,7 @@ exports.checkBadge = async (req, res) => {
         .status(200)
         .json({
           type: "new-recurring",
-          url: `https://gullas-visiflow-internal.onrender.com/visitor-form/?qr_id=${qr_id}`,
+          url: `${local_ip}/visitor-form/?qr_id=${qr_id}`,
         });
     }
 
@@ -168,45 +170,3 @@ exports.checkBadge = async (req, res) => {
     return res.status(500).json({ error: "Failed to retrieve badge" });
   }
 };
-
-// Old check badge
-/*
-exports.checkBadge = async (req, res) => {
-
-  const { qr_id, visitor_id } = req.query;
- 
-  let badge;
-  let type;
-
-  if (!req.user) {
-    return res.status(401).json({ error: "Unauthorized user" });
-  }
-
-  if (qr_id !== undefined) {
-    badge = await Badge.findOne({ qr_id: qr_id });
-
-    if (!badge) {
-      // return res.redirect(`http://localhost:3000/visitor-form/?qr_id=${qr_id}`);
-      return res.status(200).json({ type: "new-recurring", url: `http://localhost:3000/visitor-form/?qr_id=${qr_id}` })
-      return res.redirect(
-        `https://gullas-visiflow-internal.onrender.com/?qr_id=${qr_id}`
-      );
-    }
-  } else {
-    badge = await Badge.findOne({ visitor_id: visitor_id });
-    type = "pre-reg";
-  }
-
-  if (!badge) {
-    return res.status(400).json({ error: `No visitor assigned to badge` });
-  }
-
-  if (!badge.is_valid) {
-    return res.status(400).json({ error: `Invalid visitor badge` });
-  }
-
-  const _id = visitor_id !== undefined ? visitor_id : qr_id;
-  updateLog(badge._id, _id, type, req.user.sub, res);
-}
-
-*/
