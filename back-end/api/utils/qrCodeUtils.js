@@ -91,7 +91,7 @@ async function generateBadge(visitor) {
       purpose: visitor.purpose,
       expected_time_in: visitor.expected_time_in,
       expected_time_out: visitor.expected_time_out,
-      is_active: false,
+      // status: "inactive",
       is_valid: true,
     });
 

@@ -91,11 +91,11 @@ async function sendEmail(mailOptions) {
 }
 // End of Email Functions
 
-async function updateLog(_id, qr_id, user_id, res) {
+async function updateLog(_id, user_id, res) {
   try {
     const badge = await Badge.findById({ _id: _id });
     if (badge) {
-      if (badge.is_active) {
+      if (badge.status != "inactive") {
         try {
           // Add check out timestamp to visitor logs
           await VisitorLogs.updateOne(
@@ -105,11 +105,14 @@ async function updateLog(_id, qr_id, user_id, res) {
 
           await Badge.updateOne(
             { _id: badge._id },
-            { $set: { qr_id: null, is_active: false, is_valid: false } }
+            { $set: { qr_id: null, status: "inactive", is_valid: false } }
           );
+
           await createSystemLog(user_id, "time_out", "success");
           return res.status(200).json({ type: "time-out"});
+
         } catch (error) {
+          
           await createSystemLog(user_id, "time_out", "failed");
           return res
             .status(500)
@@ -122,7 +125,7 @@ async function updateLog(_id, qr_id, user_id, res) {
       if (badge.expected_time_out < Date.now() || badge.is_valid === false) {
         await Badge.updateOne(
           { _id: badge._id },
-          { $set: { is_valid: false } }
+          { $set: { status: "inactive", is_valid: false } }
         );
         return res.status(400).json({ error: "The QR is invalid." });
       }
@@ -154,7 +157,7 @@ async function updateLog(_id, qr_id, user_id, res) {
       try {
         await Badge.updateOne(
           { _id: badge._id },
-          { $set: { is_active: true } }
+          { $set: { status: "active" } }
         );
 
         await createSystemLog(user_id, "time_in", "success");
@@ -214,9 +217,10 @@ async function timeOutReminder(io) {
 
     const visitors = await Promise.all(
       logs.map(async (log) => {
+
         const badge = await Badge.findOne({
           _id: log.badge_id,
-          is_active: true,
+          status: { $in: ["active", "exceeded"] },
           is_valid: true,
         });
 
@@ -225,27 +229,50 @@ async function timeOutReminder(io) {
             _id: badge.visitor_id,
             expected_time_out: { $lte: currentTime - 15 * 60000 },
           });
-
-          return visitor;
+          
+          if (visitor) {
+            return {
+              visitor: visitor,
+              badgeId: badge._id
+            }
+          }
         }
+        return null;
       })
     );
 
-    const validVisitors = visitors.filter(
-      (visitor) => visitor !== null && undefined
-    );
+    const validVisitors = visitors.filter(visitor => visitor);
 
     if (validVisitors.length > 0) {
-      for (const visitor of validVisitors) {
-        await createNotification(visitor, "time-out", io);
-        await Badge.updateOne(
-          { qr_id: visitor._id },
-          { $set: { is_valid: false } }
-        );
-      }
+      await Promise.all(
+        validVisitors.map(async (v) => {
+
+          const expected_time_out = new Date(v.visitor.expected_time_out);
+          const current_time = new Date(); // -8 hrs in prod.
+          const oneDayMs = 24 * 60 * 60 * 1000;
+          const differenceMs = current_time - expected_time_out;
+
+          if (differenceMs >= oneDayMs) {  
+
+            await Badge.updateOne(
+              { _id: v.badgeId },
+              { $set: { status: "overdue" } }
+            )
+            await createNotification(v.visitor, "overdue", io);
+            
+          } else {
+             await Badge.updateOne(
+              { _id: v.badgeId },
+              { $set: { status: "exceeded" } }
+            )
+            await createNotification(v.visitor, "time-out", io);
+          }
+
+        })
+      )
     }
   } catch (error) {
-    console.error("Error in timeOutReminder:", error);
+    console.error(error);
   }
 }
 

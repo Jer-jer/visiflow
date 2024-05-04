@@ -131,7 +131,7 @@ exports.newBadge = async (req, res) => {
       purpose: visitorDB.purpose,
       expected_time_in: visitorDB.expected_time_in,
       expected_time_out: visitorDB.expected_time_out,
-      is_active: true,
+      status: "active",
       is_valid: true,
     });
 
@@ -167,7 +167,7 @@ exports.checkBadge = async (req, res) => {
         });
     }
 
-    updateLog(badge._id, qr_id, req.user.sub, res);
+    updateLog(badge._id, req.user.sub, res);
   } catch (error) {
     return res.status(500).json({ error: "Failed to retrieve badge" });
   }
