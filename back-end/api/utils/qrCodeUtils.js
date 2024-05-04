@@ -4,13 +4,13 @@ require('dotenv').config();
 const Visitor = require("../models/visitor");
 const Badge = require("../models/badge");
 
-// Imports
-const fs = require("fs").promises;
-const QRCode = require("qrcode");
-const nodemailer = require("nodemailer");
-
 // Constants
 const local_ip = "http://localhost:5000";
+
+// Imports
+const fs = require("fs").promises;
+const nodemailer = require("nodemailer");
+const QRCode = require("qrcode");
 
 // Nodemailer transporter
 const transporter = nodemailer.createTransport({

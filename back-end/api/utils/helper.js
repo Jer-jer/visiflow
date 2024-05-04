@@ -111,7 +111,9 @@ async function updateLog(_id, qr_id, user_id, res) {
           return res.status(200).json({ type: "time-out"});
         } catch (error) {
           await createSystemLog(user_id, "time_out", "failed");
-          return res.status(500).json({ error: "Failed to time out the visitor." });
+          return res
+            .status(500)
+            .json({ error: "Failed to time out the visitor." });
         }
       }
       // Time-in section
@@ -159,7 +161,9 @@ async function updateLog(_id, qr_id, user_id, res) {
         return res.status(200).json({ type: "time-in"});
       } catch (error) {
         await createSystemLog(user_id, "time_in", "failed");
-        return res.status(500).json({ error: "Failed to time in the visitor." });
+        return res
+          .status(500)
+          .json({ error: "Failed to time in the visitor." });
       }
     }
     return res.status(500).json({ error: "No badge found." });
@@ -365,8 +369,6 @@ async function validateDuplicate(visitors, res) {
           },
         ],
       });
-
-
 
       // Check if email is used by another visitor
       if (visitorDB) {
