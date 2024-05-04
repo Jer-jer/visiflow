@@ -1,5 +1,8 @@
 const Visitor = require("../models/visitor");
 const Logs = require("../models/visitorLogs");
+const mongoose = require("mongoose");
+
+const ObjectId = mongoose.Types.ObjectId;
 
 const { getVisitors, getVisitorList } = require("../utils/statUtils");
 
@@ -41,32 +44,36 @@ exports.mostVisited = async (req, res) => {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  today.setHours(today.getHours() - 8);
   const endOfDay = new Date();
   endOfDay.setHours(23, 59, 59, 999);
+  endOfDay.setHours(endOfDay.getHours() - 8);
 
-  const date_01 = startDate ? new Date(startDate) : today;
-  const date_02 = endDate ? new Date(endDate) : endOfDay;
+  const date_01 =
+    startDate != undefined && startDate ? new Date(startDate) : today;
+  const date_02 =
+    endDate != undefined && endDate ? new Date(endDate) : endOfDay;
 
   try {
     const visitors = await getVisitorList(date_01, date_02);
     const where = await Visitor.aggregate([
       {
         $match: {
-          $or: visitors.map(visitor => {
+          $or: visitors.map((visitor) => {
             return {
               _id: visitor.visitor_id,
-              expected_time_in: visitor.expected_time_in
-            }
-          })
-        }
+              expected_time_in: visitor.expected_time_in,
+            };
+          }),
+        },
       },
       {
         $project: {
           "purpose.where": 1,
-        }
+        },
       },
       {
-        $unwind: "$purpose.where"
+        $unwind: "$purpose.where",
       },
       {
         $group: {
@@ -77,30 +84,29 @@ exports.mostVisited = async (req, res) => {
       {
         $sort: {
           count: -1,
-          "_id": 1
-        }
+          _id: 1,
+        },
       },
-
     ]);
 
     const who = await Visitor.aggregate([
       {
         $match: {
-          $or: visitors.map(visitor => {
+          $or: visitors.map((visitor) => {
             return {
               _id: visitor.visitor_id,
-              expected_time_in: visitor.expected_time_in
-            }
-          })
-        }
+              expected_time_in: visitor.expected_time_in,
+            };
+          }),
+        },
       },
       {
         $project: {
           "purpose.who": 1,
-        }
+        },
       },
       {
-        $unwind: "$purpose.who"
+        $unwind: "$purpose.who",
       },
       {
         $group: {
@@ -119,21 +125,21 @@ exports.mostVisited = async (req, res) => {
     const what = await Visitor.aggregate([
       {
         $match: {
-          $or: visitors.map(visitor => {
+          $or: visitors.map((visitor) => {
             return {
               _id: visitor.visitor_id,
-              expected_time_in: visitor.expected_time_in
-            }
-          })
-        }
+              expected_time_in: visitor.expected_time_in,
+            };
+          }),
+        },
       },
       {
         $project: {
           "purpose.what": 1,
-        }
+        },
       },
       {
-        $unwind: "$purpose.what"
+        $unwind: "$purpose.what",
       },
       {
         $group: {
@@ -152,13 +158,13 @@ exports.mostVisited = async (req, res) => {
     const when = await Visitor.aggregate([
       {
         $match: {
-          $or: visitors.map(visitor => {
+          $or: visitors.map((visitor) => {
             return {
               _id: visitor.visitor_id,
-              expected_time_in: visitor.expected_time_in
-            }
-          })
-        }
+              expected_time_in: visitor.expected_time_in,
+            };
+          }),
+        },
       },
       {
         $group: {
@@ -187,40 +193,47 @@ exports.mostVisited = async (req, res) => {
 exports.graph = async (req, res) => {
   const { month, year } = req.body;
 
-  const _start_date = new Date(year ? year : new Date().getFullYear(), month ? month - 1 : 0);
-  const _end_date = new Date(month ? _start_date.getFullYear() : _start_date.getFullYear() + 1, month ? month : 0);
+  const _start_date = new Date(
+    year ? year : new Date().getFullYear(),
+    month ? month - 1 : 0
+  );
+  const _end_date = new Date(
+    month ? _start_date.getFullYear() : _start_date.getFullYear() + 1,
+    month ? month : 0
+  );
   _end_date.setDate(_end_date.getDate() - 1);
 
   try {
-
     const visitors = await getVisitorList(_start_date, _end_date);
 
     if (visitors === null) {
-      return res.status(400).json({ error: "No visitors available in the specified date range" });
+      return res
+        .status(400)
+        .json({ error: "No visitors available in the specified date range" });
     }
 
     const data = await Visitor.aggregate([
       {
         $match: {
-          $or: visitors.map(visitor => {
+          $or: visitors.map((visitor) => {
             return {
               _id: visitor.visitor_id,
-              expected_time_in: visitor.expected_time_in
-            }
-          })
-        }
+              expected_time_in: visitor.expected_time_in,
+            };
+          }),
+        },
       },
       {
         $project: {
           month: { $substr: ["$expected_time_in", 5, 2] },
-          visitor_type: 1
-        }
+          visitor_type: 1,
+        },
       },
       {
         $group: {
           _id: { month: "$month", visitor_type: "$visitor_type" },
-          count: { $sum: 1 }
-        }
+          count: { $sum: 1 },
+        },
       },
       {
         $group: {
@@ -228,30 +241,33 @@ exports.graph = async (req, res) => {
           visitor_types: {
             $addToSet: {
               visitor_type: "$_id.visitor_type",
-              count: "$count"
-            }
-          }
-        }
+              count: "$count",
+            },
+          },
+        },
       },
       {
         $project: {
           _id: 1,
           visitor_types: 1,
-          total_count: { $sum: "$visitor_types.count" }
-        }
-      }
+          total_count: { $sum: "$visitor_types.count" },
+        },
+      },
     ]);
 
     if (data.length > 0) {
       return res.json({ data });
     } else {
-      return res.status(400).json({ error: "Visitor does not exists in database" });
+      return res
+        .status(400)
+        .json({ error: "Visitor does not exists in database" });
     }
-
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to retrieve visitors from the database.' });
+    return res
+      .status(500)
+      .json({ error: "Failed to retrieve visitors from the database." });
   }
-}
+};
 
 exports.getYears = async (req, res) => {
   try {
@@ -292,16 +308,16 @@ exports.getWeeks = async (req, res) => {
         $project: {
           month: { $substr: ["$created_at", 5, 2] },
           day: { $substr: ["$created_at", 8, 2] },
-          badge_id: 1
-        }
+          badge_id: 1,
+        },
       },
       {
         $lookup: {
           from: "badges",
           localField: "badge_id",
           foreignField: "_id",
-          as: "badge"
-        }
+          as: "badge",
+        },
       },
       {
         $group: {
@@ -309,17 +325,49 @@ exports.getWeeks = async (req, res) => {
           weeks: {
             $addToSet: {
               _id: "$day",
-              1: { $cond: [{ $and: [{ $gte: ["$day", "01"] }, { $lte: ["$day", "07"] }] }, true, false] },
-              2: { $cond: [{ $and: [{ $gte: ["$day", "08"] }, { $lte: ["$day", "14"] }] }, true, false] },
-              3: { $cond: [{ $and: [{ $gte: ["$day", "15"] }, { $lte: ["$day", "21"] }] }, true, false] },
-              4: { $cond: [{ $and: [{ $gte: ["$day", "22"] }, { $lte: ["$day", "31"] }] }, true, false] },
-              badges: "$badge_id"
-            }
+              1: {
+                $cond: [
+                  {
+                    $and: [{ $gte: ["$day", "01"] }, { $lte: ["$day", "07"] }],
+                  },
+                  true,
+                  false,
+                ],
+              },
+              2: {
+                $cond: [
+                  {
+                    $and: [{ $gte: ["$day", "08"] }, { $lte: ["$day", "14"] }],
+                  },
+                  true,
+                  false,
+                ],
+              },
+              3: {
+                $cond: [
+                  {
+                    $and: [{ $gte: ["$day", "15"] }, { $lte: ["$day", "21"] }],
+                  },
+                  true,
+                  false,
+                ],
+              },
+              4: {
+                $cond: [
+                  {
+                    $and: [{ $gte: ["$day", "22"] }, { $lte: ["$day", "31"] }],
+                  },
+                  true,
+                  false,
+                ],
+              },
+              badges: "$badge_id",
+            },
           },
-        }
+        },
       },
       {
-        $unwind: "$weeks"
+        $unwind: "$weeks",
       },
       {
         $project: {
@@ -338,31 +386,170 @@ exports.getWeeks = async (req, res) => {
                       "$weeks.3",
                       "3",
                       {
-                        $cond: ["$weeks.4", "4", null]
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
+                        $cond: ["$weeks.4", "4", null],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           },
-          "weeks.badges": 1
-        }
+          "weeks.badges": 1,
+        },
       },
       {
         $sort: {
-          "_id": 1,
-          "weeks._id": 1
-        }
+          _id: 1,
+          "weeks._id": 1,
+        },
       },
       {
         $match: {
-          "weeks.activeWeek": { $ne: null }
-        }
-      }
+          "weeks.activeWeek": { $ne: null },
+        },
+      },
     ]);
 
     return res.json({ weeks });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: "Failed to retrieve years from the database." });
+  }
+};
+
+exports.getDays = async (req, res) => {
+  try {
+    const { month } = req.body;
+
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setHours(date.getHours() - 8);
+
+    if (month) {
+      date.setMonth(month - 1);
+    }
+
+    const badge = await Logs.aggregate([
+      {
+        $match: {
+          created_at: {
+            $gte: new Date(date.getFullYear(), date.getMonth(), 1),
+            $lt: new Date(date.getFullYear(), date.getMonth() + 1, 1),
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "badges",
+          localField: "badge_id",
+          foreignField: "_id",
+          as: "badge",
+        },
+      },
+      {
+        $unwind: "$badge",
+      },
+      {
+        $project: {
+          _id: 0,
+          day: { $substr: ["$created_at", 8, 2] },
+          visitor_id: "$badge.visitor_id",
+        },
+      },
+    ]);
+
+    const visitors = await Visitor.aggregate([
+      {
+        $match: {
+          _id: { $in: badge.map((t) => t.visitor_id) },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          visitor_type: 1,
+        },
+      },
+    ]);
+
+    const visitorMap = new Map();
+    visitors.forEach((visitor) => {
+      visitorMap.set(visitor._id.toString(), visitor.visitor_type);
+    });
+
+    // Then, iterate over the badges and add the visitor_type to each badge
+    const combined = badge.map((badge) => {
+      const visitor_type = visitorMap.get(badge.visitor_id.toString());
+      return {
+        ...badge,
+        visitor_type,
+      };
+    });
+
+    // console.log(combined);
+
+    const grouped = combined.reduce((acc, item) => {
+      const day = acc.find((d) => d.day === item.day);
+      if (day) {
+        day[item.visitor_type.toLowerCase().replace("-", "")] =
+          (day[item.visitor_type.toLowerCase().replace("-", "")] || 0) + 1;
+      } else {
+        acc.push({
+          day: item.day,
+          [item.visitor_type.toLowerCase().replace("-", "")]: 1,
+        });
+      }
+      return acc;
+    }, []);
+
+    console.log(grouped);
+
+    // Then, iterate over the badges and add the visitor_type to each badge
+    // badge = badge.map((badge) => {
+    //   const visitor_type = visitors.get(visitor_id);
+    //   return {
+    //     ...badge,
+    //     visitor_type,
+    //   };
+    // });
+
+    // Now, you can group the badges by day and visitor_type
+    // const grouped = badge.reduce((acc, badge) => {
+    //   const key = `${badge.day}-${badge.visitor_type}`;
+    //   acc[key] = (acc[key] || 0) + 1;
+    //   return acc;
+    // }, {});
+
+    return res.json({ grouped });
+    // const total = await Logs.aggregate([
+    //   {
+    //     $match: {
+    //       created_at: {
+    //         $gte: new Date(date.getFullYear(), date.getMonth(), 1),
+    //         $lt: new Date(date.getFullYear(), date.getMonth() + 1, 1),
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       _id: 0,
+    //       month: { $substr: ["$created_at", 5, 2] },
+    //       days: { $substr: ["$created_at", 8, 2] },
+    //     },
+    //   },
+    //   {
+    //     $group: {
+    //       _id: {
+    //         month: "$month",
+    //         day: "$days",
+    //       },
+    //       total: { $sum: 1 },
+    //     },
+    //   },
+    // ]);
+
+    // return res.json({ total });
   } catch (error) {
     return res
       .status(500)

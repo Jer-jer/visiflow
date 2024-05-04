@@ -1,4 +1,4 @@
-require("dotenv").config();
+require('dotenv').config();
 
 // Models
 const Visitor = require("../models/visitor");
@@ -97,8 +97,8 @@ async function generateBadge(visitor) {
 
     await badge.save();
 
-    const filename = `api/resource/badge/badge${badge._id}.png`;
-    const uri = `http://${local_ip}:5000/badge/checkBadge?qr_id=${visitor._id}`;
+    const filename = `badge${badge._id}.png`;
+    const uri = `${local_ip}/badge/checkBadge?qr_id=${visitor._id}`;
     await generateQRCode(uri, filename, badge._id);
 
     return badge;
@@ -168,7 +168,7 @@ async function sendBadgeEmail(badge, visitor, message) {
       attachments: [
         {
           filename: `badge${badge._id}.png`,
-          path: `api/resource/badge/badge${badge._id}.png`,
+          path: `badge${badge._id}.png`,
         },
       ],
     };
