@@ -41,7 +41,11 @@ const io = new Server(server, {
     origin: [
       // "https://gullas-visiflow.onrender.com",
       // "https://gullas-visiflow-internal.onrender.com",
+<<<<<<< HEAD
       "*"
+=======
+      "*",
+>>>>>>> 50a94b2fa9ce1ec5fbbef5a797cfed1e5bb59455
     ],
   },
 });
@@ -103,7 +107,7 @@ server.listen(PORT, () => {
 // 0 * * * * to every hour
 
 cron.schedule(
-  "0 * * * *",
+  "*/5 * * * * *",
   async () => {
     await timeOutReminder(io);
     await timeInReminder(io);
