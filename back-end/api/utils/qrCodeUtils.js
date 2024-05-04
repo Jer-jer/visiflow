@@ -10,7 +10,7 @@ const QRCode = require("qrcode");
 const nodemailer = require("nodemailer");
 
 // Constants
-const local_ip = "localhost";
+const local_ip = "http://localhost:5000";
 
 // Nodemailer transporter
 const transporter = nodemailer.createTransport({

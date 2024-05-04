@@ -10,7 +10,8 @@ const fs = require("fs");
 
 const ObjectId = mongoose.Types.ObjectId;
 
-const local_ip = "http://localhost:5000/";
+const local_ip = "http://localhost:5000";
+const system_ip = "http://localhost:3000"
 
 exports.getBadges = async (req, res) => {
   try {
@@ -161,7 +162,7 @@ exports.checkBadge = async (req, res) => {
         .status(200)
         .json({
           type: "new-recurring",
-          url: `${local_ip}/visitor-form/?qr_id=${qr_id}`,
+          url: `${system_ip}/visitor-form/?qr_id=${qr_id}`,
         });
     }
 

@@ -7,7 +7,6 @@ const passport = require("passport");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const http = require("http");
-// const socketIo = require("socket.io");
 const { Server } = require("socket.io");
 const cron = require("node-cron");
 
@@ -41,15 +40,7 @@ const io = new Server(server, {
     origin: [
       // "https://gullas-visiflow.onrender.com",
       // "https://gullas-visiflow-internal.onrender.com",
-<<<<<<< HEAD
-      "*"
-=======
-<<<<<<< HEAD
-      "*"
-=======
-      "*",
->>>>>>> 50a94b2fa9ce1ec5fbbef5a797cfed1e5bb59455
->>>>>>> master
+      "http://localhost:3000"
     ],
   },
 });
@@ -102,7 +93,7 @@ server.listen(PORT, () => {
 // 0 * * * * to every hour
 
 cron.schedule(
-  "*/5 * * * * *",
+  "0 * * * *",
   async () => {
     await timeOutReminder(io);
     await timeInReminder(io);
