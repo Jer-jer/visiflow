@@ -2,13 +2,8 @@ const Badge = require("../models/badge");
 const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
 const mongoose = require("mongoose");
-const {
-  updateLog,
-  createSystemLog,
-} = require("../utils/helper");
-const {
-  generateQRCode
-} = require('../utils/qrCodeUtils');
+const { updateLog, createSystemLog } = require("../utils/helper");
+const { generateQRCode } = require("../utils/qrCodeUtils");
 
 const archiver = require("archiver");
 const fs = require("fs");
@@ -89,12 +84,12 @@ exports.generateBadge = async (req, res) => {
 
     const objectIds = Array.from({ length: qty }, () => {
       const objectId = new ObjectId();
-      const uri = `http://localhost:5000/badge/checkBadge?qr_id=${objectId}`;
-      const filename = `api/resource/badge/badge${objectId}.png`;
+      const uri = `https://visiflow-api.onrender.com/badge/checkBadge?qr_id=${objectId}`;
+      const filename = `badge${objectId}.png`;
       return { objectId, filename, uri };
     });
 
-    const promises = objectIds.map(({ objectId, filename, uri }) => 
+    const promises = objectIds.map(({ objectId, filename, uri }) =>
       generateQRCode(uri, filename, objectId)
     );
 
@@ -152,7 +147,7 @@ exports.newBadge = async (req, res) => {
 
 exports.checkBadge = async (req, res) => {
   const { qr_id } = req.query;
-  
+
   try {
     const badge = await Badge.findOne({ qr_id: qr_id })
     if (!badge) {
@@ -160,7 +155,12 @@ exports.checkBadge = async (req, res) => {
       if (visitor) {
         return res.status(400).json({ error: "Visitor QR is invalid." });
       }
-      return res.status(200).json({ type: "new-recurring", url: `http://localhost:3000/visitor-form/?qr_id=${qr_id}` });
+      return res
+        .status(200)
+        .json({
+          type: "new-recurring",
+          url: `https://gullas-visiflow-internal.onrender.com/visitor-form/?qr_id=${qr_id}`,
+        });
     }
 
     updateLog(badge._id, qr_id, req.user.sub, res);
@@ -188,6 +188,9 @@ exports.checkBadge = async (req, res) => {
     if (!badge) {
       // return res.redirect(`http://localhost:3000/visitor-form/?qr_id=${qr_id}`);
       return res.status(200).json({ type: "new-recurring", url: `http://localhost:3000/visitor-form/?qr_id=${qr_id}` })
+      return res.redirect(
+        `https://gullas-visiflow-internal.onrender.com/?qr_id=${qr_id}`
+      );
     }
   } else {
     badge = await Badge.findOne({ visitor_id: visitor_id });
