@@ -2,8 +2,12 @@ const Badge = require("../models/badge");
 const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
 const mongoose = require("mongoose");
-const { updateLog, createSystemLog } = require("../utils/helper");
+const { createSystemLog } = require("../utils/helper");
 const { generateQRCode } = require("../utils/qrCodeUtils");
+const {
+  timeIn,
+  timeOut
+} = require('../utils/timeRecordUtils');
 
 const archiver = require("archiver");
 const fs = require("fs");
@@ -156,9 +160,11 @@ exports.checkBadge = async (req, res) => {
 
     if (!badge) {
       const visitor = await Visitor.findById({ _id: qr_id });
+      // Checks if the visitor type
       if (visitor) {
         return res.status(400).json({ error: "Visitor QR is invalid." });
       }
+
       return res
         .status(200)
         .json({
@@ -166,9 +172,33 @@ exports.checkBadge = async (req, res) => {
           url: `${system_ip}/visitor-form/?qr_id=${qr_id}`,
         });
     }
+    
+    //If badge && visitor is true then show visitor info
+    const visitor = await Visitor.findById({ _id: badge.visitor_id });
+    return res.status(200).json({ visitor: visitor, badge_id: badge._id });
 
-    updateLog(badge._id, req.user.sub, res);
+    // updateLog(badge._id, req.user.sub, res);
   } catch (error) {
     return res.status(500).json({ error: "Failed to retrieve badge" });
   }
 };
+
+exports.timeRecord = async (req, res) => {
+  const { _id, record } = req.body;
+  const userId = req.user.sub;
+
+  try {
+    
+    const { result, type, error } = (record) ? await timeIn(_id) : await timeOut(_id);
+
+    if (result) {
+      await createSystemLog(userId, type, "success");
+      return res.status(200).json({ type: type });
+    } else {
+      return res.status(400).json({ error: error });
+    }
+
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to track time record." });
+  }
+} 
