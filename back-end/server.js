@@ -7,7 +7,6 @@ const passport = require("passport");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const http = require("http");
-// const socketIo = require("socket.io");
 const { Server } = require("socket.io");
 const cron = require("node-cron");
 
@@ -35,17 +34,13 @@ const { timeInReminder, timeOutReminder } = require("./api/utils/helper");
 // Create Express app
 const app = express();
 const server = http.createServer(app);
-// const io = new Server(server, { cors: { origin: "*" } });
+
 const io = new Server(server, {
   cors: {
     origin: [
       // "https://gullas-visiflow.onrender.com",
       // "https://gullas-visiflow-internal.onrender.com",
-<<<<<<< HEAD
-      "*"
-=======
       "*",
->>>>>>> 50a94b2fa9ce1ec5fbbef5a797cfed1e5bb59455
     ],
   },
 });
@@ -82,15 +77,6 @@ app.use("/reasons", reasonRouter);
 app.use("/stats", statisticsRouter);
 app.use("/scan", ocrRouter);
 
-// Socket.io events
-// io.on("connection", (socket) => {
-//   console.log(`Client: ${socket.id} connected!`);
-
-//   socket.on("disconnect", () => {
-//     console.log(`Client: ${socket.id} disconnected`);
-//   });
-// });
-
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error(error.stack);
@@ -107,7 +93,7 @@ server.listen(PORT, () => {
 // 0 * * * * to every hour
 
 cron.schedule(
-  "*/5 * * * * *",
+  "0 * * * *",
   async () => {
     await timeOutReminder(io);
     await timeInReminder(io);

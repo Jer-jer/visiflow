@@ -157,9 +157,10 @@ function NewWalkIn({
 				if (scan === "ID") {
 					const response: any = await AxiosInstance.post("/scan/", {
 						image: base64String,
-					});
+					}); //mindee
 					const data = response.data.inference.prediction;
 
+					//set variables
 					let firstName = "";
 					let middleName = "";
 					let lastName = "";
@@ -168,22 +169,22 @@ function NewWalkIn({
 					let brgy = "";
 					let city = "";
 					let province = "";
-					let country = "";
-
+					let country = ""; 
+					//to get middlename, if two or more ang surname meaning middlename
 					if (data.surnames.length >= 2) {
 						middleName = data.surnames.pop().value;
 					} else if (data.givenNames.length >= 2) {
 						middleName = data.givenNames.pop().value;
 					}
-
+					//variable from mindee data.givennames
 					firstName = data.givenNames
-						.map((nameObj: any) => nameObj.value)
+						.map((nameObj: any) => nameObj.value)//since array ang hatag tanan sud sa name na object ma usa sa firstname
 						.join(" ");
 					lastName = data.surnames
 						.map((nameObj: any) => nameObj.value)
 						.join(" ");
 
-					const parts = data.address.value
+					const parts = data.address.value // address.value = 'CONSOLACION,CEBU,CITY' = ['CONSOLACION', 'CEBU', 'CITY']
 						.split(",")
 						.map((part: any) => part.trim());
 
@@ -196,12 +197,12 @@ function NewWalkIn({
 						"country",
 					];
 
-					parts.forEach((part: any, index: number) => {
+					parts.forEach((part: any, index: number) => { //parts is looped to distribute kada value
 						if (index < variables.length) {
 							eval(`${variables[index]} = part`);
 						}
 					});
-
+					//pag set sa state para mabutang sa form
 					setFirstNameZod(capitalizeEachWord(firstName));
 					setMiddleNameZod(capitalizeEachWord(middleName));
 					setLastNameZod(capitalizeEachWord(lastName));
@@ -212,8 +213,9 @@ function NewWalkIn({
 					setProvinceZod(capitalizeEachWord(province));
 					setCountryZod(capitalizeEachWord(country));
 					setImageUrlID(imageSrc);
+
 				} else if (scan === "PlateNO") {
-					let formData: any = new FormData();
+					let formData: any = new FormData(); //pag append sa API
 					formData.append("upload", imageSrc);
 					formData.append("regions", "ph"); // Change to your country
 
