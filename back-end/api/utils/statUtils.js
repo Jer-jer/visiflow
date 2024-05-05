@@ -22,23 +22,22 @@ async function getVisitorList(date_01, date_02) {
         },
       },
       {
-        $unwind: "$badge"
+        $unwind: "$badge",
       },
       {
         $project: {
           _id: 0,
           visitor_id: "$badge.visitor_id",
-          expected_time_in: "$badge.expected_time_in"
-        }
-      }
+          expected_time_in: "$badge.expected_time_in",
+        },
+      },
     ]);
 
     if (logs.length === 0) {
       return null;
     }
-
+    
     return logs;
-
   } catch (error) {
     return error;
   }
@@ -69,21 +68,22 @@ async function getVisitors(startDate, endDate) {
     const visitors = await getVisitorList(date_01, date_02);
 
     if (visitors === null) {
+      console.log("No visitors");
       const errMsg = "No logs in that date range.";
       errors.push(errMsg);
       return { errors };
     }
-
+    
     const visitorDB = await Visitor.aggregate([
       {
         $match: {
-          $or: visitors.map(visitor => {
+          $or: visitors.map((visitor) => {
             return {
               _id: visitor.visitor_id,
-              expected_time_in: visitor.expected_time_in
-            }
-          })
-        }
+              expected_time_in: visitor.expected_time_in,
+            };
+          }),
+        },
       },
       {
         $group: {
@@ -97,7 +97,7 @@ async function getVisitors(startDate, endDate) {
         },
       },
     ]);
-    
+
     return { visitorDB, errors };
   } catch (error) {
     console.log(error);
