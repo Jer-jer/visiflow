@@ -4,13 +4,13 @@ require('dotenv').config();
 const Visitor = require("../models/visitor");
 const Badge = require("../models/badge");
 
+// Constants
+const local_ip = "http://localhost:5000";
+
 // Imports
 const fs = require("fs").promises;
-const QRCode = require("qrcode");
 const nodemailer = require("nodemailer");
-
-// Constants
-const local_ip = "localhost";
+const QRCode = require("qrcode");
 
 // Nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -91,7 +91,7 @@ async function generateBadge(visitor) {
       purpose: visitor.purpose,
       expected_time_in: visitor.expected_time_in,
       expected_time_out: visitor.expected_time_out,
-      is_active: false,
+      // status: "inactive",
       is_valid: true,
     });
 
