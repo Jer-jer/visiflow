@@ -125,13 +125,13 @@ exports.mostVisited = async (req, res) => {
     const what = await Visitor.aggregate([
       {
         $match: {
-          $or: visitors.map((visitor) => {
+          $or: visitors.map(visitor => {
             return {
               _id: visitor.visitor_id,
-              expected_time_in: visitor.expected_time_in,
-            };
-          }),
-        },
+              expected_time_in: visitor.expected_time_in
+            }
+          })
+        }
       },
       {
         $project: {
@@ -487,8 +487,6 @@ exports.getDays = async (req, res) => {
       };
     });
 
-    // console.log(combined);
-
     const grouped = combined.reduce((acc, item) => {
       const day = acc.find((d) => d.day === item.day);
       if (day) {
@@ -503,53 +501,7 @@ exports.getDays = async (req, res) => {
       return acc;
     }, []);
 
-    console.log(grouped);
-
-    // Then, iterate over the badges and add the visitor_type to each badge
-    // badge = badge.map((badge) => {
-    //   const visitor_type = visitors.get(visitor_id);
-    //   return {
-    //     ...badge,
-    //     visitor_type,
-    //   };
-    // });
-
-    // Now, you can group the badges by day and visitor_type
-    // const grouped = badge.reduce((acc, badge) => {
-    //   const key = `${badge.day}-${badge.visitor_type}`;
-    //   acc[key] = (acc[key] || 0) + 1;
-    //   return acc;
-    // }, {});
-
     return res.json({ grouped });
-    // const total = await Logs.aggregate([
-    //   {
-    //     $match: {
-    //       created_at: {
-    //         $gte: new Date(date.getFullYear(), date.getMonth(), 1),
-    //         $lt: new Date(date.getFullYear(), date.getMonth() + 1, 1),
-    //       },
-    //     },
-    //   },
-    //   {
-    //     $project: {
-    //       _id: 0,
-    //       month: { $substr: ["$created_at", 5, 2] },
-    //       days: { $substr: ["$created_at", 8, 2] },
-    //     },
-    //   },
-    //   {
-    //     $group: {
-    //       _id: {
-    //         month: "$month",
-    //         day: "$days",
-    //       },
-    //       total: { $sum: 1 },
-    //     },
-    //   },
-    // ]);
-
-    // return res.json({ total });
   } catch (error) {
     return res
       .status(500)

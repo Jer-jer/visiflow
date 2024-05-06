@@ -22,7 +22,7 @@ const NotificationSchema = new Schema({
   _id: { type: ObjectId, require: false },
   type: {
     type: String,
-    enum: ["time-in", "time-out", "confirmation", "pending", "declined"],
+    enum: ["time-in", "time-out", "overdue", "confirmation", "pending", "declined"],
     required: true,
   },
   recipient: { type: ObjectId, require: true },
