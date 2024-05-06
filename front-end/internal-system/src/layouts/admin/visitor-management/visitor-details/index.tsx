@@ -15,6 +15,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 import { useDispatch, useSelector } from "react-redux";
+import PhoneInput from "react-phone-number-input";
 
 //Interfaces
 import {
@@ -62,8 +63,10 @@ import { addLog, removeLogs } from "../../../../states/logs/visitor";
 //Assets
 import { ExclamationCircleFilled } from "@ant-design/icons";
 import { LoadingOutlined } from "@ant-design/icons";
+import flags from "react-phone-number-input/flags";
 
 //Styles
+import "react-phone-number-input/style.css";
 import "./styles.scss";
 
 // Libraries
@@ -752,13 +755,24 @@ Who: ${convertedData
 											Mobile Number
 										</Label>
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
-											<Input
+											<PhoneInput
+												className="vm-placeholder phone-input"
+												defaultCountry="PH"
+												international
+												countryCallingCodeEditable={false}
+												flags={flags}
+												{...register("phone")}
+												value={record.visitor_details.phone}
+												onChange={(value: any) => updateInput(value, "phone")}
+												disabled={disabledInputs}
+											/>
+											{/* <Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
 												placeholder={record.visitor_details.phone}
 												{...register("phone")}
 												onChange={(e) => updateInput(e.target.value, "phone")}
 												disabled={disabledInputs}
-											/>
+											/> */}
 											{errors?.phone && (
 												<p className="mt-1 text-sm text-red-500">
 													{errors.phone.message}
