@@ -3,7 +3,7 @@ const router = express.Router();
 const StatsController = require("../controllers/statisticsController");
 const passport = require("passport");
 
-// router.use(passport.authenticate("jwt", { session: false }));
+router.use(passport.authenticate("jwt", { session: false }));
 
 router.post("/", StatsController.totalVisitors);
 
