@@ -15,6 +15,8 @@ interface scannerProps {
 	setAlertOpen: Dispatch<SetStateAction<boolean>>;
 	setStatus: Dispatch<SetStateAction<boolean>>;
 	setAlertMsg: Dispatch<SetStateAction<string>>;
+	setVisitor: any;
+	setBadgeId: any;
 }
 
 export default function Scanner({
@@ -23,6 +25,8 @@ export default function Scanner({
 	setAlertOpen,
 	setStatus,
 	setAlertMsg,
+	setVisitor,
+	setBadgeId,
 }: scannerProps) {
 	const [scanResult, setScanResult] = useState<string | null>(null);
 
@@ -59,25 +63,18 @@ export default function Scanner({
 		setAlertOpen(false);
 
 		if (isValidUrl(result)) {
-			//setScanResult(result);
-			// if (scanner) {
-			// 	scanner.clear();
-			// }
-
-			// Retrieve JWT token from local storage
-			// const token = localStorage.getItem("token");
-
-			// Append JWT token as a query parameter to the scanned URL
-			// const redirectUrl = `${result}&token=${token}`;
-			// Redirect to the scanned link
-			// window.location.href = redirectUrl;
 			AxiosInstance.get(result)
 				.then((res) => {
 					if (scanner) {
 						scanner.clear();
 					}
-					const resType = res.data.type;
+
 					const resVisitor = res.data.visitor;
+					setVisitor(resVisitor);
+					const resBadgeId = res.data.badge_id;
+					setBadgeId(resBadgeId);
+
+					const resType = res.data.type;
 					const resBadgeStatus = res.data.status;
 
 					if (resType === "new-recurring") {
@@ -93,27 +90,6 @@ export default function Scanner({
 					}
 
 					initializeScanner();
-
-					// switch (resType) {
-					// 	case "new-recurring": {
-					// 		window.location.href = res.data.url;
-					// 		break;
-					// 	}
-					// 	case "time-out": {
-					// 		setIsTimeOutOpen(true);
-					// 		break;
-					// 	}
-					// 	case "time-in": {
-					// 		setIsTimeInOpen(true);
-					// 		break;
-					// 	}
-					// 	default: {
-					// 		setStatus(false);
-					// 		setAlertOpen(true);
-					// 		setAlertMsg("Something went wrong in scanning result");
-					// 		break;
-					// 	}
-					// }
 				})
 				.catch((err) => {
 					if (err && err.response) {
