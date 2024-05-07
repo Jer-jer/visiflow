@@ -175,7 +175,7 @@ exports.checkBadge = async (req, res) => {
     
     //If badge && visitor is true then show visitor info
     const visitor = await Visitor.findById({ _id: badge.visitor_id });
-    return res.status(200).json({ visitor: visitor, badge_id: badge._id });
+    return res.status(200).json({ visitor: visitor, badge_id: badge._id, status: badge.status });
 
     // updateLog(badge._id, req.user.sub, res);
   } catch (error) {
