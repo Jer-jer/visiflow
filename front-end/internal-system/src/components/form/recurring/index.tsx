@@ -5,6 +5,9 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
+import Webcam from "react-webcam";
+import PhoneInput from "react-phone-number-input";
 
 //Interfaces
 import { useForm } from "react-hook-form";
@@ -28,16 +31,21 @@ import {
 import Alert from "../../alert";
 import { capitalizeEachWord } from "../../../utils";
 import { isMobile } from "react-device-detect";
-
-//Styles
-import "./styles.scss";
 import { GuardVisitorDataType } from "../../../utils/interfaces";
 import { VisitorStatus, VisitorType } from "../../../utils/enums";
-import AxiosInstance from "../../../lib/axios";
-import axios from "axios";
-import Webcam from "react-webcam";
 
+//Utils
 import { capitilizeFirstLetter } from "../../../utils";
+
+//Lib
+import AxiosInstance from "../../../lib/axios";
+
+//Assets
+import flags from "react-phone-number-input/flags";
+
+//Styles
+import "react-phone-number-input/style.css";
+import "./styles.scss";
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -101,18 +109,44 @@ function RecurringVisitor({
 	setStatus,
 	setAlertMsg,
 }: RecurringProps) {
-	const [firstName, setFirstName] = useState<string>("");
-	const [middleName, setMiddleName] = useState<string>("");
-	const [lastName, setLastName] = useState<string>("");
+	const [firstName, setFirstName] = useState<string>(
+		visitor.visitor_details.name.first_name,
+	);
+	const [middleName, setMiddleName] = useState<string>(
+		visitor.visitor_details.name.middle_name
+			? visitor.visitor_details.name.middle_name
+			: "",
+	);
+	const [lastName, setLastName] = useState<string>(
+		visitor.visitor_details.name.last_name,
+	);
 
-	const [house, setHouse] = useState<string>("");
-	const [street, setStreet] = useState<string>("");
-	const [brgy, setBrgy] = useState<string>("");
-	const [city, setCity] = useState<string>("");
-	const [province, setProvince] = useState<string>("");
-	const [country, setCountry] = useState<string>("");
+	const [house, setHouse] = useState<string>(
+		visitor.visitor_details.address.house
+			? visitor.visitor_details.address.house
+			: "",
+	);
+	const [street, setStreet] = useState<string>(
+		visitor.visitor_details.address.street
+			? visitor.visitor_details.address.street
+			: "",
+	);
+	const [brgy, setBrgy] = useState<string>(
+		visitor.visitor_details.address.brgy,
+	);
+	const [city, setCity] = useState<string>(
+		visitor.visitor_details.address.city,
+	);
+	const [province, setProvince] = useState<string>(
+		visitor.visitor_details.address.province,
+	);
+	const [country, setCountry] = useState<string>(
+		visitor.visitor_details.address.country,
+	);
 
-	const [plateNO, setPlateNO] = useState<string>("");
+	const [plateNO, setPlateNO] = useState<string>(
+		visitor.plate_num ? visitor.plate_num : "",
+	);
 
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -683,13 +717,23 @@ function RecurringVisitor({
 										<div className="flex flex-col">
 											<div className="flex flex-col md:flex-row md:items-center">
 												<h1>Mobile #</h1>
-												<Input
+												<PhoneInput
+													className="phone-input-walk-in"
+													defaultCountry="PH"
+													international
+													countryCallingCodeEditable={false}
+													flags={flags}
+													{...register("phone")}
+													value={visitor.visitor_details.phone}
+													onChange={(value: any) => updateInput(value, "phone")}
+												/>
+												{/* <Input
 													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[42px]"
 													size="large"
 													defaultValue={visitor.visitor_details.phone}
 													{...register("phone")}
 													onChange={(e) => updateInput(e.target.value, "phone")}
-												/>
+												/> */}
 											</div>
 											{errors?.phone && (
 												<p className="absolute mt-[36px] text-sm text-red-500">
