@@ -2,13 +2,20 @@ const Badge = require("../models/badge");
 const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
 const mongoose = require("mongoose");
-const { updateLog, createSystemLog } = require("../utils/helper");
+const { createSystemLog } = require("../utils/helper");
 const { generateQRCode } = require("../utils/qrCodeUtils");
+const {
+  timeIn,
+  timeOut
+} = require('../utils/timeRecordUtils');
 
 const archiver = require("archiver");
 const fs = require("fs");
 
 const ObjectId = mongoose.Types.ObjectId;
+
+const local_ip = "http://localhost:5000";
+const system_ip = "http://localhost:3000"
 
 exports.getBadges = async (req, res) => {
   try {
@@ -84,7 +91,7 @@ exports.generateBadge = async (req, res) => {
 
     const objectIds = Array.from({ length: qty }, () => {
       const objectId = new ObjectId();
-      const uri = `http://localhost:5000/badge/checkBadge?qr_id=${objectId}`;
+      const uri = `${local_ip}/badge/checkBadge?qr_id=${objectId}`;
       const filename = `badge${objectId}.png`;
       return { objectId, filename, uri };
     });
@@ -128,7 +135,7 @@ exports.newBadge = async (req, res) => {
       purpose: visitorDB.purpose,
       expected_time_in: visitorDB.expected_time_in,
       expected_time_out: visitorDB.expected_time_out,
-      is_active: true,
+      status: "active",
       is_valid: true,
     });
 
@@ -149,64 +156,49 @@ exports.checkBadge = async (req, res) => {
   const { qr_id } = req.query;
 
   try {
-    const badge = await Badge.findOne({ qr_id: qr_id })
+    const badge = await Badge.findOne({ qr_id: qr_id });
+
     if (!badge) {
       const visitor = await Visitor.findById({ _id: qr_id });
+      // Checks if the visitor type
       if (visitor) {
         return res.status(400).json({ error: "Visitor QR is invalid." });
       }
+
       return res
         .status(200)
         .json({
           type: "new-recurring",
-          url: `http://localhost:3000/visitor-form/?qr_id=${qr_id}`,
+          url: `${system_ip}/visitor-form/?qr_id=${qr_id}`,
         });
     }
+    
+    //If badge && visitor is true then show visitor info
+    const visitor = await Visitor.findById({ _id: badge.visitor_id });
+    return res.status(200).json({ visitor: visitor, badge_id: badge._id, status: badge.status });
 
-    updateLog(badge._id, qr_id, req.user.sub, res);
+    // updateLog(badge._id, req.user.sub, res);
   } catch (error) {
     return res.status(500).json({ error: "Failed to retrieve badge" });
   }
 };
 
-// Old check badge
-/*
-exports.checkBadge = async (req, res) => {
+exports.timeRecord = async (req, res) => {
+  const { _id, record } = req.body;
+  const userId = req.user.sub;
 
-  const { qr_id, visitor_id } = req.query;
- 
-  let badge;
-  let type;
+  try {
+    
+    const { result, type, error } = (record) ? await timeIn(_id) : await timeOut(_id);
 
-  if (!req.user) {
-    return res.status(401).json({ error: "Unauthorized user" });
-  }
-
-  if (qr_id !== undefined) {
-    badge = await Badge.findOne({ qr_id: qr_id });
-
-    if (!badge) {
-      // return res.redirect(`http://localhost:3000/visitor-form/?qr_id=${qr_id}`);
-      return res.status(200).json({ type: "new-recurring", url: `http://localhost:3000/visitor-form/?qr_id=${qr_id}` })
-      return res.redirect(
-        `https://gullas-visiflow-internal.onrender.com/?qr_id=${qr_id}`
-      );
+    if (result) {
+      await createSystemLog(userId, type, "success");
+      return res.status(200).json({ type: type });
+    } else {
+      return res.status(400).json({ error: error });
     }
-  } else {
-    badge = await Badge.findOne({ visitor_id: visitor_id });
-    type = "pre-reg";
+
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to track time record." });
   }
-
-  if (!badge) {
-    return res.status(400).json({ error: `No visitor assigned to badge` });
-  }
-
-  if (!badge.is_valid) {
-    return res.status(400).json({ error: `Invalid visitor badge` });
-  }
-
-  const _id = visitor_id !== undefined ? visitor_id : qr_id;
-  updateLog(badge._id, _id, type, req.user.sub, res);
-}
-
-*/
+} 
