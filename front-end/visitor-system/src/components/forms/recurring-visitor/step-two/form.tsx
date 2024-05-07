@@ -1,5 +1,6 @@
 import React, { useEffect, Dispatch, SetStateAction, useState } from "react";
 import axios from "axios";
+import PhoneInput from "react-phone-number-input";
 
 // Components
 import { Input, Divider, Form, Select, Tooltip } from "antd";
@@ -15,8 +16,10 @@ import {
 
 // Assets
 import { LoadingOutlined } from "@ant-design/icons";
+import flags from "react-phone-number-input/flags";
 
 // Styles
+import "react-phone-number-input/style.css";
 import "./form.scss";
 
 interface AddressSelectProps {
@@ -378,7 +381,18 @@ export default function StepTwoForm({
 							Mobile Number
 						</span>
 						<div className="flex w-full flex-col">
-							<Input
+							<PhoneInput
+								key={increment}
+								className="phone-input"
+								defaultCountry="PH"
+								international
+								countryCallingCodeEditable={false}
+								flags={flags}
+								{...register("mobile")}
+								value={visitor.visitor_details.phone}
+								onChange={(value: any) => updateData(value, "mobile")}
+							/>
+							{/* <Input
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("mobile")}
@@ -386,7 +400,7 @@ export default function StepTwoForm({
 								onChange={(event: any) =>
 									updateData(event.target.value, "mobile")
 								}
-							/>
+							/> */}
 							{errors?.mobile && (
 								<p className="mt-1 text-sm text-red-500">
 									{errors.mobile.message}

@@ -53,3 +53,25 @@
         }
     }
 }
+
+.phone-input {
+    input {
+        border-radius: 5px;
+        border-style: none;
+        --tw-bg-opacity: 1;
+        background-color: rgb(223 234 239 / var(--tw-bg-opacity));
+        outline-width: 0px;
+        --tw-ring-color: transparent;
+    }
+
+    input:focus {
+        --tw-ring-color: transparent;
+    }
+
+    .PhoneInputCountry {
+        .PhoneInputCountrySelect:focus {
+            --tw-ring-color: transparent;
+            border-color: transparent
+        }
+    }
+}
