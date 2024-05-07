@@ -56,6 +56,8 @@ export default function Scanner({
 	}, []);
 
 	function success(result: any) {
+		setAlertOpen(false);
+
 		if (isValidUrl(result)) {
 			//setScanResult(result);
 			// if (scanner) {
@@ -75,28 +77,43 @@ export default function Scanner({
 						scanner.clear();
 					}
 					const resType = res.data.type;
+					const resVisitor = res.data.visitor;
+					const resBadgeStatus = res.data.status;
 
-					switch (resType) {
-						case "new-recurring": {
-							window.location.href = res.data.url;
-							break;
-						}
-						case "time-out": {
-							setIsTimeOutOpen(true);
-							break;
-						}
-						case "time-in": {
-							setIsTimeInOpen(true);
-							break;
-						}
-						default: {
-							setStatus(false);
-							setAlertOpen(true);
-							setAlertMsg("Something went wrong in scanning result");
-							break;
-						}
+					if (resType === "new-recurring") {
+						window.location.href = res.data.url;
+					} else if (resBadgeStatus === "inactive") {
+						setIsTimeInOpen(true);
+					} else if (resBadgeStatus != "inactive") {
+						setIsTimeOutOpen(true);
+					} else {
+						setStatus(false);
+						setAlertOpen(true);
+						setAlertMsg("Something went wrong in scanning result");
 					}
+
 					initializeScanner();
+
+					// switch (resType) {
+					// 	case "new-recurring": {
+					// 		window.location.href = res.data.url;
+					// 		break;
+					// 	}
+					// 	case "time-out": {
+					// 		setIsTimeOutOpen(true);
+					// 		break;
+					// 	}
+					// 	case "time-in": {
+					// 		setIsTimeInOpen(true);
+					// 		break;
+					// 	}
+					// 	default: {
+					// 		setStatus(false);
+					// 		setAlertOpen(true);
+					// 		setAlertMsg("Something went wrong in scanning result");
+					// 		break;
+					// 	}
+					// }
 				})
 				.catch((err) => {
 					if (err && err.response) {
