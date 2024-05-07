@@ -48,7 +48,7 @@ export default function QrScannerLayout() {
 	};
 
 	const handleTimeInOk = () => {
-		AxiosInstance;
+		//AxiosInstance;
 	};
 
 	const handleTimeOutCancel = () => {
@@ -56,7 +56,7 @@ export default function QrScannerLayout() {
 	};
 
 	const handleTimeOutOk = () => {
-		AxiosInstance;
+		//AxiosInstance;
 	};
 
 	return (
