@@ -1,4 +1,4 @@
-import React, {Dispatch, SetStateAction} from "react";
+import React, { Dispatch, SetStateAction } from "react";
 
 //Components
 import { Table, Button } from "antd";
@@ -12,8 +12,10 @@ import "./styles.scss";
 
 interface VisitorFoundListProps {
 	visitors: GuardVisitorDataType[];
-    setFoundRecurring: Dispatch<SetStateAction<boolean>>;
-    setRecurringVisitor: Dispatch<SetStateAction<GuardVisitorDataType | undefined>>
+	setFoundRecurring: Dispatch<SetStateAction<boolean>>;
+	setRecurringVisitor: Dispatch<
+		SetStateAction<GuardVisitorDataType | undefined>
+	>;
 }
 
 function VisitorFoundList({
@@ -22,7 +24,7 @@ function VisitorFoundList({
 	setRecurringVisitor,
 }: VisitorFoundListProps) {
 	const openForm = (visitor: GuardVisitorDataType) => {
-        setRecurringVisitor(visitor);
+		setRecurringVisitor(visitor);
 		setFoundRecurring(true);
 	};
 
@@ -44,6 +46,7 @@ function VisitorFoundList({
 			render: (_, { visitor_details }) => {
 				return visitor_details.phone;
 			},
+			responsive: ["md"],
 		},
 		{
 			title: "Action",

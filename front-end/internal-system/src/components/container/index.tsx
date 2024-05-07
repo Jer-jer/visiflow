@@ -19,12 +19,14 @@ export default function OuterContainer({
 }: OuterContainerProps) {
 	return (
 		<div
-			className={`${containerStyling} container-shadow mr-[25px] flex flex-col items-center rounded-[20px] bg-white`}
+			className={`${containerStyling} container-shadow flex flex-col items-center rounded-[20px] bg-white`}
 		>
 			<div className="mb-[30px] mt-[30px]">
 				<span
 					className={`font-medium text-black ${
-						headerStyling === undefined ? "text-base md:text-2xl" : headerStyling
+						headerStyling === undefined
+							? "text-base md:text-2xl"
+							: headerStyling
 					}`}
 				>
 					{header}

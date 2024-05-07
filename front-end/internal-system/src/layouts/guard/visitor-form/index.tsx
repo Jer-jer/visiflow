@@ -236,7 +236,6 @@ export default function VisitorFormLayout() {
 		handleSubmit,
 		formState: { errors },
 		setValue,
-		clearErrors,
 	} = useForm<WalkInFormTypeZod>({
 		defaultValues: {
 			expected_time_out: new Date(),
@@ -468,13 +467,11 @@ export default function VisitorFormLayout() {
 
 	const onSubmit = handleSubmit((data) => {
 		saveAction(data);
-		//clearErrors();
-		// console.log(data);
 	});
 
 	if (qr_id === undefined) {
 		return (
-			<div className="mb-[35px] ml-2 mt-3 flex">
+			<div className="mx-3 mb-[35px] mt-3 flex md:ml-2 md:mr-[25px]">
 				<div className="w-[380px] flex-auto md:w-[761px]">
 					<OuterContainer header="VISITOR FORM">
 						<InnerContainer>
@@ -488,117 +485,118 @@ export default function VisitorFormLayout() {
 		);
 	} else {
 		return (
-			<OuterContainer header="VISITOR FORM">
-				<InnerContainer>
-					{!isNew && !isRecurring && (
-						<div className="mb-[60px] mt-[25px] flex h-full items-center justify-center gap-[9px] md:gap-5">
-							<Button
-								type="primary"
-								className="h-[inherit] w-[inherit] bg-primary-500 md:text-lg"
-								onClick={(e) => isNewOrRecurring(true, false)}
-							>
-								New Visitor
-							</Button>
-							<Button
-								type="primary"
-								className="h-[inherit] w-[inherit] bg-primary-500 md:text-lg"
-								onClick={(e) => isNewOrRecurring(false, true)}
-							>
-								Recurring Visitor
-							</Button>
-							<Button
-								type="primary"
-								className="h-[inherit] w-[inherit] !bg-red-500 md:text-lg"
-								href="/"
-							>
-								CANCEL
-							</Button>
-						</div>
-					)}
+			<div className="mx-3 md:ml-2 md:mr-[25px]">
+				<OuterContainer header="VISITOR FORM">
+					<InnerContainer>
+						{!isNew && !isRecurring && (
+							<div className="mb-[60px] mt-[25px] flex h-full flex-col items-center justify-center gap-[9px] md:flex-row md:gap-5">
+								<Button
+									type="primary"
+									className="h-[inherit] w-[inherit] bg-primary-500 md:text-lg"
+									onClick={(e) => isNewOrRecurring(true, false)}
+								>
+									New Visitor
+								</Button>
+								<Button
+									type="primary"
+									className="h-[inherit] w-[inherit] bg-primary-500 md:text-lg"
+									onClick={(e) => isNewOrRecurring(false, true)}
+								>
+									Recurring Visitor
+								</Button>
+								<Button
+									type="primary"
+									className="h-[inherit] w-[inherit] !bg-red-500 md:text-lg"
+									href="/"
+								>
+									CANCEL
+								</Button>
+							</div>
+						)}
 
-					{loading && (
-						<div className="absolute left-[40%] top-[50%] z-[100] lg:left-[50%]">
-							<LoadingOutlined className=" text-[128px] text-primary-500" />
-						</div>
-					)}
-					{isNew && (
-						<NewWalkIn
-							isSuccessOpen={isSuccessOpen}
-							alertOpen={alertOpen}
-							status={status}
-							alertMsg={alertMsg}
-							errors={errors}
-							whatOptions={whatList}
-							whoOptions={whoList}
-							whereOptions={whereList}
-							register={register}
-							setAlertOpen={setAlertOpen}
-							onSubmit={onSubmit}
-							handleSuccessOk={handleSuccessOk}
-							updateInput={updateInput}
-							handlePurpose={handlePurpose}
-							onChange={onChange}
-						/>
-					)}
-					{isRecurring && (
-						<>
-							{!foundRecurring ? (
-								<>
-									<div className="flex h-full w-full items-center justify-center">
-										{!loading && (
-											<div className="flex flex-col items-center gap-3">
-												<Tooltip title={error ? "Must be filled" : ""}>
-													<Search
-														className="search-visitor"
-														status={error ? "error" : ""}
-														placeholder="Enter your last name"
-														allowClear
-														onSearch={onSearch}
-														style={{ width: 300 }}
-													/>
-												</Tooltip>
-												<Button
-													type="link"
-													className="flex items-center justify-center text-primary-500 hover:!text-primary-300"
-													onClick={() => window.location.reload()}
-												>
-													<LeftOutlined />
-													Go Back
-												</Button>
-											</div>
+						{loading && (
+							<div className="absolute left-[40%] top-[50%] z-[100] lg:left-[50%]">
+								<LoadingOutlined className=" text-[128px] text-primary-500" />
+							</div>
+						)}
+						{isNew && (
+							<NewWalkIn
+								isSuccessOpen={isSuccessOpen}
+								alertOpen={alertOpen}
+								status={status}
+								alertMsg={alertMsg}
+								errors={errors}
+								whatOptions={whatList}
+								whoOptions={whoList}
+								whereOptions={whereList}
+								register={register}
+								setAlertOpen={setAlertOpen}
+								onSubmit={onSubmit}
+								handleSuccessOk={handleSuccessOk}
+								updateInput={updateInput}
+								handlePurpose={handlePurpose}
+								onChange={onChange}
+							/>
+						)}
+						{isRecurring && (
+							<>
+								{!foundRecurring ? (
+									<>
+										<div className="flex h-full w-full items-center justify-center">
+											{!loading && (
+												<div className="flex flex-col items-center gap-3">
+													<Tooltip title={error ? "Must be filled" : ""}>
+														<Search
+															className="search-visitor w-[260px] md:w-[300px]"
+															status={error ? "error" : ""}
+															placeholder="Enter your last name"
+															allowClear
+															onSearch={onSearch}
+														/>
+													</Tooltip>
+													<Button
+														type="link"
+														className="flex items-center justify-center text-primary-500 hover:!text-primary-300"
+														onClick={() => window.location.reload()}
+													>
+														<LeftOutlined />
+														Go Back
+													</Button>
+												</div>
+											)}
+										</div>
+										{visitorsFound && (
+											<VisitorFoundList
+												visitors={visitors}
+												setFoundRecurring={setFoundRecurring}
+												setRecurringVisitor={setRecurringVisitor}
+											/>
 										)}
-									</div>
-									{visitorsFound && (
-										<VisitorFoundList
-											visitors={visitors}
-											setFoundRecurring={setFoundRecurring}
-											setRecurringVisitor={setRecurringVisitor}
-										/>
-									)}
-								</>
-							) : (
-								<RecurringVisitor
-									visitor={recurringVisitor!}
-									isSuccessOpen={isSuccessOpen}
-									alertOpen={alertOpen}
-									status={status}
-									alertMsg={alertMsg}
-									whatOptions={whatList}
-									whoOptions={whoList}
-									whereOptions={whereList}
-									qr_id={qr_id?.toString()}
-									setAlertOpen={setAlertOpen}
-									handleSuccessOk={handleSuccessOk}
-									setLoading={setLoading}
-									setIsSuccessOpen={setIsSuccessOpen}
-									setStatus={setStatus}
-									setAlertMsg={setAlertMsg}
-								/>
-							)}
-						</>
-					)}
-				</InnerContainer>
-			</OuterContainer>
+									</>
+								) : (
+									<RecurringVisitor
+										visitor={recurringVisitor!}
+										isSuccessOpen={isSuccessOpen}
+										alertOpen={alertOpen}
+										status={status}
+										alertMsg={alertMsg}
+										whatOptions={whatList}
+										whoOptions={whoList}
+										whereOptions={whereList}
+										qr_id={qr_id?.toString()}
+										setAlertOpen={setAlertOpen}
+										handleSuccessOk={handleSuccessOk}
+										setLoading={setLoading}
+										setIsSuccessOpen={setIsSuccessOpen}
+										setStatus={setStatus}
+										setAlertMsg={setAlertMsg}
+									/>
+								)}
+							</>
+						)}
+					</InnerContainer>
+				</OuterContainer>
+			</div>
 		);
 	}
 }

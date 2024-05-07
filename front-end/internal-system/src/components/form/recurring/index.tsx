@@ -109,6 +109,8 @@ function RecurringVisitor({
 	setStatus,
 	setAlertMsg,
 }: RecurringProps) {
+	const desktopMedia = window.matchMedia("(min-width: 1024px)");
+
 	const [firstName, setFirstName] = useState<string>(
 		visitor.visitor_details.name.first_name,
 	);
@@ -559,11 +561,15 @@ function RecurringVisitor({
 			</div>
 			<Form name="Visitor Details" onFinish={onSubmit} autoComplete="off">
 				<div className="mb-[35px] ml-2 mt-[-30px] flex lg:mt-3">
-					<div className="w-[380px] flex-auto md:w-[761px]">
+					<div className="w-[280px] flex-auto md:w-[761px]">
 						<div className="mb-[35px] ml-[5px] mr-[25px] flex h-fit flex-col items-center justify-center gap-[50px] md:ml-[20px] lg:flex-row lg:gap-[40px]">
 							<div className="flex flex-col items-center justify-center gap-[40px] lg:mt-[-55px]">
-								<div className="align-center flex h-[200px] w-[300px] flex-col md:h-[240px] md:w-[320px]">
-									<Image width="100%" height="100%" src={imageUrlID} />
+								<div className="flex h-[200px] w-[300px] flex-col items-center md:h-[240px] md:w-[320px]">
+									<Image
+										width={desktopMedia.matches ? "100%" : "90%"}
+										height="100%"
+										src={imageUrlID}
+									/>
 									<Button
 										type="primary"
 										className="shadow-lgmd:h-[46px] h-[40px] !rounded-[10px] !bg-primary-500 text-xs md:text-lg"
@@ -572,8 +578,12 @@ function RecurringVisitor({
 										<b>SCAN ID (OPTIONAL)</b>
 									</Button>
 								</div>
-								<div className="align-center flex h-[200px] w-[300px] flex-col md:h-[240px] md:w-[320px]">
-									<Image width="100%" height="100%" src={imageUrlPlateNO} />
+								<div className="flex h-[200px] w-[300px] flex-col items-center md:h-[240px] md:w-[320px]">
+									<Image
+										width={desktopMedia.matches ? "100%" : "90%"}
+										height="100%"
+										src={imageUrlPlateNO}
+									/>
 									<Button
 										type="primary"
 										className="h-[40px] !rounded-[10px] !bg-primary-500 text-xs shadow-lg md:h-[46px] md:text-lg"
@@ -635,7 +645,7 @@ function RecurringVisitor({
 											<div className="flex flex-col md:flex-row md:items-center">
 												<h1>First Name</h1>
 												<Input
-													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[30px]"
+													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[30px] md:w-[300px]"
 													size="large"
 													defaultValue={visitor.visitor_details.name.first_name}
 													{...register("first_name")}
@@ -656,7 +666,7 @@ function RecurringVisitor({
 											<div className="flex flex-col md:flex-row md:items-center">
 												<h1>Middle Name</h1>
 												<Input
-													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[13px]"
+													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[13px] md:w-[300px]"
 													size="large"
 													defaultValue={
 														visitor.visitor_details.name.middle_name
@@ -679,7 +689,7 @@ function RecurringVisitor({
 											<div className="flex flex-col md:flex-row md:items-center">
 												<h1>Last Name</h1>
 												<Input
-													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[31px]"
+													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[31px] md:w-[300px]"
 													size="large"
 													defaultValue={visitor.visitor_details.name.last_name}
 													{...register("last_name")}
@@ -700,7 +710,7 @@ function RecurringVisitor({
 											<div className="flex flex-col md:flex-row md:items-center">
 												<h1>Email</h1>
 												<Input
-													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[64px]"
+													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[64px] md:w-[300px]"
 													size="large"
 													defaultValue={visitor.visitor_details.email}
 													{...register("email")}
@@ -716,9 +726,9 @@ function RecurringVisitor({
 
 										<div className="flex flex-col">
 											<div className="flex flex-col md:flex-row md:items-center">
-												<h1>Mobile #</h1>
+												<h1>Mobile</h1>
 												<PhoneInput
-													className="phone-input-walk-in"
+													className="phone-input-walk-in w-[260px] md:w-[310px]"
 													defaultCountry="PH"
 													international
 													countryCallingCodeEditable={false}
@@ -746,7 +756,7 @@ function RecurringVisitor({
 											<div className="flex flex-col md:flex-row md:items-center">
 												<h1>Plate Number (Optional)</h1>
 												<Input
-													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[16px] md:w-[230px]"
+													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[16px] md:w-[230px]"
 													size="large"
 													defaultValue={visitor.plate_num ?? ""}
 													{...register("plate_num")}
@@ -767,7 +777,7 @@ function RecurringVisitor({
 											<div className="flex flex-col md:flex-row md:items-center">
 												<h1>House #</h1>
 												<Input
-													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[24px]"
+													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[24px] md:w-[300px]"
 													size="large"
 													defaultValue={visitor.visitor_details.address.house}
 													{...register("house")}
@@ -785,7 +795,7 @@ function RecurringVisitor({
 											<div className="flex flex-col md:flex-row md:items-center">
 												<h1>Street</h1>
 												<Input
-													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[39.5px]"
+													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[39.5px] md:w-[300px]"
 													size="large"
 													defaultValue={visitor.visitor_details.address.street}
 													{...register("street")}
@@ -803,7 +813,7 @@ function RecurringVisitor({
 											<div className="flex flex-col md:flex-row md:items-center">
 												<h1>Barangay</h1>
 												<Input
-													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[18.5px]"
+													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[18.5px] md:w-[300px]"
 													size="large"
 													defaultValue={visitor.visitor_details.address.brgy}
 													{...register("brgy")}
@@ -821,7 +831,7 @@ function RecurringVisitor({
 											<div className="flex flex-col md:flex-row md:items-center">
 												<h1>City</h1>
 												<Input
-													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[52px]"
+													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[52px] md:w-[300px]"
 													size="large"
 													defaultValue={visitor.visitor_details.address.city}
 													{...register("city")}
@@ -839,7 +849,7 @@ function RecurringVisitor({
 											<div className="flex flex-col md:flex-row md:items-center">
 												<h1>Province</h1>
 												<Input
-													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[23px]"
+													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[23px] md:w-[300px]"
 													size="large"
 													defaultValue={
 														visitor.visitor_details.address.province
@@ -859,7 +869,7 @@ function RecurringVisitor({
 											<div className="flex flex-col md:flex-row md:items-center">
 												<h1>Country</h1>
 												<Input
-													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[27px]"
+													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[27px] md:w-[300px]"
 													size="large"
 													defaultValue={visitor.visitor_details.address.country}
 													{...register("country")}
@@ -884,7 +894,7 @@ function RecurringVisitor({
 												<div className="flex flex-col">
 													<div>
 														<Select
-															className="w-[315px] md:w-[397px]"
+															className="w-[260px] md:w-[397px]"
 															size="large"
 															placement="bottomLeft"
 															mode="multiple"
@@ -909,7 +919,7 @@ function RecurringVisitor({
 												<div className="flex flex-col">
 													<div>
 														<Select
-															className="w-[315px] md:w-[397px]"
+															className="w-[260px] md:w-[397px]"
 															size="large"
 															placement="bottomLeft"
 															mode="multiple"
@@ -935,7 +945,7 @@ function RecurringVisitor({
 												<div className="flex flex-col">
 													<div>
 														<Select
-															className="w-[315px] md:w-[397px]"
+															className="w-[260px] md:w-[397px]"
 															size="large"
 															placement="bottomLeft"
 															mode="multiple"
@@ -962,7 +972,7 @@ function RecurringVisitor({
 														<h1>Expected Time Out</h1>
 														<DatePicker
 															showTime
-															className="focus:!bg-[#e0ebf0]vm-placeholder ml-[20px] h-[35px] w-[180px] border-none !border-[#d9d9d9] bg-[#e0ebf0] focus-within:!bg-[#e0ebf0] hover:!border-primary-500 hover:!bg-[#e0ebf0] focus:!border-primary-500 md:w-[260px]"
+															className="focus:!bg-[#e0ebf0]vm-placeholder h-[35px] w-[260px] border-none !border-[#d9d9d9] bg-[#e0ebf0] focus-within:!bg-[#e0ebf0] hover:!border-primary-500 hover:!bg-[#e0ebf0] focus:!border-primary-500 md:ml-[20px] md:w-[260px]"
 															defaultValue={dayjs(
 																dayjs(),
 																"YYYY-MM-DD hh:mm A",
