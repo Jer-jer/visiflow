@@ -28,7 +28,7 @@ export default function QrScannerLayout() {
 	}
 
 	return (
-		<div className="mb-[35px] ml-2 mt-3 flex">
+		<div className="mx-3 mb-[35px] mt-3 flex md:ml-2 md:mr-[25px]">
 			<div className="w-[380px] flex-auto md:w-[761px]">
 				<div
 					className={`transition-alert absolute z-[1] w-[380px] scale-y-0 ease-in-out ${
