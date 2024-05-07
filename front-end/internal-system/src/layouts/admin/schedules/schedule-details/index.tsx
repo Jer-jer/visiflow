@@ -246,7 +246,7 @@ export default function ScheduleDetails({
 		? whoList.filter((who, index) => who.label === record.purpose.who[index])
 		: [];
 	const subject: string = "Meeting Appointment via Pre-Registration";
-	const message: string = `You have a request appointment with a visitor. Please confirm the appointment. Thank you! 
+	const message: string = `You have a request appointment with a visitor. Please confirm the appointment. Thank you!
 
 What: ${record.purpose.what.map((what) => what).join(", ")} 
 When: ${formatDateObjToString(record.purpose.when)}

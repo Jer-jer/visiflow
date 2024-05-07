@@ -319,16 +319,16 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 				setValue(property, value);
 				break;
 			case "what":
-				setValue(property, value as string[]);
+				setValue(property, value as any);
 				break;
 			case "when":
 				setValue(property, value as Date);
 				break;
 			case "where":
-				setValue(property, value as string[]);
+				setValue(property, value as any);
 				break;
 			case "who":
-				setValue(property, value as string[]);
+				setValue(property, value as any);
 				break;
 		}
 	};
