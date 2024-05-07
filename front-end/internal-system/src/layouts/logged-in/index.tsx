@@ -159,6 +159,15 @@ function LoggedIn({ children }: LoggedInProps) {
 									/>
 								)}
 							</NavLink>
+							<NavLink to="/schedules">
+								{({ isActive }) => (
+									<SidebarItem
+										icon={<Calendar />}
+										text="Schedules"
+										active={isActive}
+									/>
+								)}
+							</NavLink>
 						</>
 					)}
 				</Sidebar>
