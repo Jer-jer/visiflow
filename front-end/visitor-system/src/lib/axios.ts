@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const AxiosInstance = axios.create({
-	baseURL: "http://localhost:5000",
+	baseURL: "https://visiflow-api.onrender.com",
 });
 
 export default AxiosInstance;

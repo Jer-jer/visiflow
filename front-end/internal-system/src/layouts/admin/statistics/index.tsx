@@ -35,6 +35,9 @@ import AxiosInstance from "../../../lib/axios";
 //Utils
 import { formatDateString } from "../../../utils";
 
+//Assets
+import { LoadingOutlined } from "@ant-design/icons";
+
 //Styles
 import "../../../utils/variables.scss";
 import "./styles.scss";
@@ -113,8 +116,25 @@ export default function StatisticsLayout() {
 	const [month, setMonth] = useState(false);
 	const [year, setYear] = useState(false);
 
+	const [selectedMonth, setSelectedMonth] = useState<string | undefined>(
+		undefined,
+	);
+	const [selectedYear, setSelectedYear] = useState<string | undefined>(
+		undefined,
+	);
+
 	const [months, setMonths] = useState<[{ value: string; label: string }]>();
 	const [years, setYears] = useState<[{ value: string; label: string }]>();
+
+	const [daysOfMonth, setDaysOfMonth] = useState<
+		{
+			day: string;
+			walkin: number;
+			preregistered: number;
+		}[]
+	>([]);
+
+	const [loading, setLoading] = useState(false);
 
 	const [data, setData] = useState<WalkInVsRegisteredProps[]>([
 		{
@@ -350,20 +370,96 @@ export default function StatisticsLayout() {
 		fetchGraph();
 	}, []);
 
-	const onChangeMonth: CheckboxProps["onChange"] = (e) => {
-		setMonth(e.target.checked);
+	const getDaysInMonth = async (month: string, year: string) => {
+		return new Array(31)
+			.fill("")
+			.map((v, i) => new Date(parseInt(year), parseInt(month) - 1, i + 1))
+			.filter((v) => v.getMonth() === parseInt(month) - 1)
+			.map((v) => ({
+				day: v.getDate().toString(),
+				walkin: 0,
+				preregistered: 0,
+			}));
 	};
 
-	const onChangeYear: CheckboxProps["onChange"] = (e) => {
+	const onChangeMonth: CheckboxProps["onChange"] = async (e) => {
+		setMonth(e.target.checked);
+
+		if (e.target.checked === false) {
+			setLoading(true);
+			await fetchGraph(undefined, selectedYear);
+			setLoading(false);
+		}
+	};
+
+	const onChangeYear: CheckboxProps["onChange"] = async (e) => {
 		setYear(e.target.checked);
+
+		if (e.target.checked === false) {
+			setLoading(true);
+			await fetchGraph(selectedMonth, undefined);
+			setLoading(false);
+		}
 	};
 
 	const handleChangeMonth = async (value: string) => {
 		console.log(`selected ${value}`);
+		setSelectedMonth(value);
+
+		console.log(
+			getDaysInMonth(
+				value,
+				selectedYear !== undefined && selectedYear
+					? selectedYear
+					: new Date().getFullYear().toString(),
+			),
+		);
+
+		const allDays = await getDaysInMonth(
+			value,
+			selectedYear !== undefined && selectedYear
+				? selectedYear
+				: new Date().getFullYear().toString(),
+		);
+
+		await AxiosInstance.post("/stats/getDays", {
+			month: parseInt(value),
+		}).then((res: any) => {
+			const days = allDays.map((d: any) => {
+				const day = res.data.grouped.find((day: any) => {
+					return d.day.padStart(2, "0") === day.day;
+				});
+
+				if (day) {
+					return {
+						day: day.day,
+						walkin: day.walkin,
+						preregistered: day.preregistered,
+					};
+				}
+
+				return {
+					day: d.day.padStart(2, "0"),
+					walkin: 0,
+					preregistered: 0,
+				};
+			});
+
+			setDaysOfMonth(days);
+		});
+
+		setLoading(true);
+		await fetchGraph(value);
+		setLoading(false);
 	};
 
-	const handleChangeYear = (value: string) => {
+	const handleChangeYear = async (value: string) => {
 		console.log(`selected ${value}`);
+		setSelectedYear(value);
+
+		setLoading(true);
+		await fetchGraph(value);
+		setLoading(false);
 	};
 
 	const calculatePercentage = (part: number, total: number) => {
@@ -558,29 +654,59 @@ export default function StatisticsLayout() {
 					headerStyling="text-lg tracking-[1.47px]"
 				>
 					<div className="mb-[10px] w-[95%]">
-						<ResponsiveContainer aspect={2}>
-							<LineChart
-								data={data}
-								margin={{
-									top: 5,
-									right: 30,
-									left: 20,
-									bottom: 5,
-								}}
-							>
-								<CartesianGrid strokeDasharray="3 3" />
-								<XAxis dataKey="name.label" />
-								<YAxis />
-								<Tooltip />
-								<Legend />
-								<Line type="monotone" dataKey="Walk-in" stroke="#E88B23" />
-								<Line
-									type="monotone"
-									dataKey="Pre-registered"
-									stroke="#82ca9d"
-								/>
-							</LineChart>
-						</ResponsiveContainer>
+						{loading ? (
+							<div className="flex items-center justify-center">
+								<LoadingOutlined className="text-[128px] text-primary-500" />
+							</div>
+						) : (
+							<ResponsiveContainer aspect={2}>
+								{daysOfMonth && daysOfMonth.length > 0 ? (
+									<LineChart
+										data={daysOfMonth}
+										margin={{
+											top: 5,
+											right: 30,
+											left: 20,
+											bottom: 5,
+										}}
+									>
+										<CartesianGrid strokeDasharray="3 3" />
+										<XAxis dataKey="day" />
+										<YAxis />
+										<Tooltip />
+										<Legend />
+										<Line type="monotone" dataKey="walkin" stroke="#E88B23" />
+										<Line
+											type="monotone"
+											dataKey="preregistered"
+											stroke="#82ca9d"
+										/>
+									</LineChart>
+								) : (
+									<LineChart
+										data={data}
+										margin={{
+											top: 5,
+											right: 30,
+											left: 20,
+											bottom: 5,
+										}}
+									>
+										<CartesianGrid strokeDasharray="3 3" />
+										<XAxis dataKey="name.label" />
+										<YAxis />
+										<Tooltip />
+										<Legend />
+										<Line type="monotone" dataKey="Walk-in" stroke="#E88B23" />
+										<Line
+											type="monotone"
+											dataKey="Pre-registered"
+											stroke="#82ca9d"
+										/>
+									</LineChart>
+								)}
+							</ResponsiveContainer>
+						)}
 					</div>
 					<div className="mb-[15px] flex gap-[10px]">
 						<Checkbox
@@ -602,6 +728,7 @@ export default function StatisticsLayout() {
 									<Select
 										options={months}
 										label="Month"
+										placeholder="Select Month"
 										handleChange={handleChangeMonth}
 									/>
 								) : (
@@ -617,6 +744,7 @@ export default function StatisticsLayout() {
 									<Select
 										options={years}
 										label="Year"
+										placeholder="Select Year"
 										handleChange={handleChangeYear}
 									/>
 								) : (

@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const ObjectId = mongoose.Types.ObjectId;
+const Badge = require("../models/badge");
 const VisitorLogs = require("../models/visitorLogs");
 
 exports.getLogs = async (req, res) => {
@@ -46,6 +47,41 @@ exports.findVisitorLogs = async (req, res) => {
     return res.status(200).json({ visitorLogs });
   } catch (error) {
     return res.status(500).json({ error: "Something went wrong fetching logs" });
+  }
+};
+
+exports.findAllVisitorLogs = async (req, res) => {
+  const { visitor_id } = req.body;
+
+  try {
+    const visitorBadges = await Badge.find({
+      visitor_id: new ObjectId(visitor_id),
+    });
+
+    if (visitorBadges) {
+      var visitorLogs = [];
+
+      for (let badge of visitorBadges) {
+        const logs = await VisitorLogs.find({
+          badge_id: new ObjectId(badge._id),
+        });
+
+        visitorLogs.push({logs: logs, purpose: badge.purpose});
+      }
+
+      if (visitorLogs && visitorLogs.length > 0) {
+        return res.status(200).json({ visitorLogs });
+      } else {
+        return res.status(500).json({ error: "Visitor has no logs" });
+      }
+    } else {
+      return res.status(500).json({ error: "Visitor has no logs" });
+    }
+
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: "Something went wrong fetching logs" });
   }
 };
 

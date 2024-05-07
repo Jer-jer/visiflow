@@ -15,17 +15,21 @@ export default function QrScannerLayout() {
 	const [alertOpen, setAlertOpen] = useState(false);
 	const [alertMsg, setAlertMsg] = useState("");
 
-	function handleQRstatus(message: string) {
-		setStatus(false);
-		if (
-			message === "Successfully Timed-Out" ||
-			message === "Successfully Timed-In"
-		) {
-			setStatus(true);
-		}
-		setAlertMsg(message);
-		setAlertOpen(true);
-	}
+	//modal status
+	const [isTimeInOpen, setIsTimeInOpen] = useState(false);
+	const [isTimeOutOpen, setIsTimeOutOpen] = useState(false);
+
+	// function handleQRstatus(message: string) {
+	// 	setStatus(false);
+	// 	if (
+	// 		message === "Successfully Timed-Out" ||
+	// 		message === "Successfully Timed-In"
+	// 	) {
+	// 		setStatus(true);
+	// 	}
+	// 	setAlertMsg(message);
+	// 	setAlertOpen(true);
+	// }
 
 	return (
 		<div className="mb-[35px] ml-2 mt-3 flex">
@@ -54,7 +58,13 @@ export default function QrScannerLayout() {
 					<InnerContainer>
 						<div className="mb-[35px] ml-[25px] mr-[25px] mt-3 flex h-fit flex-col items-center justify-center gap-20">
 							<div className="flex flex-col items-center justify-center gap-5">
-								<Scanner onQRstatus={handleQRstatus} />
+								<Scanner
+									setIsTimeInOpen={setIsTimeInOpen}
+									setIsTimeOutOpen={setIsTimeOutOpen}
+									setAlertOpen={setAlertOpen}
+									setStatus={setStatus}
+									setAlertMsg={setAlertMsg}
+								/>
 								<h1>PLACE THE QR INSIDE THE BOX</h1>
 								{/* <h1>INVALID QR</h1> */}
 							</div>

@@ -29,10 +29,7 @@ import type { Dayjs } from "dayjs";
 import type { DatePickerProps } from "antd";
 
 // Utils
-import {
-	formatDateObjToString,
-	formatDateStringToUTC,
-} from "../../../../utils";
+import { formatDateObjToString } from "../../../../utils";
 import { SelectOption } from "../../../../utils/interfaces";
 
 //Layouts
@@ -140,6 +137,7 @@ export default function VisitorDetails({
 	const [visitorMessage, setVisitorMessage] = useState<string>(
 		"Your pre-registration application has been approved. Please find the QR code attached. Thank you!",
 	);
+	const [poiMessage, setPOIMessage] = useState<string>("");
 
 	//? Disabled Inputs
 	const [disabledInputs, setDisabledInputs] = useState<boolean>(true);
@@ -173,6 +171,18 @@ export default function VisitorDetails({
 				),
 			);
 			setWhoList(convertedData);
+
+			setPOIMessage(`You have a request appointment with a visitor. Please confirm the appointment. Thank you! 
+
+What: ${record.purpose.what.map((what) => what).join(", ")} 
+When: ${formatDateObjToString(record.purpose.when)}
+Where: ${record.purpose.where.map((where) => where).join(", ")}
+Who: ${convertedData
+				.filter((who, index) =>
+					record.purpose.who.some((recpt) => recpt === who.label),
+				)
+				.map((who) => who.label)
+				.join(", ")}`);
 		} catch (error) {
 			console.error("Error fetching employees:", error);
 		}
@@ -244,17 +254,7 @@ export default function VisitorDetails({
 		fetchAndSetReasons();
 		getWhere();
 	}, []);
-
-	const recipient: SelectOption[] = whoList
-		? whoList.filter((who, index) => who.label === record.purpose.who[index])
-		: [];
 	const subject: string = "Meeting Appointment via Pre-Registration";
-	const message: string = `You have a request appointment with a visitor. Please confirm the appointment. Thank you! 
-
-What: ${record.purpose.what.map((what) => what).join(", ")} 
-When: ${formatDateObjToString(record.purpose.when)}
-Where: ${record.purpose.where.map((where) => where).join(", ")}
-Who: ${recipient.map((who) => who.label).join(", ")}`;
 
 	// Store Related variables
 	const tabs: any = useSelector((state: RootState) => state.visitorTabs);
@@ -265,43 +265,38 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 
 	const dispatch = useDispatch();
 
-	// Retrieve Logs
-	useEffect(() => {
-		//? Remove existing logs in store
-		dispatch(removeLogs());
-
-		AxiosInstance.post(`/badge/findBadge`, { visitor_id: record._id })
-			.then(async (res) => {
-				const badge = res.data.badge;
-				await AxiosInstance.post("/visitor/logs/find-visitor-logs", {
-					badge_id: badge._id,
-				})
-					.then((res) => {
-						const logs = res.data.visitorLogs;
-						logs.map((log: any, indx: number) =>
-							dispatch(
-								addLog({
-									key: (indx + 1).toString(),
-									purpose: record.purpose,
-									check_in_time: log.check_in_time,
-									check_out_time: log.check_out_time,
-								}),
-							),
+	const getLogs = async () => {
+		await AxiosInstance.post("/visitor/logs/find-all-visitor-logs", {
+			visitor_id: record._id,
+		})
+			.then((res) => {
+				const allLogs = res.data.visitorLogs;
+				for (let log of allLogs) {
+					log.logs.map((indvLog: any, indx: number) => {
+						return dispatch(
+							addLog({
+								key: (indx + 1).toString(),
+								purpose: log.purpose,
+								check_in_time: indvLog.check_in_time,
+								check_out_time: indvLog.check_out_time,
+							}),
 						);
-					})
-					.catch((err) => {
-						if (err && err.response) {
-							const message = err.response.data.error;
-							warning(message);
-						}
 					});
+				}
 			})
 			.catch((err) => {
 				if (err && err.response) {
 					const message = err.response.data.error;
-					error(message);
+					warning(message);
 				}
 			});
+	};
+
+	// Retrieve Logs
+	useEffect(() => {
+		//? Remove existing logs in store
+		dispatch(removeLogs());
+		getLogs();
 	}, []);
 
 	// Client-side Validation related data
@@ -499,7 +494,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 		await AxiosInstance.post("employees/notifyPOI", {
 			recipients: emailToSend,
 			subject,
-			message,
+			message: poiMessage,
 		})
 			.then((res) => {
 				setLoading(false);
@@ -1289,7 +1284,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 												setOpen={setNotifyPOIOpen}
 												modalHeader="Notify Person of Interest"
 												subject={subject}
-												message={message}
+												message={poiMessage}
 												disabled={true}
 												onOk={sendPOIEmail}
 											/>

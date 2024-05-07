@@ -1,6 +1,6 @@
-const Visitor = require('../models/visitor');
-const Badge = require('../models/badge');
-const Logs = require('../models/visitorLogs');
+const Visitor = require("../models/visitor");
+const Badge = require("../models/badge");
+const Logs = require("../models/visitorLogs");
 
 async function getVisitorList(date_01, date_02) {
   try {
@@ -9,17 +9,17 @@ async function getVisitorList(date_01, date_02) {
         $match: {
           check_in_time: {
             $gte: date_01,
-            $lte: date_02
-          }
-        }
+            $lte: date_02,
+          },
+        },
       },
       {
         $lookup: {
           from: "badges",
           localField: "badge_id",
           foreignField: "_id",
-          as: "badge"
-        }
+          as: "badge",
+        },
       },
       {
         $unwind: "$badge"
@@ -47,14 +47,17 @@ async function getVisitorList(date_01, date_02) {
 async function getVisitors(startDate, endDate) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  today.setHours(today.getHours() - 8);
   const endOfDay = new Date();
   endOfDay.setHours(23, 59, 59, 999);
+  endOfDay.setHours(endOfDay.getHours() - 8);
 
-  const date_01 = startDate ? new Date(startDate) : today;
-  const date_02 = endDate ? new Date(endDate) : endOfDay;
+  const date_01 =
+    startDate != undefined && startDate ? new Date(startDate) : today;
+  const date_02 =
+    endDate != undefined && endDate ? new Date(endDate) : endOfDay;
 
   const errors = [];
-
 
   if (date_01 > date_02) {
     const errMsg = "Invalid date range";
@@ -85,23 +88,24 @@ async function getVisitors(startDate, endDate) {
       {
         $group: {
           _id: "$visitor_type",
-          count: { $count: {} }
-        }
+          count: { $count: {} },
+        },
       },
       {
         $sort: {
-          count: -1
-        }
-      }
+          count: -1,
+        },
+      },
     ]);
     
     return { visitorDB, errors };
   } catch (error) {
+    console.log(error);
     return error;
   }
 }
 
 module.exports = {
   getVisitors,
-  getVisitorList
-}
+  getVisitorList,
+};

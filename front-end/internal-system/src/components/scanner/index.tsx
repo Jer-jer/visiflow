@@ -2,15 +2,30 @@
 import React from "react";
 
 import { Html5QrcodeScanner } from "html5-qrcode";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { qr_id } from "../../layouts/guard/visitor-form";
 import AxiosInstance from "../../lib/axios";
 
 //Styles
 import "./styles.scss";
 
-export default function Scanner({ onQRstatus }: any) {
+interface scannerProps {
+	setIsTimeInOpen: Dispatch<SetStateAction<boolean>>;
+	setIsTimeOutOpen: Dispatch<SetStateAction<boolean>>;
+	setAlertOpen: Dispatch<SetStateAction<boolean>>;
+	setStatus: Dispatch<SetStateAction<boolean>>;
+	setAlertMsg: Dispatch<SetStateAction<string>>;
+}
+
+export default function Scanner({
+	setIsTimeInOpen,
+	setIsTimeOutOpen,
+	setAlertOpen,
+	setStatus,
+	setAlertMsg,
+}: scannerProps) {
 	const [scanResult, setScanResult] = useState<string | null>(null);
+
 	let scanner: Html5QrcodeScanner | null = null;
 
 	const initializeScanner = () => {
@@ -42,56 +57,58 @@ export default function Scanner({ onQRstatus }: any) {
 
 	function success(result: any) {
 		if (isValidUrl(result)) {
-			if (qr_id !== undefined) {
-				onQRstatus("Visitor Form is Ongoing");
-			} else {
-				//setScanResult(result);
-				// if (scanner) {
-				// 	scanner.clear();
-				// }
+			//setScanResult(result);
+			// if (scanner) {
+			// 	scanner.clear();
+			// }
 
-				// Retrieve JWT token from local storage
-				// const token = localStorage.getItem("token");
+			// Retrieve JWT token from local storage
+			// const token = localStorage.getItem("token");
 
-				// Append JWT token as a query parameter to the scanned URL
-				// const redirectUrl = `${result}&token=${token}`;
-				// Redirect to the scanned link
-				// window.location.href = redirectUrl;
-				AxiosInstance.get(result)
-					.then((res) => {
-						if (scanner) {
-							scanner.clear();
-						}
-						const resType = res.data.type;
+			// Append JWT token as a query parameter to the scanned URL
+			// const redirectUrl = `${result}&token=${token}`;
+			// Redirect to the scanned link
+			// window.location.href = redirectUrl;
+			AxiosInstance.get(result)
+				.then((res) => {
+					if (scanner) {
+						scanner.clear();
+					}
+					const resType = res.data.type;
 
-						switch (resType) {
-							case "new-recurring": {
-								window.location.href = res.data.url;
-								break;
-							}
-							case "time-out": {
-								onQRstatus("Successfully Timed-Out");
-								break;
-							}
-							case "time-in": {
-								onQRstatus("Successfully Timed-In");
-								break;
-							}
-							default: {
-								onQRstatus("Something went wrong");
-								break;
-							}
+					switch (resType) {
+						case "new-recurring": {
+							window.location.href = res.data.url;
+							break;
 						}
-						initializeScanner();
-					})
-					.catch((err) => {
-						if (err && err.response) {
-							onQRstatus(err.response.data.error);
+						case "time-out": {
+							setIsTimeOutOpen(true);
+							break;
 						}
-					});
-			}
+						case "time-in": {
+							setIsTimeInOpen(true);
+							break;
+						}
+						default: {
+							setStatus(false);
+							setAlertOpen(true);
+							setAlertMsg("Something went wrong in scanning result");
+							break;
+						}
+					}
+					initializeScanner();
+				})
+				.catch((err) => {
+					if (err && err.response) {
+						setStatus(false);
+						setAlertOpen(true);
+						setAlertMsg(err.response.data.error);
+					}
+				});
 		} else {
-			onQRstatus("Invalid QR");
+			setStatus(false);
+			setAlertOpen(true);
+			setAlertMsg("Invalid QR");
 		}
 	}
 
