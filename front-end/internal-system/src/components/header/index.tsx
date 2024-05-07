@@ -43,6 +43,10 @@ import { LoadingOutlined } from "@ant-design/icons";
 //Styles
 import "./styles.scss";
 
+interface HeaderProps {
+	expanded?: boolean;
+}
+
 const error = (message: string) => {
 	Modal.error({
 		title: `Error`,
@@ -51,7 +55,7 @@ const error = (message: string) => {
 	});
 };
 
-export default function Header() {
+export default function Header({ expanded }: HeaderProps) {
 	const desktopMedia = window.matchMedia("(min-width: 1024px)");
 
 	//? Socket Connection
@@ -255,7 +259,9 @@ export default function Header() {
 	};
 
 	return (
-		<div className="navbar bg-base-100">
+		<div
+			className={`navbar ${desktopMedia.matches && "items-start"}  bg-base-100 ${expanded && "hidden"}`}
+		>
 			{loading && (
 				<LoadingOutlined className="absolute left-[48%] top-[40%] z-[1000] text-[160px] text-primary-500" />
 			)}
