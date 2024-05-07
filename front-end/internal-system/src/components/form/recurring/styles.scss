@@ -1,0 +1,27 @@
+.phone-input-walk-in {
+    input {
+        height: 35px;
+        width: 263px;
+        border-radius: 5px;
+        border: none;
+        border-style: none;
+        background-color: #DFEAEF;
+    }
+
+    input:focus {
+        --tw-ring-opacity: 1;
+        --tw-ring-color: rgb(12 162 120 / var(--tw-ring-opacity));
+    }
+
+    input:hover {
+        --tw-bg-opacity: 1;
+        background-color: rgb(144 220 198 / var(--tw-bg-opacity));
+    }
+
+    .PhoneInputCountry {
+        .PhoneInputCountrySelect:focus {
+            --tw-ring-color: transparent;
+            border-color: transparent
+        }
+    }
+}

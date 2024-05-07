@@ -246,6 +246,7 @@ export type StepTwoRecurringData = {
 	selfie: string;
 };
 
+//TODO Test New and Recurring Visitor Using New Phone Number
 export const StepTwoRecurringZod: ZodType<StepTwoRecurringData> = z.object({
 	firstName: z
 		.string({

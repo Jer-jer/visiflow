@@ -9,6 +9,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
+import PhoneInput from "react-phone-number-input";
 
 //Interfaces
 import { UserDataType } from "../../../../utils/interfaces";
@@ -37,8 +38,10 @@ import AxiosInstance from "../../../../lib/axios";
 //Assets
 import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
 import { ExclamationCircleFilled } from "@ant-design/icons";
+import flags from "react-phone-number-input/flags";
 
 //Styles
+import "react-phone-number-input/style.css";
 import "./styles.scss";
 
 interface UserDetailsProps {
@@ -334,14 +337,25 @@ export default function UserDetails({
 										<Label spanStyling="text-black font-medium text-[16px]">
 											Phone Number
 										</Label>
-										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
-											<Input
+										<div className={`flex ${errors && "w-[228px]"} flex-col`}>
+											<PhoneInput
+												className="vm-placeholder phone-input-user"
+												defaultCountry="PH"
+												international
+												countryCallingCodeEditable={false}
+												flags={flags}
+												{...register("phone")}
+												value={record?.phone}
+												onChange={(value: any) => updateInput(value, "phone")}
+												disabled={disabledInputs}
+											/>
+											{/* <Input
 												className="vm-placeholder h-[38px] w-[229px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
 												placeholder={record?.phone}
 												{...register("phone")}
 												onChange={(e) => updateInput(e.target.value, "phone")}
 												disabled={disabledInputs}
-											/>
+											/> */}
 											{errors?.phone && (
 												<p className="mt-1 text-sm text-red-500">
 													{errors.phone.message}
@@ -436,7 +450,7 @@ export default function UserDetails({
 										<Label spanStyling="text-black font-medium text-[16px]">
 											Role
 										</Label>
-										<div className="flex w-[59.5%] flex-col">
+										<div className="flex w-[61.5%] flex-col">
 											{disabledInputs ? (
 												<Input
 													className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"

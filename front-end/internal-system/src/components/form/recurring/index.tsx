@@ -5,6 +5,9 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
+import Webcam from "react-webcam";
+import PhoneInput from "react-phone-number-input";
 
 //Interfaces
 import { useForm } from "react-hook-form";
@@ -28,16 +31,21 @@ import {
 import Alert from "../../alert";
 import { capitalizeEachWord } from "../../../utils";
 import { isMobile } from "react-device-detect";
-
-//Styles
-import "./styles.scss";
 import { GuardVisitorDataType } from "../../../utils/interfaces";
 import { VisitorStatus, VisitorType } from "../../../utils/enums";
-import AxiosInstance from "../../../lib/axios";
-import axios from "axios";
-import Webcam from "react-webcam";
 
+//Utils
 import { capitilizeFirstLetter } from "../../../utils";
+
+//Lib
+import AxiosInstance from "../../../lib/axios";
+
+//Assets
+import flags from "react-phone-number-input/flags";
+
+//Styles
+import "react-phone-number-input/style.css";
+import "./styles.scss";
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -683,13 +691,22 @@ function RecurringVisitor({
 										<div className="flex flex-col">
 											<div className="flex flex-col md:flex-row md:items-center">
 												<h1>Mobile #</h1>
-												<Input
+												<PhoneInput
+													className="phone-input-walk-in"
+													defaultCountry="PH"
+													international
+													countryCallingCodeEditable={false}
+													flags={flags}
+													{...register("phone")}
+													onChange={(value: any) => updateInput(value, "phone")}
+												/>
+												{/* <Input
 													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[42px]"
 													size="large"
 													defaultValue={visitor.visitor_details.phone}
 													{...register("phone")}
 													onChange={(e) => updateInput(e.target.value, "phone")}
-												/>
+												/> */}
 											</div>
 											{errors?.phone && (
 												<p className="absolute mt-[36px] text-sm text-red-500">

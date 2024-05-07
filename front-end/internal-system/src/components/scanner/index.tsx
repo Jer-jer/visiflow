@@ -106,6 +106,7 @@ export default function Scanner({ onQRstatus }: any) {
 		// "https://visiflow-api.onrender.com/badge/checkBadge?visitor_id=",
 		// "https://visiflow-api.onrender.com/badge/checkBadge?qr_id=",
 		"http://localhost:5000/badge/checkBadge?qr_id=",
+		"http://localhost:5000/badge/checkBadge?visitor_id=",
 		// Add more desired URL patterns here if needed
 	];
 

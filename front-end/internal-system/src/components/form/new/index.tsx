@@ -174,7 +174,7 @@ function NewWalkIn({
 					let brgy = "";
 					let city = "";
 					let province = "";
-					let country = ""; 
+					let country = "";
 					//to get middlename, if two or more ang surname meaning middlename
 					if (data.surnames.length >= 2) {
 						middleName = data.surnames.pop().value;
@@ -183,7 +183,7 @@ function NewWalkIn({
 					}
 					//variable from mindee data.givennames
 					firstName = data.givenNames
-						.map((nameObj: any) => nameObj.value)//since array ang hatag tanan sud sa name na object ma usa sa firstname
+						.map((nameObj: any) => nameObj.value) //since array ang hatag tanan sud sa name na object ma usa sa firstname
 						.join(" ");
 					lastName = data.surnames
 						.map((nameObj: any) => nameObj.value)
@@ -202,7 +202,8 @@ function NewWalkIn({
 						"country",
 					];
 
-					parts.forEach((part: any, index: number) => { //parts is looped to distribute kada value
+					parts.forEach((part: any, index: number) => {
+						//parts is looped to distribute kada value
 						if (index < variables.length) {
 							eval(`${variables[index]} = part`);
 						}
@@ -218,7 +219,6 @@ function NewWalkIn({
 					setProvinceZod(capitalizeEachWord(province));
 					setCountryZod(capitalizeEachWord(country));
 					setImageUrlID(imageSrc);
-
 				} else if (scan === "PlateNO") {
 					let formData: any = new FormData(); //pag append sa API
 					formData.append("upload", imageSrc);
@@ -503,9 +503,8 @@ function NewWalkIn({
 											<div className="flex flex-col md:flex-row md:items-center">
 												<h1>Mobile #</h1>
 
-												{/* //TODO: Improve Design */}
 												<PhoneInput
-													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[42px]"
+													className="phone-input-walk-in"
 													defaultCountry="PH"
 													international
 													countryCallingCodeEditable={false}

@@ -314,7 +314,6 @@ export const CompanionDetailZod: ZodType<CompanionDetailsInterfaceZod> =
 			}),
 
 		email: z.string().email({ message: "Invalid email address." }),
-		//TODO Improve Design
 		phone: z.coerce
 			.string({
 				required_error: "Mobile Number is required.",
@@ -413,7 +412,13 @@ export const UserDetailsZod: ZodType<UserDetailsInterfaceZod> = z.object({
 		.refine((data) => data !== "mail@mail.com", {
 			message: "Your email must not be mail@mail.com",
 		}),
-	//TODO Improve Design
+	// phone: z.coerce
+	// 	.string({
+	// 		required_error: "Mobile Number is required.",
+	// 		invalid_type_error: "Mobile Number must not have a letter or symbol.",
+	// 	})
+	// 	.regex(/([0-9\-+\b])\w+/, { message: "Only numeric values allowed." })
+	// 	.min(1, { message: "Please enter a phone number." }),
 	phone: z.coerce
 		.string({
 			required_error: "Mobile Number is required.",
@@ -452,16 +457,15 @@ export const EmployeeDetailsZod: ZodType<EmployeesZod> = z.object({
 		.refine((data) => data !== "mail@mail.com", {
 			message: "Your email must not be mail@mail.com",
 		}),
-	//TODO Improve Design
 	contact: z.coerce
 		.string({
-			required_error: "Contact is required.",
-			invalid_type_error: "Contact must not have a letter or symbol.",
+			required_error: "Mobile Number is required.",
+			invalid_type_error: "Mobile Number must not have a letter or symbol.",
 		})
 		.regex(
 			/^\+((?:9[679]|8[035789]|6[789]|5[90]|42|3[578]|2[1-689])|9[0-58]|8[1246]|6[0-6]|5[1-8]|4[013-9]|3[0-469]|2[70]|7|1)(?:\W*\d){0,13}\d$/,
 			{
-				message: "Contact is invalid",
+				message: "Mobile Number is invalid",
 			},
 		),
 });
@@ -534,7 +538,6 @@ export const OfficeDetailsZod: ZodType<OfficeZod> = z.object({
 	pic: z.string({
 		required_error: "Personnel in Charge is required.",
 	}),
-	//TODO Improve Design
 	contact: z.coerce
 		.string({
 			required_error: "Contact is required.",
@@ -573,7 +576,7 @@ export interface EventZod {
 	description: string;
 	imageUrl: string;
 }
-
+//TODO Test New and Recurring Visitor Using New Phone Number
 export const EventDetailsZod: ZodType<EventZod> = z.object({
 	name: z
 		.string({
