@@ -5,7 +5,8 @@ import React, { useState, useEffect } from "react";
 import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-//Interfaces
+//Assets
+import { LoadingOutlined } from "@ant-design/icons";
 
 //Utils
 import { formatDateObjToString, formatDateToISO } from "../../../utils";
@@ -32,12 +33,14 @@ export default function CurrentVisitorsTable({
 	search,
 	dateSearch,
 }: CurrentVisitorsTableProps) {
+	const [loading, setLoading] = useState<boolean>(false);
 	const [data, setData] = useState<CurrentVisitor[]>([]);
 	const startDate = new Date(dateSearch[0]);
 	const endDate = new Date(dateSearch[1]);
 
 	useEffect(() => {
 		// Fetch visitors from backend
+		setLoading(true);
 		AxiosInstance.get("/visitor/get-current-visitors")
 			.then((res) => {
 				console.log(res.data.activeVisitors);
@@ -53,10 +56,11 @@ export default function CurrentVisitorsTable({
 							: "exceeded",
 				}));
 				setData(mappedData);
-				//console.log(mappedData);
+				setLoading(false);
 			})
 			.catch((error) => {
 				console.error("Failed to fetch visitors:", error);
+				setLoading(false);
 			});
 	}, []);
 
@@ -70,6 +74,20 @@ export default function CurrentVisitorsTable({
 			title: "Mobile #",
 			dataIndex: "phone",
 			key: "phone",
+			responsive: ["md"],
+		},
+		{
+			title: "Expected Time-in and Time-out",
+			key: "expected_time_in - expected_time_out",
+			render: (_, { expected_time_in, expected_time_out }) => {
+				return (
+					<>
+						<p>{formatDateObjToString(expected_time_in)}</p>
+						<p>{formatDateObjToString(expected_time_out)}</p>
+					</>
+				);
+			},
+			responsive: ["xs"],
 		},
 		{
 			title: "Expected Time-in",
@@ -82,6 +100,7 @@ export default function CurrentVisitorsTable({
 			render: (_, { expected_time_in }) => {
 				return formatDateObjToString(expected_time_in);
 			},
+			responsive: ["md"],
 		},
 		{
 			title: "Expected Time-out",
@@ -94,6 +113,7 @@ export default function CurrentVisitorsTable({
 			render: (_, { expected_time_out }) => {
 				return formatDateObjToString(expected_time_out);
 			},
+			responsive: ["md"],
 		},
 		{
 			title: "Status",
@@ -129,6 +149,11 @@ export default function CurrentVisitorsTable({
 	return (
 		<>
 			<Table
+				className="w-full overflow-x-auto"
+				loading={{
+					spinning: loading,
+					indicator: <LoadingOutlined />,
+				}}
 				columns={columns}
 				dataSource={data
 					.filter((visitor) => {
