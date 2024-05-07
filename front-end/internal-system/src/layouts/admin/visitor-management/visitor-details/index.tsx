@@ -20,6 +20,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
 	VisitorDetailZod,
 	VisitorDetailsInterfaceZod,
+	VisitorDetailZodNoEmail,
 } from "../../../../utils/zodSchemas";
 import { VisitorDataType, IDPictureProps } from "../../../../utils/interfaces";
 import { VisitorStatus, VisitorType } from "../../../../utils/enums";
@@ -300,6 +301,7 @@ Who: ${convertedData
 	}, []);
 
 	// Client-side Validation related data
+	const isPreRegistered = record.visitor_type === VisitorType.PreRegistered;
 	const {
 		register,
 		handleSubmit,
@@ -307,7 +309,9 @@ Who: ${convertedData
 		setValue,
 		clearErrors,
 	} = useForm<VisitorDetailTypeZod>({
-		resolver: zodResolver(VisitorDetailZod),
+		resolver: zodResolver(
+			isPreRegistered ? VisitorDetailZod : VisitorDetailZodNoEmail,
+		),
 		defaultValues: {
 			first_name: record.visitor_details.name.first_name,
 			middle_name: record.visitor_details.name.middle_name,
@@ -386,16 +390,16 @@ Who: ${convertedData
 				setValue(property, value);
 				break;
 			case "what":
-				setValue(property, value as string[]);
+				setValue(property, value as any);
 				break;
 			case "when":
 				setValue(property, value as Date);
 				break;
 			case "where":
-				setValue(property, value as string[]);
+				setValue(property, value as any);
 				break;
 			case "who":
-				setValue(property, value as string[]);
+				setValue(property, value as any);
 				break;
 		}
 	};
