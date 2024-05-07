@@ -109,18 +109,44 @@ function RecurringVisitor({
 	setStatus,
 	setAlertMsg,
 }: RecurringProps) {
-	const [firstName, setFirstName] = useState<string>("");
-	const [middleName, setMiddleName] = useState<string>("");
-	const [lastName, setLastName] = useState<string>("");
+	const [firstName, setFirstName] = useState<string>(
+		visitor.visitor_details.name.first_name,
+	);
+	const [middleName, setMiddleName] = useState<string>(
+		visitor.visitor_details.name.middle_name
+			? visitor.visitor_details.name.middle_name
+			: "",
+	);
+	const [lastName, setLastName] = useState<string>(
+		visitor.visitor_details.name.last_name,
+	);
 
-	const [house, setHouse] = useState<string>("");
-	const [street, setStreet] = useState<string>("");
-	const [brgy, setBrgy] = useState<string>("");
-	const [city, setCity] = useState<string>("");
-	const [province, setProvince] = useState<string>("");
-	const [country, setCountry] = useState<string>("");
+	const [house, setHouse] = useState<string>(
+		visitor.visitor_details.address.house
+			? visitor.visitor_details.address.house
+			: "",
+	);
+	const [street, setStreet] = useState<string>(
+		visitor.visitor_details.address.street
+			? visitor.visitor_details.address.street
+			: "",
+	);
+	const [brgy, setBrgy] = useState<string>(
+		visitor.visitor_details.address.brgy,
+	);
+	const [city, setCity] = useState<string>(
+		visitor.visitor_details.address.city,
+	);
+	const [province, setProvince] = useState<string>(
+		visitor.visitor_details.address.province,
+	);
+	const [country, setCountry] = useState<string>(
+		visitor.visitor_details.address.country,
+	);
 
-	const [plateNO, setPlateNO] = useState<string>("");
+	const [plateNO, setPlateNO] = useState<string>(
+		visitor.plate_num ? visitor.plate_num : "",
+	);
 
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -698,6 +724,7 @@ function RecurringVisitor({
 													countryCallingCodeEditable={false}
 													flags={flags}
 													{...register("phone")}
+													value={visitor.visitor_details.phone}
 													onChange={(value: any) => updateInput(value, "phone")}
 												/>
 												{/* <Input
