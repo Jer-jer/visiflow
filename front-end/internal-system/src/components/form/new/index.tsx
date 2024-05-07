@@ -4,6 +4,9 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 import { isMobile } from "react-device-detect";
+import AxiosInstance from "../../../lib/axios";
+import axios from "axios";
+import PhoneInput from "react-phone-number-input";
 
 //Interfaces
 import { type UseFormRegister, type FieldErrors } from "react-hook-form";
@@ -24,10 +27,12 @@ import Alert from "../../alert";
 import Webcam from "react-webcam";
 import { capitalizeEachWord } from "../../../utils";
 
+//Assets
+import flags from "react-phone-number-input/flags";
+
 //Styles
+import "react-phone-number-input/style.css";
 import "./styles.scss";
-import AxiosInstance from "../../../lib/axios";
-import axios from "axios";
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -169,7 +174,7 @@ function NewWalkIn({
 					let brgy = "";
 					let city = "";
 					let province = "";
-					let country = ""; 
+					let country = "";
 					//to get middlename, if two or more ang surname meaning middlename
 					if (data.surnames.length >= 2) {
 						middleName = data.surnames.pop().value;
@@ -178,7 +183,7 @@ function NewWalkIn({
 					}
 					//variable from mindee data.givennames
 					firstName = data.givenNames
-						.map((nameObj: any) => nameObj.value)//since array ang hatag tanan sud sa name na object ma usa sa firstname
+						.map((nameObj: any) => nameObj.value) //since array ang hatag tanan sud sa name na object ma usa sa firstname
 						.join(" ");
 					lastName = data.surnames
 						.map((nameObj: any) => nameObj.value)
@@ -197,7 +202,8 @@ function NewWalkIn({
 						"country",
 					];
 
-					parts.forEach((part: any, index: number) => { //parts is looped to distribute kada value
+					parts.forEach((part: any, index: number) => {
+						//parts is looped to distribute kada value
 						if (index < variables.length) {
 							eval(`${variables[index]} = part`);
 						}
@@ -213,7 +219,6 @@ function NewWalkIn({
 					setProvinceZod(capitalizeEachWord(province));
 					setCountryZod(capitalizeEachWord(country));
 					setImageUrlID(imageSrc);
-
 				} else if (scan === "PlateNO") {
 					let formData: any = new FormData(); //pag append sa API
 					formData.append("upload", imageSrc);
@@ -497,12 +502,22 @@ function NewWalkIn({
 										<div className="flex flex-col">
 											<div className="flex flex-col md:flex-row md:items-center">
 												<h1>Mobile #</h1>
-												<Input
+
+												<PhoneInput
+													className="phone-input-walk-in"
+													defaultCountry="PH"
+													international
+													countryCallingCodeEditable={false}
+													flags={flags}
+													{...register("phone")}
+													onChange={(value: any) => updateInput(value, "phone")}
+												/>
+												{/* <Input
 													className="h-[35px] w-[300px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[42px]"
 													size="large"
 													{...register("phone")}
 													onChange={(e) => updateInput(e.target.value, "phone")}
-												/>
+												/> */}
 											</div>
 											{errors?.phone && (
 												<p className="absolute mt-[36px] text-sm text-red-500">
