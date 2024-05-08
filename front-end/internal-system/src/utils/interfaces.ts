@@ -44,6 +44,7 @@ export interface VisitorLogDetails {
 	purpose?: PurposeProps;
 	check_in_time: Date;
 	check_out_time: Date;
+	qr: string;
 }
 
 export interface FullNameProps {
@@ -91,6 +92,7 @@ export interface VisitorDataType {
 	expected_time_out: Date;
 	status: VisitorStatus;
 	badge_status?: BadgeStatus;
+	badge_id?: string;
 	visitor_type: VisitorType;
 	id_picture: IDPictureProps;
 	created_at: Date;
@@ -172,6 +174,6 @@ export interface Building {
 }
 
 export interface SelectOption {
-	value: string,
-	label: string
+	value: string;
+	label: string;
 }

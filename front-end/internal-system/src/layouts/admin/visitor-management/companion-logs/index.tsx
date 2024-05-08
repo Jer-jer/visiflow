@@ -100,6 +100,7 @@ export default function CompanionLogs({
 								purpose: log.purpose,
 								check_in_time: indvLog.check_in_time,
 								check_out_time: indvLog.check_out_time,
+								qr: log.qr,
 							}),
 						);
 					});

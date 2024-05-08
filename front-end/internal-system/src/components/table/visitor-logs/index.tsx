@@ -1,9 +1,9 @@
 /* Built using Ant Design */
-import React from "react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
 
 //Components
-import { Table } from "antd";
+import { Button, Table, Modal, Image } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 //Interfaces
@@ -29,6 +29,19 @@ export default function VisitorLogsTable({
 	const visitorLogs = useSelector((state: RootState) => state.visitorLogs);
 	const startDate = new Date(dateSearch[0]);
 	const endDate = new Date(dateSearch[1]);
+
+	const [qrCode, setQrCode] = useState("");
+
+	const [isModalOpen, setIsModalOpen] = useState(false);
+
+	const showModal = (qr: string) => {
+		setQrCode(qr);
+		setIsModalOpen(true);
+	};
+
+	const handleOk = () => {
+		setIsModalOpen(false);
+	};
 
 	const columns: ColumnsType<VisitorLogDetails> = [
 		{
@@ -101,22 +114,47 @@ export default function VisitorLogsTable({
 					: "";
 			},
 		},
+		{
+			title: "Action",
+			key: "action",
+			render(value, record, index) {
+				console.log("🚀 ~ render ~ record:", record);
+				return (
+					<>
+						<Button type="primary" onClick={() => showModal(record.qr)}>
+							View QR Code
+						</Button>
+					</>
+				);
+			},
+		},
 	];
 
 	return (
-		<Table
-			columns={columns}
-			dataSource={visitorLogs.filter((log) => {
-				return dateSearch.length === 0
-					? log
-					: filterWhen
-						? new Date(log.purpose!.when) >= startDate &&
-							new Date(log.purpose!.when) <= endDate
-						: new Date(log.check_in_time) >= startDate &&
-							new Date(log.check_out_time) <= endDate;
-			})}
-			bordered
-			pagination={{ pageSize: 5 }}
-		/>
+		<>
+			<Modal
+				open={isModalOpen}
+				onOk={handleOk}
+				width={250}
+				onCancel={() => setIsModalOpen(false)}
+			>
+				<Image width={200} src={qrCode} />
+			</Modal>
+			<Table
+				className="w-full overflow-x-auto"
+				columns={columns}
+				dataSource={visitorLogs.filter((log: VisitorLogDetails) => {
+					return dateSearch.length === 0
+						? log
+						: filterWhen
+							? new Date(log.purpose!.when) >= startDate &&
+								new Date(log.purpose!.when) <= endDate
+							: new Date(log.check_in_time) >= startDate &&
+								new Date(log.check_out_time) <= endDate;
+				})}
+				bordered
+				pagination={{ pageSize: 5 }}
+			/>
+		</>
 	);
 }

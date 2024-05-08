@@ -46,7 +46,9 @@ exports.findVisitorLogs = async (req, res) => {
 
     return res.status(200).json({ visitorLogs });
   } catch (error) {
-    return res.status(500).json({ error: "Something went wrong fetching logs" });
+    return res
+      .status(500)
+      .json({ error: "Something went wrong fetching logs" });
   }
 };
 
@@ -66,7 +68,13 @@ exports.findAllVisitorLogs = async (req, res) => {
           badge_id: new ObjectId(badge._id),
         });
 
-        visitorLogs.push({logs: logs, purpose: badge.purpose});
+        visitorLogs.push({
+          logs: logs,
+          purpose: badge.purpose,
+          qr: badge.qr_image
+            ? badge.qr_image
+            : "https://static.vecteezy.com/system/resources/previews/005/337/799/original/icon-image-not-found-free-vector.jpg",
+        });
       }
 
       if (visitorLogs && visitorLogs.length > 0) {
@@ -77,7 +85,6 @@ exports.findAllVisitorLogs = async (req, res) => {
     } else {
       return res.status(500).json({ error: "Visitor has no logs" });
     }
-
   } catch (error) {
     return res
       .status(500)
