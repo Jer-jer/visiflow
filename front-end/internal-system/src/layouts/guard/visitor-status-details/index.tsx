@@ -103,7 +103,7 @@ const error = (message: string) => {
 	});
 };
 
-export default function ScheduleDetails({
+export default function VisitorStatusDetails({
 	record,
 	setOpenDetails,
 	fetch
@@ -452,7 +452,25 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 		clearErrors();
 	};
 
-	
+	const handleTimeOutOk = async () => {
+		console.log(record.badge_id)
+		await AxiosInstance.post("/badge/timeRecord", {
+			_id: record.badge_id,
+			record: false,
+		})
+			.then(() => {
+				setStatus(true);
+				setAlertOpen(true);
+				setAlertMsg("Successfully Timed-Out");
+			})
+			.catch((err) => {
+				if (err && err.response) {
+					setStatus(false);
+					setAlertOpen(true);
+					setAlertMsg(err.response.data.error);
+				}
+			});
+	};
 
 	return (
 		<div className="visitor-details">
@@ -749,22 +767,20 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 									{record.visitor_type === VisitorType.PreRegistered &&
 									(
 										<>
-											(
-												<span
-													className={`${
-														record.status === VisitorStatus.Approved
-															? "text-primary-500"
-															: record.status === VisitorStatus.InProgress
-																? "text-neutral-500"
-																: "text-error-500"
-													} text-[30px] font-bold`}
-													onClick={() =>
-														setDisabledStatusInput(!disabledStatusInput)
-													}
-												>
-													{record.status}
-												</span>
-											)
+											<span
+												className={`${
+													record.status === VisitorStatus.Approved
+														? "text-primary-500"
+														: record.status === VisitorStatus.InProgress
+															? "text-neutral-500"
+															: "text-error-500"
+												} text-[30px] font-bold`}
+												onClick={() =>
+													setDisabledStatusInput(!disabledStatusInput)
+												}
+											>
+												{record.status}
+											</span>
 										</>
 									) }
 								</div>
@@ -804,6 +820,9 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 								className="search-button !rounded-[18px] !bg-primary-500"
 							>
 								{disabledInputs ? "Extend" : "Cancel"}
+							</Button>
+							<Button key="submit" type="primary" onClick={handleTimeOutOk}>
+								Time-Out
 							</Button>
 						</div>
 					</div>
