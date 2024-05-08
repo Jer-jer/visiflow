@@ -432,7 +432,12 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 					? setDisabledStatusInput(!disabledStatusInput)
 					: setDisabledInputs(!disabledInputs);
 
-				return AxiosInstance.post("/badge/updateStatus", { _id: record.badge_id, status: 'active' })
+				return AxiosInstance.post("/badge/update", { 
+					_id: record.badge_id,
+					status: 'active',
+					expected_time_in: zodData ? zodData.check_in_out[0] : expected_in,
+					expected_time_out: zodData ? zodData.check_in_out[1] : expected_out
+				})
 			})
 			.then((res) => {
 				fetch();
@@ -837,7 +842,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 								size="large"
 								className="search-button !rounded-[18px] !bg-primary-500"
 							>
-								{disabledInputs ? "Extend" : "Cancel"}
+								{disabledInputs ? "Change Schedule" : "Cancel"}
 							</Button>
 							<Button className="search-button !rounded-[18px] !bg-red-500" key="submit" size="large" type="primary" onClick={handleTimeOutOk}>
 								Time-Out

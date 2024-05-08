@@ -60,7 +60,6 @@ export default function CurrentVisitorsTable({}) {
 		setLoading(true);
 		AxiosInstance.get("/visitor/get-current-visitors")
 		.then((res) => {
-			console.log(res);
 			const mappedData: VisitorDataType[] = res.data.response.map((res: any): VisitorDataType => ({
 				...res.visitor,
 				badge_status: res.badge.status,
