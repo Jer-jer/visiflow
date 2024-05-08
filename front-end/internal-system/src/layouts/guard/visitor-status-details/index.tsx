@@ -106,7 +106,7 @@ const error = (message: string) => {
 export default function VisitorStatusDetails({
 	record,
 	setOpenDetails,
-	fetch
+	fetch,
 }: VisitorDeetsProps) {
 	//Loading
 	const [loading, setLoading] = useState(false);
@@ -409,8 +409,12 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 			// 	? zodData.last_name[0].toUpperCase() + zodData.last_name.slice(1)
 			// 	: record.visitor_details.name.last_name[0].toUpperCase() +
 			// 		record.visitor_details.name.last_name.slice(1),
-			expected_time_in: zodData ? zodData.check_in_out[0] : expected_in,
-			expected_time_out: zodData ? zodData.check_in_out[1] : expected_out,
+			expected_time_in: zodData
+				? new Date(zodData.check_in_out[0])
+				: new Date(expected_in),
+			expected_time_out: zodData
+				? new Date(zodData.check_in_out[1])
+				: new Date(expected_out),
 			// visitor_type: zodData ? zodData.visitor_type : record.visitor_type,
 			// purpose: zodData
 			// 	? {
@@ -422,7 +426,6 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 			// 	: record.purpose,
 		})
 			.then((res) => {
-
 				dispatch(update(res.data.visitor));
 
 				setStatus(true);
@@ -464,7 +467,12 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 	const handleTimeOutOk = () => {
 		confirm({
 			title: "Are you sure you want to time-out this visitor?",
-			content: <span>This feature is only for special occassions and does not generally follow protocol.</span>,
+			content: (
+				<span>
+					This feature is only for special occassions and does not generally
+					follow protocol.
+				</span>
+			),
 			className: "confirm-buttons",
 			icon: <ExclamationCircleFilled className="!text-error-500" />,
 			okText: "Yes",
@@ -492,7 +500,6 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 				console.log("Cancel");
 			},
 		});
-		
 	};
 
 	return (
@@ -760,35 +767,33 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 										!disabledInputs && "gap-[10px]"
 									}`}
 								>
-										<Tag
-											className="w-fit"
-											color={
-												record.visitor_type === VisitorType.WalkIn
-													? "#E88B23"
-													: "#0db284"
-											}
-											key={record.visitor_type}
-										>
-											{record.visitor_type.toUpperCase()}
-										</Tag>
+									<Tag
+										className="w-fit"
+										color={
+											record.visitor_type === VisitorType.WalkIn
+												? "#E88B23"
+												: "#0db284"
+										}
+										key={record.visitor_type}
+									>
+										{record.visitor_type.toUpperCase()}
+									</Tag>
 									{errors?.visitor_type && (
 										<p className="mt-1 text-sm text-red-500">
 											{errors.visitor_type.message}
 										</p>
 									)}
-									{record.plate_num &&
-										
-											<span className="mt-2 rounded border border-black px-3 py-1 text-[20px] font-bold shadow-md">
-												{record.plate_num}
-											</span>
-										}
+									{record.plate_num && (
+										<span className="mt-2 rounded border border-black px-3 py-1 text-[20px] font-bold shadow-md">
+											{record.plate_num}
+										</span>
+									)}
 									{errors?.plate_num && (
 										<p className="mt-1 text-sm text-red-500">
 											{errors.plate_num.message}
 										</p>
 									)}
-									{record.visitor_type === VisitorType.PreRegistered &&
-									(
+									{record.visitor_type === VisitorType.PreRegistered && (
 										<>
 											<span
 												className={`${
@@ -805,10 +810,9 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 												{record.status}
 											</span>
 										</>
-									) }
+									)}
 								</div>
 							</div>
-
 						</div>
 						{/* <div className="divider" /> */}
 						<div className="flex justify-end gap-[15px]">
@@ -844,7 +848,13 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 							>
 								{disabledInputs ? "Change Schedule" : "Cancel"}
 							</Button>
-							<Button className="search-button !rounded-[18px] !bg-red-500" key="submit" size="large" type="primary" onClick={handleTimeOutOk}>
+							<Button
+								className="search-button !rounded-[18px] !bg-red-500"
+								key="submit"
+								size="large"
+								type="primary"
+								onClick={handleTimeOutOk}
+							>
 								Time-Out
 							</Button>
 						</div>
