@@ -89,11 +89,11 @@ server.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 });
 
-// change to */n * * * * * for testing every n mins
+// change to */n * * * * for testing every n mins
 // 0 * * * * to every hour
 
 cron.schedule(
-  "0 * * * *",
+  "*/5 * * * *",
   async () => {
     await timeOutReminder(io);
     await timeInReminder(io);

@@ -91,90 +91,6 @@ async function sendEmail(mailOptions) {
 }
 // End of Email Functions
 
-// async function updateLog(_id, user_id, res) {
-//   try {
-//     const badge = await Badge.findById({ _id: _id });
-//     if (badge) {
-//       if (badge.status != "inactive") {
-//         try {
-//           // Add check out timestamp to visitor logs
-//           await VisitorLogs.updateOne(
-//             { badge_id: badge._id },
-//             { $set: { check_out_time: new Date() } }
-//           );
-
-//           await Badge.updateOne(
-//             { _id: badge._id },
-//             { $set: { qr_id: null, status: "inactive", is_valid: false } }
-//           );
-
-//           await createSystemLog(user_id, "time_out", "success");
-//           return res.status(200).json({ type: "time-out"});
-
-//         } catch (error) {
-
-//           await createSystemLog(user_id, "time_out", "failed");
-//           return res
-//             .status(500)
-//             .json({ error: "Failed to time out the visitor." });
-//         }
-//       }
-//       // Time-in section
-
-//       // Check if QR has expired
-//       if (badge.expected_time_out < Date.now() || badge.is_valid === false) {
-//         await Badge.updateOne(
-//           { _id: badge._id },
-//           { $set: { status: "inactive", is_valid: false } }
-//         );
-//         return res.status(400).json({ error: "The QR is invalid." });
-//       }
-
-//       // Check if the visitor timed-in too early
-//       const expectedTime = new Date(badge.expected_time_in);
-//       const currentTime = new Date();
-
-//       // Calculate the allowed time window for check-in (e.g., 15 minutes)
-//       const allowedWindow = expectedTime.getTime() - 1440 * 60 * 1000; // 24 hours or 1 day in milliseconds
-
-//       // Check if current time is within the allowed window
-//       if (currentTime.getTime() < allowedWindow) {
-//         // Time is too early (more than allowed window before expected time)
-//         return res.status(400).json({
-//           error: `It is still too early to time in! Expected time in: ${expectedTime.toLocaleString(
-//             "en-US",
-//             { timeZone: "Asia/Manila" }
-//           )}`,
-//         });
-//       }
-
-//       // If QR and time-in is valid
-//       await VisitorLogs.create({
-//         badge_id: badge._id,
-//         check_in_time: new Date(),
-//       });
-
-//       try {
-//         await Badge.updateOne(
-//           { _id: badge._id },
-//           { $set: { status: "active" } }
-//         );
-
-//         await createSystemLog(user_id, "time_in", "success");
-//         return res.status(200).json({ type: "time-in"});
-//       } catch (error) {
-//         await createSystemLog(user_id, "time_in", "failed");
-//         return res
-//           .status(500)
-//           .json({ error: "Failed to time in the visitor." });
-//       }
-//     }
-//     return res.status(500).json({ error: "No badge found." });
-//   } catch (error) {
-//     return res.status(500).json({ error: "Failed to update visitor badge" });
-//   }
-// }
-
 async function updateVisitor(_id, companions, status) {
   const visitor = await Visitor.findById(_id);
 
@@ -226,7 +142,7 @@ async function timeOutReminder(io) {
         if (badge) {
           const visitor = await Visitor.findOne({
             _id: badge.visitor_id,
-            expected_time_out: { $lte: currentTime - 15 * 60000 },
+            //expected_time_out: { $lte: currentTime - 15 * 60000 },
           });
 
           if (visitor) {
@@ -248,6 +164,7 @@ async function timeOutReminder(io) {
           const expected_time_out = new Date(v.visitor.expected_time_out);
           const current_time = new Date(); // -8 hrs in prod.
           const oneDayMs = 24 * 60 * 60 * 1000;
+          const fifteenMinMs = 15 *60 * 1000; 
           const differenceMs = current_time - expected_time_out;
 
           if (differenceMs >= oneDayMs) {
@@ -256,12 +173,17 @@ async function timeOutReminder(io) {
               { $set: { status: "overdue" } }
             );
             await createNotification(v.visitor, "overdue", io);
-          } else {
+          } else if (differenceMs >= fifteenMinMs) {
             await Badge.updateOne(
               { _id: v.badgeId },
               { $set: { status: "exceeded" } }
             );
             await createNotification(v.visitor, "time-out", io);
+          } else {
+            await Badge.updateOne(
+              { _id: v.badgeId },
+              { $set: { status: "active" } }
+            );
           }
         })
       );
