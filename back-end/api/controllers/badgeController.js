@@ -211,3 +211,27 @@ exports.timeRecord = async (req, res) => {
     return res.status(500).json({ error: "Failed to track time record." });
   }
 };
+
+exports.updateStatus = async(req, res) => {
+  const { _id, status } = req.body;
+
+  try {
+    const badge = await Badge.findById({ _id });
+
+    if (!badge) {
+      return res.status(404).json({ error: "Badge not found" });
+    }
+
+    const updatedBadge = await Badge.findByIdAndUpdate(
+      _id,
+      { status: status },
+      { new: true }
+    );
+
+    return res.status(201).json({ badge: updatedBadge });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to update badge status" });
+  }
+
+}
