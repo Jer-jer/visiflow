@@ -129,8 +129,8 @@ export default function StatisticsLayout() {
 	const [daysOfMonth, setDaysOfMonth] = useState<
 		{
 			day: string;
-			walkin: number;
-			preregistered: number;
+			"Walk-In": number;
+			"Pre-Registered": number;
 		}[]
 	>([]);
 
@@ -387,7 +387,16 @@ export default function StatisticsLayout() {
 
 		if (e.target.checked === false) {
 			setLoading(true);
-			await fetchGraph(undefined, selectedYear);
+			if (!year) {
+				setDaysOfMonth([]);
+				await fetchGraph(undefined, undefined);
+			} else {
+				if (selectedYear === undefined) {
+					setDaysOfMonth([]);
+					await fetchGraph(undefined, undefined);
+				} else if (selectedYear !== undefined && selectedYear)
+					await fetchGraph(undefined, selectedYear);
+			}
 			setLoading(false);
 		}
 	};
@@ -397,23 +406,27 @@ export default function StatisticsLayout() {
 
 		if (e.target.checked === false) {
 			setLoading(true);
-			await fetchGraph(selectedMonth, undefined);
+			if (!month) {
+				setDaysOfMonth([]);
+				await fetchGraph(undefined, undefined);
+			} else {
+				console.log(
+					"🚀 ~ constonChangeYear:CheckboxProps[onChange]= ~ selectedMonth:",
+					selectedMonth,
+				);
+				if (selectedMonth === undefined) {
+					setDaysOfMonth([]);
+					await fetchGraph(undefined, undefined);
+				} else if (selectedMonth !== undefined && selectedMonth)
+					await fetchGraph(selectedMonth, undefined);
+			}
 			setLoading(false);
 		}
 	};
 
 	const handleChangeMonth = async (value: string) => {
-		console.log(`selected ${value}`);
+		console.log("🚀 ~ handleChangeMonth ~ value:", value);
 		setSelectedMonth(value);
-
-		console.log(
-			getDaysInMonth(
-				value,
-				selectedYear !== undefined && selectedYear
-					? selectedYear
-					: new Date().getFullYear().toString(),
-			),
-		);
 
 		const allDays = await getDaysInMonth(
 			value,
@@ -434,8 +447,8 @@ export default function StatisticsLayout() {
 					if (day) {
 						return {
 							day: day.day,
-							walkin: day.walkin,
-							preregistered: day.preregistered,
+							walkin: day.walkin ? day.walkin : 0,
+							preregistered: day.preregistered ? day.preregistered : 0,
 						};
 					}
 
@@ -446,7 +459,17 @@ export default function StatisticsLayout() {
 					};
 				});
 
-				setDaysOfMonth(days);
+				const finalDays: {
+					day: string;
+					"Walk-In": number;
+					"Pre-Registered": number;
+				}[] = days.map((day: any) => ({
+					day: day.day,
+					"Walk-In": day.walkin,
+					"Pre-Registered": day.preregistered,
+				}));
+
+				setDaysOfMonth(finalDays);
 			})
 			.catch((err) => {
 				if (err && err.response) {
@@ -681,10 +704,10 @@ export default function StatisticsLayout() {
 										<YAxis />
 										<Tooltip />
 										<Legend />
-										<Line type="monotone" dataKey="walkin" stroke="#E88B23" />
+										<Line type="monotone" dataKey="Walk-In" stroke="#E88B23" />
 										<Line
 											type="monotone"
-											dataKey="preregistered"
+											dataKey="Pre-Registered"
 											stroke="#82ca9d"
 										/>
 									</LineChart>
