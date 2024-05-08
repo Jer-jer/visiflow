@@ -20,7 +20,7 @@ import "./styles.scss";
 import AxiosInstance from "../../../lib/axios";
 import { VisitorDataType } from "../../../utils/interfaces";
 import { BadgeStatus } from "../../../utils/enums";
-import ScheduleDetails from "../../../layouts/guard/visitor-status-details";
+import VisitorStatusDetails from "../../../layouts/guard/visitor-status-details";
 
 // interface CurrentVisitor {
 // 	key: string;
@@ -60,10 +60,11 @@ export default function CurrentVisitorsTable({
 		setLoading(true);
 		AxiosInstance.get("/visitor/get-current-visitors")
 		.then((res) => {
-			console.log(res.data.activeVisitors);
-			const mappedData: VisitorDataType[] = res.data.activeVisitors.map((visitor: any): VisitorDataType => ({
-				...visitor,
-				badge_status: setCurrentStatus(visitor.expected_time_out),
+			console.log(res);
+			const mappedData: VisitorDataType[] = res.data.response.map((res: any): VisitorDataType => ({
+				...res.visitor,
+				badge_status: setCurrentStatus(res.visitor.expected_time_out),
+				badge_id: res.badgeId
 			}));
 			setData(mappedData);
 			setLoading(false);
@@ -244,7 +245,7 @@ export default function CurrentVisitorsTable({
 				
 			)}
 			{openDetails && (
-					<ScheduleDetails
+					<VisitorStatusDetails
 						record={pageDetail}
 						setOpenDetails={setOpenDetails}
 						fetch={fetchCurrentVisitor}
