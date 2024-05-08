@@ -30,8 +30,12 @@ export default function Sidebar({
 	setExpanded,
 	children,
 }: SidebarProps) {
+	const desktopMedia = window.matchMedia("(min-width: 1024px)");
+
 	return (
-		<div className={`h-screen  ${expanded ? "sb" : "w-fit overflow-hidden"}`}>
+		<div
+			className={`z-[100] ${desktopMedia.matches ? "h-screen" : expanded ? "sb h-screen" : "h-[56px] w-fit overflow-hidden"}`}
+		>
 			<nav className="flex h-full flex-col">
 				<div
 					className={`flex items-center p-4 pb-2 ${

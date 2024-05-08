@@ -137,7 +137,7 @@ export default function StepTwo({
 									last_name: visitor.LastName,
 								},
 								email: visitor.Email,
-								phone: visitor.Mobile,
+								phone: visitor.Mobile.toString(),
 								address: {
 									house: visitor.House,
 									street: visitor.Street,

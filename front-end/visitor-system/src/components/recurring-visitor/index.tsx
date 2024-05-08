@@ -113,6 +113,7 @@ function RecurringVisitor() {
 								const respVisitors: VisitorDataType[] = res.data.visitors.map(
 									(visitor: VisitorDataType, index: number) => ({
 										key: visitor._id,
+										id: visitor._id,
 										visitor_no: index + 1,
 										visitor_details: visitor.visitor_details,
 										expected_time_in: new Date(),

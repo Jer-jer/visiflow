@@ -424,29 +424,35 @@ export default function StatisticsLayout() {
 
 		await AxiosInstance.post("/stats/getDays", {
 			month: parseInt(value),
-		}).then((res: any) => {
-			const days = allDays.map((d: any) => {
-				const day = res.data.grouped.find((day: any) => {
-					return d.day.padStart(2, "0") === day.day;
+		})
+			.then((res: any) => {
+				const days = allDays.map((d: any) => {
+					const day = res.data.grouped.find((day: any) => {
+						return d.day.padStart(2, "0") === day.day;
+					});
+
+					if (day) {
+						return {
+							day: day.day,
+							walkin: day.walkin,
+							preregistered: day.preregistered,
+						};
+					}
+
+					return {
+						day: d.day.padStart(2, "0"),
+						walkin: 0,
+						preregistered: 0,
+					};
 				});
 
-				if (day) {
-					return {
-						day: day.day,
-						walkin: day.walkin,
-						preregistered: day.preregistered,
-					};
+				setDaysOfMonth(days);
+			})
+			.catch((err) => {
+				if (err && err.response) {
+					error("Failed to fetch data in the selected month");
 				}
-
-				return {
-					day: d.day.padStart(2, "0"),
-					walkin: 0,
-					preregistered: 0,
-				};
 			});
-
-			setDaysOfMonth(days);
-		});
 
 		setLoading(true);
 		await fetchGraph(value);
@@ -543,7 +549,7 @@ export default function StatisticsLayout() {
 	};
 
 	return (
-		<div className="mb-[35px] ml-2 mt-3 flex flex-col gap-[35px]">
+		<div className="mb-[35px] ml-2 mr-[25px] mt-3 flex flex-col gap-[35px]">
 			<div className="w-full">
 				{/* Summary Statistics */}
 				<OuterContainer header="Summary">

@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { NavLink } from "react-router-dom";
 import { useDispatch } from "react-redux";
+import { isMobile } from "react-device-detect";
 
 //Components
 import Header from "../../components/header";
@@ -43,6 +44,9 @@ interface LoggedInProps {
 export let expandedWidth: number;
 
 function LoggedIn({ children }: LoggedInProps) {
+	// Checks if its Desktop Or not
+	const desktopMedia = window.matchMedia("(min-width: 1024px)");
+
 	const [expanded, setExpanded] = useState(false);
 	const [width, setWidth] = useState(0);
 	const ref = useRef<HTMLDivElement>(null);
@@ -62,116 +66,225 @@ function LoggedIn({ children }: LoggedInProps) {
 
 	return (
 		<WidthContext.Provider value={width}>
-			<div className="flex h-60">
-				<Sidebar expanded={expanded} setExpanded={setExpanded}>
-					{localStorage.getItem("mode") === "admin" ? (
-						<>
-							<NavLink to="/dashboard">
-								{({ isActive }) => (
-									<SidebarItem
-										icon={<Home />}
-										text="Dashboard"
-										active={isActive}
-									/>
-								)}
-							</NavLink>
-							<NavLink to="/statistics">
-								{({ isActive }) => (
-									<SidebarItem
-										icon={<PieChart />}
-										text="Statistics"
-										active={isActive}
-									/>
-								)}
-							</NavLink>
-							<NavLink to="/schedules">
-								{({ isActive }) => (
-									<SidebarItem
-										icon={<Calendar />}
-										text="Schedules"
-										active={isActive}
-									/>
-								)}
-							</NavLink>
-							<NavLink to="/visitor-management">
-								{({ isActive }) => (
-									<SidebarItem
-										icon={<UserGroup />}
-										text="Visitor Management"
-										active={isActive}
-									/>
-								)}
-							</NavLink>
-							<NavLink to="/manage-users">
-								{({ isActive }) => (
-									<SidebarItem
-										icon={<Users />}
-										text="Manage Users"
-										active={isActive}
-									/>
-								)}
-							</NavLink>
-							<NavLink to="/home-editor">
-								{({ isActive }) => (
-									<SidebarItem
-										icon={<Edit />}
-										text="Visitor System Editor"
-										active={isActive}
-									/>
-								)}
-							</NavLink>
-						</>
-					) : (
-						<>
-							<NavLink to="/qr-scanner">
-								{({ isActive }) => (
-									<SidebarItem
-										icon={<QRScanner />}
-										text="QR Scanner"
-										active={isActive}
-									/>
-								)}
-							</NavLink>
-							<NavLink to={"/visitor-form"}>
-								{({ isActive }) => (
-									<SidebarItem
-										icon={<Form />}
-										text="Visitor Form"
-										active={isActive}
-									/>
-								)}
-							</NavLink>
-							{/* <NavLink to="/preregistered-qr">
-								{({ isActive }) => (
-									<SidebarItem
-										icon={<PreregisterQR />}
-										text="Pre-Register QR"
-										active={isActive}
-									/>
-								)}
-							</NavLink> */}
-							<NavLink to="/visitor-status">
-								{({ isActive }) => (
-									<SidebarItem
-										icon={<UserGroup />}
-										text="Visitor Status"
-										active={isActive}
-									/>
-								)}
-							</NavLink>
-						</>
-					)}
-				</Sidebar>
-				<div className="h-fit min-w-0 flex-1">
-					<div>
-						<Header />
+			{desktopMedia.matches ? (
+				<>
+					<div className="flex">
+						<Sidebar expanded={expanded} setExpanded={setExpanded}>
+							{localStorage.getItem("mode") === "admin" ? (
+								<>
+									<NavLink to="/dashboard">
+										{({ isActive }) => (
+											<SidebarItem
+												icon={<Home />}
+												text="Dashboard"
+												active={isActive}
+											/>
+										)}
+									</NavLink>
+									<NavLink to="/statistics">
+										{({ isActive }) => (
+											<SidebarItem
+												icon={<PieChart />}
+												text="Statistics"
+												active={isActive}
+											/>
+										)}
+									</NavLink>
+									<NavLink to="/schedules">
+										{({ isActive }) => (
+											<SidebarItem
+												icon={<Calendar />}
+												text="Schedules"
+												active={isActive}
+											/>
+										)}
+									</NavLink>
+									<NavLink to="/visitor-management">
+										{({ isActive }) => (
+											<SidebarItem
+												icon={<UserGroup />}
+												text="Visitor Management"
+												active={isActive}
+											/>
+										)}
+									</NavLink>
+									<NavLink to="/manage-users">
+										{({ isActive }) => (
+											<SidebarItem
+												icon={<Users />}
+												text="Manage Users"
+												active={isActive}
+											/>
+										)}
+									</NavLink>
+									<NavLink to="/home-editor">
+										{({ isActive }) => (
+											<SidebarItem
+												icon={<Edit />}
+												text="Visitor System Editor"
+												active={isActive}
+											/>
+										)}
+									</NavLink>
+								</>
+							) : (
+								<>
+									<NavLink to="/qr-scanner">
+										{({ isActive }) => (
+											<SidebarItem
+												icon={<QRScanner />}
+												text="QR Scanner"
+												active={isActive}
+											/>
+										)}
+									</NavLink>
+									<NavLink to={"/visitor-form"}>
+										{({ isActive }) => (
+											<SidebarItem
+												icon={<Form />}
+												text="Visitor Form"
+												active={isActive}
+											/>
+										)}
+									</NavLink>
+									<NavLink to="/visitor-status">
+										{({ isActive }) => (
+											<SidebarItem
+												icon={<UserGroup />}
+												text="Visitor Status"
+												active={isActive}
+											/>
+										)}
+									</NavLink>
+									<NavLink to="/schedules">
+										{({ isActive }) => (
+											<SidebarItem
+												icon={<Calendar />}
+												text="Schedules"
+												active={isActive}
+											/>
+										)}
+									</NavLink>
+								</>
+							)}
+						</Sidebar>
+						<div className="flex w-full flex-col">
+							<Header />
+							{/* Main content Here */}
+							<div id="parentDiv" className="children" ref={ref}>
+								{children}
+							</div>
+						</div>
 					</div>
-					{/* Main content Here */}
-					<div id="parentDiv" className="children" ref={ref}>
-						{children}
+				</>
+			) : (
+				<>
+					<div className="flex flex-col">
+						<div className="flex">
+							<Sidebar expanded={expanded} setExpanded={setExpanded}>
+								{localStorage.getItem("mode") === "admin" ? (
+									<>
+										<NavLink to="/dashboard">
+											{({ isActive }) => (
+												<SidebarItem
+													icon={<Home />}
+													text="Dashboard"
+													active={isActive}
+												/>
+											)}
+										</NavLink>
+										<NavLink to="/statistics">
+											{({ isActive }) => (
+												<SidebarItem
+													icon={<PieChart />}
+													text="Statistics"
+													active={isActive}
+												/>
+											)}
+										</NavLink>
+										<NavLink to="/schedules">
+											{({ isActive }) => (
+												<SidebarItem
+													icon={<Calendar />}
+													text="Schedules"
+													active={isActive}
+												/>
+											)}
+										</NavLink>
+										<NavLink to="/visitor-management">
+											{({ isActive }) => (
+												<SidebarItem
+													icon={<UserGroup />}
+													text="Visitor Management"
+													active={isActive}
+												/>
+											)}
+										</NavLink>
+										<NavLink to="/manage-users">
+											{({ isActive }) => (
+												<SidebarItem
+													icon={<Users />}
+													text="Manage Users"
+													active={isActive}
+												/>
+											)}
+										</NavLink>
+										<NavLink to="/home-editor">
+											{({ isActive }) => (
+												<SidebarItem
+													icon={<Edit />}
+													text="Visitor System Editor"
+													active={isActive}
+												/>
+											)}
+										</NavLink>
+									</>
+								) : (
+									<>
+										<NavLink to="/qr-scanner">
+											{({ isActive }) => (
+												<SidebarItem
+													icon={<QRScanner />}
+													text="QR Scanner"
+													active={isActive}
+												/>
+											)}
+										</NavLink>
+										<NavLink to={"/visitor-form"}>
+											{({ isActive }) => (
+												<SidebarItem
+													icon={<Form />}
+													text="Visitor Form"
+													active={isActive}
+												/>
+											)}
+										</NavLink>
+										<NavLink to="/visitor-status">
+											{({ isActive }) => (
+												<SidebarItem
+													icon={<UserGroup />}
+													text="Visitor Status"
+													active={isActive}
+												/>
+											)}
+										</NavLink>
+									</>
+								)}
+							</Sidebar>
+							<Header expanded={expanded} />
+						</div>
+
+						{/* Main content Here */}
+						<div
+							id="parentDiv"
+							className={`children ${expanded && "hidden"}`}
+							ref={ref}
+						>
+							{children}
+						</div>
 					</div>
-				</div>
-			</div>
+				</>
+			)}
 		</WidthContext.Provider>
 	);
 }

@@ -9,7 +9,6 @@ export interface LoginInterfaceZod {
 	password: string;
 }
 
-
 export const LoginZod: ZodType<LoginInterfaceZod> = z.object({
 	username: z
 		.string({
@@ -50,7 +49,7 @@ export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
 			required_error: "First Name is required.",
 			invalid_type_error: "First Name must not have number.",
 		})
-		.regex(/^[a-zA-Z]+/, {
+		.regex(/^[a-zA-Z\s]+$/, {
 			message: "Must not be empty or contain any numerals.",
 		}),
 	middle_name: z
@@ -58,7 +57,7 @@ export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
 			required_error: "Middle Name is required.",
 			invalid_type_error: "Middle Name must not have number.",
 		})
-		.regex(/^[a-zA-Z]*$|\b/, {
+		.regex(/^[a-zA-Z\s]*$|\b/, {
 			message: "Must not contain any numerals.",
 		})
 		.optional(),
@@ -67,23 +66,26 @@ export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
 			required_error: "Last Name is required.",
 			invalid_type_error: "Last Name must not have numbe.r",
 		})
-		.regex(/^[a-zA-Z]+/, {
+		.regex(/^[a-zA-Z\s]+/, {
 			message: "Must not be empty or contain any numerals.",
 		}),
 
-	email: z.string().regex(/^(?:\S*@\S*\.\S*)?$/, {message: "Invalid Email"}).optional(),
+	email: z
+		.string()
+		.regex(/^(?:\S*@\S*\.\S*)?$/, { message: "Invalid Email" })
+		.optional(),
 
 	phone: z.coerce
 		.string({
 			required_error: "Mobile Number is required.",
 			invalid_type_error: "Mobile Number must not have a letter or symbol.",
 		})
-		.regex(/^[0-9\-+\b]*$/, {
-			message: "Mobile number must not include non-numerals.",
-		})
-		.min(11, {
-    		message: "Mobile Number must be at least 11 digits.",
-  		}),
+		.regex(
+			/^\+((?:9[679]|8[035789]|6[789]|5[90]|42|3[578]|2[1-689])|9[0-58]|8[1246]|6[0-6]|5[1-8]|4[013-9]|3[0-469]|2[70]|7|1)(?:\W*\d){0,13}\d$/,
+			{
+				message: "Mobile Number is invalid",
+			},
+		),
 
 	house: z.string().optional(),
 
@@ -109,7 +111,7 @@ export const WalkInFormZod: ZodType<WalkInFormInterfaceZod> = z.object({
 			required_error: "Country is required.",
 			invalid_type_error: "Countrty must not have a number.",
 		})
-		.regex(/^[a-zA-Z]+/, {
+		.regex(/^[a-zA-Z\s]+/, {
 			message: "Must not contain any numerals.",
 		}),
 
@@ -170,13 +172,13 @@ export interface VisitorDetailsInterfaceZod {
 	who: string[];
 }
 
-export const VisitorDetailZod: ZodType<VisitorDetailsInterfaceZod> = z.object({
+export const VisitorDetailZod = z.object({
 	first_name: z
 		.string({
 			required_error: "First Name is required.",
 			invalid_type_error: "First Name must not have number.",
 		})
-		.regex(/^[a-zA-Z]+/, {
+		.regex(/^[a-zA-Z\s]+$/, {
 			message: "Must not be empty or contain any numerals.",
 		}),
 	middle_name: z
@@ -184,7 +186,7 @@ export const VisitorDetailZod: ZodType<VisitorDetailsInterfaceZod> = z.object({
 			required_error: "Middle Name is required.",
 			invalid_type_error: "Middle Name must not have number.",
 		})
-		.regex(/^[a-zA-Z]*$|\b/, {
+		.regex(/^[a-zA-Z\s]*$|\b/, {
 			message: "Must not contain any numerals.",
 		})
 		.optional(),
@@ -193,19 +195,27 @@ export const VisitorDetailZod: ZodType<VisitorDetailsInterfaceZod> = z.object({
 			required_error: "Last Name is required.",
 			invalid_type_error: "Last Name must not have numbe.r",
 		})
-		.regex(/^[a-zA-Z]+/, {
+		.regex(/^[a-zA-Z\s]+/, {
 			message: "Must not be empty or contain any numerals.",
 		}),
 
-	email: z.string().email({ message: "Invalid email address." }),
+	email: z
+		.string({
+			required_error: "Email is required.",
+			invalid_type_error: "Email must not have numbe.r",
+		})
+		.email({ message: "Invalid email address." }),
 	phone: z.coerce
 		.string({
 			required_error: "Mobile Number is required.",
 			invalid_type_error: "Mobile Number must not have a letter or symbol.",
 		})
-		.regex(/^[0-9\-+\b]*$/, {
-			message: "Mobile number must not include non-numerals.",
-		}),
+		.regex(
+			/^\+((?:9[679]|8[035789]|6[789]|5[90]|42|3[578]|2[1-689])|9[0-58]|8[1246]|6[0-6]|5[1-8]|4[013-9]|3[0-469]|2[70]|7|1)(?:\W*\d){0,13}\d$/,
+			{
+				message: "Mobile Number is invalid",
+			},
+		),
 
 	house: z.string().optional(),
 	street: z.string().optional(),
@@ -226,7 +236,7 @@ export const VisitorDetailZod: ZodType<VisitorDetailsInterfaceZod> = z.object({
 			required_error: "Country is required.",
 			invalid_type_error: "Countrty must not have a number.",
 		})
-		.regex(/^[a-zA-Z]+/, {
+		.regex(/^[a-zA-Z\s]+/, {
 			message: "Must not contain any numerals.",
 		}),
 	check_in_out: z.custom<[string, string]>().refine((val) => val[0] < val[1], {
@@ -265,6 +275,8 @@ export const VisitorDetailZod: ZodType<VisitorDetailsInterfaceZod> = z.object({
 		}),
 });
 
+export const VisitorDetailZodNoEmail = VisitorDetailZod.omit({ email: true });
+
 export interface CompanionDetailsInterfaceZod {
 	first_name: string;
 	middle_name?: string;
@@ -287,7 +299,7 @@ export const CompanionDetailZod: ZodType<CompanionDetailsInterfaceZod> =
 				required_error: "First Name is required.",
 				invalid_type_error: "First Name must not have number.",
 			})
-			.regex(/^[a-zA-Z]+/, {
+			.regex(/^[a-zA-Z\s]+$/, {
 				message: "Must not be empty or contain any numerals.",
 			}),
 		middle_name: z
@@ -295,7 +307,7 @@ export const CompanionDetailZod: ZodType<CompanionDetailsInterfaceZod> =
 				required_error: "Middle Name is required.",
 				invalid_type_error: "Middle Name must not have number.",
 			})
-			.regex(/^[a-zA-Z]*$|\b/, {
+			.regex(/^[a-zA-Z\s]*$|\b/, {
 				message: "Must not contain any numerals.",
 			})
 			.optional(),
@@ -304,7 +316,7 @@ export const CompanionDetailZod: ZodType<CompanionDetailsInterfaceZod> =
 				required_error: "Last Name is required.",
 				invalid_type_error: "Last Name must not have numbe.r",
 			})
-			.regex(/^[a-zA-Z]+/, {
+			.regex(/^[a-zA-Z\s]+/, {
 				message: "Must not be empty or contain any numerals.",
 			}),
 
@@ -314,33 +326,33 @@ export const CompanionDetailZod: ZodType<CompanionDetailsInterfaceZod> =
 				required_error: "Mobile Number is required.",
 				invalid_type_error: "Mobile Number must not have a letter or symbol.",
 			})
-			.regex(/^[0-9\-+\b]*$/, {
-				message: "Mobile number must not include non-numerals.",
-			}),
+			.regex(
+				/^\+((?:9[679]|8[035789]|6[789]|5[90]|42|3[578]|2[1-689])|9[0-58]|8[1246]|6[0-6]|5[1-8]|4[013-9]|3[0-469]|2[70]|7|1)(?:\W*\d){0,13}\d$/,
+				{
+					message: "Mobile Number is invalid",
+				},
+			),
 
 		house: z.string().optional(),
 		street: z.string().optional(),
-		brgy: z
-			.string({
-				required_error: "Barangay is required.",
-				invalid_type_error: "Barangay must not have a number.",
-			}),
-		city: z
-			.string({
-				required_error: "City is required.",
-				invalid_type_error: "City must not have a number.",
-			}),
-		province: z
-			.string({
-				required_error: "Province is required.",
-				invalid_type_error: "Province must not have a number.",
-			}),
+		brgy: z.string({
+			required_error: "Barangay is required.",
+			invalid_type_error: "Barangay must not have a number.",
+		}),
+		city: z.string({
+			required_error: "City is required.",
+			invalid_type_error: "City must not have a number.",
+		}),
+		province: z.string({
+			required_error: "Province is required.",
+			invalid_type_error: "Province must not have a number.",
+		}),
 		country: z
 			.string({
 				required_error: "Country is required.",
 				invalid_type_error: "Countrty must not have a number.",
 			})
-			.regex(/^[a-zA-Z]+/, {
+			.regex(/^[a-zA-Z\s]+/, {
 				message: "Must not contain any numerals.",
 			}),
 		check_in_out: z
@@ -367,27 +379,26 @@ export const UserDetailsZod: ZodType<UserDetailsInterfaceZod> = z.object({
 			required_error: "First Name is required.",
 			invalid_type_error: "First Name must not have number.",
 		})
-		.regex(/^[a-zA-Z]+/, {
+		.regex(/^[a-zA-Z\s]+$/, {
 			message: "Must not be empty or contain any numerals.",
-		})
-		.min(1, { message: "Please enter a first name." }),
+		}),
 	middle_name: z
 		.string({
+			required_error: "Middle Name is required.",
 			invalid_type_error: "Middle Name must not have number.",
 		})
-		.regex(/^[a-zA-Z\s]*$/, {
+		.regex(/^[a-zA-Z\s]*$|\b/, {
 			message: "Must not contain any numerals.",
 		})
 		.optional(),
 	last_name: z
 		.string({
 			required_error: "Last Name is required.",
-			invalid_type_error: "Last Name must not have number.",
+			invalid_type_error: "Last Name must not have numbe.r",
 		})
-		.regex(/^[a-zA-Z]+/, {
+		.regex(/^[a-zA-Z\s]+/, {
 			message: "Must not be empty or contain any numerals.",
-		})
-		.min(1, { message: "Please enter a last name." }),
+		}),
 	username: z
 		.string({
 			required_error: "Username is required.",
@@ -412,8 +423,12 @@ export const UserDetailsZod: ZodType<UserDetailsInterfaceZod> = z.object({
 			required_error: "Mobile Number is required.",
 			invalid_type_error: "Mobile Number must not have a letter or symbol.",
 		})
-		.regex(/([0-9\-+\b])\w+/, { message: "Only numeric values allowed." })
-		.min(1, { message: "Please enter a phone number." }),
+		.regex(
+			/^\+((?:9[679]|8[035789]|6[789]|5[90]|42|3[578]|2[1-689])|9[0-58]|8[1246]|6[0-6]|5[1-8]|4[013-9]|3[0-469]|2[70]|7|1)(?:\W*\d){0,13}\d$/,
+			{
+				message: "Mobile Number is invalid",
+			},
+		),
 	role: z.enum(["admin", "security"]),
 });
 
@@ -430,13 +445,12 @@ export const EmployeeDetailsZod: ZodType<EmployeesZod> = z.object({
 			invalid_type_error: "Full Name must not have number.",
 		})
 		.min(2, { message: "Please enter a full name." })
-		.regex(/^[a-zA-Z]+/, {
+		.regex(/^[a-zA-Z\s]+/, {
 			message: "Must not be empty or contain any numerals.",
 		}),
-		
+
 	email: z
-		.string(
-		)
+		.string()
 		.min(1, { message: "Please enter an email." })
 		.email({ message: "Invalid email address." })
 		.refine((data) => data !== "mail@mail.com", {
@@ -447,12 +461,16 @@ export const EmployeeDetailsZod: ZodType<EmployeesZod> = z.object({
 			required_error: "Mobile Number is required.",
 			invalid_type_error: "Mobile Number must not have a letter or symbol.",
 		})
-		.min(1, { message: "Please enter a phone number." })
-		.regex(/([0-9\-+\b])\w+/, { message: "Only numeric values allowed."}),
+		.regex(
+			/^\+((?:9[679]|8[035789]|6[789]|5[90]|42|3[578]|2[1-689])|9[0-58]|8[1246]|6[0-6]|5[1-8]|4[013-9]|3[0-469]|2[70]|7|1)(?:\W*\d){0,13}\d$/,
+			{
+				message: "Mobile Number is invalid",
+			},
+		),
 });
 
 export interface ReasonZod {
-	reason: string,
+	reason: string;
 }
 
 export const ReasonDetailsZod: ZodType<ReasonZod> = z.object({
@@ -460,11 +478,11 @@ export const ReasonDetailsZod: ZodType<ReasonZod> = z.object({
 		.string({
 			required_error: "Reason is required.",
 		})
-		.min(2, { message: "Please enter a valid reason." })
+		.min(2, { message: "Please enter a valid reason." }),
 });
 
 export interface BuildingZod {
-	name: string,
+	name: string;
 }
 
 export const BuildingDetailsZod: ZodType<BuildingZod> = z.object({
@@ -472,13 +490,12 @@ export const BuildingDetailsZod: ZodType<BuildingZod> = z.object({
 		.string({
 			required_error: "Name is required.",
 		})
-		.min(2, { message: "Please enter a valid name." 
-		}),
+		.min(2, { message: "Please enter a valid name." }),
 });
 
 export interface AnnouncementZod {
-	title: string,
-	message: string,
+	title: string;
+	message: string;
 }
 
 export const AnnouncementDetailsZod: ZodType<AnnouncementZod> = z.object({
@@ -486,26 +503,24 @@ export const AnnouncementDetailsZod: ZodType<AnnouncementZod> = z.object({
 		.string({
 			required_error: "Title is required.",
 		})
-		.min(2, { message: "Please enter a valid title." 
-		}),
+		.min(2, { message: "Please enter a valid title." }),
 	message: z
 		.string({
 			required_error: "Message is required.",
 		})
-		.min(2, { message: "Please enter a valid message." 
-		}),
+		.min(2, { message: "Please enter a valid message." }),
 });
 
 export interface OfficeZod {
-	name: string,
-	roomNo: string,
-	pic: string,
-	contact: string,
-	build: string,
-	floor: string,
-	openTime: Date,
-	closeTime: Date,
-	imageUrl: string,
+	name: string;
+	roomNo: string;
+	pic: string;
+	contact: string;
+	build: string;
+	floor: string;
+	openTime: Date;
+	closeTime: Date;
+	imageUrl: string;
 }
 
 export const OfficeDetailsZod: ZodType<OfficeZod> = z.object({
@@ -513,55 +528,52 @@ export const OfficeDetailsZod: ZodType<OfficeZod> = z.object({
 		.string({
 			required_error: "Name is required.",
 		})
-		.min(2, { message: "Please enter a valid name." 
-		}),
+		.min(2, { message: "Please enter a valid name." }),
 	roomNo: z
 		.string({
 			required_error: "Room No. is required.",
 		})
-		.min(2, { message: "Please enter a valid room no." 
-		}),
-	pic: z
-		.string({
-			required_error: "Personnel in Charge is required.",
-		}),
-	contact: z
+		.min(2, { message: "Please enter a valid room no." }),
+	pic: z.string({
+		required_error: "Personnel in Charge is required.",
+	}),
+	contact: z.coerce
 		.string({
 			required_error: "Contact is required.",
+			invalid_type_error: "Contact must not have a letter or symbol.",
 		})
-		.min(2, { message: "Please enter a valid contact." 
-		}),
-	build: z
-		.string({
-			required_error: "Building is required.",
-		}),
-	floor: z
-		.string({
-			required_error: "Floor No. is required.",
-		}),
-	openTime: z
-		.date({
-			required_error: "Please select an open time",
-		}),
-	closeTime: z
-		.date({
-			required_error: "Please select a close time",
-		}),
-	imageUrl: z
-		.string({
-			required_error: "Image is required.",
-		}),
+		.regex(
+			/^\+((?:9[679]|8[035789]|6[789]|5[90]|42|3[578]|2[1-689])|9[0-58]|8[1246]|6[0-6]|5[1-8]|4[013-9]|3[0-469]|2[70]|7|1)(?:\W*\d){0,13}\d$/,
+			{
+				message: "Contact is invalid",
+			},
+		),
+	build: z.string({
+		required_error: "Building is required.",
+	}),
+	floor: z.string({
+		required_error: "Floor No. is required.",
+	}),
+	openTime: z.date({
+		required_error: "Please select an open time",
+	}),
+	closeTime: z.date({
+		required_error: "Please select a close time",
+	}),
+	imageUrl: z.string({
+		required_error: "Image is required.",
+	}),
 });
 
 export interface EventZod {
-	name: string,
-	startDate: Date,
-	endDate: Date,
-	startTime: Date,
-	endTime: Date,
-	locationId: string,
-	description: string,
-	imageUrl: string,
+	name: string;
+	startDate: Date;
+	endDate: Date;
+	startTime: Date;
+	endTime: Date;
+	locationId: string;
+	description: string;
+	imageUrl: string;
 }
 
 export const EventDetailsZod: ZodType<EventZod> = z.object({
@@ -569,36 +581,28 @@ export const EventDetailsZod: ZodType<EventZod> = z.object({
 		.string({
 			required_error: "Name is required.",
 		})
-		.min(2, { message: "Please enter a valid name." 
-		}),
-	startDate: z
-		.date({
-			required_error: "Please select a start date.",
-		}),
-	endDate: z
-		.date({
-			required_error: "Please select an end date.",
-		}),
-	startTime: z
-		.date({
-			required_error: "Please select a start time.",
-		}),
-	endTime: z
-		.date({
-			required_error: "Please select an end time.",
-		}),
-	locationId: z
-		.string({
-			required_error: "Location is required.",
-		}),
+		.min(2, { message: "Please enter a valid name." }),
+	startDate: z.date({
+		required_error: "Please select a start date.",
+	}),
+	endDate: z.date({
+		required_error: "Please select an end date.",
+	}),
+	startTime: z.date({
+		required_error: "Please select a start time.",
+	}),
+	endTime: z.date({
+		required_error: "Please select an end time.",
+	}),
+	locationId: z.string({
+		required_error: "Location is required.",
+	}),
 	description: z
 		.string({
 			required_error: "Description is required.",
 		})
-		.min(2, { message: "Please enter a valid description." 
-		}),
-	imageUrl: z
-		.string({
-			required_error: "Image is required.",
-		}),
+		.min(2, { message: "Please enter a valid description." }),
+	imageUrl: z.string({
+		required_error: "Image is required.",
+	}),
 });

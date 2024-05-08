@@ -178,7 +178,12 @@ export const StepTwoZod: ZodType<StepTwoData> = z.object({
 			required_error: "Mobile Number is required.",
 			invalid_type_error: "Mobile Number must not have a letter or symbol.",
 		})
-		.regex(/([0-9\-+\b])\w+/, { message: "Only numeric values allowed." }),
+		.regex(
+			/^\+((?:9[679]|8[035789]|6[789]|5[90]|42|3[578]|2[1-689])|9[0-58]|8[1246]|6[0-6]|5[1-8]|4[013-9]|3[0-469]|2[70]|7|1)(?:\W*\d){0,13}\d$/,
+			{
+				message: "Mobile Number is invalid",
+			},
+		),
 
 	house: z.string().optional(),
 	street: z.string().optional(),
@@ -277,8 +282,12 @@ export const StepTwoRecurringZod: ZodType<StepTwoRecurringData> = z.object({
 			required_error: "Mobile Number is required.",
 			invalid_type_error: "Mobile Number must not have a letter or symbol.",
 		})
-		.regex(/([0-9\-+\b])\w+/, { message: "Only numeric values allowed." }),
-
+		.regex(
+			/^\+((?:9[679]|8[035789]|6[789]|5[90]|42|3[578]|2[1-689])|9[0-58]|8[1246]|6[0-6]|5[1-8]|4[013-9]|3[0-469]|2[70]|7|1)(?:\W*\d){0,13}\d$/,
+			{
+				message: "Mobile Number is invalid",
+			},
+		),
 	house: z.string().optional(),
 	street: z.string().optional(),
 	brgy: z.coerce
