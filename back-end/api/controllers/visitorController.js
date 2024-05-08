@@ -40,7 +40,9 @@ exports.getVisitors = async (req, res) => {
 //For Current Visitors by Janusz
 exports.getCurrentVisitors = async (req, res) => {
   try {
-    const badges = await Badge.find({ status: { $in: ['active', 'overdue', 'exceeded'] } });
+    const badges = await Badge.find({
+      status: { $in: ["active", "overdue", "exceeded"] },
+    });
 
     const activeVisitorIds = badges.map((badge) => badge.visitor_id);
 
@@ -50,11 +52,13 @@ exports.getCurrentVisitors = async (req, res) => {
 
     const response = [];
     badges.forEach((badge) => {
-      const activeVisitor = activeVisitors.find((visitor) => visitor._id.equals(badge.visitor_id));
+      const activeVisitor = activeVisitors.find((visitor) =>
+        visitor._id.equals(badge.visitor_id)
+      );
       if (activeVisitor) {
         response.push({
           visitor: activeVisitor,
-          badge: badge
+          badge: badge,
         });
       }
     });
@@ -280,8 +284,8 @@ exports.updateVisitor = async (req, res) => {
       "visitor_details.phone": phone,
       plate_num: plate_num,
       purpose: purpose,
-      expected_time_in: expected_time_in,
-      expected_time_out: expected_time_out,
+      expected_time_in,
+      expected_time_out,
       visitor_type: visitor_type,
       companions: companions,
     };
@@ -302,8 +306,8 @@ exports.updateVisitor = async (req, res) => {
 
     var badge = await Badge.findOne({
       visitor_id: new ObjectId(_id),
-      expected_time_in: visitorDB.expected_time_in,
-      expected_time_out: visitorDB.expected_time_out,
+      expected_time_in,
+      expected_time_out,
     });
 
     if (badge) {
