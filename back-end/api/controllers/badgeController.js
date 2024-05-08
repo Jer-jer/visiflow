@@ -152,7 +152,7 @@ exports.newBadge = async (req, res) => {
     const qr_image = uploadFileToGCS(buffer, filename);
 
     badge.qr_image = qr_image;
-    await badge.save();
+    await badge.save(); 
 
     await createSystemLog(user_id, log_type, "success");
     return res.sendStatus(200);
