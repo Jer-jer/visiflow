@@ -63,8 +63,8 @@ export default function CurrentVisitorsTable({
 			console.log(res);
 			const mappedData: VisitorDataType[] = res.data.response.map((res: any): VisitorDataType => ({
 				...res.visitor,
-				badge_status: setCurrentStatus(res.visitor.expected_time_out),
-				badge_id: res.badgeId
+				badge_status: res.badge.status,
+				badge_id: res.badge._id
 			}));
 			setData(mappedData);
 			setLoading(false);
@@ -189,14 +189,14 @@ export default function CurrentVisitorsTable({
 					</Tag>
 				);
 			},
-			onFilter: (value: any, record) => record.status.indexOf(value) === 0,
+			onFilter: (value: any, record) => record.badge_status.indexOf(value) === 0,
 		},
 		{
+			title: "Action",
 			key: "action",
-			width: "30%",
 			render: (_, record) => (
 				<>
-					<Button className="mr-[3%] w-[20%]" onClick={() => edit(record)}>
+					<Button className="ml-4" onClick={() => edit(record)}>
 						View
 					</Button>
 				</>
