@@ -142,7 +142,7 @@ async function timeOutReminder(io) {
         if (badge) {
           const visitor = await Visitor.findOne({
             _id: badge.visitor_id,
-            //expected_time_out: { $lte: currentTime - 15 * 60000 },
+            expected_time_out: { $lte: currentTime - 1 * 60000 },
           });
 
           if (visitor) {
@@ -164,7 +164,6 @@ async function timeOutReminder(io) {
           const expected_time_out = new Date(v.visitor.expected_time_out);
           const current_time = new Date(); // -8 hrs in prod.
           const oneDayMs = 24 * 60 * 60 * 1000;
-          const fifteenMinMs = 15 *60 * 1000; 
           const differenceMs = current_time - expected_time_out;
 
           if (differenceMs >= oneDayMs) {
@@ -173,17 +172,12 @@ async function timeOutReminder(io) {
               { $set: { status: "overdue" } }
             );
             await createNotification(v.visitor, "overdue", io);
-          } else if (differenceMs >= fifteenMinMs) {
+          } else {
             await Badge.updateOne(
               { _id: v.badgeId },
               { $set: { status: "exceeded" } }
             );
             await createNotification(v.visitor, "time-out", io);
-          } else {
-            await Badge.updateOne(
-              { _id: v.badgeId },
-              { $set: { status: "active" } }
-            );
           }
         })
       );

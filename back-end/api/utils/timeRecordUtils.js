@@ -83,15 +83,25 @@ async function timeOut(_id) {
 
     if (badge) {
       if (badge.status != "inactive") {
+        const current_time = new Date();
+        // current_time.setHours(current_time.getHours() - 8);
+
         // Add check out timestamp to visitor logs
         await VisitorLogs.updateOne(
           { badge_id: badge._id },
           { $set: { check_out_time: new Date() } }
         );
 
+        if (badge.expected_time_out <= current_time) {
+          await Badge.updateOne(
+            { _id: badge._id },
+            { $set: { qr_id: null, status: "inactive", is_valid: false } }
+          );
+        }
+        
         await Badge.updateOne(
           { _id: badge._id },
-          { $set: { qr_id: null, status: "inactive", is_valid: false } }
+          { $set: { status: "inactive" } }
         );
 
         return {
