@@ -137,7 +137,7 @@ export default function DashboardLayout() {
 	};
 
 	return (
-		<div className="mb-[35px] ml-2 mt-3 flex">
+		<div className="mb-[35px] ml-2 mr-[25px] mt-3 flex gap-4">
 			<div className="w-[761px] flex-auto">
 				<OuterContainer
 					containerStyling="overflow-auto h-[100dvh]"

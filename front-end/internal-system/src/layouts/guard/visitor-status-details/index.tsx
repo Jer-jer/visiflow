@@ -20,6 +20,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
 	VisitorDetailZod,
 	VisitorDetailsInterfaceZod,
+	VisitorDetailZodNoEmail,
 } from "../../../utils/zodSchemas";
 import { VisitorDataType, IDPictureProps } from "../../../utils/interfaces";
 import { VisitorStatus, VisitorType } from "../../../utils/enums";
@@ -257,6 +258,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 	const dispatch = useDispatch();
 
 	// Client-side Validation related data
+	const isPreRegistered = record.visitor_type === VisitorType.PreRegistered;
 	const {
 		register,
 		handleSubmit,
@@ -264,7 +266,9 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 		setValue,
 		clearErrors,
 	} = useForm<VisitorDetailTypeZod>({
-		resolver: zodResolver(VisitorDetailZod),
+		resolver: zodResolver(
+			isPreRegistered ? VisitorDetailZod : VisitorDetailZodNoEmail,
+		),
 		defaultValues: {
 			first_name: record.visitor_details.name.first_name,
 			middle_name: record.visitor_details.name.middle_name,
@@ -394,28 +398,28 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 	) => {
 		await AxiosInstance.put("/visitor/update", {
 			_id: record._id,
-			first_name: zodData
-				? zodData.first_name[0].toUpperCase() + zodData.first_name.slice(1)
-				: record.visitor_details.name.first_name[0].toUpperCase() +
-					record.visitor_details.name.first_name.slice(1),
-			middle_name: zodData
-				? zodData.middle_name
-				: record.visitor_details.name.middle_name,
-			last_name: zodData
-				? zodData.last_name[0].toUpperCase() + zodData.last_name.slice(1)
-				: record.visitor_details.name.last_name[0].toUpperCase() +
-					record.visitor_details.name.last_name.slice(1),
+			// first_name: zodData
+			// 	? zodData.first_name[0].toUpperCase() + zodData.first_name.slice(1)
+			// 	: record.visitor_details.name.first_name[0].toUpperCase() +
+			// 		record.visitor_details.name.first_name.slice(1),
+			// middle_name: zodData
+			// 	? zodData.middle_name
+			// 	: record.visitor_details.name.middle_name,
+			// last_name: zodData
+			// 	? zodData.last_name[0].toUpperCase() + zodData.last_name.slice(1)
+			// 	: record.visitor_details.name.last_name[0].toUpperCase() +
+			// 		record.visitor_details.name.last_name.slice(1),
 			expected_time_in: zodData ? zodData.check_in_out[0] : expected_in,
 			expected_time_out: zodData ? zodData.check_in_out[1] : expected_out,
-			visitor_type: zodData ? zodData.visitor_type : record.visitor_type,
-			purpose: zodData
-				? {
-						what: zodData.what,
-						when: zodData.when,
-						where: zodData.where,
-						who: zodData.who,
-					}
-				: record.purpose,
+			// visitor_type: zodData ? zodData.visitor_type : record.visitor_type,
+			// purpose: zodData
+			// 	? {
+			// 			what: zodData.what,
+			// 			when: zodData.when,
+			// 			where: zodData.where,
+			// 			who: zodData.who,
+			// 		}
+			// 	: record.purpose,
 		})
 			.then((res) => {
 				dispatch(update(res.data.visitor));
@@ -440,7 +444,6 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 	};
 
 	const onSubmit = handleSubmit((data) => {
-		console.log('haaaaa')
 		saveAction(data);
 	});
 
@@ -504,9 +507,9 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 													{errors.first_name.message}
 												</p>
 											)}
-											{errors?.email && (
+											{errors?.phone && (
 												<p className="mt-1 text-sm text-red-500">
-													{errors.email.message}
+													{errors.phone.message}
 												</p>
 											)}
 										</div>
