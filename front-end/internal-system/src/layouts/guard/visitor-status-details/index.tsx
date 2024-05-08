@@ -453,7 +453,6 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 	};
 
 	const handleTimeOutOk = async () => {
-		console.log(record.badge_id)
 		await AxiosInstance.post("/badge/timeRecord", {
 			_id: record.badge_id,
 			record: false,
