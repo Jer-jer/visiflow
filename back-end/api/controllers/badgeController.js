@@ -2,7 +2,7 @@ const Badge = require("../models/badge");
 const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
 const mongoose = require("mongoose");
-const { createSystemLog } = require("../utils/helper");
+const { createSystemLog, uploadFileToGCS } = require("../utils/helper");
 const { generateQRCode } = require("../utils/qrCodeUtils");
 const {
   timeIn,
@@ -11,6 +11,7 @@ const {
 
 const archiver = require("archiver");
 const fs = require("fs");
+const fsp = require("fs").promises;
 
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -143,6 +144,18 @@ exports.newBadge = async (req, res) => {
       badge_id: badge._id,
       check_in_time: new Date(),
     });
+
+    // const uri = `${local_ip}/badge/checkBadge?qr_id=${qr_id}`;
+    const filename = `badge${qr_id}.png`;
+
+    // const qr_file = await generateQRCode(uri, filename, qr_id);
+
+    const buffer = await fsp.readFile(filename);;
+
+    const qr_image = uploadFileToGCS(buffer, filename);
+
+    badge.qr_image = qr_image;
+    await badge.save(); 
 
     await createSystemLog(user_id, log_type, "success");
     return res.sendStatus(200);
