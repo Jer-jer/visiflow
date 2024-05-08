@@ -133,7 +133,6 @@ async function timeOutReminder(io) {
 
     const visitors = await Promise.all(
       logs.map(async (log) => {
-
         const badge = await Badge.findOne({
           _id: log.badge_id,
           status: { $in: ["active", "exceeded"] },
@@ -145,47 +144,43 @@ async function timeOutReminder(io) {
             _id: badge.visitor_id,
             expected_time_out: { $lte: currentTime - 15 * 60000 },
           });
-          
+
           if (visitor) {
             return {
               visitor: visitor,
-              badgeId: badge._id
-            }
+              badgeId: badge._id,
+            };
           }
         }
         return null;
       })
     );
 
-    const validVisitors = visitors.filter(visitor => visitor);
+    const validVisitors = visitors.filter((visitor) => visitor);
 
     if (validVisitors.length > 0) {
       await Promise.all(
         validVisitors.map(async (v) => {
-
           const expected_time_out = new Date(v.visitor.expected_time_out);
           const current_time = new Date(); // -8 hrs in prod.
           const oneDayMs = 24 * 60 * 60 * 1000;
           const differenceMs = current_time - expected_time_out;
 
-          if (differenceMs >= oneDayMs) {  
-
+          if (differenceMs >= oneDayMs) {
             await Badge.updateOne(
               { _id: v.badgeId },
               { $set: { status: "overdue" } }
-            )
+            );
             await createNotification(v.visitor, "overdue", io);
-            
           } else {
-             await Badge.updateOne(
+            await Badge.updateOne(
               { _id: v.badgeId },
               { $set: { status: "exceeded" } }
-            )
+            );
             await createNotification(v.visitor, "time-out", io);
           }
-
         })
-      )
+      );
     }
   } catch (error) {
     console.error(error);
@@ -326,8 +321,12 @@ async function validateDuplicate(visitors, res) {
           visitor.visitor_details.name.last_name === last_name;
 
         return isDuplicate
-          ? `Visitor using ${email} and/or ${phone} already has an existing record`
-          : `${email} and/or ${phone} has already been used by another visitor`;
+          ? `Visitor using ${
+              email ? email + " and/or " : ""
+            } ${phone} already has an existing record`
+          : `${
+              email ? email + " and/or " : ""
+            } ${phone} has already been used by another visitor`;
       }
     } catch (error) {
       console.error("Error while validating duplicate:", error);

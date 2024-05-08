@@ -49,7 +49,7 @@ export default function ScheduleManagement() {
 	const newTabIndex = useRef(1);
 	const [hideInOut, setHideInOut] = useState<boolean>(true);
 	const [dateSearch, setDateSearch] = useState<string[]>([]);
-	const [checkedList, setCheckedList] = useState<string[]>([]);
+	const [checkedList, setCheckedList] = useState<string[]>(['current']);
 
 	const tabs = useSelector((state: RootState) => state.badgesTab);
 

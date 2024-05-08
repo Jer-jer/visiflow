@@ -73,6 +73,7 @@ export const badgeSlice = createSlice({
 						key: badge._id,
 						expected_time_in: badge.expected_time_in,
 						expected_time_out: badge.expected_time_out,
+						badge_status: badge.status
 					  };
 					}
 				  }).filter((item: any) => item !== undefined);

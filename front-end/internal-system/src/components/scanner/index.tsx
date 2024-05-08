@@ -2,15 +2,34 @@
 import React from "react";
 
 import { Html5QrcodeScanner } from "html5-qrcode";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { qr_id } from "../../layouts/guard/visitor-form";
 import AxiosInstance from "../../lib/axios";
 
 //Styles
 import "./styles.scss";
 
-export default function Scanner({ onQRstatus }: any) {
+interface scannerProps {
+	setIsTimeInOpen: Dispatch<SetStateAction<boolean>>;
+	setIsTimeOutOpen: Dispatch<SetStateAction<boolean>>;
+	setAlertOpen: Dispatch<SetStateAction<boolean>>;
+	setStatus: Dispatch<SetStateAction<boolean>>;
+	setAlertMsg: Dispatch<SetStateAction<string>>;
+	setVisitor: any;
+	setBadgeId: any;
+}
+
+export default function Scanner({
+	setIsTimeInOpen,
+	setIsTimeOutOpen,
+	setAlertOpen,
+	setStatus,
+	setAlertMsg,
+	setVisitor,
+	setBadgeId,
+}: scannerProps) {
 	const [scanResult, setScanResult] = useState<string | null>(null);
+
 	let scanner: Html5QrcodeScanner | null = null;
 
 	const initializeScanner = () => {
@@ -41,57 +60,48 @@ export default function Scanner({ onQRstatus }: any) {
 	}, []);
 
 	function success(result: any) {
+		setAlertOpen(false);
+
 		if (isValidUrl(result)) {
-			if (qr_id !== undefined) {
-				onQRstatus("Visitor Form is Ongoing");
-			} else {
-				//setScanResult(result);
-				// if (scanner) {
-				// 	scanner.clear();
-				// }
+			AxiosInstance.get(result)
+				.then((res) => {
+					if (scanner) {
+						scanner.clear();
+					}
 
-				// Retrieve JWT token from local storage
-				// const token = localStorage.getItem("token");
+					const resVisitor = res.data.visitor;
+					setVisitor(resVisitor);
+					const resBadgeId = res.data.badge_id;
+					setBadgeId(resBadgeId);
 
-				// Append JWT token as a query parameter to the scanned URL
-				// const redirectUrl = `${result}&token=${token}`;
-				// Redirect to the scanned link
-				// window.location.href = redirectUrl;
-				AxiosInstance.get(result)
-					.then((res) => {
-						if (scanner) {
-							scanner.clear();
-						}
-						const resType = res.data.type;
+					const resType = res.data.type;
+					const resBadgeStatus = res.data.status;
 
-						switch (resType) {
-							case "new-recurring": {
-								window.location.href = res.data.url;
-								break;
-							}
-							case "time-out": {
-								onQRstatus("Successfully Timed-Out");
-								break;
-							}
-							case "time-in": {
-								onQRstatus("Successfully Timed-In");
-								break;
-							}
-							default: {
-								onQRstatus("Something went wrong");
-								break;
-							}
-						}
-						initializeScanner();
-					})
-					.catch((err) => {
-						if (err && err.response) {
-							onQRstatus(err.response.data.error);
-						}
-					});
-			}
+					if (resType === "new-recurring") {
+						window.location.href = res.data.url;
+					} else if (resBadgeStatus === "inactive") {
+						setIsTimeInOpen(true);
+					} else if (resBadgeStatus != "inactive") {
+						setIsTimeOutOpen(true);
+					} else {
+						setStatus(false);
+						setAlertOpen(true);
+						setAlertMsg("Something went wrong in scanning result");
+					}
+
+					initializeScanner();
+				})
+				.catch((err) => {
+					if (err && err.response) {
+						setStatus(false);
+						setAlertOpen(true);
+						setAlertMsg(err.response.data.error);
+					}
+				});
 		} else {
-			onQRstatus("Invalid QR");
+			setStatus(false);
+			setAlertOpen(true);
+			setAlertMsg("Invalid QR");
 		}
 	}
 
@@ -106,6 +116,7 @@ export default function Scanner({ onQRstatus }: any) {
 		// "https://visiflow-api.onrender.com/badge/checkBadge?visitor_id=",
 		// "https://visiflow-api.onrender.com/badge/checkBadge?qr_id=",
 		"http://localhost:5000/badge/checkBadge?qr_id=",
+		"http://localhost:5000/badge/checkBadge?visitor_id=",
 		// Add more desired URL patterns here if needed
 	];
 
