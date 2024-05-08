@@ -13,13 +13,27 @@ export const formatDateString = (date: string) => {
 	return formattedDateTime;
 };
 
-export const formatDateObjToString = (dateObj: Date) => {
-	//? Convert date object to date string
-	const DateObject = DateTime.fromISO(dateObj.toString());
+export const formatDateObjToString = (dateObj : Date) => {
+    // Convert date object to date string in UTC
+    const utcDateString = dateObj.toISOString();
 
-	const formattedDateTime = DateObject.toFormat("yyyy-MM-dd hh:mm:ss a");
+    // Convert UTC date string to Manila timezone
+    const manilaDate = new Date(utcDateString);
+    manilaDate.setHours(manilaDate.getHours() + 8); // Manila is UTC+8
 
-	return formattedDateTime;
+    // Format date and time
+    const formattedDateTime = manilaDate.toLocaleString('en-PH', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Manila',
+    });
+
+    return formattedDateTime;
 };
 
 export const formatDateObjToString2 = (dateObj: Date) => {
