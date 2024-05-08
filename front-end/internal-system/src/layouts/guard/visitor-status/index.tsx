@@ -7,11 +7,8 @@ import type { Dayjs } from "dayjs";
 import OuterContainer from "../../../components/container";
 import InnerContainer from "../../../components/container/inner-container";
 import CurrentVisitorsTable from "../../../components/table/current-visitors";
-import { Input } from "antd";
-import DateTimePicker from "../../../components/datetime-picker";
 
 //Assets
-import { Search } from "../../../assets/svg";
 
 //Styles
 import "../../../utils/variables.scss";
@@ -37,8 +34,8 @@ export default function VisitorStatusLayout() {
 			<div className="w-[761px] flex-auto">
 				<OuterContainer header="CURRENT VISITORS">
 					<InnerContainer>
-						<div className="mb-[50px] ml-[15px]">
-							<div className="flex w-full flex-col items-center justify-start gap-[25px] pr-[65px] md:flex-row">
+						{/* <div className="mb-[50px] ml-[15px]">
+							<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
 								<Input
 									className="w-[202.4px] md:w-[366px]"
 									size={desktopMedia.matches ? "large" : "middle"}
@@ -52,8 +49,8 @@ export default function VisitorStatusLayout() {
 									onRangeChange={onRangeChange}
 								/>
 							</div>
-						</div>
-						<CurrentVisitorsTable search={search} dateSearch={dateSearch} />
+						</div> */}
+						<CurrentVisitorsTable />
 					</InnerContainer>
 				</OuterContainer>
 			</div>

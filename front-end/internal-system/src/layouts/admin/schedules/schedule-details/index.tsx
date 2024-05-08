@@ -109,6 +109,8 @@ export default function ScheduleDetails({
 	activeKey,
 	setActiveKey,
 }: VisitorDeetsProps) {
+	const desktopMedia = window.matchMedia("(min-width: 1024px)");
+
 	//Loading
 	const [loading, setLoading] = useState(false);
 
@@ -246,7 +248,7 @@ export default function ScheduleDetails({
 		? whoList.filter((who, index) => who.label === record.purpose.who[index])
 		: [];
 	const subject: string = "Meeting Appointment via Pre-Registration";
-	const message: string = `You have a request appointment with a visitor. Please confirm the appointment. Thank you! 
+	const message: string = `You have a request appointment with a visitor. Please confirm the appointment. Thank you!
 
 What: ${record.purpose.what.map((what) => what).join(", ")} 
 When: ${formatDateObjToString(record.purpose.when)}
@@ -262,43 +264,39 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 
 	const dispatch = useDispatch();
 
-	// Retrieve Logs
-	useEffect(() => {
-		//? Remove existing logs in store
-		dispatch(removeLogs());
-
-		AxiosInstance.post(`/badge/findBadge`, { visitor_id: record._id })
-			.then(async (res) => {
-				const badge = res.data.badge;
-				await AxiosInstance.post("/visitor/logs/find-visitor-logs", {
-					badge_id: badge._id,
-				})
-					.then((res) => {
-						const logs = res.data.visitorLogs;
-						logs.map((log: any, indx: number) =>
-							dispatch(
-								addLog({
-									key: (indx + 1).toString(),
-									purpose: record.purpose,
-									check_in_time: log.check_in_time,
-									check_out_time: log.check_out_time,
-								}),
-							),
+	const getLogs = async () => {
+		await AxiosInstance.post("/visitor/logs/find-all-visitor-logs", {
+			visitor_id: record._id,
+		})
+			.then((res) => {
+				const allLogs = res.data.visitorLogs;
+				for (let log of allLogs) {
+					log.logs.map((indvLog: any, indx: number) => {
+						return dispatch(
+							addLog({
+								key: (indx + 1).toString(),
+								purpose: log.purpose,
+								check_in_time: indvLog.check_in_time,
+								check_out_time: indvLog.check_out_time,
+								qr: log.qr,
+							}),
 						);
-					})
-					.catch((err) => {
-						if (err && err.response) {
-							const message = err.response.data.error;
-							warning(message);
-						}
 					});
+				}
 			})
 			.catch((err) => {
 				if (err && err.response) {
 					const message = err.response.data.error;
-					error(message);
+					warning(message);
 				}
 			});
+	};
+
+	// Retrieve Logs
+	useEffect(() => {
+		//? Remove existing logs in store
+		dispatch(removeLogs());
+		getLogs();
 	}, []);
 
 	// Client-side Validation related data
@@ -659,12 +657,12 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 
 			<Form name="Visitor Details" onFinish={onSubmit} autoComplete="off">
 				<div className="mr-[130px] flex flex-col gap-[35px] pt-[80px]">
-					<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
+					<div className="mb-[35px] ml-[20px] flex flex-col gap-[25px] md:ml-[58px]">
 						<div className="flex">
 							<div className="flex flex-col gap-[20px]">
-								<div className="flex gap-[60px]">
+								<div className="flex flex-col gap-[20px] md:flex-row md:gap-[60px]">
 									<div
-										className={`flex w-[360px] ${
+										className={`flex w-[360px] flex-col md:flex-row ${
 											errors && "items-start"
 										} justify-between`}
 									>
@@ -689,7 +687,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 										</div>
 									</div>
 									<div
-										className={`flex w-[360px] ${
+										className={`flex w-[360px] flex-col md:flex-row ${
 											errors && "items-start"
 										} justify-between`}
 									>
@@ -714,9 +712,9 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 										</div>
 									</div>
 								</div>
-								<div className="flex gap-[60px]">
+								<div className="flex flex-col gap-[20px] md:flex-row md:gap-[60px]">
 									<div
-										className={`flex w-[360px] ${
+										className={`flex w-[360px] flex-col md:flex-row ${
 											errors && "items-start"
 										} justify-between`}
 									>
@@ -937,19 +935,19 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 									</div>
 								</div> */}
 								<div
-									className={`flex w-full ${
+									className={`flex w-full flex-col md:flex-row ${
 										errors && "items-start"
 									} justify-between`}
 								>
 									<Label
 										spanStyling="text-black font-medium text-[16px]"
-										labelStyling="w-[22.5%]"
+										labelStyling="w-full md:w-[22.5%]"
 									>
 										Expected In and Out
 									</Label>
-									<div className="flex w-full flex-col">
+									<div className="flex w-[85%] flex-col md:w-full">
 										<DateTimePicker
-											globalStyling="w-full"
+											globalStyling="w-[85%] md:w-full"
 											rangePickerStyling="bg-[#e0ebf0] hover:!bg-[#e0ebf0] border-none w-[inherit] focus-within:!bg-[#e0ebf0] focus:!bg-[#e0ebf0]"
 											size="large"
 											defaultVal={{
@@ -972,7 +970,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 									</div>
 								</div>
 								<div
-									className={`flex w-full ${
+									className={`flex w-full flex-col md:flex-row ${
 										errors && "items-start"
 									} justify-start`}
 								>
@@ -983,8 +981,8 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 										Purpose
 									</Label>
 									<div className="flex w-full flex-col gap-[10px]">
-										<div className="flex gap-[20px]">
-											<div className="flex w-full flex-col">
+										<div className="flex flex-col gap-[20px] md:flex-row">
+											<div className="flex w-[62%] flex-col md:w-full">
 												<Select
 													className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
 													showSearch
@@ -1005,7 +1003,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 													</p>
 												)}
 											</div>
-											<div className="flex w-full flex-col">
+											<div className="flex w-[78.5%] flex-col md:w-full">
 												<DatePicker
 													showTime
 													className={`w-[inherit] border-none !border-[#d9d9d9] bg-[#e0ebf0] focus-within:!bg-[#e0ebf0] hover:!border-primary-500 hover:!bg-[#e0ebf0] focus:!border-primary-500 focus:!bg-[#e0ebf0] ${
@@ -1026,7 +1024,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 													</p>
 												)}
 											</div>
-											<div className="flex w-full flex-col">
+											<div className="flex w-[62%] flex-col md:w-full">
 												<Select
 													className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
 													showSearch
@@ -1047,8 +1045,8 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 												)}
 											</div>
 										</div>
-										<div className="flex gap-[20px]">
-											<div className="flex w-full flex-col">
+										<div className="flex flex-col gap-[20px] md:flex-row">
+											<div className="flex w-[62%] flex-col md:w-full">
 												<Select
 													className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
 													showSearch
@@ -1072,153 +1070,155 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 									</div>
 								</div>
 							</div>
-							<div className="flex w-full flex-col items-center gap-[30px]">
-								<Avatar
-									className="cursor-pointer"
-									onClick={() => setIdentificationOpen(!identificationOpen)}
-									size={width === 1210 ? 150 : 220}
-									src={
-										record.id_picture
-											? record.id_picture.selfie
-											: idPicture.selfie
-									}
-								/>
-								<div
-									className={`flex flex-col items-center ${
-										!disabledInputs && "gap-[10px]"
-									}`}
-								>
-									{disabledInputs ? (
-										<Tag
-											className="w-fit"
-											color={
-												record.visitor_type === VisitorType.WalkIn
-													? "#E88B23"
-													: "#0db284"
-											}
-											key={record.visitor_type}
-										>
-											{record.visitor_type.toUpperCase()}
-										</Tag>
-									) : (
-										<Select
-											className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
-											{...register("visitor_type")}
-											defaultValue={
-												record.visitor_type === VisitorType.WalkIn
-													? "Walk-In"
-													: "Pre-Registered"
-											}
-											onChange={(value: string) =>
-												handleChange("visitor_type", value)
-											}
-											options={[
-												{ value: VisitorType.WalkIn, label: "Walk-In" },
-												{
-													value: VisitorType.PreRegistered,
-													label: "Pre-Registered",
-												},
-											]}
-										/>
-									)}
-									{errors?.visitor_type && (
-										<p className="mt-1 text-sm text-red-500">
-											{errors.visitor_type.message}
-										</p>
-									)}
-									{record.plate_num &&
-										(disabledInputs ? (
-											<span className="mt-2 rounded border border-black px-3 py-1 text-[20px] font-bold shadow-md">
-												{record.plate_num}
-											</span>
-										) : (
-											<Input
-												className="vm-placeholder h-[38px] w-fit rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.plate_num}
-												{...register("plate_num")}
-												onChange={(e) =>
-													updateInput(e.target.value, "plate_num")
+							{desktopMedia.matches && (
+								<div className="flex w-full flex-col items-center gap-[30px]">
+									<Avatar
+										className="cursor-pointer"
+										onClick={() => setIdentificationOpen(!identificationOpen)}
+										size={width === 1210 ? 150 : 220}
+										src={
+											record.id_picture
+												? record.id_picture.selfie
+												: idPicture.selfie
+										}
+									/>
+									<div
+										className={`flex flex-col items-center ${
+											!disabledInputs && "gap-[10px]"
+										}`}
+									>
+										{disabledInputs ? (
+											<Tag
+												className="w-fit"
+												color={
+													record.visitor_type === VisitorType.WalkIn
+														? "#E88B23"
+														: "#0db284"
 												}
-												disabled={disabledInputs}
+												key={record.visitor_type}
+											>
+												{record.visitor_type.toUpperCase()}
+											</Tag>
+										) : (
+											<Select
+												className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
+												{...register("visitor_type")}
+												defaultValue={
+													record.visitor_type === VisitorType.WalkIn
+														? "Walk-In"
+														: "Pre-Registered"
+												}
+												onChange={(value: string) =>
+													handleChange("visitor_type", value)
+												}
+												options={[
+													{ value: VisitorType.WalkIn, label: "Walk-In" },
+													{
+														value: VisitorType.PreRegistered,
+														label: "Pre-Registered",
+													},
+												]}
 											/>
-										))}
-									{errors?.plate_num && (
-										<p className="mt-1 text-sm text-red-500">
-											{errors.plate_num.message}
-										</p>
-									)}
-									{record.visitor_type === VisitorType.PreRegistered &&
-									disabledInputs ? (
-										<>
-											{disabledStatusInput ? (
-												<span
-													className={`${
-														record.status === VisitorStatus.Approved
-															? "text-primary-500"
-															: record.status === VisitorStatus.InProgress
-																? "text-neutral-500"
-																: "text-error-500"
-													} text-[30px] font-bold`}
-													onClick={() =>
-														setDisabledStatusInput(!disabledStatusInput)
-													}
-												>
-													{record.status}
+										)}
+										{errors?.visitor_type && (
+											<p className="mt-1 text-sm text-red-500">
+												{errors.visitor_type.message}
+											</p>
+										)}
+										{record.plate_num &&
+											(disabledInputs ? (
+												<span className="mt-2 rounded border border-black px-3 py-1 text-[20px] font-bold shadow-md">
+													{record.plate_num}
 												</span>
 											) : (
-												<Select
-													className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
-													{...register("status")}
-													defaultValue={
-														record.status === VisitorStatus.Approved
-															? "Approved"
-															: record.status === VisitorStatus.InProgress
-																? "In Progress"
-																: "Declined"
+												<Input
+													className="vm-placeholder h-[38px] w-fit rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
+													placeholder={record.plate_num}
+													{...register("plate_num")}
+													onChange={(e) =>
+														updateInput(e.target.value, "plate_num")
 													}
-													onChange={(value: string) =>
-														handleChange("status", value)
-													}
-													options={[
-														{
-															value: VisitorStatus.Approved,
-															label: "Approved",
-														},
-														{
-															value: VisitorStatus.InProgress,
-															label: "In Progress",
-														},
-														{
-															value: VisitorStatus.Declined,
-															label: "Declined",
-														},
-													]}
+													disabled={disabledInputs}
 												/>
-											)}
-											{errors?.status && (
-												<p className="mt-1 text-sm text-red-500">
-													{errors.status.message}
-												</p>
-											)}
-										</>
-									) : (
-										<span
-											className={`${
-												record.status === VisitorStatus.Approved
-													? "text-primary-500"
-													: record.status === VisitorStatus.InProgress
-														? "text-neutral-500"
-														: "text-error-500"
-											} text-[30px] font-bold`}
-										>
-											{record.status}
-										</span>
-									)}
+											))}
+										{errors?.plate_num && (
+											<p className="mt-1 text-sm text-red-500">
+												{errors.plate_num.message}
+											</p>
+										)}
+										{record.visitor_type === VisitorType.PreRegistered &&
+										disabledInputs ? (
+											<>
+												{disabledStatusInput ? (
+													<span
+														className={`${
+															record.status === VisitorStatus.Approved
+																? "text-primary-500"
+																: record.status === VisitorStatus.InProgress
+																	? "text-neutral-500"
+																	: "text-error-500"
+														} text-[30px] font-bold`}
+														onClick={() =>
+															setDisabledStatusInput(!disabledStatusInput)
+														}
+													>
+														{record.status}
+													</span>
+												) : (
+													<Select
+														className="font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
+														{...register("status")}
+														defaultValue={
+															record.status === VisitorStatus.Approved
+																? "Approved"
+																: record.status === VisitorStatus.InProgress
+																	? "In Progress"
+																	: "Declined"
+														}
+														onChange={(value: string) =>
+															handleChange("status", value)
+														}
+														options={[
+															{
+																value: VisitorStatus.Approved,
+																label: "Approved",
+															},
+															{
+																value: VisitorStatus.InProgress,
+																label: "In Progress",
+															},
+															{
+																value: VisitorStatus.Declined,
+																label: "Declined",
+															},
+														]}
+													/>
+												)}
+												{errors?.status && (
+													<p className="mt-1 text-sm text-red-500">
+														{errors.status.message}
+													</p>
+												)}
+											</>
+										) : (
+											<span
+												className={`${
+													record.status === VisitorStatus.Approved
+														? "text-primary-500"
+														: record.status === VisitorStatus.InProgress
+															? "text-neutral-500"
+															: "text-error-500"
+												} text-[30px] font-bold`}
+											>
+												{record.status}
+											</span>
+										)}
+									</div>
 								</div>
-							</div>
+							)}
 						</div>
 						{/* <div className="divider" /> */}
-						<div className="flex justify-end gap-[15px]">
+						<div className="flex justify-center gap-[15px] md:justify-end">
 							{disabledInputs && disabledStatusInput && (
 								<>
 									<Button
