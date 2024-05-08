@@ -212,8 +212,8 @@ exports.timeRecord = async (req, res) => {
   }
 };
 
-exports.updateStatus = async(req, res) => {
-  const { _id, status } = req.body;
+exports.updateBadge = async(req, res) => {
+  const { _id, status, expected_time_in, expected_time_out } = req.body;
 
   try {
     const badge = await Badge.findById({ _id });
@@ -222,16 +222,30 @@ exports.updateStatus = async(req, res) => {
       return res.status(404).json({ error: "Badge not found" });
     }
 
+    const updateFields = {
+      status: status || badge.status,
+      expected_time_in: expected_time_in || badge.expected_time_in,
+      expected_time_out: expected_time_out || badge.expected_time_out,
+    };
+
+    const filteredUpdateFields = Object.fromEntries(
+      Object.entries(updateFields).filter(([key, value]) => value !== undefined)
+    );
+
+    if (Object.keys(filteredUpdateFields).length === 0) {
+      return res.status(400).json({ error: "No valid fields to update" });
+    }
+
     const updatedBadge = await Badge.findByIdAndUpdate(
       _id,
-      { status: status },
+      filteredUpdateFields,
       { new: true }
     );
 
     return res.status(201).json({ badge: updatedBadge });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Failed to update badge status" });
+    return res.status(500).json({ error: "Failed to update badge" });
   }
 
 }
