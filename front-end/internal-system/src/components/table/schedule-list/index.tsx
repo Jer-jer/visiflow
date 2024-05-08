@@ -107,17 +107,12 @@ export default function ScheduleListTable({ addTab, dateSearch, search, hideInOu
 		},
 
 		{
-			title: "Date Created",
-			dataIndex: "created_at",
-			key: "created_at",
-			sorter: (a, b) =>
-				formatDateObjToString(a.created_at).localeCompare(
-					formatDateObjToString(b.created_at),
-				),
-			render: (_, { created_at }) => {
-				return formatDateObjToString(created_at);
+			title: "Status",
+			dataIndex: "badge_status",
+			key: "badge_status",
+			render: (_, { badge_status }) => {
+				return badge_status;
 			},
-			defaultSortOrder: "descend",
 		},
 		{
 			title: "Action",

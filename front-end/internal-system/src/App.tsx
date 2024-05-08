@@ -27,6 +27,7 @@ import { LoadingOutlined } from "@ant-design/icons";
 
 //Styles
 import "./App.scss";
+import VisitorSchedule from "./pages/guard/visitor-schedule";
 
 function App() {
 	const [loading, setLoading] = useState(true);
@@ -70,6 +71,8 @@ function App() {
 								<Route path="/visitor-form" element={<VisitorForm />} />
 								<Route path="/preregistered-qr" element={<PreregisteredQR />} />
 								<Route path="/visitor-status" element={<VisitorStatus />} />
+								{/* <Route path="/visitor-schedule" element={<VisitorSchedule />} /> */}
+								<Route path="/schedules" element={<Schedules />} />
 							</>
 						)}
 						<Route path="*" element={<UnknownPage />} />
