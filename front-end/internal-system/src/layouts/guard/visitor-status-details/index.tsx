@@ -492,7 +492,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 				<LoadingOutlined className="absolute left-[45%] top-[20%] z-[10000] text-[164px] text-primary-500" />
 			)}
 			<div
-				className={`transition-alert absolute z-[1] w-full scale-y-0 ease-in-out ${
+				className={`transition-alert z-[1] w-full scale-y-0 ease-in-out ${
 					alertOpen && "scale-y-100"
 				}`}
 			>
