@@ -38,6 +38,6 @@ router.post("/newBadge", badgeController.newBadge);
 
 router.post("/timeRecord", badgeController.timeRecord);
 
-router.post("/updateStatus", badgeController.updateStatus);
+router.post("/update", badgeController.updateBadge);
 
 module.exports = router;
