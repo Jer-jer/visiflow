@@ -289,9 +289,21 @@ export default function StatisticsLayout() {
 	};
 
 	const fetchLocations = async (startDate?: string, endDate?: string) => {
+		let now = new Date();
+
+		let startofDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+		let endOfDay = new Date(
+			now.getFullYear(),
+			now.getMonth(),
+			now.getDate(),
+			23,
+			59,
+			59,
+		);
+
 		await AxiosInstance.post("/stats/location", {
-			startDate: startDate ? startDate : undefined,
-			endDate: endDate ? endDate : undefined,
+			startDate: startDate ? startDate : startofDay,
+			endDate: endDate ? endDate : endOfDay,
 		})
 			.then((res: any) => {
 				setMostCommonReason({
