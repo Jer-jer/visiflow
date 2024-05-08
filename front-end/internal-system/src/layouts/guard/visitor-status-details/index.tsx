@@ -452,23 +452,38 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 		clearErrors();
 	};
 
-	const handleTimeOutOk = async () => {
-		await AxiosInstance.post("/badge/timeRecord", {
-			_id: record.badge_id,
-			record: false,
-		})
-			.then(() => {
-				setStatus(true);
-				setAlertOpen(true);
-				setAlertMsg("Successfully Timed-Out");
-			})
-			.catch((err) => {
-				if (err && err.response) {
-					setStatus(false);
-					setAlertOpen(true);
-					setAlertMsg(err.response.data.error);
-				}
-			});
+	const handleTimeOutOk = () => {
+		confirm({
+			title: "Are you sure you want to time-out this visitor?",
+			content: <span>This feature is only for special occassions and does not generally follow protocol.</span>,
+			className: "confirm-buttons",
+			icon: <ExclamationCircleFilled className="!text-error-500" />,
+			okText: "Yes",
+			okType: "danger",
+			cancelText: "No",
+			async onOk() {
+				await AxiosInstance.post("/badge/timeRecord", {
+					_id: record.badge_id,
+					record: false,
+				})
+					.then(() => {
+						setStatus(true);
+						setAlertOpen(true);
+						setAlertMsg("Successfully Timed-Out");
+					})
+					.catch((err) => {
+						if (err && err.response) {
+							setStatus(false);
+							setAlertOpen(true);
+							setAlertMsg(err.response.data.error);
+						}
+					});
+			},
+			onCancel() {
+				console.log("Cancel");
+			},
+		});
+		
 	};
 
 	return (
@@ -820,7 +835,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 							>
 								{disabledInputs ? "Extend" : "Cancel"}
 							</Button>
-							<Button key="submit" type="primary" onClick={handleTimeOutOk}>
+							<Button className="search-button !rounded-[18px] !bg-red-500" key="submit" size="large" type="primary" onClick={handleTimeOutOk}>
 								Time-Out
 							</Button>
 						</div>
