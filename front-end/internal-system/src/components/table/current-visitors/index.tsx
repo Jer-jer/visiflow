@@ -11,7 +11,7 @@ import { LoadingOutlined } from "@ant-design/icons";
 
 //Utils
 import type { Dayjs } from "dayjs";
-import { formatDateObjToString, formatDateToISO } from "../../../utils";
+import { formatDateObjToString, formatDateToISO,formatDateObjToString2 } from "../../../utils"
 import DateTimePicker from "../../../components/datetime-picker";
 
 //Styles
@@ -128,8 +128,8 @@ export default function CurrentVisitorsTable({}) {
 			render: (_, { expected_time_in, expected_time_out }) => {
 				return (
 					<>
-						<p>{formatDateObjToString(expected_time_in)}</p>
-						<p>{formatDateObjToString(expected_time_out)}</p>
+						<p>{formatDateObjToString2(new Date(expected_time_in))}</p>
+						<p>{formatDateObjToString2(new Date(expected_time_out))}</p>
 					</>
 				);
 			},
@@ -144,7 +144,7 @@ export default function CurrentVisitorsTable({}) {
 					formatDateToISO(new Date(b.expected_time_in))!,
 				),
 			render: (_, { expected_time_in }) => {
-				return formatDateObjToString(expected_time_in);
+				return formatDateObjToString2(new Date(expected_time_in));
 			},
 			responsive: ["md"],
 		},
@@ -157,7 +157,7 @@ export default function CurrentVisitorsTable({}) {
 					formatDateToISO(new Date(b.expected_time_out))!,
 				),
 			render: (_, { expected_time_out }) => {
-				return formatDateObjToString(expected_time_out);
+				return formatDateObjToString2(new Date(expected_time_out));
 			},
 			responsive: ["md"],
 		},
