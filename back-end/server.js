@@ -93,7 +93,7 @@ server.listen(PORT, () => {
 // 0 * * * * to every hour
 
 cron.schedule(
-  "*/5 * * * *",
+  "*/1 * * * *",
   async () => {
     await timeOutReminder(io);
     await timeInReminder(io);

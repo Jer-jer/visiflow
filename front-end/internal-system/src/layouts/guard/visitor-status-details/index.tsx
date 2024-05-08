@@ -422,6 +422,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 			// 	: record.purpose,
 		})
 			.then((res) => {
+
 				dispatch(update(res.data.visitor));
 
 				setStatus(true);
@@ -431,6 +432,9 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 					? setDisabledStatusInput(!disabledStatusInput)
 					: setDisabledInputs(!disabledInputs);
 
+				return AxiosInstance.post("/badge/updateStatus", { _id: record.badge_id, status: 'active' })
+			})
+			.then((res) => {
 				fetch();
 			})
 			.catch((err) => {
