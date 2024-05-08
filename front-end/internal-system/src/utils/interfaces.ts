@@ -92,6 +92,7 @@ export interface VisitorDataType {
 	expected_time_out: Date;
 	status: VisitorStatus;
 	badge_status?: BadgeStatus;
+	badge_id?: string;
 	visitor_type: VisitorType;
 	id_picture: IDPictureProps;
 	created_at: Date;

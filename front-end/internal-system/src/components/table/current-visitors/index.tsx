@@ -20,7 +20,7 @@ import "./styles.scss";
 import AxiosInstance from "../../../lib/axios";
 import { VisitorDataType } from "../../../utils/interfaces";
 import { BadgeStatus } from "../../../utils/enums";
-import ScheduleDetails from "../../../layouts/guard/visitor-status-details";
+import VisitorStatusDetails from "../../../layouts/guard/visitor-status-details";
 
 // interface CurrentVisitor {
 // 	key: string;
@@ -59,21 +59,22 @@ export default function CurrentVisitorsTable({}) {
 	const fetchCurrentVisitor = () => {
 		setLoading(true);
 		AxiosInstance.get("/visitor/get-current-visitors")
-			.then((res) => {
-				const mappedData: VisitorDataType[] = res.data.activeVisitors.map(
-					(visitor: any): VisitorDataType => ({
-						...visitor,
-						badge_status: setCurrentStatus(visitor.expected_time_out),
-					}),
-				);
-				setData(mappedData);
-				setLoading(false);
-			})
-			.catch((error) => {
-				console.error("Failed to fetch visitors:", error);
-				setLoading(false);
-			});
-	};
+		.then((res) => {
+			console.log(res);
+			const mappedData: VisitorDataType[] = res.data.response.map((res: any): VisitorDataType => ({
+				...res.visitor,
+				badge_status: res.badge.status,
+				badge_id: res.badge._id
+			}));
+			setData(mappedData);
+			setLoading(false);
+			//console.log(mappedData);
+		})
+		.catch((error) => {
+			console.error("Failed to fetch visitors:", error);
+			setLoading(false);
+		});
+	}
 
 	const setCurrentStatus = (expected_time_out: Date) => {
 		const currentTime = Date.now();
@@ -172,6 +173,10 @@ export default function CurrentVisitorsTable({}) {
 					text: "Exceeded Time-out",
 					value: "exceeded",
 				},
+				{
+					text: "Overdue",
+					value: "overdue",
+				},
 			],
 			render: (_, { badge_status }) => {
 				let color;
@@ -188,14 +193,14 @@ export default function CurrentVisitorsTable({}) {
 					</Tag>
 				);
 			},
-			onFilter: (value: any, record) => record.status.indexOf(value) === 0,
+			onFilter: (value: any, record) => record.badge_status.indexOf(value) === 0,
 		},
 		{
+			title: "Action",
 			key: "action",
-			width: "30%",
 			render: (_, record) => (
 				<>
-					<Button className="mr-[3%] w-[20%]" onClick={() => edit(record)}>
+					<Button className="ml-4" onClick={() => edit(record)}>
 						View
 					</Button>
 				</>
@@ -252,11 +257,11 @@ export default function CurrentVisitorsTable({}) {
 				</>
 			)}
 			{openDetails && (
-				<ScheduleDetails
-					record={pageDetail}
-					setOpenDetails={setOpenDetails}
-					fetch={fetchCurrentVisitor}
-				/>
+					<VisitorStatusDetails
+						record={pageDetail}
+						setOpenDetails={setOpenDetails}
+						fetch={fetchCurrentVisitor}
+					/>
 			)}
 		</>
 	);

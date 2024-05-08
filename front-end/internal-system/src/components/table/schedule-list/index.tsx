@@ -10,7 +10,7 @@ import {
 	VisitorDataType,
 	VisitorDetailsProps,
 } from "../../../utils/interfaces";
-import { VisitorStatus, VisitorType } from "../../../utils/enums";
+import { BadgeStatus, VisitorStatus, VisitorType } from "../../../utils/enums";
 import { formatDateObjToString } from "../../../utils";
 
 //Styles
@@ -129,10 +129,41 @@ export default function ScheduleListTable({
 		{
 			title: "Status",
 			dataIndex: "badge_status",
-			key: "badge_status",
+			filters: [
+				{
+					text: "Inactive",
+					value: "inactive",
+				},
+				{
+					text: "Active",
+					value: "active",
+				},
+				{
+					text: "Exceeded Time-out",
+					value: "exceeded",
+				},
+				{
+					text: "Overdue",
+					value: "overdue",
+				},
+			],
 			render: (_, { badge_status }) => {
-				return badge_status;
+				let color;
+				if (badge_status === BadgeStatus.active) color = "#0db284";
+				else if (badge_status === BadgeStatus.exceeded) color = "#FFA500";
+				else if (badge_status === BadgeStatus.overdue) color = "#FD4A4A"
+				else if (badge_status === BadgeStatus.inactive) color = "#D0D2CC"
+				return (
+					<Tag
+						className="text-auto text-[10px] md:text-[16px]"
+						color={color}
+						key={badge_status}
+					>
+						{badge_status?.toUpperCase()}
+					</Tag>
+				);
 			},
+			onFilter: (value: any, record) => record.badge_status?.indexOf(value) === 0,
 		},
 		{
 			title: "Action",
