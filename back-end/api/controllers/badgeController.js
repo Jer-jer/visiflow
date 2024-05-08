@@ -4,10 +4,7 @@ const Visitor = require("../models/visitor");
 const mongoose = require("mongoose");
 const { createSystemLog, uploadFileToGCS } = require("../utils/helper");
 const { generateQRCode } = require("../utils/qrCodeUtils");
-const {
-  timeIn,
-  timeOut
-} = require('../utils/timeRecordUtils');
+const { timeIn, timeOut } = require("../utils/timeRecordUtils");
 
 const archiver = require("archiver");
 const fs = require("fs");
@@ -16,7 +13,7 @@ const fsp = require("fs").promises;
 const ObjectId = mongoose.Types.ObjectId;
 
 const local_ip = "http://localhost:5000";
-const system_ip = "http://localhost:3000"
+const system_ip = "http://localhost:3000";
 
 exports.getBadges = async (req, res) => {
   try {
@@ -93,7 +90,7 @@ exports.generateBadge = async (req, res) => {
     const objectIds = Array.from({ length: qty }, () => {
       const objectId = new ObjectId();
       const uri = `${local_ip}/badge/checkBadge?qr_id=${objectId}`;
-      const filename = `badge${objectId}.png`;
+      const filename = `badge_${objectId}.png`;
       return { objectId, filename, uri };
     });
 
@@ -105,7 +102,7 @@ exports.generateBadge = async (req, res) => {
 
     qrCodes.forEach((qrCode, index) => {
       archive.append(fs.createReadStream(qrCode), {
-        name: `badge_${index}.png`,
+        name: qrCode,
       });
     });
 
@@ -150,12 +147,12 @@ exports.newBadge = async (req, res) => {
 
     // const qr_file = await generateQRCode(uri, filename, qr_id);
 
-    const buffer = await fsp.readFile(filename);;
+    const buffer = await fsp.readFile(filename);
 
     const qr_image = uploadFileToGCS(buffer, filename);
 
     badge.qr_image = qr_image;
-    await badge.save(); 
+    await badge.save();
 
     await createSystemLog(user_id, log_type, "success");
     return res.sendStatus(200);
@@ -178,17 +175,17 @@ exports.checkBadge = async (req, res) => {
         return res.status(400).json({ error: "Visitor QR is invalid." });
       }
 
-      return res
-        .status(200)
-        .json({
-          type: "new-recurring",
-          url: `${system_ip}/visitor-form/?qr_id=${qr_id}`,
-        });
+      return res.status(200).json({
+        type: "new-recurring",
+        url: `${system_ip}/visitor-form/?qr_id=${qr_id}`,
+      });
     }
-    
+
     //If badge && visitor is true then show visitor info
     const visitor = await Visitor.findById({ _id: badge.visitor_id });
-    return res.status(200).json({ visitor: visitor, badge_id: badge._id, status: badge.status });
+    return res
+      .status(200)
+      .json({ visitor: visitor, badge_id: badge._id, status: badge.status });
 
     // updateLog(badge._id, req.user.sub, res);
   } catch (error) {
@@ -201,8 +198,9 @@ exports.timeRecord = async (req, res) => {
   const userId = req.user.sub;
 
   try {
-    
-    const { result, type, error } = (record) ? await timeIn(_id) : await timeOut(_id);
+    const { result, type, error } = record
+      ? await timeIn(_id)
+      : await timeOut(_id);
 
     if (result) {
       await createSystemLog(userId, type, "success");
@@ -210,8 +208,7 @@ exports.timeRecord = async (req, res) => {
     } else {
       return res.status(400).json({ error: error });
     }
-
   } catch (error) {
     return res.status(500).json({ error: "Failed to track time record." });
   }
-} 
+};

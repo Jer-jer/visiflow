@@ -411,6 +411,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
             purpose: visitors[x].purpose,
             expected_time_in: visitors[x].expected_time_in,
             expected_time_out: visitors[x].expected_time_out,
+            visitor_type: "Pre-Registered",
             status: "In Progress",
           },
           { new: true }
@@ -468,7 +469,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
             back: "",
             selfie: "",
           },
-          visitor_type: visitors[x].visitor_type,
+          visitor_type: "Pre-Registered",
           status: "In Progress",
         });
 
@@ -536,6 +537,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
         expected_time_in: visitors[0].expected_time_in,
         expected_time_out: visitors[0].expected_time_out,
         companions: companions,
+        visitor_type: "Pre-Registered",
         status: "In Progress",
       },
       { new: true }

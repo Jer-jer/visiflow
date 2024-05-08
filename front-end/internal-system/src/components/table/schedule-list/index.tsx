@@ -18,23 +18,27 @@ import "../../../utils/variables.scss";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../store";
 
-
 interface ScheduleListTableProps {
 	addTab: (record: VisitorDataType) => void;
 	dateSearch: string[];
-	search: string,
+	search: string;
 	hideInOut: boolean;
 	setHideInOut: Dispatch<SetStateAction<boolean>>;
 	checkedList: string[];
 }
 
-export default function ScheduleListTable({ addTab, dateSearch, search, hideInOut, setHideInOut, checkedList}: ScheduleListTableProps) {
+export default function ScheduleListTable({
+	addTab,
+	dateSearch,
+	search,
+	hideInOut,
+	setHideInOut,
+	checkedList,
+}: ScheduleListTableProps) {
 	const { badges, loading } = useSelector((state: RootState) => state.badges);
-
 
 	const startDate = new Date(dateSearch[0]);
 	const endDate = new Date(dateSearch[1]);
-
 
 	const columns: ColumnsType<VisitorDataType> = [
 		{
@@ -54,6 +58,7 @@ export default function ScheduleListTable({ addTab, dateSearch, search, hideInOu
 			render: (_, { visitor_details }) => {
 				return visitor_details.phone;
 			},
+			responsive: ["md"],
 		},
 		{
 			title: "Visitor Type",
@@ -80,6 +85,20 @@ export default function ScheduleListTable({ addTab, dateSearch, search, hideInOu
 			},
 			onFilter: (value: any, record) =>
 				record.visitor_type.indexOf(value) === 0,
+			responsive: ["md"],
+		},
+		{
+			title: "Expected Time-in and Time-out",
+			key: "expected_time_in - expected_time_out",
+			render: (_, { expected_time_in, expected_time_out }) => {
+				return (
+					<>
+						<p>{formatDateObjToString(expected_time_in)}</p>
+						<p>{formatDateObjToString(expected_time_out)}</p>
+					</>
+				);
+			},
+			responsive: ["xs"],
 		},
 		{
 			title: "Expected Time In",
@@ -92,6 +111,7 @@ export default function ScheduleListTable({ addTab, dateSearch, search, hideInOu
 			render: (_, { expected_time_in }) => {
 				return formatDateObjToString(expected_time_in);
 			},
+			responsive: ["md"],
 		},
 		{
 			title: "Expected Time Out",
@@ -104,8 +124,8 @@ export default function ScheduleListTable({ addTab, dateSearch, search, hideInOu
 			render: (_, { expected_time_out }) => {
 				return formatDateObjToString(expected_time_out);
 			},
+			responsive: ["md"],
 		},
-
 		{
 			title: "Status",
 			dataIndex: "badge_status",
@@ -133,61 +153,67 @@ export default function ScheduleListTable({ addTab, dateSearch, search, hideInOu
 	];
 
 	const filteredSched = badges
-	.filter((visitor) => {
-		return visitor.status === 'Approved' && (search.toLowerCase() === ""
-			? true
-			: `${visitor.visitor_details.name.last_name}, ${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name || ''}`
-				.toLowerCase()
-				.includes(search.toLowerCase()) ||
-				`${visitor.visitor_details.name.first_name}${visitor.visitor_details.name.middle_name ? ` ${visitor.visitor_details.name.middle_name}` : ""} ${visitor.visitor_details.name.last_name}`
-					.toLowerCase()
-					.includes(search.toLowerCase()) ||
-				visitor.visitor_details.phone.includes(search) ||
-				formatDateObjToString(visitor.created_at).includes(search));
-	})		
-	.filter((visitor) => {
-		return dateSearch.length === 0
-			? visitor
-			: hideInOut
-				? new Date(formatDateObjToString(visitor.created_at)) >=
-						startDate &&
-					new Date(formatDateObjToString(visitor.created_at)) <= endDate
-				: new Date(visitor.expected_time_in) >= startDate &&
-					new Date(visitor.expected_time_out) <= endDate;
-	})
-	.filter((visitor) => {
-		// Filter based on checkedList
-		if (checkedList.length === 0) return true;
-  
-		const currentTime = new Date().getTime();
-		const expectedTimeIn = new Date(visitor.expected_time_in).getTime();
-		const expectedTimeOut = new Date(visitor.expected_time_out).getTime();
-  
-		return checkedList.some((item) => {
-		  switch (item) {
-			case 'past':
-			  return expectedTimeOut < currentTime;
-			case 'current':
-			  return expectedTimeIn < currentTime && expectedTimeOut > currentTime;
-			case 'upcoming':
-			  return expectedTimeIn > currentTime;
-			default:
-			  return false;
-		  }
+		.filter((visitor) => {
+			return (
+				visitor.status === "Approved" &&
+				(search.toLowerCase() === ""
+					? true
+					: `${visitor.visitor_details.name.last_name}, ${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name || ""}`
+							.toLowerCase()
+							.includes(search.toLowerCase()) ||
+						`${visitor.visitor_details.name.first_name}${visitor.visitor_details.name.middle_name ? ` ${visitor.visitor_details.name.middle_name}` : ""} ${visitor.visitor_details.name.last_name}`
+							.toLowerCase()
+							.includes(search.toLowerCase()) ||
+						visitor.visitor_details.phone.includes(search) ||
+						formatDateObjToString(visitor.created_at).includes(search))
+			);
 		})
-	})
+		.filter((visitor) => {
+			return dateSearch.length === 0
+				? visitor
+				: hideInOut
+					? new Date(formatDateObjToString(visitor.created_at)) >= startDate &&
+						new Date(formatDateObjToString(visitor.created_at)) <= endDate
+					: new Date(visitor.expected_time_in) >= startDate &&
+						new Date(visitor.expected_time_out) <= endDate;
+		})
+		.filter((visitor) => {
+			// Filter based on checkedList
+			if (checkedList.length === 0) return true;
+
+			const currentTime = new Date().getTime();
+			const expectedTimeIn = new Date(visitor.expected_time_in).getTime();
+			const expectedTimeOut = new Date(visitor.expected_time_out).getTime();
+
+			return checkedList.some((item) => {
+				switch (item) {
+					case "past":
+						return expectedTimeOut < currentTime;
+					case "current":
+						return (
+							expectedTimeIn < currentTime && expectedTimeOut > currentTime
+						);
+					case "upcoming":
+						return expectedTimeIn > currentTime;
+					default:
+						return false;
+				}
+			});
+		});
 
 	return (
 		<div>
 			<p>Total Items: {filteredSched.length}</p>
-			<Table 
-			columns={columns}
-			loading={{
-				spinning: loading,
-				indicator: <LoadingOutlined />,
-			}}
-			dataSource={filteredSched}
-			pagination={{ pageSize: 8 }}/>
+			<Table
+				className="w-full overflow-x-auto"
+				columns={columns}
+				loading={{
+					spinning: loading,
+					indicator: <LoadingOutlined />,
+				}}
+				dataSource={filteredSched}
+				pagination={{ pageSize: 8 }}
+			/>
 		</div>
 	);
 }
