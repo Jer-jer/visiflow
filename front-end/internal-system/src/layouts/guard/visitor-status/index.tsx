@@ -7,17 +7,16 @@ import type { Dayjs } from "dayjs";
 import OuterContainer from "../../../components/container";
 import InnerContainer from "../../../components/container/inner-container";
 import CurrentVisitorsTable from "../../../components/table/current-visitors";
-import { Input } from "antd";
-import DateTimePicker from "../../../components/datetime-picker";
 
 //Assets
-import { Search } from "../../../assets/svg";
 
 //Styles
 import "../../../utils/variables.scss";
 import "./styles.scss";
 
 export default function VisitorStatusLayout() {
+	const desktopMedia = window.matchMedia("(min-width: 1024px)");
+
 	const [search, setSearch] = useState<string>("");
 	const [dateSearch, setDateSearch] = useState<string[]>([]);
 	//const [hideInOut, setHideInOut] = useState<boolean>(true);
@@ -31,24 +30,27 @@ export default function VisitorStatusLayout() {
 	};
 
 	return (
-		<div className="mb-[35px] ml-2 mt-3 flex">
+		<div className="mx-3 mb-[35px] mt-3 flex md:ml-2 md:mr-[25px]">
 			<div className="w-[761px] flex-auto">
 				<OuterContainer header="CURRENT VISITORS">
 					<InnerContainer>
-						<div className="mb-[50px] ml-[15px]">
+						{/* <div className="mb-[50px] ml-[15px]">
 							<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
 								<Input
-									className="w-[366px]"
-									size="large"
+									className="w-[202.4px] md:w-[366px]"
+									size={desktopMedia.matches ? "large" : "middle"}
 									placeholder="Search"
 									prefix={<Search />}
 									onChange={(e) => setSearch(e.target.value)}
 								/>
 
-								<DateTimePicker size="large" onRangeChange={onRangeChange} />
+								<DateTimePicker
+									size={desktopMedia.matches ? "large" : "middle"}
+									onRangeChange={onRangeChange}
+								/>
 							</div>
-						</div>
-						<CurrentVisitorsTable search={search} dateSearch={dateSearch} />
+						</div> */}
+						<CurrentVisitorsTable />
 					</InnerContainer>
 				</OuterContainer>
 			</div>

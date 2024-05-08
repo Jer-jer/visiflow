@@ -396,12 +396,12 @@ function StepOneForm({
 				</div>
 			</Form.Item>
 
-			<div className="mb-[27px] flex w-[50%] flex-col gap-[8px]">
+			<div className="mb-[27px] flex min-w-[50%] flex-col gap-[8px]">
 				<span className="text-[16px] font-[400] text-[#0000004d]">
 					Purpose of Visit
 				</span>
 				<div className="flex flex-col gap-[15px] lg:flex-row">
-					<div className="flex w-full flex-col">
+					<div className="flex min-w-[13%] max-w-[80%] flex-col lg:max-w-[25%]">
 						<Select
 							className="purpose font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
 							style={{ width: "100%" }}
@@ -419,7 +419,7 @@ function StepOneForm({
 						)}
 					</div>
 
-					<div className="flex w-full flex-col">
+					<div className="flex min-w-[13%] max-w-[80%] flex-col lg:max-w-[25%]">
 						<Select
 							className="purpose font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
 							showSearch
@@ -438,7 +438,7 @@ function StepOneForm({
 						)}
 					</div>
 
-					<div className="flex w-full flex-col">
+					<div className="flex min-w-[13%] max-w-[80%] flex-col lg:max-w-[25%]">
 						<Tooltip title="When">
 							<DatePicker
 								showTime
@@ -459,7 +459,7 @@ function StepOneForm({
 						)}
 					</div>
 
-					<div className="flex w-full flex-col">
+					<div className="flex min-w-[13%] max-w-[80%] flex-col lg:max-w-[25%]">
 						<Select
 							className="purpose font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
 							showSearch

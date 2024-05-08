@@ -129,8 +129,8 @@ export default function StatisticsLayout() {
 	const [daysOfMonth, setDaysOfMonth] = useState<
 		{
 			day: string;
-			walkin: number;
-			preregistered: number;
+			"Walk-In": number;
+			"Pre-Registered": number;
 		}[]
 	>([]);
 
@@ -387,7 +387,16 @@ export default function StatisticsLayout() {
 
 		if (e.target.checked === false) {
 			setLoading(true);
-			await fetchGraph(undefined, selectedYear);
+			if (!year) {
+				setDaysOfMonth([]);
+				await fetchGraph(undefined, undefined);
+			} else {
+				if (selectedYear === undefined) {
+					setDaysOfMonth([]);
+					await fetchGraph(undefined, undefined);
+				} else if (selectedYear !== undefined && selectedYear)
+					await fetchGraph(undefined, selectedYear);
+			}
 			setLoading(false);
 		}
 	};
@@ -397,23 +406,27 @@ export default function StatisticsLayout() {
 
 		if (e.target.checked === false) {
 			setLoading(true);
-			await fetchGraph(selectedMonth, undefined);
+			if (!month) {
+				setDaysOfMonth([]);
+				await fetchGraph(undefined, undefined);
+			} else {
+				console.log(
+					"🚀 ~ constonChangeYear:CheckboxProps[onChange]= ~ selectedMonth:",
+					selectedMonth,
+				);
+				if (selectedMonth === undefined) {
+					setDaysOfMonth([]);
+					await fetchGraph(undefined, undefined);
+				} else if (selectedMonth !== undefined && selectedMonth)
+					await fetchGraph(selectedMonth, undefined);
+			}
 			setLoading(false);
 		}
 	};
 
 	const handleChangeMonth = async (value: string) => {
-		console.log(`selected ${value}`);
+		console.log("🚀 ~ handleChangeMonth ~ value:", value);
 		setSelectedMonth(value);
-
-		console.log(
-			getDaysInMonth(
-				value,
-				selectedYear !== undefined && selectedYear
-					? selectedYear
-					: new Date().getFullYear().toString(),
-			),
-		);
 
 		const allDays = await getDaysInMonth(
 			value,
@@ -424,29 +437,45 @@ export default function StatisticsLayout() {
 
 		await AxiosInstance.post("/stats/getDays", {
 			month: parseInt(value),
-		}).then((res: any) => {
-			const days = allDays.map((d: any) => {
-				const day = res.data.grouped.find((day: any) => {
-					return d.day.padStart(2, "0") === day.day;
+		})
+			.then((res: any) => {
+				const days = allDays.map((d: any) => {
+					const day = res.data.grouped.find((day: any) => {
+						return d.day.padStart(2, "0") === day.day;
+					});
+
+					if (day) {
+						return {
+							day: day.day,
+							walkin: day.walkin ? day.walkin : 0,
+							preregistered: day.preregistered ? day.preregistered : 0,
+						};
+					}
+
+					return {
+						day: d.day.padStart(2, "0"),
+						walkin: 0,
+						preregistered: 0,
+					};
 				});
 
-				if (day) {
-					return {
-						day: day.day,
-						walkin: day.walkin,
-						preregistered: day.preregistered,
-					};
+				const finalDays: {
+					day: string;
+					"Walk-In": number;
+					"Pre-Registered": number;
+				}[] = days.map((day: any) => ({
+					day: day.day,
+					"Walk-In": day.walkin,
+					"Pre-Registered": day.preregistered,
+				}));
+
+				setDaysOfMonth(finalDays);
+			})
+			.catch((err) => {
+				if (err && err.response) {
+					error("Failed to fetch data in the selected month");
 				}
-
-				return {
-					day: d.day.padStart(2, "0"),
-					walkin: 0,
-					preregistered: 0,
-				};
 			});
-
-			setDaysOfMonth(days);
-		});
 
 		setLoading(true);
 		await fetchGraph(value);
@@ -543,7 +572,7 @@ export default function StatisticsLayout() {
 	};
 
 	return (
-		<div className="mb-[35px] ml-2 mt-3 flex flex-col gap-[35px]">
+		<div className="mb-[35px] ml-2 mr-[25px] mt-3 flex flex-col gap-[35px]">
 			<div className="w-full">
 				{/* Summary Statistics */}
 				<OuterContainer header="Summary">
@@ -675,10 +704,10 @@ export default function StatisticsLayout() {
 										<YAxis />
 										<Tooltip />
 										<Legend />
-										<Line type="monotone" dataKey="walkin" stroke="#E88B23" />
+										<Line type="monotone" dataKey="Walk-In" stroke="#E88B23" />
 										<Line
 											type="monotone"
-											dataKey="preregistered"
+											dataKey="Pre-Registered"
 											stroke="#82ca9d"
 										/>
 									</LineChart>

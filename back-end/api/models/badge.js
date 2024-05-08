@@ -15,7 +15,13 @@ const Purpose = new Schema({
 const badgeSchema = new Schema({
     visitor_id: { type: ObjectId, ref: 'visitor', require: true },
     qr_id: { type: ObjectId },
-    is_active: { type: Boolean, require: true, default: true},
+    qr_image: { type: String, default: null },
+    status: { 
+      type: String, 
+      enum: ["active","inactive","exceeded","overdue"],
+      require: true, 
+      default: "inactive"
+    },
     is_valid: { type: Boolean, requrie: true, default: true},
     purpose: { type: Purpose, required: true },
     expected_time_in: { type: Date, sparse: true },

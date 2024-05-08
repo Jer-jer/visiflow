@@ -15,11 +15,13 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 import { useDispatch, useSelector } from "react-redux";
+import PhoneInput from "react-phone-number-input";
 
 //Interfaces
 import {
 	VisitorDetailZod,
 	VisitorDetailsInterfaceZod,
+	VisitorDetailZodNoEmail,
 } from "../../../../utils/zodSchemas";
 import { VisitorDataType, IDPictureProps } from "../../../../utils/interfaces";
 import { VisitorStatus, VisitorType } from "../../../../utils/enums";
@@ -62,8 +64,10 @@ import { addLog, removeLogs } from "../../../../states/logs/visitor";
 //Assets
 import { ExclamationCircleFilled } from "@ant-design/icons";
 import { LoadingOutlined } from "@ant-design/icons";
+import flags from "react-phone-number-input/flags";
 
 //Styles
+import "react-phone-number-input/style.css";
 import "./styles.scss";
 
 // Libraries
@@ -109,6 +113,41 @@ export default function VisitorDetails({
 	activeKey,
 	setActiveKey,
 }: VisitorDeetsProps) {
+	const [firstName, setFirstName] = useState<string>(
+		record.visitor_details.name.first_name,
+	);
+	const [middleName, setMiddleName] = useState<string>(
+		record.visitor_details.name.middle_name
+			? record.visitor_details.name.middle_name
+			: "",
+	);
+	const [lastName, setLastName] = useState<string>(
+		record.visitor_details.name.last_name,
+	);
+
+	const [house, setHouse] = useState<string>(
+		record.visitor_details.address.house
+			? record.visitor_details.address.house
+			: "",
+	);
+	const [street, setStreet] = useState<string>(
+		record.visitor_details.address.street
+			? record.visitor_details.address.street
+			: "",
+	);
+	const [brgy, setBrgy] = useState<string>(record.visitor_details.address.brgy);
+	const [city, setCity] = useState<string>(record.visitor_details.address.city);
+	const [province, setProvince] = useState<string>(
+		record.visitor_details.address.province,
+	);
+	const [country, setCountry] = useState<string>(
+		record.visitor_details.address.country,
+	);
+
+	const [plateNO, setPlateNO] = useState<string>(
+		record.plate_num ? record.plate_num : "",
+	);
+
 	//Loading
 	const [loading, setLoading] = useState(false);
 
@@ -279,6 +318,7 @@ Who: ${convertedData
 								purpose: log.purpose,
 								check_in_time: indvLog.check_in_time,
 								check_out_time: indvLog.check_out_time,
+								qr: log.qr,
 							}),
 						);
 					});
@@ -300,6 +340,7 @@ Who: ${convertedData
 	}, []);
 
 	// Client-side Validation related data
+	const isPreRegistered = record.visitor_type === VisitorType.PreRegistered;
 	const {
 		register,
 		handleSubmit,
@@ -307,7 +348,9 @@ Who: ${convertedData
 		setValue,
 		clearErrors,
 	} = useForm<VisitorDetailTypeZod>({
-		resolver: zodResolver(VisitorDetailZod),
+		resolver: zodResolver(
+			isPreRegistered ? VisitorDetailZod : VisitorDetailZodNoEmail,
+		),
 		defaultValues: {
 			first_name: record.visitor_details.name.first_name,
 			middle_name: record.visitor_details.name.middle_name,
@@ -386,18 +429,68 @@ Who: ${convertedData
 				setValue(property, value);
 				break;
 			case "what":
-				setValue(property, value as string[]);
+				setValue(property, value as any);
 				break;
 			case "when":
 				setValue(property, value as Date);
 				break;
 			case "where":
-				setValue(property, value as string[]);
+				setValue(property, value as any);
 				break;
 			case "who":
-				setValue(property, value as string[]);
+				setValue(property, value as any);
 				break;
 		}
+	};
+
+	const setFirstNameZod = (value: any) => {
+		setFirstName(value);
+		updateInput(value, "first_name");
+	};
+
+	const setMiddleNameZod = (value: any) => {
+		setMiddleName(value);
+		updateInput(value, "middle_name");
+	};
+
+	const setLastNameZod = (value: any) => {
+		setLastName(value);
+		updateInput(value, "last_name");
+	};
+
+	const setHouseZod = (value: any) => {
+		setHouse(value);
+		updateInput(value, "house");
+	};
+
+	const setStreetZod = (value: any) => {
+		setStreet(value);
+		updateInput(value, "street");
+	};
+
+	const setBrgyZod = (value: any) => {
+		setBrgy(value);
+		updateInput(value, "brgy");
+	};
+
+	const setCityZod = (value: any) => {
+		setCity(value);
+		updateInput(value, "city");
+	};
+
+	const setProvinceZod = (value: any) => {
+		setProvince(value);
+		updateInput(value, "province");
+	};
+
+	const setCountryZod = (value: any) => {
+		setCountry(value);
+		updateInput(value, "country");
+	};
+
+	const setPlateNoZod = (value: any) => {
+		setPlateNO(value);
+		updateInput(value, "plate_num");
 	};
 
 	const onRangeChange = (
@@ -677,11 +770,15 @@ Who: ${convertedData
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.name.first_name}
+												// placeholder={record.visitor_details.name.first_name}
 												{...register("first_name")}
-												onChange={(e) =>
-													updateInput(e.target.value, "first_name")
-												}
+												// onChange={(e) =>
+												// 	updateInput(e.target.value, "first_name")
+												// }
+												value={firstName}
+												onChange={(e) => {
+													setFirstNameZod(e.target.value);
+												}}
 												disabled={disabledInputs}
 											/>
 											{errors?.first_name && (
@@ -702,11 +799,11 @@ Who: ${convertedData
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.name.middle_name}
 												{...register("middle_name")}
-												onChange={(e) =>
-													updateInput(e.target.value, "middle_name")
-												}
+												value={middleName}
+												onChange={(e) => {
+													setMiddleNameZod(e.target.value);
+												}}
 												disabled={disabledInputs}
 											/>
 											{errors?.middle_name && (
@@ -729,11 +826,11 @@ Who: ${convertedData
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.name.last_name}
 												{...register("last_name")}
-												onChange={(e) =>
-													updateInput(e.target.value, "last_name")
-												}
+												value={lastName}
+												onChange={(e) => {
+													setLastNameZod(e.target.value);
+												}}
 												disabled={disabledInputs}
 											/>
 											{errors?.last_name && (
@@ -752,13 +849,24 @@ Who: ${convertedData
 											Mobile Number
 										</Label>
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
-											<Input
+											<PhoneInput
+												className="vm-placeholder phone-input"
+												defaultCountry="PH"
+												international
+												countryCallingCodeEditable={false}
+												flags={flags}
+												{...register("phone")}
+												value={record.visitor_details.phone}
+												onChange={(value: any) => updateInput(value, "phone")}
+												disabled={disabledInputs}
+											/>
+											{/* <Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
 												placeholder={record.visitor_details.phone}
 												{...register("phone")}
 												onChange={(e) => updateInput(e.target.value, "phone")}
 												disabled={disabledInputs}
-											/>
+											/> */}
 											{errors?.phone && (
 												<p className="mt-1 text-sm text-red-500">
 													{errors.phone.message}
@@ -805,9 +913,9 @@ Who: ${convertedData
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.address.house}
 												{...register("house")}
-												onChange={(e) => updateInput(e.target.value, "house")}
+												value={house}
+												onChange={(e) => setHouseZod(e.target.value)}
 												disabled={disabledInputs}
 											/>
 											{errors?.house && (
@@ -828,9 +936,9 @@ Who: ${convertedData
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.address.city}
 												{...register("city")}
-												onChange={(e) => updateInput(e.target.value, "city")}
+												value={city}
+												onChange={(e) => setCityZod(e.target.value)}
 												disabled={disabledInputs}
 											/>
 											{errors?.city && (
@@ -853,9 +961,9 @@ Who: ${convertedData
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.address.street}
 												{...register("street")}
-												onChange={(e) => updateInput(e.target.value, "street")}
+												value={street}
+												onChange={(e) => setStreetZod(e.target.value)}
 												disabled={disabledInputs}
 											/>
 											{errors?.street && (
@@ -876,11 +984,9 @@ Who: ${convertedData
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.address.province}
 												{...register("province")}
-												onChange={(e) =>
-													updateInput(e.target.value, "province")
-												}
+												value={province}
+												onChange={(e) => setProvinceZod(e.target.value)}
 												disabled={disabledInputs}
 											/>
 											{errors?.province && (
@@ -903,9 +1009,9 @@ Who: ${convertedData
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.address.brgy}
 												{...register("brgy")}
-												onChange={(e) => updateInput(e.target.value, "brgy")}
+												value={brgy}
+												onChange={(e) => setBrgyZod(e.target.value)}
 												disabled={disabledInputs}
 											/>
 											{errors?.brgy && (
@@ -926,9 +1032,9 @@ Who: ${convertedData
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
 												className="vm-placeholder h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.visitor_details.address.country}
 												{...register("country")}
-												onChange={(e) => updateInput(e.target.value, "country")}
+												value={country}
+												onChange={(e) => setCountryZod(e.target.value)}
 												disabled={disabledInputs}
 											/>
 											{errors?.country && (
@@ -1142,11 +1248,9 @@ Who: ${convertedData
 										) : (
 											<Input
 												className="vm-placeholder h-[38px] w-fit rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-												placeholder={record.plate_num}
 												{...register("plate_num")}
-												onChange={(e) =>
-													updateInput(e.target.value, "plate_num")
-												}
+												value={plateNO}
+												onChange={(e) => setPlateNO(e.target.value)}
 												disabled={disabledInputs}
 											/>
 										))}

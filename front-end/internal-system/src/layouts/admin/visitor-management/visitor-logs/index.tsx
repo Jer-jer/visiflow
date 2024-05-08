@@ -47,6 +47,8 @@ export default function VisitorLogs({
 	open,
 	setOpen,
 }: VisitorLogsProps) {
+	const desktopMedia = window.matchMedia("(min-width: 1024px)");
+
 	const [dateSearch, setDateSearch] = useState<string[]>([]);
 	const [filterWhen, setFilterWhen] = useState<boolean>(true);
 
@@ -77,7 +79,9 @@ export default function VisitorLogs({
 			where: logs.purpose?.where.join(", "),
 			who: logs.purpose?.who.join(", "),
 			check_in_time: formatDateObjToString(logs.check_in_time),
-			check_out_time: logs.check_out_time ? formatDateObjToString(logs.check_out_time) : "",
+			check_out_time: logs.check_out_time
+				? formatDateObjToString(logs.check_out_time)
+				: "",
 		};
 	});
 
@@ -90,8 +94,8 @@ export default function VisitorLogs({
 			size={1300}
 		>
 			<div className="flex flex-col gap-8">
-				<div className="flex justify-between">
-					<div className="flex w-full items-center justify-start gap-[25px]">
+				<div className="flex flex-col justify-between md:flex-row">
+					<div className="flex w-full flex-col items-start justify-start gap-[25px] md:flex-row md:items-center">
 						<DateTimePicker size="middle" onRangeChange={onRangeChange} />
 						<Checkbox
 							onChange={() => setFilterWhen(!filterWhen)}
@@ -100,15 +104,17 @@ export default function VisitorLogs({
 							Filter When
 						</Checkbox>
 					</div>
-					<Tooltip placement="top" title="Export Logs" arrow={false}>
-						<CSVLink
-							filename={`${lastName.toUpperCase()}_Logs.csv`}
-							data={visitorLogsData}
-							headers={visitorLogsHeaders}
-						>
-							<ExcelDownload />
-						</CSVLink>
-					</Tooltip>
+					{desktopMedia.matches && (
+						<Tooltip placement="top" title="Export Logs" arrow={false}>
+							<CSVLink
+								filename={`${lastName.toUpperCase()}_Logs.csv`}
+								data={visitorLogsData}
+								headers={visitorLogsHeaders}
+							>
+								<ExcelDownload />
+							</CSVLink>
+						</Tooltip>
+					)}
 				</div>
 				<VisitorLogsTable filterWhen={filterWhen} dateSearch={dateSearch} />
 			</div>

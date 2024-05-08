@@ -12,10 +12,10 @@ const {
   generateFileName,
   createImageBuffer,
   validateDuplicate,
-  updateVisitor
+  updateVisitor,
 } = require("../utils/helper");
 
-const { generateVisitorQRAndEmail } = require('../utils/qrCodeUtils');
+const { generateVisitorQRAndEmail } = require("../utils/qrCodeUtils");
 
 const { Buffer } = require("node:buffer");
 const Badge = require("../models/badge");
@@ -40,7 +40,7 @@ exports.getVisitors = async (req, res) => {
 //For Current Visitors by Janusz
 exports.getCurrentVisitors = async (req, res) => {
   try {
-    const badges = await Badge.find({ is_active: true });
+    const badges = await Badge.find({ status: { $in: ['active', 'overdue', 'exceeded'] } });
 
     const activeVisitorIds = badges.map((badge) => badge.visitor_id);
 
@@ -48,7 +48,18 @@ exports.getCurrentVisitors = async (req, res) => {
       _id: { $in: activeVisitorIds },
     });
 
-    res.status(200).json({ activeVisitors });
+    const response = [];
+    badges.forEach((badge) => {
+      const activeVisitor = activeVisitors.find((visitor) => visitor._id.equals(badge.visitor_id));
+      if (activeVisitor) {
+        response.push({
+          visitor: activeVisitor,
+          badge: badge
+        });
+      }
+    });
+
+    res.status(200).json({ response });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -223,60 +234,6 @@ exports.findVisitor = async (req, res) => {
     return res.status(500).json({ error: "Failed to find visitor by ID" });
   }
 };
-
-//? OLD (DUPLICATE) This controller is used by the visitor system and guard system for looking recurring visitors
-// exports.findRecurring = async (req, res) => {
-//   const { visitor, email, last_name } = req.body;
-
-//   try {
-//     const emailRegex = /^\S+@\S+\.\S+$/;
-//     const isEmail = emailRegex.test(visitor);
-
-//     if (isEmail) {
-//       const visitorDB = await Visitor.findOne({
-//         "visitor_details.email": visitor,
-//       });
-
-//       if (visitorDB) {
-//         return res.status(200).json({
-//           success: "Visitor found",
-//           visitor_id: visitorDB._id,
-//           id_picture: visitorDB.id_picture,
-//           name: visitorDB.visitor_details.name,
-//         });
-//       } else {
-//         return res.status(404).json({ error: "Visitor not found" });
-//       }
-//     } else if (!isEmail) {
-//       const visitorDB = await Visitor.find({
-//         "visitor_details.name.last_name": visitor,
-//       });
-
-//       if (visitorDB) {
-//         const visitors = visitorDB.map((visitor) => ({
-//           _id: visitor._id,
-//           visitor_details: visitor.visitor_details,
-//           plate_num: visitor.plate_num,
-//           id_picture: visitor.id_picture,
-//         }));
-
-//         return res.status(200).json({
-//           success: "Visitor/s found",
-//           visitors: visitors,
-//         });
-//       } else {
-//         return res.status(404).json({ error: "Visitor not found" });
-//       }
-//     } else {
-//       return res.status(400).json({ error: "Information entered is invalid" });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     return res
-//       .status(500)
-//       .json({ error: "Something went wrong with your request" });
-//   }
-// };
 
 exports.updateVisitor = async (req, res) => {
   const {
@@ -453,12 +410,19 @@ exports.newRecurringPRVisitor = async (req, res) => {
             error: `${visitors[x].visitor_details.email} has already been used by another visitor`,
           });
 
+        //? Check if companion has a pending status
+        if (visitorDB.status === "In Progress")
+          return res.status(500).json({
+            error: `${visitors[x].visitor_details.name.last_name} has an appointment yet to be finalized.`,
+          });
+
         const updatedVisitor = await Visitor.findByIdAndUpdate(
           visitorDB._id,
           {
             purpose: visitors[x].purpose,
             expected_time_in: visitors[x].expected_time_in,
             expected_time_out: visitors[x].expected_time_out,
+            visitor_type: "Pre-Registered",
             status: "In Progress",
           },
           { new: true }
@@ -516,7 +480,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
             back: "",
             selfie: "",
           },
-          visitor_type: visitors[x].visitor_type,
+          visitor_type: "Pre-Registered",
           status: "In Progress",
         });
 
@@ -561,6 +525,14 @@ exports.newRecurringPRVisitor = async (req, res) => {
       ]);
     }
 
+    const visitor = await Visitor.findById(visitors[0].id);
+
+    //? Check if companion has a pending status
+    if (visitor.status === "In Progress")
+      return res.status(500).json({
+        error: `${visitor.visitor_details.name.last_name} has an appointment yet to be finalized.`,
+      });
+
     const updatedMainVisitor = await Visitor.findByIdAndUpdate(
       visitors[0].id
         ? new ObjectId(visitors[0].id)
@@ -576,6 +548,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
         expected_time_in: visitors[0].expected_time_in,
         expected_time_out: visitors[0].expected_time_out,
         companions: companions,
+        visitor_type: "Pre-Registered",
         status: "In Progress",
       },
       { new: true }
@@ -676,7 +649,7 @@ exports.updateStatus = async (req, res) => {
   const { _id, status, message, email, companions } = req.body;
   const io = req.io;
   const user_id = req.user._id;
-  
+
   try {
     const visitorDB = await Visitor.findById(_id);
 
@@ -694,7 +667,9 @@ exports.updateStatus = async (req, res) => {
 
     if (status === "Approved") {
       if (badge) {
-        return res.status(409).json({ error: "Visitor already has an existing badge." });
+        return res
+          .status(409)
+          .json({ error: "Visitor already has an existing badge." });
       } else {
         try {
           generateVisitorQRAndEmail(visitorDB._id, message);
@@ -705,14 +680,18 @@ exports.updateStatus = async (req, res) => {
           res.status(200).json({ message: `Visitor is now ${status}` });
         } catch (error) {
           await createSystemLog(user_id, "approve_status", "failed");
-          return res.status(500).json({ error: "Failed to generate QR and send email." });
+          return res
+            .status(500)
+            .json({ error: "Failed to generate QR and send email." });
         }
       }
     } else if (status === "Declined") {
       try {
         if (badge) {
           if (badge.is_active) {
-            return res.status(409).json({ error: "Visitor is currently inside the campus." });
+            return res
+              .status(409)
+              .json({ error: "Visitor is currently inside the campus." });
           } else {
             await Badge.updateOne(
               { _id: badge._id },
@@ -720,7 +699,7 @@ exports.updateStatus = async (req, res) => {
             );
           }
         }
-        
+
         sendEmail({
           from: process.env.MAILER,
           to: email,
@@ -749,14 +728,17 @@ exports.updateStatus = async (req, res) => {
 
         res.status(200).json({ message: `Visitor is now ${status}` });
       } catch (error) {
-
         await createSystemLog(user_id, "decline_status", "failed");
-        return res.status(500).json({ error: "Failed to generate QR and send email." });
+        return res
+          .status(500)
+          .json({ error: "Failed to generate QR and send email." });
       }
     } else if (status === "In Progress") {
       if (badge) {
         if (badge.is_active) {
-          return res.status(409).json({ error: "Vistor is currently inside the campus." });
+          return res
+            .status(409)
+            .json({ error: "Vistor is currently inside the campus." });
         } else {
           await Badge.updateOne(
             { _id: badge._id },
@@ -769,7 +751,6 @@ exports.updateStatus = async (req, res) => {
 
       res.status(200).json({ message: `Visitor status has been changed` });
     }
-
   } catch (error) {
     return res.status(500).json({ error: "Failed to update visitor status" });
   }

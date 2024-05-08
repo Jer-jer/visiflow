@@ -1,30 +1,27 @@
 import React, { useState, Dispatch, SetStateAction, useEffect } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import PhoneInput from "react-phone-number-input";
+import { jwtDecode } from "jwt-decode";
 
-//Interfaces
-import { HomeEditor } from "../../../../utils/interfaces";
-
-//Layouts
+//Interface
+import { EmployeeDetailsZod, EmployeesZod } from "../../../../utils/zodSchemas";
 
 //Components
-import { Button, Modal, InputNumber, Form } from "antd";
-import TextArea from "antd/es/input/TextArea";
+import { Button, Modal, Form } from "antd";
 import Input from "../../../../components/fields/input/input";
 import Label from "../../../../components/fields/input/label";
-//zod for display error
 
+//Lib
+import AxiosInstace from "../../../../lib/axios";
 
 //Assets
+import flags from "react-phone-number-input/flags";
 import { ExclamationCircleFilled, LeftOutlined } from "@ant-design/icons";
 
 //Styles
+import "react-phone-number-input/style.css";
 import "./styles.scss";
-import AxiosInstace from "../../../../lib/axios";
-
-import { zodResolver } from "@hookform/resolvers/zod";
-import {useForm} from "react-hook-form";
-import { EmployeeDetailsZod, EmployeesZod } from "../../../../utils/zodSchemas";
-
-import { jwtDecode } from "jwt-decode";
 
 interface PageDetailsProps {
 	record?: any;
@@ -50,7 +47,9 @@ export default function EmployeeDetails({
 	//Form States
 	const [name, setName] = useState(record === undefined ? "" : record?.name);
 	const [email, setEmail] = useState(record === undefined ? "" : record?.email);
-	const [contact, setContact] = useState(record === undefined ? "" : record?.contact);
+	const [contact, setContact] = useState(
+		record === undefined ? "" : record?.contact,
+	);
 	const [savedRecord, setSavedRecord] = useState(record);
 	const {
 		register,
@@ -62,8 +61,7 @@ export default function EmployeeDetails({
 	});
 
 	const token = localStorage.getItem("token");
-	const decodedtoken = (jwtDecode (token as string));
-
+	const decodedtoken = jwtDecode(token as string);
 
 	//Alert State
 	const [alertOpen, setAlertOpen] = useState(false);
@@ -76,7 +74,7 @@ export default function EmployeeDetails({
 		handleName(name);
 		handleContact(contact);
 		handleEmail(email);
-	}, [])
+	}, []);
 
 	const editOrCancel = () => {
 		if (!disabledInputs) {
@@ -88,33 +86,34 @@ export default function EmployeeDetails({
 		setDisabledInputs(!disabledInputs);
 	};
 
-	const saveAction = async() => {
+	const saveAction = async () => {
 		//This needs to be customized to whatever the DB returns
 
 		// saving new record
-		if(savedRecord=== undefined) {
+		if (savedRecord === undefined) {
 			try {
-				const response = await AxiosInstace.post('/employees/new', { 
+				const response = await AxiosInstace.post("/employees/new", {
 					name: name,
 					email: email,
 					contact: contact,
-					userID: decodedtoken.sub
-				}); 
+					userID: decodedtoken.sub,
+				});
 				setSavedRecord(response.data.event);
 			} catch (err: any) {
-				error('Error in adding employee: ' + err.response.data.error);
+				error("Error in adding employee: " + err.response.data.error);
 			}
-		} else { // updating record
+		} else {
+			// updating record
 			try {
-				await AxiosInstace.put('/employees/update', { 
+				await AxiosInstace.put("/employees/update", {
 					_id: record === undefined ? savedRecord._id : record._id,
 					name: name === "" ? record?.name : name,
 					email: email === "" ? record?.email : email,
 					contact: contact === "" ? record?.contact : contact,
-					userID: decodedtoken.sub
-				}); 
+					userID: decodedtoken.sub,
+				});
 			} catch (err: any) {
-				error('Error in updating employee: ' + err.response.data.error);
+				error("Error in updating employee: " + err.response.data.error);
 			}
 		}
 
@@ -135,12 +134,14 @@ export default function EmployeeDetails({
 			cancelText: "No",
 			async onOk() {
 				try {
-					await AxiosInstace.delete('/employees/delete', { data: { _id: record?._id, userID: decodedtoken.sub } });
+					await AxiosInstace.delete("/employees/delete", {
+						data: { _id: record?._id, userID: decodedtoken.sub },
+					});
 					fetch();
 					setOpenDetails(false);
-				  } catch (error) {
-					console.error('Error deleting employees:', error);
-				  }
+				} catch (error) {
+					console.error("Error deleting employees:", error);
+				}
 			},
 			onCancel() {
 				console.log("Cancel");
@@ -155,155 +156,166 @@ export default function EmployeeDetails({
 	const handleName = (value: any) => {
 		setName(value);
 		setValue("name", value);
-	}
+	};
 
 	const handleEmail = (value: any) => {
 		setEmail(value);
 		setValue("email", value);
-	}
+	};
 
 	const handleContact = (value: any) => {
 		setContact(value);
 		setValue("contact", value);
-	}
+	};
 
 	return (
 		<Form name="EmployeeList" onFinish={onSubmit} autoComplete="off">
-		<div className="mr-[135px] flex flex-col gap-[35px] pt-[25px]">
-			<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
-				<div className="flex w-[80%] flex-col gap-[20px]">
-					<div className="flex w-full gap-[60px]">
-						<div className="flex w-full">
-							<Label
-								labelStyling="w-[15%]"
-								spanStyling="text-black font-medium text-[16px]"
-							>
-								Name
-							</Label>
+			<div className="mr-[135px] flex flex-col gap-[35px] pt-[25px]">
+				<div className="mb-[35px] ml-[58px] flex flex-col gap-[25px]">
+					<div className="flex w-[80%] flex-col gap-[20px]">
+						<div className="flex w-full gap-[60px]">
+							<div className="flex w-full">
+								<Label
+									labelStyling="w-[15%]"
+									spanStyling="text-black font-medium text-[16px]"
+								>
+									Name
+								</Label>
+								<div className="flex w-full items-start">
+									<div className="flex w-full flex-col">
+										<Input
+											inputType="text"
+											inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500 w-[40%]"
+											placeHolder={record?.title}
+											//data to be accepted by zod to validate
+											{...register("name")}
+											input={name}
+											setInput={handleName}
+											visitorMngmnt
+											disabled={disabledInputs}
+										/>
+										{/* zod */}
+										{errors?.name && (
+											<p className="mt-1 text-sm text-red-500">
+												{errors.name?.message}
+											</p>
+										)}
+									</div>
+								</div>
+							</div>
+						</div>
+						<div className="flex w-full gap-[60px]">
 							<div className="flex w-full items-start">
-							<div className="flex w-full flex-col">
-							<Input
-								inputType="text"
-								inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500 w-[40%]"
-								placeHolder={record?.title}
-								//data to be accepted by zod to validate
-								{...register("name")}
-								input={name}
-								setInput={handleName}
-								visitorMngmnt
-								disabled={disabledInputs}
-							/>
-							{/* zod */}
-							{errors?.name && (
-								<p className="mt-1 text-sm text-red-500">
-									{errors.name?.message}
-								</p>
-							)}
+								<Label
+									labelStyling="w-[15%]"
+									spanStyling="text-black font-medium text-[16px]"
+								>
+									Email
+								</Label>
+								<div className="flex w-full flex-col">
+									<Input
+										inputType="text"
+										inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500 w-[40%]"
+										placeHolder={record?.email}
+										{...register("email")}
+										input={email}
+										setInput={handleEmail}
+										visitorMngmnt
+										disabled={disabledInputs}
+									/>
+									{errors?.email && (
+										<p className="mt-1 text-sm text-red-500">
+											{errors.email?.message}
+										</p>
+									)}
+								</div>
+							</div>
+						</div>
+						<div className="flex w-full gap-[60px]">
+							<div className="flex w-full">
+								<Label
+									labelStyling="w-[15%]"
+									spanStyling="text-black font-medium text-[16px]"
+								>
+									Contact Number
+								</Label>
+								<div className="flex w-full flex-col">
+									<PhoneInput
+										className="vm-placeholder phone-input employees-phone-input"
+										defaultCountry="PH"
+										international
+										countryCallingCodeEditable={false}
+										flags={flags}
+										{...register("contact")}
+										value={record?.contact}
+										onChange={(value: any) => handleContact(value)}
+										disabled={disabledInputs}
+									/>
+									{/* <Input
+										inputType="text"
+										inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500 w-[40%]"
+										placeHolder={record?.contact}
+										{...register("contact")}
+										input={contact}
+										setInput={handleContact}
+										visitorMngmnt
+										disabled={disabledInputs}
+									/> */}
+									{errors?.contact && (
+										<p className="mt-1 text-sm text-red-500">
+											{errors.contact?.message}
+										</p>
+									)}
+								</div>
 							</div>
 						</div>
 					</div>
-					</div>
-					<div className="flex w-full gap-[60px]">
-						<div className="flex w-full items-start">
-							<Label
-								labelStyling="w-[15%]"
-								spanStyling="text-black font-medium text-[16px]"
-							>
-								Email
-							</Label>
-							<div className="flex w-full flex-col">
-							<Input
-								inputType="text"
-								inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500 w-[40%]"
-								placeHolder={record?.email}
-								{...register("email")}
-								input={email}
-								setInput={handleEmail}
-								visitorMngmnt
-								disabled={disabledInputs}
-							/>
-							{errors?.email && (
-								<p className="mt-1 text-sm text-red-500">
-									{errors.email?.message}
-								</p>
-							)}
-							</div>
-						</div>
-					</div>
-					<div className="flex w-full gap-[60px]">
-						<div className="flex w-full">
-							<Label
-								labelStyling="w-[15%]"
-								spanStyling="text-black font-medium text-[16px]"
-							>
-								Contact Number
-							</Label>
-							<div className="flex w-full flex-col">
-								
-							<Input
-								inputType="text"
-								inputStyling="input h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500 w-[40%]"
-								placeHolder={record?.contact}
-								{...register("contact")}
-								input={contact}
-								setInput={handleContact}
-								visitorMngmnt
-								disabled={disabledInputs}
-							/>
-							{errors?.contact && (
-								<p className="mt-1 text-sm text-red-500">
-									{errors.contact?.message}
-								</p>
-							)}
-							</div>
-						</div>
-					</div>
-				</div>
-				<div className="flex justify-end gap-[15px]">
-					{!disabledInputs ? (
-						<>
-							{record && 
+					<div className="flex justify-end gap-[15px]">
+						{!disabledInputs ? (
+							<>
+								{record && (
+									<Button
+										onClick={showDeleteConfirm}
+										type="primary"
+										size="large"
+										className="search-button !rounded-[18px] !bg-error-500"
+									>
+										Delete
+									</Button>
+								)}
 								<Button
-									onClick={showDeleteConfirm}
+									htmlType="submit"
 									type="primary"
 									size="large"
-									className="search-button !bg-error-500 !rounded-[18px]"
+									className="search-button !rounded-[18px] !bg-primary-500"
 								>
-									Delete
-								</Button>}
+									Save
+								</Button>
+							</>
+						) : (
 							<Button
-								htmlType="submit"
-								type="primary"
+								type="link"
 								size="large"
-								className="search-button !rounded-[18px] !bg-primary-500"
+								className="mr-auto text-primary-500 hover:!text-primary-300"
+								onClick={() => setOpenDetails(false)}
 							>
-								Save
+								<div className="flex items-center justify-center gap-[5px]">
+									<LeftOutlined />
+									<span>Back</span>
+								</div>
 							</Button>
-						</>
-					) : (
+						)}
 						<Button
-							type="link"
+							onClick={editOrCancel}
+							type="primary"
 							size="large"
-							className="mr-auto text-primary-500 hover:!text-primary-300"
-							onClick={() => setOpenDetails(false)}
+							className="search-button !rounded-[18px] !bg-primary-500"
 						>
-							<div className="flex items-center justify-center gap-[5px]">
-								<LeftOutlined />
-								<span>Back</span>
-							</div>
+							{disabledInputs ? "Edit" : "Cancel"}
 						</Button>
-					)}
-					<Button
-						onClick={editOrCancel}
-						type="primary"
-						size="large"
-						className="search-button !rounded-[18px] !bg-primary-500"
-					>
-						{disabledInputs ? "Edit" : "Cancel"}
-					</Button>
+					</div>
 				</div>
 			</div>
-		</div>
 		</Form>
 	);
 }

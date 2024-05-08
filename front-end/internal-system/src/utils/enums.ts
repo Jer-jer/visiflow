@@ -9,6 +9,13 @@ export enum VisitorType {
 	WalkIn = "Walk-In",
 }
 
+export enum BadgeStatus {
+	active = "active",
+	inactive = "inactive",
+	exceeded = "exceeded",
+	overdue = "overdue"
+}
+
 export enum UserRole {
 	Admin = "admin",
 	Security = "security",
