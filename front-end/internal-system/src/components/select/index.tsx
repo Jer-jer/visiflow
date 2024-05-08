@@ -38,6 +38,7 @@ export default function MainSelect({
 				filterOption={filterOption}
 				onChange={handleChange}
 				options={options}
+				allowClear
 			/>
 		</div>
 	);

@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import { NavLink } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { isMobile } from "react-device-detect";
 
 //Components
 import Header from "../../components/header";
@@ -264,6 +263,15 @@ function LoggedIn({ children }: LoggedInProps) {
 												<SidebarItem
 													icon={<UserGroup />}
 													text="Visitor Status"
+													active={isActive}
+												/>
+											)}
+										</NavLink>
+										<NavLink to="/schedules">
+											{({ isActive }) => (
+												<SidebarItem
+													icon={<Calendar />}
+													text="Schedules"
 													active={isActive}
 												/>
 											)}
