@@ -48,7 +48,22 @@ exports.getCurrentVisitors = async (req, res) => {
       _id: { $in: activeVisitorIds },
     });
 
-    res.status(200).json({ activeVisitors });
+    const activeVisitorIdsSet = new Set(activeVisitors.map(visitor => visitor._id));
+
+    const filteredBadges = badges.filter(badge => activeVisitorIdsSet.has(badge.visitor_id));
+
+    const response = [];
+    badges.forEach((badge) => {
+      const activeVisitor = activeVisitors.find((visitor) => visitor._id.equals(badge.visitor_id));
+      if (activeVisitor) {
+        response.push({
+          visitor: activeVisitor,
+          badgeId: badge._id
+        });
+      }
+    });
+
+    res.status(200).json({ response });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
