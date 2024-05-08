@@ -49,7 +49,7 @@ export default function ScheduleManagement() {
 	const newTabIndex = useRef(1);
 	const [hideInOut, setHideInOut] = useState<boolean>(true);
 	const [dateSearch, setDateSearch] = useState<string[]>([]);
-	const [checkedList, setCheckedList] = useState<string[]>(['current']);
+	const [checkedList, setCheckedList] = useState<string[]>(["current"]);
 
 	const tabs = useSelector((state: RootState) => state.badgesTab);
 
@@ -129,9 +129,9 @@ export default function ScheduleManagement() {
 			>
 				<Tabs.TabPane closable={false} tab="Schedule List" key="1">
 					<div className="ml-[45px] mt-[30px] flex flex-col gap-[25px]">
-						<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
+						<div className="flex w-full flex-col items-center justify-start gap-[25px] pr-[65px] md:flex-row">
 							<Input
-								className="w-[366px]"
+								className="md:w-[366px]"
 								size="large"
 								placeholder="Search"
 								prefix={<Search />}

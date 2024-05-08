@@ -31,9 +31,9 @@ import VisitorStatusDetails from "../../../layouts/guard/visitor-status-details"
 // 	status: string;
 // }
 
-export default function CurrentVisitorsTable({
+export default function CurrentVisitorsTable({}) {
+	const desktopMedia = window.matchMedia("(min-width: 1024px)");
 
-}) {
 	const [loading, setLoading] = useState<boolean>(false);
 	const [pageDetail, setPageDetail] = useState<any>();
 	const [openDetails, setOpenDetails] = useState(false);
@@ -89,7 +89,7 @@ export default function CurrentVisitorsTable({
 			status = BadgeStatus.exceeded;
 		}
 		return status;
-	}
+	};
 
 	const edit = (record: any) => {
 		setPageDetail(record);
@@ -182,7 +182,7 @@ export default function CurrentVisitorsTable({
 				let color;
 				if (badge_status === BadgeStatus.active) color = "#0db284";
 				else if (badge_status === BadgeStatus.exceeded) color = "#FFA500";
-				else if (badge_status === BadgeStatus.overdue) color = "#FD4A4A"
+				else if (badge_status === BadgeStatus.overdue) color = "#FD4A4A";
 				return (
 					<Tag
 						className="text-auto text-[10px] md:text-[16px]"
@@ -205,6 +205,7 @@ export default function CurrentVisitorsTable({
 					</Button>
 				</>
 			),
+			responsive: ["md"],
 		},
 	];
 
@@ -213,40 +214,47 @@ export default function CurrentVisitorsTable({
 			{!openDetails && (
 				<>
 					<div className="mb-[50px] ml-[15px]">
-						<div className="flex w-full items-center justify-start gap-[25px] pr-[65px]">
+						<div className="flex w-full flex-col items-center justify-start gap-[25px] pr-[65px] md:flex-row">
 							<Input
-								className="w-[366px]"
-								size="large"
+								className="md:w-[366px]"
+								size={desktopMedia.matches ? "large" : "middle"}
 								placeholder="Search"
 								prefix={<Search />}
 								onChange={(e) => setSearch(e.target.value)}
 							/>
 
-							<DateTimePicker size="large" onRangeChange={onRangeChange} />
+							<DateTimePicker
+								size={desktopMedia.matches ? "large" : "middle"}
+								onRangeChange={onRangeChange}
+							/>
 						</div>
 					</div>
 					<Table
-					className="w-full overflow-x-auto"
-					loading={{
-						spinning: loading,
-						indicator: <LoadingOutlined />,
-					}}
-					columns={columns}
-					dataSource={data
-						.filter((visitor) => {
-							return search.toLowerCase() === ""
-								? visitor
-								: (`${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name} ${visitor.visitor_details.name.last_name} `).toLowerCase().includes(search.toLowerCase());
-						})
-						.filter((visitor) => {
-							return dateSearch.length === 0
-								? visitor
-								: new Date(visitor.expected_time_in) >= new Date(dateSearch[0])  &&
-										new Date(visitor.expected_time_out) <= new Date(dateSearch[1]);
-						})}
-					pagination={{ pageSize: 10 }}/>
+						className="w-full overflow-x-auto"
+						loading={{
+							spinning: loading,
+							indicator: <LoadingOutlined />,
+						}}
+						columns={columns}
+						dataSource={data
+							.filter((visitor) => {
+								return search.toLowerCase() === ""
+									? visitor
+									: `${visitor.visitor_details.name.first_name} ${visitor.visitor_details.name.middle_name} ${visitor.visitor_details.name.last_name} `
+											.toLowerCase()
+											.includes(search.toLowerCase());
+							})
+							.filter((visitor) => {
+								return dateSearch.length === 0
+									? visitor
+									: new Date(visitor.expected_time_in) >=
+											new Date(dateSearch[0]) &&
+											new Date(visitor.expected_time_out) <=
+												new Date(dateSearch[1]);
+							})}
+						pagination={{ pageSize: 10 }}
+					/>
 				</>
-				
 			)}
 			{openDetails && (
 					<VisitorStatusDetails
