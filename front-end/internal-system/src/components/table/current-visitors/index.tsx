@@ -173,6 +173,10 @@ export default function CurrentVisitorsTable({
 					text: "Exceeded Time-out",
 					value: "exceeded",
 				},
+				{
+					text: "Overdue",
+					value: "overdue",
+				},
 			],
 			render: (_, { badge_status }) => {
 				let color;

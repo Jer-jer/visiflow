@@ -42,8 +42,6 @@ exports.getCurrentVisitors = async (req, res) => {
   try {
     const badges = await Badge.find({ status: { $in: ['active', 'overdue', 'exceeded'] } });
 
-    console.log('test', badges);
-
     const activeVisitorIds = badges.map((badge) => badge.visitor_id);
 
     const activeVisitors = await Visitor.find({
