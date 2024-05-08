@@ -2,7 +2,7 @@ const Badge = require("../models/badge");
 const VisitorLogs = require("../models/visitorLogs");
 const Visitor = require("../models/visitor");
 const mongoose = require("mongoose");
-const { createSystemLog } = require("../utils/helper");
+const { createSystemLog, uploadFileToGCS } = require("../utils/helper");
 const { generateQRCode } = require("../utils/qrCodeUtils");
 const {
   timeIn,
@@ -144,6 +144,18 @@ exports.newBadge = async (req, res) => {
       check_in_time: new Date(),
     });
 
+    // const uri = `${local_ip}/badge/checkBadge?qr_id=${qr_id}`;
+    // const filename = `badge${qr_id}.png`;
+
+    // const qr_file = await generateQRCode(uri, filename, qr_id);
+
+    // const buffer = await fs.readFile(qr_file);
+
+    // const qr_image = uploadFileToGCS(buffer, filename);
+
+    // badge.qr_image = qr_image;
+    // await badge.save(); 
+
     await createSystemLog(user_id, log_type, "success");
     return res.sendStatus(200);
   } catch (error) {
@@ -175,7 +187,7 @@ exports.checkBadge = async (req, res) => {
     
     //If badge && visitor is true then show visitor info
     const visitor = await Visitor.findById({ _id: badge.visitor_id });
-    return res.status(200).json({ visitor: visitor, badge_id: badge._id });
+    return res.status(200).json({ visitor: visitor, badge_id: badge._id, status: badge.status });
 
     // updateLog(badge._id, req.user.sub, res);
   } catch (error) {
