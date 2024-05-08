@@ -12,6 +12,13 @@ const fs = require("fs").promises;
 const nodemailer = require("nodemailer");
 const QRCode = require("qrcode");
 
+// Middleware
+
+const {
+  uploadFileToGCS,
+  createImageBuffer
+} = require('../utils/helper')
+
 // Nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: "Gmail",
@@ -91,7 +98,7 @@ async function generateBadge(visitor) {
       purpose: visitor.purpose,
       expected_time_in: visitor.expected_time_in,
       expected_time_out: visitor.expected_time_out,
-      // status: "inactive",
+      status: "inactive",
       is_valid: true,
     });
 
@@ -99,7 +106,17 @@ async function generateBadge(visitor) {
 
     const filename = `badge${badge._id}.png`;
     const uri = `${local_ip}/badge/checkBadge?qr_id=${visitor._id}`;
-    await generateQRCode(uri, filename, badge._id);
+    const qr_file = await generateQRCode(uri, filename, badge._id)
+
+    const buffer = await fs.readFile(qr_file);
+
+    const qr_image = uploadFileToGCS(
+      buffer,
+      filename
+    );
+
+    badge.qr_image = qr_image;
+    await badge.save();
 
     return badge;
   } catch (error) {
@@ -131,6 +148,8 @@ async function generateQRCode(uri, filename, badgeId) {
         } else {
           console.log(`QR code saved for badge ${badgeId}`);
           try {
+            // const buffer = await fs.readFile(filename);
+            // resolve(buffer);
             await fs.readFile(filename);
             resolve(filename);
           } catch (readError) {
