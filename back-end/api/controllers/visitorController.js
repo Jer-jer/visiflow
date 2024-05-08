@@ -270,12 +270,6 @@ exports.updateVisitor = async (req, res) => {
       return res.status(404).json({ error: "Visitor not found" });
     }
 
-    const expectedTimeInObj = new Date(expected_time_in);
-    const expectedTimeInUTC = expectedTimeInObj.toISOString();
-
-    const expectedTimeOutObj = new Date(expected_time_out);
-    const expectedTimeOutUTC = expectedTimeOutObj.toISOString();
-
     const updateFields = {
       "visitor_details.name.first_name": first_name,
       "visitor_details.name.middle_name": middle_name,
@@ -290,8 +284,8 @@ exports.updateVisitor = async (req, res) => {
       "visitor_details.phone": phone,
       plate_num: plate_num,
       purpose: purpose,
-      expected_time_in: expectedTimeInUTC,
-      expected_time_out: expectedTimeOutUTC,
+      expected_time_in,
+      expected_time_out,
       visitor_type: visitor_type,
       companions: companions,
     };
@@ -312,13 +306,13 @@ exports.updateVisitor = async (req, res) => {
 
     var badge = await Badge.findOne({
       visitor_id: new ObjectId(_id),
-      expected_time_in: expectedTimeInUTC,
-      expected_time_out: expectedTimeOutUTC,
+      expected_time_in,
+      expected_time_out,
     });
 
     if (badge) {
-      badge.expected_time_in = expectedTimeInUTC;
-      badge.expected_time_out = expectedTimeOutUTC;
+      badge.expected_time_in = expected_time_in;
+      badge.expected_time_out = expected_time_out;
       badge = await badge.save();
     }
 
