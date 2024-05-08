@@ -40,7 +40,7 @@ exports.getVisitors = async (req, res) => {
 //For Current Visitors by Janusz
 exports.getCurrentVisitors = async (req, res) => {
   try {
-    const badges = await Badge.find({ is_active: true });
+    const badges = await Badge.find({ status: { $in: ['active', 'overdue', 'exceeded'] } });
 
     const activeVisitorIds = badges.map((badge) => badge.visitor_id);
 
@@ -48,17 +48,13 @@ exports.getCurrentVisitors = async (req, res) => {
       _id: { $in: activeVisitorIds },
     });
 
-    const activeVisitorIdsSet = new Set(activeVisitors.map(visitor => visitor._id));
-
-    const filteredBadges = badges.filter(badge => activeVisitorIdsSet.has(badge.visitor_id));
-
     const response = [];
     badges.forEach((badge) => {
       const activeVisitor = activeVisitors.find((visitor) => visitor._id.equals(badge.visitor_id));
       if (activeVisitor) {
         response.push({
           visitor: activeVisitor,
-          badgeId: badge._id
+          badge: badge
         });
       }
     });
@@ -426,6 +422,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
             purpose: visitors[x].purpose,
             expected_time_in: visitors[x].expected_time_in,
             expected_time_out: visitors[x].expected_time_out,
+            visitor_type: "Pre-Registered",
             status: "In Progress",
           },
           { new: true }
@@ -483,7 +480,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
             back: "",
             selfie: "",
           },
-          visitor_type: visitors[x].visitor_type,
+          visitor_type: "Pre-Registered",
           status: "In Progress",
         });
 
@@ -551,6 +548,7 @@ exports.newRecurringPRVisitor = async (req, res) => {
         expected_time_in: visitors[0].expected_time_in,
         expected_time_out: visitors[0].expected_time_out,
         companions: companions,
+        visitor_type: "Pre-Registered",
         status: "In Progress",
       },
       { new: true }

@@ -44,6 +44,7 @@ export interface VisitorLogDetails {
 	purpose?: PurposeProps;
 	check_in_time: Date;
 	check_out_time: Date;
+	qr: string;
 }
 
 export interface FullNameProps {
@@ -173,6 +174,6 @@ export interface Building {
 }
 
 export interface SelectOption {
-	value: string,
-	label: string
+	value: string;
+	label: string;
 }

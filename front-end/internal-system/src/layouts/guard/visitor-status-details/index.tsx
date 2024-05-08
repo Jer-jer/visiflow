@@ -452,23 +452,38 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 		clearErrors();
 	};
 
-	const handleTimeOutOk = async () => {
-		await AxiosInstance.post("/badge/timeRecord", {
-			_id: record.badge_id,
-			record: false,
-		})
-			.then(() => {
-				setStatus(true);
-				setAlertOpen(true);
-				setAlertMsg("Successfully Timed-Out");
-			})
-			.catch((err) => {
-				if (err && err.response) {
-					setStatus(false);
-					setAlertOpen(true);
-					setAlertMsg(err.response.data.error);
-				}
-			});
+	const handleTimeOutOk = () => {
+		confirm({
+			title: "Are you sure you want to time-out this visitor?",
+			content: <span>This feature is only for special occassions and does not generally follow protocol.</span>,
+			className: "confirm-buttons",
+			icon: <ExclamationCircleFilled className="!text-error-500" />,
+			okText: "Yes",
+			okType: "danger",
+			cancelText: "No",
+			async onOk() {
+				await AxiosInstance.post("/badge/timeRecord", {
+					_id: record.badge_id,
+					record: false,
+				})
+					.then(() => {
+						setStatus(true);
+						setAlertOpen(true);
+						setAlertMsg("Successfully Timed-Out");
+					})
+					.catch((err) => {
+						if (err && err.response) {
+							setStatus(false);
+							setAlertOpen(true);
+							setAlertMsg(err.response.data.error);
+						}
+					});
+			},
+			onCancel() {
+				console.log("Cancel");
+			},
+		});
+		
 	};
 
 	return (
@@ -477,7 +492,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 				<LoadingOutlined className="absolute left-[45%] top-[20%] z-[10000] text-[164px] text-primary-500" />
 			)}
 			<div
-				className={`transition-alert absolute z-[1] w-full scale-y-0 ease-in-out ${
+				className={`transition-alert z-[1] w-full scale-y-0 ease-in-out ${
 					alertOpen && "scale-y-100"
 				}`}
 			>
@@ -820,7 +835,7 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 							>
 								{disabledInputs ? "Extend" : "Cancel"}
 							</Button>
-							<Button key="submit" type="primary" onClick={handleTimeOutOk}>
+							<Button className="search-button !rounded-[18px] !bg-red-500" key="submit" size="large" type="primary" onClick={handleTimeOutOk}>
 								Time-Out
 							</Button>
 						</div>
