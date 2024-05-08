@@ -11,7 +11,7 @@ import { LoadingOutlined } from "@ant-design/icons";
 
 //Utils
 import type { Dayjs } from "dayjs";
-import { formatDateObjToString, formatDateToISO } from "../../../utils";
+import { formatDateObjToString, formatDateToISO } from "../../../utils"
 import DateTimePicker from "../../../components/datetime-picker";
 
 //Styles
