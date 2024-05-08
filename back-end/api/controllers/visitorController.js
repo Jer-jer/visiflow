@@ -178,8 +178,8 @@ exports.addVisitor = async (req, res, next) => {
           back: index === 0 ? backId : "",
           selfie: index === 0 ? selfieId : "",
         },
-        expected_time_in,
-        expected_time_out,
+        expected_time_in: new Date(expected_time_in),
+        expected_time_out: new Date(expected_time_out),
       };
     });
 
@@ -280,8 +280,8 @@ exports.updateVisitor = async (req, res) => {
       "visitor_details.phone": phone,
       plate_num: plate_num,
       purpose: purpose,
-      expected_time_in: expected_time_in,
-      expected_time_out: expected_time_out,
+      expected_time_in: new Date(expected_time_in),
+      expected_time_out: new Date(expected_time_out),
       visitor_type: visitor_type,
       companions: companions,
     };
@@ -302,13 +302,13 @@ exports.updateVisitor = async (req, res) => {
 
     var badge = await Badge.findOne({
       visitor_id: new ObjectId(_id),
-      expected_time_in: visitorDB.expected_time_in,
-      expected_time_out: visitorDB.expected_time_out,
+      expected_time_in: new Date(visitorDB.expected_time_in),
+      expected_time_out: new Date(visitorDB.expected_time_out),
     });
 
     if (badge) {
-      badge.expected_time_in = expected_time_in;
-      badge.expected_time_out = expected_time_out;
+      badge.expected_time_in = new Date(expected_time_in);
+      badge.expected_time_out = new Date(expected_time_out);
       badge = await badge.save();
     }
 
@@ -420,8 +420,8 @@ exports.newRecurringPRVisitor = async (req, res) => {
           visitorDB._id,
           {
             purpose: visitors[x].purpose,
-            expected_time_in: visitors[x].expected_time_in,
-            expected_time_out: visitors[x].expected_time_out,
+            expected_time_in: new Date(visitors[x].expected_time_in),
+            expected_time_out: new Date(visitors[x].expected_time_out),
             visitor_type: "Pre-Registered",
             status: "In Progress",
           },
@@ -473,8 +473,8 @@ exports.newRecurringPRVisitor = async (req, res) => {
           companion_details: [],
           plate_num: visitors[x].plate_num,
           purpose: visitors[x].purpose,
-          expected_time_in: visitors[x].expected_time_in,
-          expected_time_out: visitors[x].expected_time_out,
+          expected_time_in: new Date(visitors[x].expected_time_in),
+          expected_time_out: new Date(visitors[x].expected_time_out),
           id_picture: {
             front: "",
             back: "",
@@ -545,8 +545,8 @@ exports.newRecurringPRVisitor = async (req, res) => {
         },
         plate_num: visitors[0].plate_num,
         purpose: visitors[0].purpose,
-        expected_time_in: visitors[0].expected_time_in,
-        expected_time_out: visitors[0].expected_time_out,
+        expected_time_in: new Date(visitors[0].expected_time_in),
+        expected_time_out: new Date(visitors[0].expected_time_out),
         companions: companions,
         visitor_type: "Pre-Registered",
         status: "In Progress",
@@ -591,8 +591,8 @@ exports.newRecurringWalkInVisitor = async (req, res) => {
       {
         visitor_details: visitor_details,
         purpose: purpose,
-        expected_time_in: expected_time_in,
-        expected_time_out: expected_time_out,
+        expected_time_in: new Date(expected_time_in),
+        expected_time_out: new Date(expected_time_out),
         plate_num: plate_num,
         status: status,
         visitor_type: visitor_type,
