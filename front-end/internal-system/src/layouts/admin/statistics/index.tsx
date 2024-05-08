@@ -228,7 +228,18 @@ export default function StatisticsLayout() {
 	};
 
 	const fetchTotal = async () => {
-		AxiosInstance.post("/stats")
+		let now = new Date();
+
+		let startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+		let endDate = new Date(
+			now.getFullYear(),
+			now.getMonth(),
+			now.getDate(),
+			23,
+			59,
+			59,
+		);
+		AxiosInstance.post("/stats", { startDate: startDate, endDate: endDate })
 			.then((res: any) => {
 				let currentTotal =
 					localStorage.getItem("total-count") || visitorStatSummary.total;
