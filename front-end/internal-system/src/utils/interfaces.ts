@@ -4,6 +4,7 @@
 
 import {
 	VisitorStatus,
+	BadgeStatus,
 	VisitorType,
 	UserRole,
 	UserActionLogType,
@@ -89,6 +90,7 @@ export interface VisitorDataType {
 	expected_time_in: Date;
 	expected_time_out: Date;
 	status: VisitorStatus;
+	badge_status?: BadgeStatus;
 	visitor_type: VisitorType;
 	id_picture: IDPictureProps;
 	created_at: Date;
