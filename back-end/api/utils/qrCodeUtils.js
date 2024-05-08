@@ -112,7 +112,7 @@ async function generateBadge(visitor) {
 
     const qr_image = uploadFileToGCS(
       buffer,
-      filename
+      filename  
     );
 
     badge.qr_image = qr_image;

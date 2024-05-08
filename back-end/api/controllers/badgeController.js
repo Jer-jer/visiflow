@@ -142,17 +142,16 @@ exports.newBadge = async (req, res) => {
       check_in_time: new Date(),
     });
 
-    // const uri = `${local_ip}/badge/checkBadge?qr_id=${qr_id}`;
+    const uri = `${local_ip}/badge/checkBadge?qr_id=${qr_id}`;
     const filename = `badge${qr_id}.png`;
+    const qr_file = await generateQRCode(uri, filename, qr_id);
 
-    // const qr_file = await generateQRCode(uri, filename, qr_id);
-
-    const buffer = await fsp.readFile(filename);
+    const buffer = await fsp.readFile(qr_file);
 
     const qr_image = uploadFileToGCS(buffer, filename);
 
     badge.qr_image = qr_image;
-    await badge.save();
+    await badge.save(); 
 
     await createSystemLog(user_id, log_type, "success");
     return res.sendStatus(200);
