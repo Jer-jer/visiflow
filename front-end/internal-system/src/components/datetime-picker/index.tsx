@@ -27,6 +27,8 @@ interface DatePickerProps {
 	defaultVal?: DefaultProps;
 	visitorMngmnt?: boolean;
 	disabled?: boolean;
+	disabledDate?: any;
+	disabledTime?: any;
 }
 
 dayjs.extend(weekday);
@@ -42,6 +44,8 @@ function DateTimePicker({
 	defaultVal,
 	visitorMngmnt,
 	disabled,
+	disabledDate,
+	disabledTime,
 }: DatePickerProps) {
 	const { RangePicker } = DatePicker;
 	const timeFormat = "hh:mm A";
@@ -72,6 +76,8 @@ function DateTimePicker({
 					borderColor: "#0db284",
 				}}
 				disabled={disabled}
+				disabledDate={disabledDate}
+				disabledTime={disabledTime}
 			/>
 		</div>
 	);
