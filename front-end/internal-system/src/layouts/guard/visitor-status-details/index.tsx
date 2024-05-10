@@ -337,6 +337,26 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 		}
 	};
 
+	//for disabled time
+	const disabledDateTime = () => {
+		const currentHour = dayjs().hour();
+		const currentMinute = dayjs().minute();
+
+		return {
+			disabledHours: () => range(0, currentHour),
+			disabledMinutes: (selectedHour: number) => {
+				if (selectedHour === currentHour) {
+					return range(0, currentMinute);
+				}
+				return [];
+			},
+		};
+	};
+	// Helper function to generate range array
+	const range = (start: number, end: number) => {
+		return Array.from({ length: end - start }, (_, i) => start + i);
+	};
+
 	const onRangeChange = (
 		dates: null | (Dayjs | null)[],
 		dateStrings: string[],
@@ -646,6 +666,10 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 											onRangeChange={onRangeChange}
 											visitorMngmnt
 											disabled={disabledInputs}
+											disabledDate={(current: any) => {
+												return current < dayjs().startOf("day");
+											}}
+											disabledTime={disabledDateTime}
 										/>
 										{errors?.check_in_out && (
 											<p className="mt-1 text-sm text-red-500">
