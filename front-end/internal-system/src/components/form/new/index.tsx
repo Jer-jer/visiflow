@@ -434,7 +434,9 @@ function NewWalkIn({
 									<div className="flex flex-col items-center gap-7">
 										<div className="flex flex-col">
 											<div className="flex flex-col md:flex-row md:items-center">
-												<h1>First Name</h1>
+												<h1>
+													First Name <span className="text-error-500">*</span>
+												</h1>
 												<Input
 													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[30px] md:w-[300px]"
 													size="large"
@@ -454,7 +456,9 @@ function NewWalkIn({
 
 										<div className="flex flex-col">
 											<div className="flex flex-col md:flex-row md:items-center">
-												<h1>Middle Name</h1>
+												<h1>
+													Middle Name <span className="text-error-500">*</span>
+												</h1>
 												<Input
 													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[13px] md:w-[300px]"
 													size="large"
@@ -474,7 +478,9 @@ function NewWalkIn({
 
 										<div className="flex flex-col">
 											<div className="flex flex-col md:flex-row md:items-center">
-												<h1>Last Name</h1>
+												<h1>
+													Last Name <span className="text-error-500">*</span>
+												</h1>
 												<Input
 													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[31px] md:w-[300px]"
 													size="large"
@@ -511,7 +517,9 @@ function NewWalkIn({
 
 										<div className="flex flex-col">
 											<div className="flex flex-col md:flex-row md:items-center">
-												<h1>Mobile</h1>
+												<h1>
+													Mobile <span className="text-error-500">*</span>
+												</h1>
 
 												<PhoneInput
 													className="phone-input-walk-in w-[260px] md:w-[310px]"
@@ -538,7 +546,7 @@ function NewWalkIn({
 
 										<div className="flex flex-col">
 											<div className="flex flex-col md:flex-row md:items-center">
-												<h1>Plate Number (Optional)</h1>
+												<h1>Plate Number</h1>
 												<Input
 													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[16px] md:w-[230px]"
 													size="large"
@@ -592,7 +600,9 @@ function NewWalkIn({
 										</div>
 										<div className="flex flex-col">
 											<div className="flex flex-col md:flex-row md:items-center">
-												<h1>Barangay</h1>
+												<h1>
+													Barangay <span className="text-error-500">*</span>
+												</h1>
 												<Input
 													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[18.5px] md:w-[300px]"
 													size="large"
@@ -609,7 +619,9 @@ function NewWalkIn({
 										</div>
 										<div className="flex flex-col">
 											<div className="flex flex-col md:flex-row md:items-center">
-												<h1>City</h1>
+												<h1>
+													City <span className="text-error-500">*</span>
+												</h1>
 												<Input
 													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[52px] md:w-[300px]"
 													size="large"
@@ -626,7 +638,9 @@ function NewWalkIn({
 										</div>
 										<div className="flex flex-col">
 											<div className="flex flex-col md:flex-row md:items-center">
-												<h1>Province</h1>
+												<h1>
+													Province <span className="text-error-500">*</span>
+												</h1>
 												<Input
 													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[23px] md:w-[300px]"
 													size="large"
@@ -643,7 +657,9 @@ function NewWalkIn({
 										</div>
 										<div className="flex flex-col">
 											<div className="flex flex-col md:flex-row md:items-center">
-												<h1>Country</h1>
+												<h1>
+													Country <span className="text-error-500">*</span>
+												</h1>
 												<Input
 													className="h-[35px] w-[260px] rounded-[5px] border-none bg-[#DFEAEF] hover:bg-primary-200 focus:ring-primary-600 md:ml-[27px] md:w-[300px]"
 													size="large"
@@ -664,7 +680,9 @@ function NewWalkIn({
 								<div className="flex flex-col">
 									<div className="flex gap-[41px]">
 										<div className="flex flex-col gap-5 lg:gap-7">
-											<span className="mb-[-15px]">Purpose</span>
+											<span className="mb-[-15px]">
+												Purpose <span className="text-error-500">*</span>
+											</span>
 											<div className="flex flex-col gap-5 lg:flex-row">
 												<div className="flex flex-col">
 													<div>
@@ -744,7 +762,10 @@ function NewWalkIn({
 
 												<div className="flex flex-col">
 													<div className="flex flex-col md:flex-row md:items-center">
-														<h1>Expected Time Out</h1>
+														<h1>
+															Expected Time Out{" "}
+															<span className="text-error-500">*</span>
+														</h1>
 														<DatePicker
 															showTime
 															className="focus:!bg-[#e0ebf0]vm-placeholder h-[35px] w-[260px] border-none !border-[#d9d9d9] bg-[#e0ebf0] focus-within:!bg-[#e0ebf0] hover:!border-primary-500 hover:!bg-[#e0ebf0] focus:!border-primary-500 md:ml-[20px] md:w-[260px]"

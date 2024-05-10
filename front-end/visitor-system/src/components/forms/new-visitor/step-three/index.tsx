@@ -128,7 +128,7 @@ export default function StepThree({
 						})
 						.catch((err: any) => {
 							setLoading(false);
-							if(err && err.response) {
+							if (err && err.response) {
 								const message = err.response.data.error;
 								error(message);
 							}
@@ -193,31 +193,31 @@ export default function StepThree({
 				)}
 				<div className="flex flex-col">
 					<div className="flex flex-col gap-x-[5%] gap-y-[0.8em] lg:flex-row lg:flex-wrap">
-						<div className="flex items-center gap-[3%] lg:w-[25%]">
+						<div className="flex flex-col items-start gap-[3%] md:flex-row md:items-center lg:w-[25%]">
 							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
 								First Name:
 							</label>
 							<span className="text-[1.15rem]">{visitor.name.first_name}</span>
 						</div>
-						<div className="flex items-center gap-[3%] lg:w-[30%]">
+						<div className="flex flex-col items-start gap-[3%] md:flex-row md:items-center lg:w-[30%]">
 							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
 								Middle Name:
 							</label>
 							<span className="text-[1.15rem]">{visitor.name.middle_name}</span>
 						</div>
-						<div className="flex items-center gap-[3%] lg:w-[35%]">
+						<div className="flex flex-col items-start gap-[3%] md:flex-row md:items-center lg:w-[35%]">
 							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
 								Last Name:
 							</label>
 							<span className="text-[1.15rem]">{visitor.name.last_name}</span>
 						</div>
-						<div className="flex items-center gap-[3%] lg:w-[40%]">
+						<div className="flex flex-col items-start gap-[3%] md:flex-row md:items-center lg:w-[42%]">
 							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
 								Email Address:
 							</label>
 							<span className="text-[1.15rem]">{visitor.email}</span>
 						</div>
-						<div className="flex items-center gap-[3%] lg:w-[40%]">
+						<div className="flex flex-col items-start gap-[3%] md:flex-row md:items-center lg:w-[40%]">
 							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
 								Mobile Number:
 							</label>
@@ -226,37 +226,37 @@ export default function StepThree({
 					</div>
 					<Divider className="border border-[#00000030]" /> {/* Divider */}
 					<div className="flex flex-col gap-x-[5%] gap-y-[0.8em] lg:flex-row lg:flex-wrap">
-						<div className="flex items-center gap-[3%] lg:w-[28%]">
+						<div className="flex flex-col items-start gap-[3%] md:flex-row md:items-center lg:w-[28%]">
 							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
 								House No.:
 							</label>
 							<span className="text-[1.15rem]">{visitor.address.house}</span>
 						</div>
-						<div className="flex items-center gap-[3%] lg:w-[28%]">
+						<div className="flex flex-col items-start gap-[3%] md:flex-row md:items-center lg:w-[28%]">
 							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
 								Street:
 							</label>
 							<span className="text-[1.15rem]">{visitor.address.street}</span>
 						</div>
-						<div className="flex items-center gap-[3%] lg:w-[28%]">
+						<div className="flex flex-col items-start gap-[3%] md:flex-row md:items-center lg:w-[28%]">
 							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
 								Barangay:
 							</label>
 							<span className="text-[1.15rem]">{visitor.address.brgy}</span>
 						</div>
-						<div className="flex items-center gap-[3%] lg:w-[28%]">
+						<div className="flex flex-col items-start gap-[3%] md:flex-row md:items-center lg:w-[28%]">
 							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
 								City:
 							</label>
 							<span className="text-[1.15rem]">{visitor.address.city}</span>
 						</div>
-						<div className="flex items-center gap-[3%] lg:w-[28%]">
+						<div className="flex flex-col items-start gap-[3%] md:flex-row md:items-center lg:w-[28%]">
 							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
 								Province:
 							</label>
 							<span className="text-[1.15rem]">{visitor.address.province}</span>
 						</div>
-						<div className="flex items-center gap-[3%] lg:w-[28%]">
+						<div className="flex flex-col items-start gap-[3%] md:flex-row md:items-center lg:w-[28%]">
 							<label className="text-[1.15rem] font-[400] text-[#0000004d]">
 								Country:
 							</label>
@@ -289,7 +289,7 @@ export default function StepThree({
 					})}
 				/>
 				<div className="flex flex-col gap-2">
-					<div className="flex gap-3">
+					<div className="flex flex-col md:flex-row md:gap-3">
 						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
 							Expected Time In:
 						</label>
@@ -297,7 +297,7 @@ export default function StepThree({
 							{formatDateObjToString(mainVisitor.expected_time_in)}
 						</span>
 					</div>
-					<div className="flex gap-3">
+					<div className="flex flex-col md:flex-row md:gap-3">
 						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
 							Expected Time Out:
 						</label>
@@ -305,17 +305,25 @@ export default function StepThree({
 							{formatDateObjToString(mainVisitor.expected_time_out)}
 						</span>
 					</div>
-					<div className="flex flex-col">
+					<div className="mb-5 flex flex-col">
 						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
 							Purpose:
 						</label>
 						<div className="flex">
-							<span className="text-lg">
-								{mainVisitor.purpose.what.join(", ")} at the following:{" "}
-								{mainVisitor.purpose.where.join(", ")} with the following:{" "}
-								{mainVisitor.purpose.who.join(", ")} on{" "}
-								{formatDateObjToString(mainVisitor.purpose.when)}
-							</span>
+							<div className="flex flex-col">
+								<span className="text-lg">
+									What: {mainVisitor.purpose.what.join(", ")}
+								</span>
+								<span className="text-lg">
+									Where: {mainVisitor.purpose.where.join(", ")}
+								</span>
+								<span className="text-lg">
+									Who: {mainVisitor.purpose.who.join(", ")}
+								</span>
+								<span className="text-lg">
+									When: {formatDateObjToString(mainVisitor.purpose.when)}
+								</span>
+							</div>
 						</div>
 					</div>
 				</div>
