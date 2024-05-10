@@ -337,10 +337,11 @@ function StepOneForm({
 			<Form.Item>
 				<div className="mb-[5px] flex items-center gap-8 lg:w-[20%]">
 					<span className="text-[16px] font-[400] text-[#0000004d]">
-						No. of Companions
+						No. of Companions <span className="text-error">*</span>
 					</span>
 
 					<InputNumber
+						required
 						className="rounded-[5px] border-none bg-[#DFEAEF] focus-within:!bg-[#DFEAEF] hover:bg-[#DFEAEF] focus:border-primary-500 focus:!bg-[#DFEAEF] focus:outline-0 focus:!ring-transparent"
 						{...register("visitorNo", { valueAsNumber: true })}
 						style={{ width: 80, height: 35 }}
@@ -389,7 +390,7 @@ function StepOneForm({
 					}`}
 				>
 					<span className="text-[16px] font-[400] text-[#0000004d]">
-						Time in and Time out
+						Time in and Time out <span className="text-error">*</span>
 					</span>
 
 					<div className="flex flex-col">
@@ -427,7 +428,7 @@ function StepOneForm({
 
 			<div className="mb-[27px] flex min-w-[50%] flex-col gap-[8px]">
 				<span className="text-[16px] font-[400] text-[#0000004d]">
-					Purpose of Visit
+					Purpose of Visit <span className="text-error">*</span>
 				</span>
 				<div className="flex flex-col gap-[15px] lg:flex-row">
 					<div className="flex min-w-[13%] max-w-[80%] flex-col lg:max-w-[25%]">
@@ -452,6 +453,7 @@ function StepOneForm({
 						<Select
 							className="purpose font-[600] text-[#0C0D0D] hover:!text-[#0C0D0D]"
 							showSearch
+							popupMatchSelectWidth={false}
 							mode="multiple"
 							allowClear
 							placeholder="Where"
@@ -516,7 +518,7 @@ function StepOneForm({
 						></Checkbox>
 					</Form.Item>
 
-					<span className="text-[16px] font-[400] text-[#000000]">
+					<span className="w-full text-[16px] font-[400] text-[#000000]">
 						I have agreed to the{" "}
 						<Button
 							type="link"
@@ -525,6 +527,7 @@ function StepOneForm({
 						>
 							terms and conditions
 						</Button>
+						<span className="text-error"> *</span>
 						<Modal
 							title={
 								<span className="flex justify-center text-[25px] font-[700] text-[#0C0D0D]">

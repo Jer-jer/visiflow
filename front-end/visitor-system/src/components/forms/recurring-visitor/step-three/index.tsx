@@ -312,17 +312,25 @@ export default function StepThree({
 							{formatDateObjToString(mainVisitor.expected_time_out)}
 						</span>
 					</div>
-					<div className="flex flex-col">
+					<div className="mb-5 flex flex-col">
 						<label className="text-[1.15rem] font-[400] text-[#0000004d]">
 							Purpose:
 						</label>
 						<div className="flex">
-							<span className="text-lg">
-								{mainVisitor.purpose.what.join(", ")} at the following:{" "}
-								{mainVisitor.purpose.where.join(", ")} with the following:{" "}
-								{mainVisitor.purpose.who.join(", ")} on{" "}
-								{formatDateObjToString(mainVisitor.purpose.when)}
-							</span>
+							<div className="flex flex-col">
+								<span className="text-lg">
+									What: {mainVisitor.purpose.what.join(", ")}
+								</span>
+								<span className="text-lg">
+									Where: {mainVisitor.purpose.where.join(", ")}
+								</span>
+								<span className="text-lg">
+									Who: {mainVisitor.purpose.who.join(", ")}
+								</span>
+								<span className="text-lg">
+									When: {formatDateObjToString(mainVisitor.purpose.when)}
+								</span>
+							</div>
 						</div>
 					</div>
 				</div>

@@ -785,7 +785,7 @@ Who: ${convertedData
 										} justify-between`}
 									>
 										<Label spanStyling="text-black font-medium text-[16px]">
-											First Name
+											First Name <span className="text-error-500">*</span>
 										</Label>
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
@@ -814,7 +814,7 @@ Who: ${convertedData
 										} justify-between`}
 									>
 										<Label spanStyling="text-black font-medium text-[16px]">
-											Middle Name
+											Middle Name <span className="text-error-500">*</span>
 										</Label>
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
@@ -841,7 +841,7 @@ Who: ${convertedData
 										} justify-between`}
 									>
 										<Label spanStyling="text-black font-medium text-[16px]">
-											Last Name
+											Last Name <span className="text-error-500">*</span>
 										</Label>
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
@@ -866,7 +866,7 @@ Who: ${convertedData
 										} justify-between`}
 									>
 										<Label spanStyling="text-black font-medium text-[16px]">
-											Mobile Number
+											Mobile Number <span className="text-error-500">*</span>
 										</Label>
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<PhoneInput
@@ -902,9 +902,9 @@ Who: ${convertedData
 								>
 									<Label
 										spanStyling="text-black font-medium text-[16px]"
-										labelStyling="w-[15%]"
+										labelStyling="w-[16%]"
 									>
-										Email Address
+										Email Address <span className="text-error-500">*</span>
 									</Label>
 									<div className="flex flex-col">
 										<Input
@@ -951,7 +951,7 @@ Who: ${convertedData
 										} justify-between`}
 									>
 										<Label spanStyling="text-black font-medium text-[16px]">
-											City
+											City <span className="text-error-500">*</span>
 										</Label>
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
@@ -999,7 +999,7 @@ Who: ${convertedData
 										} justify-between`}
 									>
 										<Label spanStyling="text-black font-medium text-[16px]">
-											Province
+											Province <span className="text-error-500">*</span>
 										</Label>
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
@@ -1024,7 +1024,7 @@ Who: ${convertedData
 										} justify-between`}
 									>
 										<Label spanStyling="text-black font-medium text-[16px]">
-											Barangay
+											Barangay <span className="text-error-500">*</span>
 										</Label>
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
@@ -1047,7 +1047,7 @@ Who: ${convertedData
 										} justify-between`}
 									>
 										<Label spanStyling="text-black font-medium text-[16px]">
-											Country
+											Country <span className="text-error-500">*</span>
 										</Label>
 										<div className={`flex ${errors && "w-[220px]"} flex-col`}>
 											<Input
@@ -1074,7 +1074,8 @@ Who: ${convertedData
 										spanStyling="text-black font-medium text-[16px]"
 										labelStyling="w-[22.5%]"
 									>
-										Expected In and Out
+										Expected In and Out{" "}
+										<span className="text-error-500">*</span>
 									</Label>
 									<div className="flex w-full flex-col">
 										<DateTimePicker
@@ -1109,7 +1110,7 @@ Who: ${convertedData
 										spanStyling="text-black font-medium text-[16px]"
 										labelStyling="w-[21.5%]"
 									>
-										Purpose
+										Purpose <span className="text-error-500">*</span>
 									</Label>
 									<div className="flex w-full flex-col gap-[10px]">
 										<div className="flex gap-[20px]">
