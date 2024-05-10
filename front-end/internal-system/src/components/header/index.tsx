@@ -226,8 +226,8 @@ export default function Header({ expanded }: HeaderProps) {
 	}, [play]);
 
 	const logout = () => {
-		window.location.reload();
 		localStorage.clear();
+		window.location.reload();
 	};
 
 	const readNotification = async (notif: NotificationStoreProps) => {

@@ -81,17 +81,30 @@ async function timeOut(_id) {
   try {
     const badge = await Badge.findById(_id);
 
-    if (badge) {
+    if (badge) { 
       if (badge.status != "inactive") {
+        const current_time = new Date();
+        // current_time.setHours(current_time.getHours() - 8);
+
         // Add check out timestamp to visitor logs
+        const latestLog = await VisitorLogs.findOne({ badge_id: badge._id }).sort({ created_at: -1 });
+
+        // Now you have the latest log, and you can perform updates or other actions
         await VisitorLogs.updateOne(
-          { badge_id: badge._id },
-          { $set: { check_out_time: new Date() } }
+            { _id: latestLog._id },
+            { $set: { check_out_time: new Date() } }
         );
 
+        if (badge.expected_time_out <= current_time) {
+          await Badge.updateOne(
+            { _id: badge._id },
+            { $set: { qr_id: null, status: "inactive", is_valid: false } }
+          );
+        }
+        
         await Badge.updateOne(
           { _id: badge._id },
-          { $set: { qr_id: null, status: "inactive", is_valid: false } }
+          { $set: { status: "inactive" } }
         );
 
         return {

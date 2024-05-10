@@ -239,9 +239,11 @@ export const VisitorDetailZod = z.object({
 		.regex(/^[a-zA-Z\s]+/, {
 			message: "Must not contain any numerals.",
 		}),
-	check_in_out: z.custom<[string, string]>().refine((val) => val[0] < val[1], {
-		message: "Check in must be before the Check out date.",
-	}),
+	check_in_out: z
+		.custom<[string, string]>()
+		.refine((val) => new Date(val[0]) < new Date(val[1]), {
+			message: "Check in must be before the Check out date.",
+		}),
 	plate_num: z.string().optional().nullable(),
 	visitor_type: z.nativeEnum(VisitorType),
 	status: z.nativeEnum(VisitorStatus),
@@ -357,7 +359,7 @@ export const CompanionDetailZod: ZodType<CompanionDetailsInterfaceZod> =
 			}),
 		check_in_out: z
 			.custom<[string, string]>()
-			.refine((val) => val[0] < val[1], {
+			.refine((val) => new Date(val[0]) < new Date(val[1]), {
 				message: "Check in must be before the Check out date.",
 			}),
 	});

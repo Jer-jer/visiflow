@@ -142,17 +142,16 @@ exports.newBadge = async (req, res) => {
       check_in_time: new Date(),
     });
 
-    // const uri = `${local_ip}/badge/checkBadge?qr_id=${qr_id}`;
+    const uri = `${local_ip}/badge/checkBadge?qr_id=${qr_id}`;
     const filename = `badge${qr_id}.png`;
+    const qr_file = await generateQRCode(uri, filename, qr_id);
 
-    // const qr_file = await generateQRCode(uri, filename, qr_id);
-
-    const buffer = await fsp.readFile(filename);
+    const buffer = await fsp.readFile(qr_file);
 
     const qr_image = uploadFileToGCS(buffer, filename);
 
     badge.qr_image = qr_image;
-    await badge.save();
+    await badge.save(); 
 
     await createSystemLog(user_id, log_type, "success");
     return res.sendStatus(200);
@@ -212,3 +211,41 @@ exports.timeRecord = async (req, res) => {
     return res.status(500).json({ error: "Failed to track time record." });
   }
 };
+
+exports.updateBadge = async(req, res) => {
+  const { _id, status, expected_time_in, expected_time_out } = req.body;
+
+  try {
+    const badge = await Badge.findById({ _id });
+
+    if (!badge) {
+      return res.status(404).json({ error: "Badge not found" });
+    }
+
+    const updateFields = {
+      status: status || badge.status,
+      expected_time_in: expected_time_in || badge.expected_time_in,
+      expected_time_out: expected_time_out || badge.expected_time_out,
+    };
+
+    const filteredUpdateFields = Object.fromEntries(
+      Object.entries(updateFields).filter(([key, value]) => value !== undefined)
+    );
+
+    if (Object.keys(filteredUpdateFields).length === 0) {
+      return res.status(400).json({ error: "No valid fields to update" });
+    }
+
+    const updatedBadge = await Badge.findByIdAndUpdate(
+      _id,
+      filteredUpdateFields,
+      { new: true }
+    );
+
+    return res.status(201).json({ badge: updatedBadge });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to update badge" });
+  }
+
+}
