@@ -11,7 +11,7 @@ import {
 	VisitorDetailsProps,
 } from "../../../utils/interfaces";
 import { BadgeStatus, VisitorStatus, VisitorType } from "../../../utils/enums";
-import { formatDateObjToString } from "../../../utils";
+import { formatDateObjToString, formatDateObjToString2, formatDateToISO } from "../../../utils";
 
 //Styles
 import "../../../utils/variables.scss";
@@ -105,11 +105,11 @@ export default function ScheduleListTable({
 			dataIndex: "expected_time_in",
 			key: "expected_time_in",
 			sorter: (a, b) =>
-				formatDateObjToString(a.expected_time_in).localeCompare(
-					formatDateObjToString(b.expected_time_in),
-				),
+			formatDateToISO(new Date(a.expected_time_in))!.localeCompare(
+				formatDateToISO(new Date(b.expected_time_in))!,
+			),
 			render: (_, { expected_time_in }) => {
-				return formatDateObjToString(expected_time_in);
+				return formatDateObjToString2(expected_time_in);
 			},
 			responsive: ["md"],
 		},
@@ -118,11 +118,11 @@ export default function ScheduleListTable({
 			dataIndex: "expected_time_out",
 			key: "expected_time_out",
 			sorter: (a, b) =>
-				formatDateObjToString(a.expected_time_out).localeCompare(
-					formatDateObjToString(b.expected_time_out),
+				formatDateToISO(new Date(a.expected_time_in))!.localeCompare(
+					formatDateToISO(new Date(b.expected_time_out))!,
 				),
 			render: (_, { expected_time_out }) => {
-				return formatDateObjToString(expected_time_out);
+				return formatDateObjToString2(expected_time_out);
 			},
 			responsive: ["md"],
 		},

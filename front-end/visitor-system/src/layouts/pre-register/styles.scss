@@ -3,3 +3,24 @@
         font-size: 24px !important;
     }
 }
+
+.new-photo {
+    background: url('../../assets/new.jpg') !important;
+    background-size: cover !important;
+    transition: all 0.3s ease-in-out;
+    overflow: hidden !important;
+}
+
+.recurring-photo {
+    background: url('../../assets/recurring.jpg') !important;
+    background-size: cover !important;
+    transition: all 0.3s ease-in-out;
+    overflow: hidden !important;
+}
+
+.new-photo:hover, .recurring-photo:hover {
+    background: none;
+    transform: scale(1.2);
+    overflow: hidden;
+}
+
