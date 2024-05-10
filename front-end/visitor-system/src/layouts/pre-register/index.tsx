@@ -18,27 +18,32 @@ export default function PreRegister() {
 	};
 
 	return (
-		<>
+		<div className="max-h-min">
 			{!isNew && !isRecurring && (
-				<div className="flex h-full items-center justify-center gap-5">
-					<Button
-						type="primary"
-						className="w-[inherit] bg-primary-500"
-						onClick={(e) => isNewOrRecurring(true, false)}
-					>
-						New Visitor
-					</Button>
-					<Button
-						type="primary"
-						className="w-[inherit] bg-primary-500"
-						onClick={(e) => isNewOrRecurring(false, true)}
-					>
-						Recurring Visitor
-					</Button>
+				<div className="flex flex-col items-center justify-start w-full gap-y-12 pt-20">
+					<span className="text-3xl font-semibold text-center uppercase">Are you new here?</span>
+					<div className="flex flex-row gap-x-8">
+						<div className="w-[30vw] h-[40vh] overflow-hidden rounded-lg hover:rounded-lg">
+							<Button
+								className="new-photo w-[30vw] h-[40vh] text-3xl uppercase flex items-center justify-center "
+								onClick={(e) => isNewOrRecurring(true, false)}
+							>
+								<span className="z-50 relative text-white">New Visitor</span>
+							</Button>
+						</div>
+						<div className="w-[30vw] h-[40vh] overflow-hidden rounded-lg hover:rounded-lg">
+							<Button
+								className="recurring-photo w-[30vw] h-[40vh] text-3xl uppercase flex items-center justify-center "
+								onClick={(e) => isNewOrRecurring(false, true)}
+							>
+								<span className="z-50 relative text-white">Recurring Visitor</span>
+							</Button>
+						</div>
+					</div>
 				</div>
 			)}
 			{isRecurring && <RecurringVisitor />}
 			{isNew && <NewVisitor />}
-		</>
+		</div>
 	);
 }
