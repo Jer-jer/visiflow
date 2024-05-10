@@ -18,25 +18,29 @@ export default function PreRegister() {
 	};
 
 	return (
-		<div className="max-h-min">
+		<div className="h-screen">
 			{!isNew && !isRecurring && (
-				<div className="flex flex-col items-center justify-start w-full gap-y-12 pt-20">
-					<span className="text-3xl font-semibold text-center uppercase">Are you new here?</span>
-					<div className="flex flex-row gap-x-8">
-						<div className="w-[30vw] h-[40vh] overflow-hidden rounded-lg hover:rounded-lg">
+				<div className="mb-[50px] flex w-full flex-col items-center justify-start gap-y-12 pt-20 md:mb-0">
+					<span className="text-center text-3xl font-semibold uppercase">
+						Are you new here?
+					</span>
+					<div className="flex flex-col gap-y-8 md:flex-row md:gap-x-8">
+						<div className="h-[40vh] w-full overflow-hidden rounded-lg hover:rounded-lg md:w-[30vw]">
 							<Button
-								className="new-photo w-[30vw] h-[40vh] text-3xl uppercase flex items-center justify-center "
+								className="new-photo flex h-[40vh] w-full items-center justify-center text-3xl uppercase md:w-[30vw] "
 								onClick={(e) => isNewOrRecurring(true, false)}
 							>
-								<span className="z-50 relative text-white">New Visitor</span>
+								<span className="relative z-50 text-white">New Visitor</span>
 							</Button>
 						</div>
-						<div className="w-[30vw] h-[40vh] overflow-hidden rounded-lg hover:rounded-lg">
+						<div className="h-[40vh] w-full overflow-hidden rounded-lg hover:rounded-lg md:w-[30vw]">
 							<Button
-								className="recurring-photo w-[30vw] h-[40vh] text-3xl uppercase flex items-center justify-center "
+								className="recurring-photo flex h-[40vh] w-full items-center justify-center text-3xl uppercase md:w-[30vw] "
 								onClick={(e) => isNewOrRecurring(false, true)}
 							>
-								<span className="z-50 relative text-white">Recurring Visitor</span>
+								<span className="relative z-50 text-white">
+									Recurring Visitor
+								</span>
 							</Button>
 						</div>
 					</div>

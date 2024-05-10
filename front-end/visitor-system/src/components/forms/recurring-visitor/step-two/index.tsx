@@ -24,6 +24,9 @@ import {
 import { StepTwoRecurringData, StepTwoZod } from "../../../../utils/zodSchemas";
 import type { CheckboxProps } from "antd";
 
+// Lib
+import AxiosInstance from "../../../../lib/axios";
+
 // Components
 import StepForm from "./form";
 
@@ -68,7 +71,7 @@ const visitorTemplate = [
 	],
 ];
 
-const error = (message: string) => {
+const error = (message: any) => {
 	Modal.error({
 		title: `Error`,
 		content: message,
@@ -82,6 +85,7 @@ export default function StepTwo({
 	mainVisitor,
 	setVisitors,
 }: StepTwoProps) {
+	const [validateLoading, setValidateLoading] = useState<boolean>(false);
 	const [hasPhoto, setHasPhoto] = useState(false);
 	const [byBulk, setByBulk] = useState(false);
 	const [isPhotoOpen, setIsPhotoOpen] = useState(false);
@@ -297,8 +301,40 @@ export default function StepTwo({
 		setProgress((prev) => prev + 1);
 	};
 
-	const onSubmit = handleSubmit((data) => {
-		nextStep();
+	const onSubmit = handleSubmit(async (data) => {
+		const emails = visitors.map((visitor) => visitor.visitor_details.email);
+
+		setValidateLoading(true);
+
+		try {
+			const response = await AxiosInstance.post("/validate-emails", {
+				emails: emails.filter(
+					(email) => email !== null && email !== undefined,
+				) as string[],
+			});
+
+			setValidateLoading(false);
+			nextStep();
+		} catch (err: any) {
+			console.log(
+				"🚀 ~ onSubmit ~ err.response.data.invalidEmails:",
+				err.response.data.invalidEmails,
+			);
+			error(
+				<>
+					<p>The following emails are invalid:</p>
+
+					<p>
+						{err.response.data.invalidEmails
+							.filter((email: string) => email !== null)
+							.join(", ")}
+					</p>
+					<br />
+					<p>Please try again or change your emails</p>
+				</>,
+			);
+			setValidateLoading(false);
+		}
 	});
 
 	return (
@@ -743,6 +779,7 @@ export default function StepTwo({
 										: "!bg-primary-500"
 								}`}
 								type="primary"
+								loading={validateLoading}
 								htmlType="submit"
 							>
 								Next
@@ -754,6 +791,7 @@ export default function StepTwo({
 								<Button
 									className="w-full bg-primary-500 lg:w-[inherit]"
 									type="primary"
+									loading={validateLoading}
 									onClick={nextStep}
 								>
 									Next
@@ -762,6 +800,7 @@ export default function StepTwo({
 								<Button
 									className="w-full bg-primary-500 lg:w-[inherit]"
 									type="primary"
+									loading={validateLoading}
 									htmlType="submit"
 								>
 									Next
