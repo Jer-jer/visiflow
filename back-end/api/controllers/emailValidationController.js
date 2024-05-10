@@ -12,6 +12,9 @@ exports.validateEmails = async (req, res) => {
         const { validDomain, validMailbox } =
           await emailValidator.verify(email);
 
+        console.log("🚀 ~ emails.map ~ validMailbox:", validMailbox, email);
+        console.log("🚀 ~ emails.map ~ validDomain:", validDomain, email);
+
         if (validDomain) {
           if (!validMailbox) invalidEmails.push(email);
         } else {
