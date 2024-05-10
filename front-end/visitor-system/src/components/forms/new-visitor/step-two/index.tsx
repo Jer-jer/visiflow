@@ -87,9 +87,6 @@ export default function StepTwo({
 }: StepTwoProps) {
 	const [validateLoading, setValidateLoading] = useState<boolean>(false);
 
-	const [validateEmailModal, setValidateEmailModal] = useState(false);
-	const [invalidEmails, setInvalidEmails] = useState<string[]>([]);
-
 	const [byBulk, setByBulk] = useState(false);
 	const [isPhotoOpen, setIsPhotoOpen] = useState(false);
 
@@ -281,11 +278,13 @@ export default function StepTwo({
 		const emails = visitors.map((visitor) => visitor.visitor_details.email);
 
 		setValidateLoading(true);
-		setInvalidEmails([]);
 
 		try {
-			const response = await AxiosInstance.post("/validate-emails", { emails });
-			console.log("🚀 ~ onSubmit ~ response:", response);
+			const response = await AxiosInstance.post("/validate-emails", {
+				emails: emails.filter(
+					(email) => email !== null && email !== undefined,
+				) as string[],
+			});
 
 			setValidateLoading(false);
 			nextStep();
@@ -294,7 +293,11 @@ export default function StepTwo({
 				<>
 					<p>The following emails are invalid:</p>
 
-					<p>{err.response.data.invalidEmails.join(", ")}</p>
+					<p>
+						{err.response.data.invalidEmails
+							.filter((email: string) => email !== null)
+							.join(", ")}
+					</p>
 					<br />
 					<p>Please try again or change your emails</p>
 				</>,
