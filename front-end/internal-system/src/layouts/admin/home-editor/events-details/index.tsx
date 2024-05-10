@@ -19,7 +19,7 @@ import {
 	message,
 	Upload,
 	Image,
-    Select,
+	Select,
 	Form,
 } from "antd";
 import TextArea from "antd/es/input/TextArea";
@@ -40,7 +40,7 @@ import "./styles.scss";
 import AxiosInstance from "../../../../lib/axios";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import {useForm} from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { EventDetailsZod, EventZod } from "../../../../utils/zodSchemas";
 import { jwtDecode } from "jwt-decode";
 
@@ -75,7 +75,7 @@ const getBase64 = (img: RcFile, callback: (url: string) => void) => {
 interface SelectOption {
 	label: string;
 	value: string;
-};
+}
 
 const error = (message: string) => {
 	Modal.error({
@@ -92,20 +92,38 @@ export default function EventsSchedDetails({
 	fetch,
 }: EventsSchedDetailsProps) {
 	//Form States
-	const [name, setName] = useState(record?.name === undefined ? "" : record?.name);
-	const [startDate, setStartDate] = useState(record?.startDate === undefined ? new Date() : record?.startDate);
-	const [endDate, setEndDate] = useState(record?.endDate === undefined ? new Date() : record?.endDate);
-	const [startTime, setStartTime] = useState(record?.startTime === undefined ? new Date() : record?.startTime);
-	const [endTime, setEndTime] = useState(record?.endTime === undefined ? new Date() : record?.endTime);
-	const [locationId, setLocationId] = useState(record?.locationID === undefined ? "" : record?.locationID);
-	const [description, setDescription] = useState(record?.description === undefined ? "" : record?.description);
+	const [name, setName] = useState(
+		record?.name === undefined ? "" : record?.name,
+	);
+	const [startDate, setStartDate] = useState(
+		record?.startDate === undefined ? new Date() : record?.startDate,
+	);
+	const [endDate, setEndDate] = useState(
+		record?.endDate === undefined ? new Date() : record?.endDate,
+	);
+	const [startTime, setStartTime] = useState(
+		record?.startTime === undefined ? new Date() : record?.startTime,
+	);
+	const [endTime, setEndTime] = useState(
+		record?.endTime === undefined ? new Date() : record?.endTime,
+	);
+	const [locationId, setLocationId] = useState(
+		record?.locationID === undefined ? "" : record?.locationID,
+	);
+	const [description, setDescription] = useState(
+		record?.description === undefined ? "" : record?.description,
+	);
 
 	const [whereList, setWhereList] = useState<SelectOption[]>([]);
 
 	//Image States
 	const [loading, setLoading] = useState(false);
 	const [image, setImage] = useState<string | ArrayBuffer | null>(null);
-	const [imageUrl, setImageUrl] = useState<string>(record === undefined ? "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png" : record?.eventImg);
+	const [imageUrl, setImageUrl] = useState<string>(
+		record === undefined
+			? "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"
+			: record?.eventImg,
+	);
 	const [savedRecord, setSavedRecord] = useState(record);
 
 	//Alert State
@@ -116,7 +134,7 @@ export default function EventsSchedDetails({
 	const { RangePicker } = DatePicker;
 
 	const token = localStorage.getItem("token");
-	const decodedtoken = (jwtDecode (token as string));
+	const decodedtoken = jwtDecode(token as string);
 
 	const {
 		register,
@@ -126,7 +144,6 @@ export default function EventsSchedDetails({
 	} = useForm<EventZod>({
 		resolver: zodResolver(EventDetailsZod),
 	});
-
 
 	const editOrCancel = () => {
 		if (!disabledInputs) {
@@ -138,27 +155,28 @@ export default function EventsSchedDetails({
 		setDisabledInputs(!disabledInputs);
 	};
 
-	const saveAction = async() => {
-		if(savedRecord=== undefined) {
+	const saveAction = async () => {
+		if (savedRecord === undefined) {
 			try {
-				const response = await AxiosInstace.post('/events/new', { 
+				const response = await AxiosInstace.post("/events/new", {
 					name: name,
 					startDate: startDate,
 					endDate: endDate,
 					startTime: startTime,
 					endTime: endTime,
 					locationID: locationId,
-            		description: description,
+					description: description,
 					eventImg: image,
-					userID: decodedtoken.sub
-				}); 
+					userID: decodedtoken.sub,
+				});
 				setSavedRecord(response.data.event);
 			} catch (err: any) {
-				error('Error in adding event: ' + err.response.data.error);
+				error("Error in adding event: " + err.response.data.error);
 			}
-		} else { // updating record
+		} else {
+			// updating record
 			try {
-				await AxiosInstace.put('/events/update', { 
+				await AxiosInstace.put("/events/update", {
 					_id: record === undefined ? savedRecord._id : record._id,
 					name: name === "" ? record?.name : name,
 					startDate: startDate,
@@ -167,12 +185,12 @@ export default function EventsSchedDetails({
 					endTime: endTime,
 					locationID: locationId,
 					description: description,
-            		// userID: userID,
+					// userID: userID,
 					eventImg: image === null ? record?.eventImg : image,
-					userID: decodedtoken.sub
-				}); 
+					userID: decodedtoken.sub,
+				});
 			} catch (err: any) {
-				error('Error in updating event: ' + err.response.data.error);
+				error("Error in updating event: " + err.response.data.error);
 			}
 		}
 
@@ -193,12 +211,14 @@ export default function EventsSchedDetails({
 			cancelText: "No",
 			async onOk() {
 				try {
-					await AxiosInstace.delete('/events/delete', { data: { _id: record?._id, userID: decodedtoken.sub } });
+					await AxiosInstace.delete("/events/delete", {
+						data: { _id: record?._id, userID: decodedtoken.sub },
+					});
 					fetch();
 					setOpenDetails(false);
-				  } catch (error) {
-					console.error('Error deleting events:', error);
-				  }
+				} catch (error) {
+					console.error("Error deleting events:", error);
+				}
 			},
 			onCancel() {
 				console.log("Cancel");
@@ -208,50 +228,50 @@ export default function EventsSchedDetails({
 
 	const handleName = (value: any) => {
 		setName(value);
-		setValue('name', value);
-	}
+		setValue("name", value);
+	};
 
 	const handleLocationId = (value: any) => {
 		setLocationId(value);
-		setValue('locationId', value);
-	}
+		setValue("locationId", value);
+	};
 
 	const handleDescription = (value: any) => {
 		setDescription(value);
-		setValue('description', value);
-	}
+		setValue("description", value);
+	};
 
 	const handleChangeRange = (date: any) => {
 		setStartTime(new Date(date[0]));
-		setValue('startTime', new Date(date[0]));
+		setValue("startTime", new Date(date[0]));
 		setEndTime(new Date(date[1]));
-		setValue('endTime', new Date(date[1]));
-	}
+		setValue("endTime", new Date(date[1]));
+	};
 
 	const handleChangeStartDate = (date: any) => {
 		setStartDate(date);
-		setValue('startDate', new Date(date));
-	}
+		setValue("startDate", new Date(date));
+	};
 
 	const handleChangeEndDate = (date: any) => {
 		setEndDate(date);
-		setValue('endDate', new Date(date));
-	}
+		setValue("endDate", new Date(date));
+	};
 
 	const handleImageUpload = (event: any) => {
 		const file = event.target.files[0];
 		const reader = new FileReader();
-	
+
 		reader.onloadend = () => {
-		const base64String = reader.result;
-		setImage(base64String);
-		const url = URL.createObjectURL(file);
-		setImageUrl(url);
-		setValue('imageUrl', url)
+			const base64String = reader.result;
+			setImage(base64String);
+			const url = URL.createObjectURL(file);
+			setImageUrl(url);
+			setValue("imageUrl", url);
 		};
-	
+
 		if (file) {
-		reader.readAsDataURL(file);
+			reader.readAsDataURL(file);
 		}
 	};
 
@@ -293,7 +313,7 @@ export default function EventsSchedDetails({
 
 		let buildings = await buildingsPromise;
 		let offices = await officesPromise;
-		
+
 		if (buildings !== undefined && offices !== undefined) {
 			let combinedArray: SelectOption[] = [...buildings, ...offices];
 			setWhereList(combinedArray);
@@ -307,14 +327,14 @@ export default function EventsSchedDetails({
 	useEffect(() => {
 		getWhere();
 		handleName(name);
-		setValue('startDate', new Date(startDate));
-		setValue('endDate', new Date(endDate));
-		setValue('startTime', new Date(startTime));
-		setValue('endTime', new Date(endTime));
+		setValue("startDate", new Date(startDate));
+		setValue("endDate", new Date(endDate));
+		setValue("startTime", new Date(startTime));
+		setValue("endTime", new Date(endTime));
 		handleLocationId(locationId);
 		handleDescription(description);
-		setValue('imageUrl', imageUrl);
-	}, [])
+		setValue("imageUrl", imageUrl);
+	}, []);
 
 	return (
 		<Form name="OfficeDetails" onFinish={onSubmit} autoComplete="off">
@@ -328,21 +348,21 @@ export default function EventsSchedDetails({
 										Event Name
 									</Label>
 									<div className="flex w-full flex-col">
-									<Input
-										inputType="text"
-										inputStyling="input w-full h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
-										placeHolder={record?.name}
-										input={name}
-										setInput={handleName}
-										visitorMngmnt
-										disabled={disabledInputs}
-									/>
-									{/* zod */}
-									{errors?.name && (
-										<p className="mt-1 text-sm text-red-500">
-											{errors.name?.message}
-										</p>
-									)}
+										<Input
+											inputType="text"
+											inputStyling="input w-full h-[38px] rounded-[5px] focus:outline-none focus:ring-0 focus:border-primary-500"
+											placeHolder={record?.name}
+											input={name}
+											setInput={handleName}
+											visitorMngmnt
+											disabled={disabledInputs}
+										/>
+										{/* zod */}
+										{errors?.name && (
+											<p className="mt-1 text-sm text-red-500">
+												{errors.name?.message}
+											</p>
+										)}
 									</div>
 								</div>
 							</div>
@@ -352,22 +372,25 @@ export default function EventsSchedDetails({
 										Start Date
 									</Label>
 									<div className="flex w-full flex-col">
-									<DatePicker
-										className={`vm-placeholder w-full border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500 focus:!border-primary-500 ${
-											disabledInputs && "picker-disabled"
-										}`}
-										size="middle"
-										value={dayjs(startDate)}
-										onChange={handleChangeStartDate}
-										format="MMMM DD, YYYY"
-										disabled={disabledInputs}
-									/>
-									{/* zod */}
-									{errors?.startDate && (
-										<p className="mt-1 text-sm text-red-500">
-											{errors.startDate?.message}
-										</p>
-									)}
+										<DatePicker
+											className={`vm-placeholder w-full border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500 focus:!border-primary-500 ${
+												disabledInputs && "picker-disabled"
+											}`}
+											size="middle"
+											value={dayjs(startDate)}
+											onChange={handleChangeStartDate}
+											format="MMMM DD, YYYY"
+											disabled={disabledInputs}
+											disabledDate={(current) => {
+												return current < dayjs().startOf("day");
+											}}
+										/>
+										{/* zod */}
+										{errors?.startDate && (
+											<p className="mt-1 text-sm text-red-500">
+												{errors.startDate?.message}
+											</p>
+										)}
 									</div>
 								</div>
 								<div className="flex w-full gap-[50px]">
@@ -375,22 +398,25 @@ export default function EventsSchedDetails({
 										End Date
 									</Label>
 									<div className="flex w-full flex-col">
-									<DatePicker
-										className={`vm-placeholder w-full border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500 focus:!border-primary-500 ${
-											disabledInputs && "picker-disabled"
-										}`}
-										size="middle"
-										value={dayjs(endDate)}
-										onChange={handleChangeEndDate}
-										format="MMMM DD, YYYY"
-										disabled={disabledInputs}
-									/>
-									{/* zod */}
-									{errors?.endDate && (
-										<p className="mt-1 text-sm text-red-500">
-											{errors.endDate?.message}
-										</p>
-									)}
+										<DatePicker
+											className={`vm-placeholder w-full border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500 focus:!border-primary-500 ${
+												disabledInputs && "picker-disabled"
+											}`}
+											size="middle"
+											value={dayjs(endDate)}
+											onChange={handleChangeEndDate}
+											format="MMMM DD, YYYY"
+											disabled={disabledInputs}
+											disabledDate={(current) => {
+												return current < dayjs().startOf("day");
+											}}
+										/>
+										{/* zod */}
+										{errors?.endDate && (
+											<p className="mt-1 text-sm text-red-500">
+												{errors.endDate?.message}
+											</p>
+										)}
 									</div>
 								</div>
 							</div>
@@ -399,36 +425,33 @@ export default function EventsSchedDetails({
 									Time
 								</Label>
 								<div className="flex w-full flex-col">
-								<RangePicker
-									className={`vm-placeholder w-full border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500 focus:!border-primary-500 ${
-										disabledInputs && "picker-disabled"
-									}`}
-									size="middle"
-									picker="time"
-									value={[
-										dayjs(startTime),
-										dayjs(endTime),
-									]}
-									onChange={handleChangeRange}
-									placeholder={["From", "To"]}
-									changeOnBlur={false}
-									format="hh:mm A"
-									style={{
-										borderColor: "#0db284",
-									}}
-									disabled={disabledInputs}
-								/>
-								{/* zod */}
-								{errors?.startTime && (
-									<p className="mt-1 text-sm text-red-500">
-										{errors.endDate?.message}
-									</p>
-								)}
-								{errors?.endTime && (
-									<p className="mt-1 text-sm text-red-500">
-										{errors.endTime?.message}
-									</p>
-								)}
+									<RangePicker
+										className={`vm-placeholder w-full border-none !border-[#d9d9d9] bg-[#e0ebf0] hover:!border-primary-500 focus:!border-primary-500 ${
+											disabledInputs && "picker-disabled"
+										}`}
+										size="middle"
+										picker="time"
+										value={[dayjs(startTime), dayjs(endTime)]}
+										onChange={handleChangeRange}
+										placeholder={["From", "To"]}
+										changeOnBlur={false}
+										format="hh:mm A"
+										style={{
+											borderColor: "#0db284",
+										}}
+										disabled={disabledInputs}
+									/>
+									{/* zod */}
+									{errors?.startTime && (
+										<p className="mt-1 text-sm text-red-500">
+											{errors.endDate?.message}
+										</p>
+									)}
+									{errors?.endTime && (
+										<p className="mt-1 text-sm text-red-500">
+											{errors.endTime?.message}
+										</p>
+									)}
 								</div>
 							</div>
 							<div>
@@ -437,27 +460,25 @@ export default function EventsSchedDetails({
 										Location
 									</Label>
 									<div className="flex w-full flex-col">
-									<Select
-										className="w-[315px] md:w-[397px]"
-										size="large"
-										placement="bottomLeft"
-										allowClear
-										showSearch
-										placeholder="Where"
-										listHeight={150}
-										options={whereList}
-										onChange={(value) =>
-											handleLocationId(value)
-										}
-										value={locationId}
-										disabled={disabledInputs}
-									/>
-									{/* zod */}
-									{errors?.locationId && (
-										<p className="mt-1 text-sm text-red-500">
-											{errors.locationId?.message}
-										</p>
-									)}
+										<Select
+											className="w-[315px] md:w-[397px]"
+											size="large"
+											placement="bottomLeft"
+											allowClear
+											showSearch
+											placeholder="Where"
+											listHeight={150}
+											options={whereList}
+											onChange={(value) => handleLocationId(value)}
+											value={locationId}
+											disabled={disabledInputs}
+										/>
+										{/* zod */}
+										{errors?.locationId && (
+											<p className="mt-1 text-sm text-red-500">
+												{errors.locationId?.message}
+											</p>
+										)}
 									</div>
 								</div>
 							</div>
@@ -466,44 +487,42 @@ export default function EventsSchedDetails({
 									Description
 								</Label>
 								<div className="flex w-full flex-col">
-								<TextArea
-									className="custom-textarea input h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
-									placeholder={record?.description}
-									value={description}
-									onChange={(e) => handleDescription(e.target.value)}
-									rows={8}
-									disabled={disabledInputs}
-								/>
-								{errors?.description && (
-									<p className="mt-1 text-sm text-red-500">
-										{errors.description?.message}
-									</p>
-								)}
+									<TextArea
+										className="custom-textarea input h-[38px] rounded-[5px] focus:border-primary-500 focus:outline-none focus:ring-0"
+										placeholder={record?.description}
+										value={description}
+										onChange={(e) => handleDescription(e.target.value)}
+										rows={8}
+										disabled={disabledInputs}
+									/>
+									{errors?.description && (
+										<p className="mt-1 text-sm text-red-500">
+											{errors.description?.message}
+										</p>
+									)}
 								</div>
 							</div>
 						</div>
 						<div>
 							<div className="flex w-full flex-col">
-							{disabledInputs ? (
-								<Image
-									width={200}
-									src={imageUrl}
-								/>
-							) : (
-								<div>
-									<input type="file" accept="image/*" onChange={handleImageUpload} />
-									{image && (
-										<div>
-										<h2>Uploaded Image:</h2>
-										<Image
-											width={280}
-											src={image.toString()}
+								{disabledInputs ? (
+									<Image width={200} src={imageUrl} />
+								) : (
+									<div>
+										<input
+											type="file"
+											accept="image/*"
+											onChange={handleImageUpload}
 										/>
-										</div>
-									)}
-								</div>
-							)}
-							{errors?.imageUrl && (
+										{image && (
+											<div>
+												<h2>Uploaded Image:</h2>
+												<Image width={280} src={image.toString()} />
+											</div>
+										)}
+									</div>
+								)}
+								{errors?.imageUrl && (
 									<p className="mt-1 text-sm text-red-500">
 										{errors.imageUrl?.message}
 									</p>
@@ -515,15 +534,16 @@ export default function EventsSchedDetails({
 					<div className="flex justify-end gap-[15px]">
 						{!disabledInputs ? (
 							<>
-								{record && 
-								<Button
-									onClick={showDeleteConfirm}
-									type="primary"
-									size="large"
-									className="search-button !bg-error-500 !rounded-[18px]"
-								>
-									Delete
-								</Button>}
+								{record && (
+									<Button
+										onClick={showDeleteConfirm}
+										type="primary"
+										size="large"
+										className="search-button !rounded-[18px] !bg-error-500"
+									>
+										Delete
+									</Button>
+								)}
 								<Button
 									htmlType="submit"
 									type="primary"

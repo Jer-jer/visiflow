@@ -112,6 +112,26 @@ function StepOneForm({
 		}
 	};
 
+	//for disabled time
+	const disabledDateTime = () => {
+		const currentHour = dayjs().hour();
+		const currentMinute = dayjs().minute();
+
+		return {
+			disabledHours: () => range(0, currentHour),
+			disabledMinutes: (selectedHour: number) => {
+				if (selectedHour === currentHour) {
+					return range(0, currentMinute);
+				}
+				return [];
+			},
+		};
+	};
+	// Helper function to generate range array
+	const range = (start: number, end: number) => {
+		return Array.from({ length: end - start }, (_, i) => start + i);
+	};
+
 	const onChangeRange = (
 		value: RangePickerProps["value"],
 		dateString: [string, string],
@@ -387,6 +407,7 @@ function StepOneForm({
 							style={{
 								borderColor: "#0db284",
 							}}
+							disabledTime={disabledDateTime}
 						/>
 						{errors?.checkInOut && (
 							<p className="mt-1 text-sm text-red-500">
@@ -452,6 +473,7 @@ function StepOneForm({
 								minDate={dayjs(dayjs(), `YYYY-MM-DD ${timeFormat}`)}
 								onChange={onChangeDate}
 								format={`YYYY-MM-DD ${timeFormat}`}
+								disabledTime={disabledDateTime}
 							/>
 						</Tooltip>
 
