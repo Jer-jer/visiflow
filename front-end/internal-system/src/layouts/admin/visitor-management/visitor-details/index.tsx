@@ -179,6 +179,26 @@ export default function VisitorDetails({
 	const [poiMessage, setPOIMessage] = useState<string>("");
 
 	//? Disabled Inputs
+	const disabledDateTime = () => {
+		const currentHour = dayjs().hour();
+		const currentMinute = dayjs().minute();
+
+		return {
+			disabledHours: () => range(0, currentHour),
+			disabledMinutes: (selectedHour: number) => {
+				if (selectedHour === currentHour) {
+					return range(0, currentMinute);
+				}
+				return [];
+			},
+		};
+	};
+
+	// Helper function to generate range array
+	const range = (start: number, end: number) => {
+		return Array.from({ length: end - start }, (_, i) => start + i);
+	};
+
 	const [disabledInputs, setDisabledInputs] = useState<boolean>(true);
 	const [disabledStatusInput, setDisabledStatusInput] = useState<boolean>(true);
 
@@ -1128,6 +1148,10 @@ Who: ${convertedData
 													onChange={onChange}
 													disabled={disabledInputs}
 													minDate={dayjs(record.purpose.when)}
+													disabledDate={(current) => {
+														return current < dayjs().startOf("day");
+													}}
+													disabledTime={disabledDateTime}
 												/>
 												{errors?.when && (
 													<p className="mt-1 text-sm text-red-500">
