@@ -435,12 +435,16 @@ Who: ${recipient.map((who) => who.label).join(", ")}`;
 					? setDisabledStatusInput(!disabledStatusInput)
 					: setDisabledInputs(!disabledInputs);
 
-				return AxiosInstance.post("/badge/update", { 
+				return AxiosInstance.post("/badge/update", {
 					_id: record.badge_id,
-					status: 'active',
-					expected_time_in: zodData ? zodData.check_in_out[0] : expected_in,
-					expected_time_out: zodData ? zodData.check_in_out[1] : expected_out
-				})
+					status: "active",
+					expected_time_in: zodData
+						? new Date(zodData.check_in_out[0])
+						: new Date(expected_in),
+					expected_time_out: zodData
+						? new Date(zodData.check_in_out[1])
+						: new Date(expected_out),
+				});
 			})
 			.then((res) => {
 				fetch();
