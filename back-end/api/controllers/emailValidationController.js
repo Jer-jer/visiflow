@@ -15,11 +15,17 @@ exports.validateEmails = async (req, res) => {
         console.log("🚀 ~ emails.map ~ validMailbox:", validMailbox, email);
         console.log("🚀 ~ emails.map ~ validDomain:", validDomain, email);
 
-        if (validDomain) {
-          if (!validMailbox) invalidEmails.push(email);
-        } else {
+        if (!validDomain) {
+          //   if (!validMailbox) invalidEmails.push(email);
+          // } else {
           invalidEmails.push(email);
         }
+
+        // if (validDomain) {
+        //   if (!validMailbox) invalidEmails.push(email);
+        // } else {
+        //   invalidEmails.push(email);
+        // }
       })
     );
 
