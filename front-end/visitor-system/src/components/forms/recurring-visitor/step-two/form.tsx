@@ -245,16 +245,16 @@ export default function StepTwoForm({
 			<div className="flex flex-wrap gap-[21px]">
 				<Form.Item>
 					<div
-						className={`flex ${
-							errors?.firstName ? "items-start" : "items-center"
+						className={`flex flex-col md:flex-row ${
+							errors?.firstName ? "items-start" : "items-start md:items-center"
 						} justify-between gap-[5%]`}
 					>
 						<span
-							className={`w-[130px] ${
+							className={`w-[150px] ${
 								errors?.firstName && "mt-[6px]"
 							} text-[16px] font-[400] text-[#0000004d]`}
 						>
-							First Name
+							First Name <span className="text-error">*</span>
 						</span>
 						<div className="flex w-full flex-col">
 							<Input
@@ -276,8 +276,8 @@ export default function StepTwoForm({
 				</Form.Item>
 				<Form.Item>
 					<div
-						className={`flex ${
-							errors?.middleName ? "items-start" : "items-center"
+						className={`flex flex-col md:flex-row ${
+							errors?.middleName ? "items-start" : "items-start md:items-center"
 						} justify-between gap-[5%]`}
 					>
 						<span
@@ -307,16 +307,16 @@ export default function StepTwoForm({
 				</Form.Item>
 				<Form.Item>
 					<div
-						className={`flex ${
-							errors?.lastName ? "items-start" : "items-center"
+						className={`flex flex-col md:flex-row ${
+							errors?.lastName ? "items-start" : "items-start md:items-center"
 						} justify-between gap-[5%]`}
 					>
 						<span
-							className={`w-[130px] ${
+							className={`w-[150px] ${
 								errors?.lastName && "mt-[6px]"
-							} text-[16px] font-[400] text-[#0000004d] md:w-[150px] lg:w-[120px]`}
+							} text-[16px] font-[400] text-[#0000004d] md:w-[150px] lg:w-[130px]`}
 						>
-							Last Name
+							Last Name <span className="text-error">*</span>
 						</span>
 						<div className="flex w-full flex-col">
 							<Input
@@ -338,16 +338,16 @@ export default function StepTwoForm({
 				</Form.Item>
 				<Form.Item>
 					<div
-						className={`flex md:w-[500px] ${
-							errors?.email ? "items-start" : "items-center"
+						className={`flex flex-col md:w-[550px] md:flex-row ${
+							errors?.email ? "items-start" : "items-start md:items-center"
 						} gap-[5%]`}
 					>
 						<span
-							className={`w-[150px] ${
+							className={`w-[160px] ${
 								errors?.email && "mt-[6px]"
 							} text-[16px] font-[400] text-[#0000004d]`}
 						>
-							Email Address
+							Email Address <span className="text-error">*</span>
 						</span>
 						<div className="flex w-full flex-col">
 							<Input
@@ -359,6 +359,7 @@ export default function StepTwoForm({
 									updateData(event.target.value, "email")
 								}
 							/>
+
 							{errors?.email && (
 								<p className="mt-1 text-sm text-red-500">
 									{errors.email.message}
@@ -369,8 +370,8 @@ export default function StepTwoForm({
 				</Form.Item>
 				<Form.Item>
 					<div
-						className={`flex md:w-[500px] ${
-							errors?.mobile ? "items-start" : "items-center"
+						className={`flex flex-col md:w-[500px] md:flex-row ${
+							errors?.mobile ? "items-start" : "items-start md:items-center"
 						} gap-[5%]`}
 					>
 						<span
@@ -378,13 +379,14 @@ export default function StepTwoForm({
 								errors?.mobile && "mt-[6px]"
 							} text-[16px] font-[400] text-[#0000004d]`}
 						>
-							Mobile Number
+							Mobile Number <span className="text-error">*</span>
 						</span>
 						<div className="flex w-full flex-col">
 							<PhoneInput
 								key={increment}
 								className="phone-input"
 								defaultCountry="PH"
+								limitMaxLength
 								international
 								countryCallingCodeEditable={false}
 								flags={flags}
@@ -396,7 +398,7 @@ export default function StepTwoForm({
 								key={increment}
 								className="rounded-[5px] border-none bg-[#DFEAEF] focus:outline-0 focus:ring-transparent"
 								{...register("mobile")}
-								value={visitor.visitor_details.phone}
+								value={visitorDetails.visitor_details.phone}
 								onChange={(event: any) =>
 									updateData(event.target.value, "mobile")
 								}
@@ -412,8 +414,8 @@ export default function StepTwoForm({
 				<Divider className="border border-[#00000030]" /> {/* Divider */}
 				<Form.Item>
 					<div
-						className={`flex ${
-							errors?.house ? "items-start" : "items-center"
+						className={`flex flex-col md:flex-row ${
+							errors?.house ? "items-start" : "items-start md:items-center"
 						} justify-between gap-[5%]`}
 					>
 						<span
@@ -443,8 +445,8 @@ export default function StepTwoForm({
 				</Form.Item>
 				<Form.Item>
 					<div
-						className={`flex ${
-							errors?.street ? "items-start" : "items-center"
+						className={`flex flex-col md:flex-row ${
+							errors?.street ? "items-start" : "items-start md:items-center"
 						} justify-between gap-[5%]`}
 					>
 						<span
@@ -474,16 +476,16 @@ export default function StepTwoForm({
 				</Form.Item>
 				<Form.Item>
 					<div
-						className={`flex ${
-							errors?.brgy ? "items-start" : "items-center"
+						className={`flex flex-col md:flex-row ${
+							errors?.brgy ? "items-start" : "items-start md:items-center"
 						} justify-between gap-[5%]`}
 					>
 						<span
-							className={`w-[120px] ${
+							className={`w-[130px] ${
 								errors?.brgy && "mt-[6px]"
 							} text-[16px] font-[400] text-[#0000004d]`}
 						>
-							Barangay
+							Barangay <span className="text-error">*</span>
 						</span>
 						<div className="flex w-full flex-col">
 							<Tooltip title="can be suburb, village, ward, etc.">
@@ -507,8 +509,8 @@ export default function StepTwoForm({
 				</Form.Item>
 				<Form.Item>
 					<div
-						className={`flex ${
-							errors?.city ? "items-start" : "items-center"
+						className={`flex flex-col md:flex-row ${
+							errors?.city ? "items-start" : "items-start md:items-center"
 						} justify-between gap-[5%]`}
 					>
 						{visitor.visitor_details.address.province ? (
@@ -516,9 +518,9 @@ export default function StepTwoForm({
 								<span
 									className={`w-[120px] ${
 										errors?.city && "mt-[6px]"
-									} text-[16px] font-[400] text-[#0000004d] lg:w-[50px]`}
+									} text-[16px] font-[400] text-[#0000004d] lg:w-[60px]`}
 								>
-									City
+									City <span className="text-error">*</span>
 								</span>
 								<div className="flex w-full flex-col">
 									{loadCities ? (
@@ -565,8 +567,8 @@ export default function StepTwoForm({
 				</Form.Item>
 				<Form.Item>
 					<div
-						className={`flex ${
-							errors?.province ? "items-start" : "items-center"
+						className={`flex flex-col md:flex-row ${
+							errors?.province ? "items-start" : "items-start md:items-center"
 						} justify-between gap-[5%]`}
 					>
 						{visitor.visitor_details.address.country ? (
@@ -576,7 +578,7 @@ export default function StepTwoForm({
 										errors?.province && "mt-[6px]"
 									} text-[16px] font-[400] text-[#0000004d]`}
 								>
-									Province
+									Province <span className="text-error">*</span>
 								</span>
 								<div className="flex w-full flex-col">
 									{loadStates ? (
@@ -627,8 +629,8 @@ export default function StepTwoForm({
 				</Form.Item>
 				<Form.Item>
 					<div
-						className={`flex ${
-							errors?.country ? "items-start" : "items-center"
+						className={`flex flex-col md:flex-row ${
+							errors?.country ? "items-start" : "items-start md:items-center"
 						} justify-between gap-[5%]`}
 					>
 						<span
@@ -636,7 +638,7 @@ export default function StepTwoForm({
 								errors?.country && "mt-[6px]"
 							} text-[16px] font-[400] text-[#0000004d]`}
 						>
-							Country
+							Country <span className="text-error">*</span>
 						</span>
 						<div className="flex w-full flex-col">
 							{loadCountries ? (

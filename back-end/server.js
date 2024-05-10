@@ -29,6 +29,7 @@ const employeesRouter = require("./api/routes/employeesRouter");
 const reasonRouter = require("./api/routes/reasonRouter");
 const statisticsRouter = require("./api/routes/statisticsRouter");
 const ocrRouter = require("./api/routes/ocrRouter");
+const emailValidatorRouter = require("./api/routes/emailValidator");
 const { timeInReminder, timeOutReminder } = require("./api/utils/helper");
 
 // Create Express app
@@ -76,6 +77,7 @@ app.use("/employees", employeesRouter);
 app.use("/reasons", reasonRouter);
 app.use("/stats", statisticsRouter);
 app.use("/scan", ocrRouter);
+app.use("/validate-emails", emailValidatorRouter)
 
 // Error handling middleware
 app.use((error, req, res, next) => {
